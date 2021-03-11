@@ -21,12 +21,13 @@ struct data_access_methods
 	void* (*get_blank_page_with_write_lock)(const void* context, uint32_t* page_id_returned);
 
 	// locks a page for read or write, if successfull must return pointer to the in-memory of the page
-	void* (*acquire_read_lock)(const void* context, uint32_t page_id);
-	void* (*acquire_write_lock)(const void* context, uint32_t page_id);
+	void* (*acquire_reader_lock)(const void* context, uint32_t page_id);
+	void* (*upgrade_reader_to_writer_lock)(const void* context, uint32_t page_id);
+	void* (*acquire_writer_lock)(const void* context, uint32_t page_id);
 
 	// releases lock on the page, accordingly
-	int (*release_read_lock)(const void* context, void* pg_ptr);
-	int (*release_write_lock)(const void* context, void* pg_ptr);
+	int (*release_reader_lock)(const void* context, void* pg_ptr);
+	int (*release_writer_lock)(const void* context, void* pg_ptr);
 
 	// equivalent to msync
 	int (*force_write_to_disk)(const void* context, uint32_t page_id);
@@ -41,5 +42,29 @@ struct data_access_methods
 	// context to pass on every page access
 	const void* context;
 };
+
+// Lock transitions allowed for any page in the data store
+/*
+**
+**	No lock     => N
+**	Reader lock => R
+**	Writer lock => W
+**
+**	Lock transitions allowed
+**
+**  case 1 :
+**	  N -> R 		by calling acquire_reader_lock
+**	  R -> N 		by calling release_reader_lock
+**
+**  case 2 :
+**	  N -> W 		by calling acquire_writer_lock
+**	  W -> N 		by calling release_writer_lock
+**
+**  case 3 :
+**	  N -> R 		by calling acquire_reader_lock
+**	  R -> W 		by calling upgrade_reader_to_writer_lock
+**	  W -> N 		by calling release_writer_lock
+**
+*/
 
 #endif
