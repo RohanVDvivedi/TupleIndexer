@@ -1,0 +1,13 @@
+
+Stage 1
+ * complete dependencies tasks SimpleTupleStorageModel and Bufferpool
+ * implement in-memory_data_store
+
+STAGE 2
+ * implement page_list
+
+STAGE 3
+ * implement bplus_tree
+
+STAGE 4
+ * implement hash_table
