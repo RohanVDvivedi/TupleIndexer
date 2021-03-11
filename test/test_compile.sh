@@ -1,1 +1,1 @@
-gcc ./test.c -o test.out -lrotli && valgrind -v ./test.out
+gcc ./test.c -o test.out -lroti && valgrind -v ./test.out
