@@ -19,7 +19,7 @@ A c library that enables you to build page_lists (doubly linkedlist of data page
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-lroti  -lstupstom -lbufferpool -lcutlery` linker flag, while compiling your application
+ * add `-lroti -lstupstom -lbufferpool -lcutlery` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `<page_list.h>`
    * `<hash_table.h>`
