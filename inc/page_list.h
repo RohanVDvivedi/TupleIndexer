@@ -57,6 +57,7 @@ int insert_at_end_in_page_list(page_list* pl_p, const void* tuple_like, const da
 int delete_tuple_at_the_cursor(page_list* pl_p, const void* tuple_like, const data_access_methods* dam_p);
 
 // external merge sort goes here
-void external_merge_sort_the_page_list(page_list* pl_p);
+// here : key_elements_count denote the number of elements to sort on
+void external_merge_sort_the_page_list(page_list* pl_p, uint16_t key_elements_count, const data_access_methods* dam_p);
 
 #endif
