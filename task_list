@@ -1,13 +1,17 @@
 
 Stage 1
- * complete dependencies tasks SimpleTupleStorageModel and Bufferpool
  * implement in-memory_data_store
 
 STAGE 2
  * implement page_list
+ * implement page_cursor
 
 STAGE 3
- * implement bplus_tree
+ * implement single page sort
+ * implement external_merge_sort
 
 STAGE 4
+ * implement bplus_tree
+
+STAGE 5
  * implement hash_table
