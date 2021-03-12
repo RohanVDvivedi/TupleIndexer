@@ -30,10 +30,8 @@ struct data_access_methods
 	int (*release_writer_lock)(const void* context, void* pg_ptr);
 
 	// equivalent to msync
+	// you must call this function while holding a reader lock on the page
 	int (*force_write_to_disk)(const void* context, uint32_t page_id);
-
-	// equivalent to fsync
-	int (*force_write_file_to_disk)(const void* context);
 
 	int (*close_data_file)(const void* context);
 
