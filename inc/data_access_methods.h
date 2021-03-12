@@ -14,37 +14,37 @@
 typedef struct data_access_methods data_access_methods;
 struct data_access_methods
 {
-	int (*open_data_file)(const void* context);
+	int (*open_data_file)(void* context);
 
 	// a request method to get a new blank page from the page manager with write lock on the page
 	// the page_id_returned is set with the page_id of the new_page
-	void* (*get_new_page_with_write_lock)(const void* context, uint32_t* page_id_returned);
+	void* (*get_new_page_with_write_lock)(void* context, uint32_t* page_id_returned);
 
 	// locks a page for read or write, if successfull must return pointer to the in-memory of the page
-	void* (*acquire_page_with_reader_lock)(const void* context, uint32_t page_id);
-	void* (*acquire_page_with_writer_lock)(const void* context, uint32_t page_id);
+	void* (*acquire_page_with_reader_lock)(void* context, uint32_t page_id);
+	void* (*acquire_page_with_writer_lock)(void* context, uint32_t page_id);
 
 	// downgrade a writer lock to a reader lock
-	int (*downgrade_writer_lock_to_reader_lock_on_page)(const void* context, void* pg_ptr);
+	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, void* pg_ptr);
 
 	// releases lock on the page, accordingly
-	int (*release_reader_lock_on_page)(const void* context, void* pg_ptr);
-	int (*release_writer_lock_on_page)(const void* context, void* pg_ptr);
+	int (*release_reader_lock_on_page)(void* context, void* pg_ptr);
+	int (*release_writer_lock_on_page)(void* context, void* pg_ptr);
 
 	// releases lock and mark the page as free
-	int (*release_reader_lock_and_free_page)(const void* context, void* pg_ptr);
-	int (*release_writer_lock_and_free_page)(const void* context, void* pg_ptr);
+	int (*release_reader_lock_and_free_page)(void* context, void* pg_ptr);
+	int (*release_writer_lock_and_free_page)(void* context, void* pg_ptr);
 
 	// equivalent to msync
 	// you must call this function while holding a reader lock on the page
-	int (*force_write_to_disk)(const void* context, uint32_t page_id);
+	int (*force_write_to_disk)(void* context, uint32_t page_id);
 
-	int (*close_data_file)(const void* context);
+	int (*close_data_file)(void* context);
 
 	uint32_t page_size_in_bytes;
 
 	// context to pass on every page access
-	const void* context;
+	void* context;
 };
 
 // Lock transitions allowed for any page in the data store

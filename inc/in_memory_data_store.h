@@ -5,8 +5,8 @@
 
 // page_size must be multiple of 4096 (i.e. size of a page that can be mmaped)
 
-void get_new_in_memory_data_store(data_access_methods* dam_p, uint32_t page_size);
+data_access_methods* get_new_in_memory_data_store(uint32_t page_size);
 
-void close_and_destroy_in_memory_data_store(data_access_methods* dam_p);
+int close_and_destroy_in_memory_data_store(data_access_methods* dam_p);
 
 #endif
