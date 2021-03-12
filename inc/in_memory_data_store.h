@@ -7,6 +7,6 @@
 
 void get_new_in_memory_data_store(data_access_methods* dam_p, uint32_t page_size);
 
-void destroy_in_memory_data_store(data_access_methods* dam_p);
+void close_and_destroy_in_memory_data_store(data_access_methods* dam_p);
 
 #endif
