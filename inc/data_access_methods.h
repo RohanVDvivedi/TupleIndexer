@@ -21,9 +21,9 @@ struct data_access_methods
 	void* (*get_blank_page_with_write_lock)(const void* context, uint32_t* page_id_returned);
 
 	// locks a page for read or write, if successfull must return pointer to the in-memory of the page
-	void* (*acquire_reader_lock)(const void* context, uint32_t page_id);
-	void* (*upgrade_reader_to_writer_lock)(const void* context, void* pg_ptr, uint32_t page_id);
-	void* (*acquire_writer_lock)(const void* context, uint32_t page_id);
+	void* (*acquire_page_with_reader_lock)(const void* context, uint32_t page_id);
+	void* (*acquire_page_with_writer_lock)(const void* context, uint32_t page_id);
+	void* (*downgrade_writer_to_reader_lock)(const void* context, void* pg_ptr, uint32_t page_id);
 
 	// releases lock on the page, accordingly
 	int (*release_reader_lock)(const void* context, void* pg_ptr);
