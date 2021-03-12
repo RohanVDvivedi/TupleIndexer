@@ -25,7 +25,7 @@ struct data_access_methods
 	void* (*acquire_page_with_writer_lock)(const void* context, uint32_t page_id);
 
 	// downgrade a writer lock to a reader lock
-	int (*downgrade_writer_to_reader_lock)(const void* context, void* pg_ptr, uint32_t page_id);
+	int (*downgrade_writer_lock_to_reader_lock_on_page)(const void* context, void* pg_ptr);
 
 	// releases lock on the page, accordingly
 	int (*release_reader_lock_on_page)(const void* context, void* pg_ptr);
@@ -65,9 +65,9 @@ struct data_access_methods
 **	  W -> N 		by calling release_writer_lock
 **
 **  case 3 :
-**	  N -> R 		by calling acquire_reader_lock
-**	  R -> W 		by calling upgrade_reader_to_writer_lock
-**	  W -> N 		by calling release_writer_lock
+**	  N -> W 		by calling acquire_writer_lock
+**	  W -> R 		by calling downgrade_writer_lock_to_reader_lock
+**	  R -> N 		by calling release_reader_lock
 **
 */
 
