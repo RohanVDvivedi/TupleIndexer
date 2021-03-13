@@ -41,7 +41,8 @@ struct data_access_methods
 
 	int (*close_data_file)(void* context);
 
-	uint32_t page_size_in_bytes;
+	// size of page in bytes
+	uint32_t page_size;
 
 	// context to pass on every page access
 	void* context;

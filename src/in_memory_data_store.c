@@ -71,7 +71,7 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size)
 	dam_p->release_writer_lock_and_free_page = release_writer_lock_and_free_page;
 	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
-	dam_p->page_size_in_bytes = page_size;
+	dam_p->page_size = page_size;
 	dam_p->context = malloc(sizeof(memory_store_context));
 	
 	// on success return the data access methods
