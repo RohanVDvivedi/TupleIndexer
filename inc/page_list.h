@@ -34,7 +34,7 @@ typedef struct page_cursor page_cursor;
 struct page_cursor
 {
 	// the page_list that this page cursor is meant to read
-	page_list* pg_list_p;
+	page_list* pagelist;
 
 	// the page of the page_list that this page_cursor is reading
 	// this is the page that this cursor has locked for the lock_type (as READER or WRITER)
