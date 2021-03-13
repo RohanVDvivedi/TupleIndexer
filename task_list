@@ -1,20 +1,16 @@
 
 Stage 1
  * implement in-memory_data_store
-
-STAGE 2
  * implement page_list
  * implement page_cursor
 
+STAGE 2
+ * implement single page sort (a static funcction)
+ * and then an external_merge_sort
+
 STAGE 3
- * implement single page sort
- * implement external_merge_sort
+ * implement bplus_tree -> leaf pages are page_list
+ * implement hash_table -> each bucket can be a bplus_tree or a page_list
 
-STAGE 4
- * implement bplus_tree
-
-STAGE 5
- * implement hash_table
-
-Stage 6
+Stage 4
  * implement on-disk_data_store using bufferpool

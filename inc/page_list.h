@@ -47,6 +47,8 @@ struct page_cursor
 	uint16_t tuple_index;	// tuple_index of the tuple in the page
 };
 
+int initialize_cursor(page_cursor* pc_p, page_list* pl_p, page_lock_type lock_type, const data_access_methods* dam_p);
+
 // returns 0 if there are no new tuple in the page_list, else returns 1
 int seek_to_next_tuple_in_page_list(page_cursor* pc_p, const data_access_methods* dam_p);
 
@@ -55,6 +57,8 @@ int insert_at_end_in_page_list(page_list* pl_p, const void* tuple_like, const da
 // page_cursor points to the next tuple in the page_list, and return 1
 // else it returns 0 (if the end of page_list is reached)
 int delete_tuple_at_the_cursor(page_list* pl_p, const void* tuple_like, const data_access_methods* dam_p);
+
+int deinitialize_cursor(page_cursor* pc_p, page_list* pl_p);
 
 // external merge sort goes here
 // here : key_elements_count denote the number of elements to sort on
