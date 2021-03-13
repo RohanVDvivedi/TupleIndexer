@@ -9,6 +9,9 @@
 
 #define NULL_PAGE_REFERENCE (~0U)
 
+#define NEXT_PAGE_REFERENCE_INDEX  0
+#define PREV_PAGE_REFERENCE_INDEX  1
+
 typedef struct page_list page_list;
 struct page_list
 {
@@ -38,7 +41,7 @@ struct page_cursor
 
 // page_list functions
 
-int initialize_page_list(page_list* pl_p, uint32_t head_page_id, uint32_t tail_page_id, tuple_def* tpl_d);
+int initialize_page_list(page_list* pl_p, uint32_t head_page_id, tuple_def* tpl_d);
 
 int insert_at_end_in_page_list(page_list* pl_p, const void* tuple_like, const data_access_methods* dam_p);
 
@@ -47,7 +50,7 @@ int deinitialize_page_list(page_list* pl_p);
 
 // page_cursor functions
 
-int initialize_cursor(page_cursor* pc_p, page_list* pl_p, page_lock_type lock_type, const data_access_methods* dam_p);
+int initialize_cursor(page_cursor* pc_p, page_list* pl_p, const data_access_methods* dam_p);
 
 // if deleted successfully, page_cursor points to the next tuple in the page_list, and returns 1
 // else it returns 0 (if the end of page_list is reached)
