@@ -15,3 +15,6 @@ STAGE 4
 
 STAGE 5
  * implement hash_table
+
+Stage 6
+ * implement on-disk_data_store using bufferpool
