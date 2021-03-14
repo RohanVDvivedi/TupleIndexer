@@ -6,6 +6,7 @@
 #include<linkedlist.h>
 
 #include<stdlib.h>
+#include<sys/mman.h>
 
 typedef struct memory_store_context memory_store_context;
 struct memory_store_context
@@ -27,19 +28,23 @@ struct memory_store_context
 	rwlock reader_writer_page_locks[];
 };
 
-typedef struct page_entry page_entry;
-struct page_entry
+static int open_data_file(void* context)
 {
-	rwlock* page_memory_lock;
+	memory_store_context* cntxt = context;
 
-	uint32_t page_id;
+	pthread_mutex_init(&(cntxt->context_global_lock), NULL);
+	initialize_linkedlist(&(cntxt->free_pages), 0);
+	cntxt->memory = mmap(NULL, cntxt->page_size * cntxt->pages_count, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE, -1, 0);
+	for(uint32_t i = 0; i < cntxt->pages_count; i++)
+	{
+		void* mem = cntxt->memory + (cntxt->page_size * i);
+		initialize_llnode(mem);
+		insert_tail(&(cntxt->free_pages), mem);
+		initialize_rwlock(&(cntxt->reader_writer_page_locks[i]));
+	}
 
-	void* page_memory;
-
-	llnode free_list_node;
-};
-
-static int open_data_file(void* context);
+	return 1;
+}
 
 static void* get_new_page_with_write_lock(void* context, uint32_t* page_id_returned);
 
@@ -59,7 +64,16 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr);
 
 static int force_write_to_disk(void* context, uint32_t page_id){ /* NOOP */ return 1;}
 
-static int close_data_file(void* context);
+static int close_data_file(void* context)
+{
+	memory_store_context* cntxt = context;
+
+	pthread_mutex_destroy(&(cntxt->context_global_lock));
+	munmap(cntxt->memory, cntxt->page_size * cntxt->pages_count);
+	for(uint32_t i = 0; i < cntxt->pages_count; i++)
+		deinitialize_rwlock(&(cntxt->reader_writer_page_locks[i]));
+	return 1;
+}
 
 data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t pages_count)
 {
@@ -78,6 +92,9 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t p
 	dam_p->page_size = page_size;
 	dam_p->context = malloc(sizeof(memory_store_context) + (pages_count * sizeof(rwlock)));
 	
+	((memory_store_context*)(dam_p->context))->page_size = page_size;
+	((memory_store_context*)(dam_p->context))->pages_count = pages_count;
+
 	// on success return the data access methods
 	if(dam_p->open_data_file(dam_p->context))
 		return dam_p;
