@@ -52,7 +52,7 @@ static void* get_new_page_with_write_lock(void* context, uint32_t* page_id_retur
 
 	pthread_mutex_lock(&(cntxt->free_pages_lock));
 
-	void* mem = get_head(&(cntxt->free_pages));
+	void* mem = (void*) get_head(&(cntxt->free_pages));
 	remove_head(&(cntxt->free_pages));
 
 	pthread_mutex_unlock(&(cntxt->free_pages_lock));
@@ -64,15 +64,53 @@ static void* get_new_page_with_write_lock(void* context, uint32_t* page_id_retur
 	return mem;
 }
 
-static void* acquire_page_with_reader_lock(void* context, uint32_t page_id);
+static void* acquire_page_with_reader_lock(void* context, uint32_t page_id)
+{
+	memory_store_context* cntxt = context;
 
-static void* acquire_page_with_writer_lock(void* context, uint32_t page_id);
+	read_lock(&(cntxt->reader_writer_page_locks[page_id]));
 
-static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr);
+	return cntxt->memory + (page_id * cntxt->page_size);
+}
 
-static int release_reader_lock_on_page(void* context, void* pg_ptr);
+static void* acquire_page_with_writer_lock(void* context, uint32_t page_id)
+{
+	memory_store_context* cntxt = context;
 
-static int release_writer_lock_on_page(void* context, void* pg_ptr);
+	write_lock(&(cntxt->reader_writer_page_locks[page_id]));
+
+	return cntxt->memory + (page_id * cntxt->page_size);
+}
+
+static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr)
+{
+	memory_store_context* cntxt = context;
+
+	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+	downgrade_writer_to_reader_lock(&(cntxt->reader_writer_page_locks[page_id]));
+
+	return 1;
+}
+
+static int release_reader_lock_on_page(void* context, void* pg_ptr)
+{
+	memory_store_context* cntxt = context;
+
+	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+	read_unlock(&(cntxt->reader_writer_page_locks[page_id]));
+
+	return 1;
+}
+
+static int release_writer_lock_on_page(void* context, void* pg_ptr)
+{
+	memory_store_context* cntxt = context;
+
+	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+	write_unlock(&(cntxt->reader_writer_page_locks[page_id]));
+
+	return 1;
+}
 
 static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 {
