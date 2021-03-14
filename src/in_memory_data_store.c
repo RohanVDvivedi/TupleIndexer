@@ -10,17 +10,21 @@
 typedef struct memory_store_context memory_store_context;
 struct memory_store_context
 {
+	// constant
 	uint32_t page_size;
 
+	// constant
+	uint32_t pages_count;
+
+	// count
+	void* memory;	// points to mmap-ed memory of size (page_size * page_count)
+
+	// this lock protects free_pages_list and the reader_writer_page_locks
 	pthread_mutex_t context_global_lock;
 
-	uint32_t largest_page_id_seen;
-
-	hashmap page_id_to_page_entry;
-
-	hashmap page_memory_to_page_entry;
-
 	linkedlist free_pages;
+
+	rwlock reader_writer_page_locks[];
 };
 
 typedef struct page_entry page_entry;
@@ -57,7 +61,7 @@ static int force_write_to_disk(void* context, uint32_t page_id){ /* NOOP */ retu
 
 static int close_data_file(void* context);
 
-data_access_methods* get_new_in_memory_data_store(uint32_t page_size)
+data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t pages_count)
 {
 	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
 	dam_p->open_data_file = open_data_file;
@@ -72,7 +76,7 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size)
 	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
 	dam_p->page_size = page_size;
-	dam_p->context = malloc(sizeof(memory_store_context));
+	dam_p->context = malloc(sizeof(memory_store_context) + (pages_count * sizeof(rwlock)));
 	
 	// on success return the data access methods
 	if(dam_p->open_data_file(dam_p->context))
