@@ -10,7 +10,7 @@ void initialize_cursor(page_cursor* pc_p, uint32_t page_list_page_id, const data
 	pc_p->tuple = NULL;
 }
 
-int seek_to_next_tuple_in_page_list(page_cursor* pc_p, const data_access_methods* dam_p);
+int seek_cursor_to_next_tuple(page_cursor* pc_p, const data_access_methods* dam_p);
 
 int delete_tuple_at_the_cursor(page_cursor* pc_p, const void* tuple_like, const data_access_methods* dam_p);
 

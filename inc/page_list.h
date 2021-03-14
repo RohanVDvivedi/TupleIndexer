@@ -37,7 +37,7 @@ void initialize_cursor(page_cursor* pc_p, uint32_t page_list_page_id, const data
 
 // page_cursor points to the next tuple in the page_list, and return 1
 // else it returns 0 (if the end of page_list is reached)
-int seek_to_next_tuple_in_page_list(page_cursor* pc_p, const data_access_methods* dam_p);
+int seek_cursor_to_next_tuple(page_cursor* pc_p, const data_access_methods* dam_p);
 
 // if deleted successfully, page_cursor points to the next tuple in the page_list, and returns 1
 // else it returns 0 (if the end of page_list is reached)
