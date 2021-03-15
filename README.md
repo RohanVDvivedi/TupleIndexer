@@ -24,7 +24,7 @@ A c library that enables you to build page_lists (doubly linkedlist of data page
    * `<page_list.h>`
    * `<hash_table.h>`
    * `<bplus_tree.h>`
-   * `<data_access_methods.h>`
+   * `<in_memory_data_store.h>`
 
 ## Instructions for uninstalling library
 
