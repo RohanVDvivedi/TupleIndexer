@@ -122,12 +122,16 @@ int seek_cursor_to_next_tuple(page_cursor* pc_p)
 	return pc_p->tuple != NULL;
 }
 
-int insert_tuple_after_the_cursor(page_cursor* pc_p, const void* tuple_to_insert)
+int seek_cursor_and_insert_tuple(page_cursor* pc_p, const void* tuple_to_insert)
 {
+	int split_required = !can_accomodate_tuple_insert(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, tuple_to_insert);
+
+	int scratch_pad_needed = (pc_p->);
+
 	return 0;
 }
 
-int delete_tuple_at_the_cursor(page_cursor* pc_p)
+int delete_tuple_and_seek_cursor(page_cursor* pc_p)
 {
 	return 0;
 }
