@@ -1,8 +1,9 @@
 
 Stage 1
- * implement in-memory_data_store
- * implement page_list
- * implement page_cursor
+ * implement page_cursor delete at cursor
+ * provide support to seek to -> end of current page, end of current tuple
+ * implement page_cursor prev direction support
+ * write test_cases and pass them
 
 STAGE 2
  * implement single page sort (a static funcction)
