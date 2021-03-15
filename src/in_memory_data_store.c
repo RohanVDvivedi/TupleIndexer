@@ -138,7 +138,7 @@ static void* acquire_page_with_writer_lock(void* context, uint32_t page_id)
 		return 0;
 
 	// to check if the page that you requested is not free
-	// i.e. you can not directly acquire a lock to the free page (use the methof above)
+	// i.e. you can not directly acquire a lock to the free page (use the method above)
 	int is_free_page = 0;
 
 	// calculate the page pointer, that you might have to return
@@ -178,7 +178,7 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 		return 0;
 
 	// to check if the page that you requested is not free
-	// i.e. you can not have directly acquired a lock to the free page (use the method above)
+	// i.e. you can not have directly downgrade a lock to the free page
 	int is_free_page = 0;
 
 	pthread_mutex_lock(&(cntxt->free_pages_lock));
