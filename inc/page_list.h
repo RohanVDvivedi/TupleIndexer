@@ -73,13 +73,13 @@ int seek_cursor_to_next_page_first_tuple(page_cursor* pc_p);
 // else it returns 0 (if the end of page_list is reached)
 int seek_cursor_to_current_page_first_tuple(page_cursor* pc_p);
 
-// if deleted successfully, page_cursor points to the newly inserted tuple in the page_list, and returns 1
+// if inserted successfully, returns 1
 // else it returns 0 (if the end of page_list is reached)
-int seek_cursor_and_insert_tuple(page_cursor* pc_p, const void* tuple_to_insert);
+int insert_tuple_at_cursor(page_cursor* pc_p, const void* tuple_to_insert);
 
-// if deleted successfully, page_cursor points to the next tuple in the page_list, and returns 1
+// if deleted successfully, returns 1
 // else it returns 0 (if the end of page_list is reached)
-int delete_tuple_and_seek_cursor(page_cursor* pc_p);
+int delete_tuple_at_cursor(page_cursor* pc_p);
 
 void deinitialize_cursor(page_cursor* pc_p);
 
