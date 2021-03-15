@@ -83,6 +83,10 @@ int delete_tuple_at_cursor(page_cursor* pc_p);
 
 void deinitialize_cursor(page_cursor* pc_p);
 
+// print page list
+
+void print_page_list(uint32_t page_list_head_page_id, const data_access_methods* dam_p);
+
 // external merge sort
 
 // here : key_elements_count denote the number of elements to sort on
