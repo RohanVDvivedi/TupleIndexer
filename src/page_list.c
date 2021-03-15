@@ -124,15 +124,75 @@ int seek_cursor_to_next_tuple(page_cursor* pc_p)
 
 int insert_tuple_at_cursor(page_cursor* pc_p, const void* tuple_to_insert)
 {
+	if(pc_p->lock_type != WRITER_LOCK)
+		return 0;
+
 	int split_required = !can_accomodate_tuple_insert(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, tuple_to_insert);
 
-	int scratch_pad_needed = (pc_p->);
+	uint32_t tuple_count = get_tuple_count(pc_p->page);
 
-	return 0;
+	uint32_t scratch_pad_page_id;
+	void* scratch_pad_page = acquire_new_page_with_lock(pc_p, &scratch_pad_page_id);
+	init_page(scratch_pad_page, pc_p->dam_p->page_size, 1, 2, NULL);
+
+	// these are the tuple indexes that move to the scratch pad page
+	uint16_t page_2_si = pc_p->tuple_index;
+	uint16_t page_2_ei = tuple_count - 1;
+
+	if(page_2_si <= page_2_ei)
+	{
+		// copy tuples from actual page to the scratch_pad_page
+		insert_tuples_from_page(scratch_pad_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, page_2_si, page_2_ei);
+		
+		// delete the copied tuples in the pc->page
+		for(uint16_t i = page_2_si; i <= page_2_ei; i++)
+			delete_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, i);
+	}
+
+	insert_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, tuple_to_insert);
+
+	if(split_required)
+	{
+		// find the next of the current page
+		uint32_t next_page_id = get_reference_page_id(pc_p->page, NEXT_PAGE_REFERENCE_INDEX);
+
+		// set the next of the current page to the scratch_pad_page_id
+		set_reference_page_id(pc_p->page, NEXT_PAGE_REFERENCE_INDEX, scratch_pad_page_id);
+
+		// acquire lock on the next page
+		void* next_page = acquire_lock(pc_p, next_page_id);
+
+		// set its previous to the scratch_pad_page_id
+		set_reference_page_id(nextpage, PREV_PAGE_REFERENCE_INDEX, scratch_pad_page_id);
+	
+		// release its lock
+		release_lock(pc_p, next_page);
+
+		// re write and point the references to the correct pages for the newly added scratch pad page
+		set_reference_page_id(next_page, NEXT_PAGE_REFERENCE_INDEX, next_page_id);
+		set_reference_page_id(next_page, PREV_PAGE_REFERENCE_INDEX, pc_p->page_id);
+
+		// release lock on the scratch pad page
+		release_lock(pc_p, scratch_pad_page);
+	}
+	else
+	{
+		// insert tuples back from the scratch pad to the pc->page
+		uint32_t tuple_count_to_copy_back = get_tuple_count(pc_p->page);
+		insert_tuples_from_page(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, scratch_pad_page, 0, tuple_count_to_copy_back - 1);
+
+		// release the lock and spare free the scratch pad page
+		release_lock_and_free_page(pc_p, scratch_pad_page);
+	}
+
+	return 1;
 }
 
 int delete_tuple_at_cursor(page_cursor* pc_p)
 {
+	if(pc_p->lock_type != WRITER_LOCK)
+		return 0;
+
 	return 0;
 }
 
