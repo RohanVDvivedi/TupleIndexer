@@ -38,6 +38,8 @@ struct memory_store_context
 	page_state page_states[];
 };
 
+#define size_of_memory_store_context(pages_count) (sizeof(memory_store_context) + (pages_count * sizeof(page_state)))
+
 static int open_data_file(void* context)
 {
 	memory_store_context* cntxt = context;
@@ -370,7 +372,7 @@ static int close_data_file(void* context)
 	pthread_mutex_destroy(&(cntxt->free_pages_lock));
 	munmap(cntxt->memory, cntxt->page_size * cntxt->pages_count);
 	for(uint32_t i = 0; i < cntxt->pages_count; i++)
-		deinitialize_rwlock(&(cntxt->reader_writer_page_locks[i]));
+		deinitialize_rwlock(&(cntxt->page_states[i].reader_writer_page_lock));
 	return 1;
 }
 
@@ -389,7 +391,7 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t p
 	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
 	dam_p->page_size = page_size;
-	dam_p->context = malloc(sizeof(memory_store_context) + (pages_count * sizeof(page_state)));
+	dam_p->context = malloc(size_of_memory_store_context(pages_count));
 	
 	((memory_store_context*)(dam_p->context))->page_size = page_size;
 	((memory_store_context*)(dam_p->context))->pages_count = pages_count;
