@@ -164,30 +164,105 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 {
 	memory_store_context* cntxt = context;
 
-	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
-	downgrade_writer_to_reader_lock(&(cntxt->reader_writer_page_locks[page_id]));
+	// invalid page pointer
+	if( (((uintptr_t)(cntxt->memory - pg_ptr)) % cntxt->page_size) != 0 )
+		return 0;
 
-	return 1;
+	// calculate the page_id for the pg_ptr
+	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+
+	// page_id is out of bounds
+	if(page_id >= cntxt->pages_count)
+		return 0;
+
+	// to check if the page that you requested is not free
+	// i.e. you can not have directly acquired a lock to the free page (use the method above)
+	int is_free_page = 0;
+
+	pthread_mutex_lock(&(cntxt->free_pages_lock));
+
+		// check if the page is free
+		is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
+
+	pthread_mutex_unlock(&(cntxt->free_pages_lock));
+
+	if(!is_free_page)
+	{
+		downgrade_writer_to_reader_lock(&(cntxt->page_states[page_id].reader_writer_page_lock));
+		return 1;
+	}
+	else
+		return 0;
 }
 
 static int release_reader_lock_on_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
-	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
-	read_unlock(&(cntxt->reader_writer_page_locks[page_id]));
+	// invalid page pointer
+	if( (((uintptr_t)(cntxt->memory - pg_ptr)) % cntxt->page_size) != 0 )
+		return 0;
 
-	return 1;
+	// calculate the page_id for the pg_ptr
+	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+
+	// page_id is out of bounds
+	if(page_id >= cntxt->pages_count)
+		return 0;
+
+	// to check if the page that you requested is not free
+	// i.e. you can not have directly acquired a lock to the free page (use the method above)
+	int is_free_page = 0;
+
+	pthread_mutex_lock(&(cntxt->free_pages_lock));
+
+		// check if the page is free
+		is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
+
+	pthread_mutex_unlock(&(cntxt->free_pages_lock));
+
+	if(!is_free_page)
+	{
+		read_unlock(&(cntxt->page_states[page_id].reader_writer_page_lock));
+		return 1;
+	}
+	else
+		return 0;
 }
 
 static int release_writer_lock_on_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
-	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
-	write_unlock(&(cntxt->reader_writer_page_locks[page_id]));
+	// invalid page pointer
+	if( (((uintptr_t)(cntxt->memory - pg_ptr)) % cntxt->page_size) != 0 )
+		return 0;
 
-	return 1;
+	// calculate the page_id for the pg_ptr
+	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+
+	// page_id is out of bounds
+	if(page_id >= cntxt->pages_count)
+		return 0;
+
+	// to check if the page that you requested is not free
+	// i.e. you can not have directly acquired a lock to the free page (use the method above)
+	int is_free_page = 0;
+
+	pthread_mutex_lock(&(cntxt->free_pages_lock));
+
+		// check if the page is free
+		is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
+
+	pthread_mutex_unlock(&(cntxt->free_pages_lock));
+
+	if(!is_free_page)
+	{
+		write_unlock(&(cntxt->page_states[page_id].reader_writer_page_lock));
+		return 1;
+	}
+	else
+		return 0;
 }
 
 static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
