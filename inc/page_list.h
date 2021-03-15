@@ -12,7 +12,7 @@
 #define NULL_PAGE_REFERENCE (~0U)
 
 #define NEXT_PAGE_REFERENCE_INDEX  0
-//#define PREV_PAGE_REFERENCE_INDEX  1
+#define PREV_PAGE_REFERENCE_INDEX  1
 
 typedef enum page_cursor_lock_type page_cursor_lock_type;
 enum page_cursor_lock_type
@@ -53,7 +53,7 @@ struct page_cursor
 };
 
 // creates a new page_list and returns the id to head page of the the newly created page_list
-uint32_t get_new_page_list(const data_access_methods* dam_p);
+uint32_t create_new_page_list(const data_access_methods* dam_p);
 
 // page_cursor functions
 
@@ -67,7 +67,11 @@ int seek_cursor_to_next_tuple(page_cursor* pc_p);
 
 // page_cursor points to the first tuple in the next page in the page_list, and return 1
 // else it returns 0 (if the end of page_list is reached)
-int seek_cursor_to_next_page(page_cursor* pc_p);
+int seek_cursor_to_next_page_first_tuple(page_cursor* pc_p);
+
+// page_cursor points to the first tuple in the current page in the page_list, and return 1
+// else it returns 0 (if the end of page_list is reached)
+int seek_cursor_to_current_page_first_tuple(page_cursor* pc_p);
 
 // if deleted successfully, page_cursor points to the next tuple in the page_list, and returns 1
 // else it returns 0 (if the end of page_list is reached)
