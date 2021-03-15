@@ -73,7 +73,7 @@ int seek_cursor_to_next_page(page_cursor* pc_p);
 // else it returns 0 (if the end of page_list is reached)
 int delete_tuple_at_the_cursor(page_cursor* pc_p);
 
-// if deleted successfully, page_cursor points to the newlu inserted tuple in the page_list, and returns 1
+// if deleted successfully, page_cursor points to the newly inserted tuple in the page_list, and returns 1
 // else it returns 0 (if the end of page_list is reached)
 int insert_tuple_after_the_cursor(page_cursor* pc_p, const void* tuple_to_insert);
 
@@ -85,3 +85,14 @@ void deinitialize_cursor(page_cursor* pc_p);
 void external_merge_sort_the_page_list(uint32_t page_list_head_page_id, uint16_t key_elements_count, const data_access_methods* dam_p);
 
 #endif
+
+/*
+	GROUND RULES
+
+	* no page can have 0 tuple count, except if the page is the head page with
+	NEXT_PAGE_REFERENCE_INDEX and PREV_PAGE_REFERENCE_INDEX both being NULL_PAGE_REFERENCE
+
+	* upon insertion if the tuple can not accomodated, then the page is split in to two parts
+
+	* upon deletion, a page is removed from the page_list only if it has 0 keys
+*/
