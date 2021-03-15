@@ -14,10 +14,28 @@
 #define NEXT_PAGE_REFERENCE_INDEX  0
 //#define PREV_PAGE_REFERENCE_INDEX  1
 
+typedef enum page_cursor_lock_type page_cursor_lock_type;
+enum page_cursor_lock_type
+{
+	READER_LOCK,
+	WRITER_LOCK,
+};
+
+typedef enum page_cursor_traversal_direction page_cursor_traversal_direction;
+enum page_cursor_traversal_direction
+{
+	NEXT_PAGE_DIRECTION,
+	PREV_PAGE_DIRECTION,
+};
+
 // for reading tuples inside the page_list you need a page cursor
 typedef struct page_cursor page_cursor;
 struct page_cursor
 {
+	page_cursor_lock_type lock_type;
+
+	page_cursor_traversal_direction traverse_dir;
+
 	// the page of the page_list that this page_cursor is reading
 	// this is the page that this cursor has locked for the lock_type (as READER or WRITER)
 	void* page;
@@ -26,6 +44,12 @@ struct page_cursor
 	// the tuple that this page_cursor is pointing to at this instance
 	void* tuple;
 	uint16_t tuple_index;	// tuple_index of the tuple in the page
+
+	// the definition of each tuple that this page_cursor may point to
+	const tuple_def* tpl_d;
+
+	// the data_access_methods for access data pages for this page_cursor
+	const data_access_methods* dam_p;
 };
 
 // creates a new page_list and returns the id to head page of the the newly created page_list
@@ -33,19 +57,25 @@ uint32_t get_new_page_list(const data_access_methods* dam_p);
 
 // page_cursor functions
 
-void initialize_cursor(page_cursor* pc_p, uint32_t page_list_page_id, const data_access_methods* dam_p);
+// all the page cursor functions return 0 if end of page_list is reached
+
+int initialize_cursor(page_cursor* pc_p, page_cursor_lock_type lock_type, page_cursor_traversal_direction traverse_dir, uint32_t page_list_page_id, const tuple_def* tpl_d, const data_access_methods* dam_p);
 
 // page_cursor points to the next tuple in the page_list, and return 1
 // else it returns 0 (if the end of page_list is reached)
-int seek_cursor_to_next_tuple(page_cursor* pc_p, const data_access_methods* dam_p);
+int seek_cursor_to_next_tuple(page_cursor* pc_p);
+
+// page_cursor points to the first tuple in the next page in the page_list, and return 1
+// else it returns 0 (if the end of page_list is reached)
+int seek_cursor_to_next_page(page_cursor* pc_p);
 
 // if deleted successfully, page_cursor points to the next tuple in the page_list, and returns 1
 // else it returns 0 (if the end of page_list is reached)
-int delete_tuple_at_the_cursor(page_cursor* pc_p, const void* tuple_like, const data_access_methods* dam_p);
+int delete_tuple_at_the_cursor(page_cursor* pc_p);
 
 // if deleted successfully, page_cursor points to the newlu inserted tuple in the page_list, and returns 1
 // else it returns 0 (if the end of page_list is reached)
-int insert_tuple_after_the_cursor(page_cursor* pc_p, const void* tuple_like, const data_access_methods* dam_p);
+int insert_tuple_after_the_cursor(page_cursor* pc_p, const void* tuple_to_insert);
 
 void deinitialize_cursor(page_cursor* pc_p);
 
