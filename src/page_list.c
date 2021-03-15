@@ -163,7 +163,7 @@ int insert_tuple_at_cursor(page_cursor* pc_p, const void* tuple_to_insert)
 		void* next_page = acquire_lock(pc_p, next_page_id);
 
 		// set its previous to the scratch_pad_page_id
-		set_reference_page_id(nextpage, PREV_PAGE_REFERENCE_INDEX, scratch_pad_page_id);
+		set_reference_page_id(next_page, PREV_PAGE_REFERENCE_INDEX, scratch_pad_page_id);
 	
 		// release its lock
 		release_lock(pc_p, next_page);
