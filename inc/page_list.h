@@ -24,8 +24,8 @@ enum page_cursor_lock_type
 typedef enum page_cursor_traversal_direction page_cursor_traversal_direction;
 enum page_cursor_traversal_direction
 {
-	NEXT_PAGE_DIRECTION,
-	PREV_PAGE_DIRECTION,
+	NEXT_PAGE_DIRECTION = 0, // = NEXT_PAGE_REFERENCE_INDEX
+	PREV_PAGE_DIRECTION = 1, // = PREV_PAGE_REFERENCE_INDEX
 };
 
 // for reading tuples inside the page_list you need a page cursor
