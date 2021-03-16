@@ -1,5 +1,8 @@
 
 Stage 1
+ * implement split_page_at_cursor (if contains more than 2 tuples)
+ * reimpement the insert_tuple_at_cursor using the split_page_at_cursor function
+ * implement merge_pages_at_cursor (if space_occupied by the tuples in both the pages equals the page_size - header size)
  * implement page_cursor delete at cursor
  * provide support to seek to -> end of current page, end of current tuple
  * implement page_cursor prev direction support
