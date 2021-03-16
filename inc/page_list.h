@@ -84,10 +84,12 @@ int merge_page_at_cursor(page_cursor* pc_p);
 
 // the tuple is inserted after the cursor if the flag "after_cursor" is set
 // no seek is performed (the number of tuples already seeked remains the same)
-void insert_tuple_at_cursor(page_cursor* pc_p, int after_cursor, const void* tuple_to_insert);
+// returns 0 => failure, 1 => succcess w/o page split, 2 => success with page split
+int insert_tuple_at_cursor(page_cursor* pc_p, int after_cursor, const void* tuple_to_insert);
 
 // no seek is performed (the number of tuples already seeked remains the same)
-void delete_tuple_at_cursor(page_cursor* pc_p);
+// returns 0 => failure, 1 => succcess w/o page merge, 2 => success with page merge
+int delete_tuple_at_cursor(page_cursor* pc_p);
 
 void deinitialize_cursor(page_cursor* pc_p);
 
