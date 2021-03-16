@@ -73,6 +73,15 @@ int seek_cursor_to_next_page_first_tuple(page_cursor* pc_p);
 // else it returns 0 (if the end of page_list is reached)
 int seek_cursor_to_current_page_first_tuple(page_cursor* pc_p);
 
+// returns 1, if the page was split at the cursor
+// splits page only if the tuple count >= 2
+int split_page_at_cursor(page_cursor* pc_p);
+
+// returns 1, if the page was split at the cursor
+// merges the page with the next or previous page (according to the traversal_dir of the cursor)
+// only if the data of the both the pages could be accomodated in one page
+int merge_page_at_cursor(page_cursor* pc_p);
+
 // if inserted successfully, returns 1
 // else it returns 0 (if the end of page_list is reached)
 int insert_tuple_at_cursor(page_cursor* pc_p, const void* tuple_to_insert);

@@ -122,6 +122,8 @@ int seek_cursor_to_next_tuple(page_cursor* pc_p)
 	return pc_p->tuple != NULL;
 }
 
+int split_page_at_cursor(page_cursor* pc_p);
+
 int insert_tuple_at_cursor(page_cursor* pc_p, const void* tuple_to_insert)
 {
 	if(pc_p->lock_type != WRITER_LOCK)
@@ -187,6 +189,8 @@ int insert_tuple_at_cursor(page_cursor* pc_p, const void* tuple_to_insert)
 
 	return 1;
 }
+
+int merge_page_at_cursor(page_cursor* pc_p);
 
 int delete_tuple_at_cursor(page_cursor* pc_p)
 {
