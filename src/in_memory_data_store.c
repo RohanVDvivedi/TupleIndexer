@@ -413,3 +413,11 @@ int close_and_destroy_in_memory_data_store(data_access_methods* dam_p)
 	free(dam_p);
 	return result;
 }
+
+// TODO :: This function will be removed in the future
+void* get_page_for_debug(data_access_methods* dam_p, uint32_t i)
+{
+	memory_store_context* cntxt = dam_p->context;
+
+	return cntxt->memory + i * cntxt->page_size;
+}

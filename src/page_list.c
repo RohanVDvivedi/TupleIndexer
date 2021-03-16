@@ -251,6 +251,7 @@ void deinitialize_cursor(page_cursor* pc_p)
 	pc_p->dam_p = NULL;
 }
 
+// TODO :: This function will be removed in the future
 void print_page_list(uint32_t page_list_head_page_id, const data_access_methods* dam_p);
 
 void external_merge_sort_the_page_list(uint32_t page_list_head_page_id, uint16_t key_elements_count, const data_access_methods* dam_p);
