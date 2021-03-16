@@ -59,7 +59,7 @@ uint32_t create_new_page_list(const data_access_methods* dam_p)
 	return new_page_list_head_page_id;
 }
 
-int initialize_cursor(page_cursor* pc_p, page_cursor_lock_type lock_type, page_cursor_traversal_direction traverse_dir, uint32_t page_list_page_id, const tuple_def* tpl_d, const data_access_methods* dam_p)
+void initialize_cursor(page_cursor* pc_p, page_cursor_lock_type lock_type, page_cursor_traversal_direction traverse_dir, uint32_t page_list_page_id, const tuple_def* tpl_d, const data_access_methods* dam_p)
 {
 	pc_p->lock_type = lock_type;
 	pc_p->traverse_dir = traverse_dir;
@@ -67,59 +67,39 @@ int initialize_cursor(page_cursor* pc_p, page_cursor_lock_type lock_type, page_c
 	pc_p->tpl_d = tpl_d;
 	pc_p->dam_p = dam_p;
 
-	pc_p->page_id = page_list_page_id;
-	pc_p->tuple_index = 0;
-
 	pc_p->page = acquire_lock(pc_p, page_list_page_id);
-	if(get_tuple_count(pc_p->page) == 0)
-		pc_p->tuple = NULL;
-	else
-		pc_p->tuple = seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_index);
-
-	return pc_p->tuple != NULL;
+	pc_p->page_id = page_list_page_id;
+	pc_p->tuple_id = 0;
 }
 
-int seek_cursor_to_current_page_first_tuple(page_cursor* pc_p)
+const void* seek_cursor_to_current_page_first_tuple(page_cursor* pc_p)
 {
-	pc_p->tuple_index = 0;
-	if(get_tuple_count(pc_p->page) == 0)
-		pc_p->tuple = NULL;
-	else
-		pc_p->tuple = seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_index);
-
-	return pc_p->tuple != NULL;
+	pc_p->tuple_id = 0;
+	return (get_tuple_count(pc_p->page) == 0) ? NULL : seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_id);
 }
 
-int seek_cursor_to_next_page_first_tuple(page_cursor* pc_p)
+const void* seek_cursor_to_next_page_first_tuple(page_cursor* pc_p)
 {
 	uint32_t next_page_id = get_reference_page_id(pc_p->page, NEXT_PAGE_REFERENCE_INDEX);
 	void* old_page = pc_p->page;
 
 	// can not jump to a NULL page
 	if(next_page_id == NULL_PAGE_REFERENCE)
-		return 0;
-
-	pc_p->page_id = next_page_id;
-	pc_p->tuple_index = 0;
+		return NULL;
 
 	pc_p->page = acquire_lock(pc_p, next_page_id);
 	release_lock(pc_p, old_page);
 
-	pc_p->tuple = seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_index);
+	pc_p->page_id = next_page_id;
+	pc_p->tuple_id = 0;
 
-	return pc_p->tuple != NULL;
+	return (get_tuple_count(pc_p->page) == 0) ? NULL : seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_id);
 }
 
-int seek_cursor_to_next_tuple(page_cursor* pc_p)
+const void* seek_cursor_to_next_tuple(page_cursor* pc_p)
 {
-	pc_p->tuple_index++;
-
-	if(pc_p->tuple_index == get_tuple_count(pc_p->page))
-		return seek_cursor_to_next_page_first_tuple(pc_p);
-	else
-		pc_p->tuple = seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_index);
-
-	return pc_p->tuple != NULL;
+	pc_p->tuple_id++;
+	return (pc_p->tuple_id == get_tuple_count(pc_p->page)) ? seek_cursor_to_next_page_first_tuple(pc_p) : seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_id);
 }
 
 int split_page_at_cursor(page_cursor* pc_p)
@@ -163,7 +143,7 @@ int split_page_at_cursor(page_cursor* pc_p)
 		set_reference_page_id(new_page, PREV_PAGE_REFERENCE_INDEX, pc_p->page_id);
 
 	// keep the cursor on the old page
-	if(pc_p->tuple_index < tuples_on_old_page)
+	if(pc_p->tuple_id < tuples_on_old_page)
 		release_lock(pc_p, new_page);
 	else // move the cursor to the new page
 	{
@@ -171,8 +151,7 @@ int split_page_at_cursor(page_cursor* pc_p)
 
 		pc_p->page = new_page;
 		pc_p->page_id = new_page_id;
-		pc_p->tuple_index = pc_p->tuple_index - tuples_on_old_page;
-		pc_p->tuple = seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_index);
+		pc_p->tuple_id = pc_p->tuple_id - tuples_on_old_page;
 	}
 
 	return 1;
@@ -190,9 +169,6 @@ int insert_tuple_at_cursor(page_cursor* pc_p, int after_cursor, const void* tupl
 		// first try compaction
 		reinsert_all_for_page_compaction(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d);
 
-		// upon reinsertion we need to re-calculate the tuple offset
-		pc_p->tuple = seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_index);
-
 		can_accomodate_tuple = can_accomodate_tuple_insert(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, tuple_to_insert);
 
 		// then try splitting the page_tuple
@@ -203,7 +179,7 @@ int insert_tuple_at_cursor(page_cursor* pc_p, int after_cursor, const void* tupl
 	}
 
 	// before cursor
-	uint32_t sct_si = pc_p->tuple_index;
+	uint32_t sct_si = pc_p->tuple_id;
 	uint32_t sct_ei = get_tuple_count(pc_p->page) - 1;
 	// after cursor
 	if(after_cursor)
@@ -243,9 +219,8 @@ void deinitialize_cursor(page_cursor* pc_p)
 	release_lock(pc_p, pc_p->page);
 
 	pc_p->page = NULL;
-	pc_p->tuple = NULL;
 	pc_p->page_id = NULL_PAGE_REFERENCE;
-	pc_p->tuple_index = 0;
+	pc_p->tuple_id = 0;
 
 	pc_p->tpl_d = NULL;
 	pc_p->dam_p = NULL;

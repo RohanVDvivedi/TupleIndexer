@@ -39,11 +39,10 @@ struct page_cursor
 	// the page of the page_list that this page_cursor is reading
 	// this is the page that this cursor has locked for the lock_type (as READER or WRITER)
 	void* page;
-	uint32_t page_id;		// page_id of the page
+	uint32_t page_id;		// page_id of the locked page
 
-	// the tuple that this page_cursor is pointing to at this instance
-	void* tuple;
-	uint16_t tuple_index;	// tuple_index of the tuple in the page
+	// the index of the tuple that this page_cursor is pointing to in the given page_id
+	uint16_t tuple_id;	// tuple_index of the tuple in the page
 
 	// the definition of each tuple that this page_cursor may point to
 	const tuple_def* tpl_d;
@@ -59,27 +58,20 @@ uint32_t create_new_page_list(const data_access_methods* dam_p);
 
 // all the page cursor functions return 0 if end of page_list is reached
 
-int initialize_cursor(page_cursor* pc_p, page_cursor_lock_type lock_type, page_cursor_traversal_direction traverse_dir, uint32_t page_list_page_id, const tuple_def* tpl_d, const data_access_methods* dam_p);
+void initialize_cursor(page_cursor* pc_p, page_cursor_lock_type lock_type, page_cursor_traversal_direction traverse_dir, uint32_t page_list_page_id, const tuple_def* tpl_d, const data_access_methods* dam_p);
+void deinitialize_cursor(page_cursor* pc_p);
 
-// page_cursor points to the next tuple in the page_list, and return 1
-// else it returns 0 (if the end of page_list is reached)
-int seek_cursor_to_next_tuple(page_cursor* pc_p);
+// all seek functions
+// return pointer to the tuple
+// returns NULL (if the end of page_list is reached)
 
-// page_cursor points to the first tuple in the next page in the page_list, and return 1
-// else it returns 0 (if the end of page_list is reached)
-int seek_cursor_to_next_page_first_tuple(page_cursor* pc_p);
+const void* seek_cursor_to_next_tuple(page_cursor* pc_p);
+const void* seek_cursor_to_next_page_first_tuple(page_cursor* pc_p);
+const void* seek_cursor_to_current_page_first_tuple(page_cursor* pc_p);
 
-// page_cursor points to the first tuple in the current page in the page_list, and return 1
-// else it returns 0 (if the end of page_list is reached)
-int seek_cursor_to_current_page_first_tuple(page_cursor* pc_p);
-
-// returns 1, if the page was split at the cursor
-// splits page only if the tuple count >= 2
-// the new page will be added to the next or prev of the current page (according to the traversal_dir of the cursor)
+// returns 1, the page was split/merge was performed
+// splits and merges are performed in the direction of traversal of the given page_cursor
 int split_page_at_cursor(page_cursor* pc_p);
-
-// returns 1, if the page at the cursor was merged with the next or previous page (according to the traversal_dir of the cursor)
-// the merge succeeds, only if the data of the both the pages can be accomodated in one page
 int merge_page_at_cursor(page_cursor* pc_p);
 
 // the tuple is inserted after the cursor if the flag "after_cursor" is set
@@ -90,8 +82,6 @@ int insert_tuple_at_cursor(page_cursor* pc_p, int after_cursor, const void* tupl
 // no seek is performed (the number of tuples already seeked remains the same)
 // returns 0 => failure, 1 => succcess w/o page merge, 2 => success with page merge
 int delete_tuple_at_cursor(page_cursor* pc_p);
-
-void deinitialize_cursor(page_cursor* pc_p);
 
 // print page list
 // TODO :: This function will be removed in the future
