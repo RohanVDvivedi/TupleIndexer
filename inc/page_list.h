@@ -85,7 +85,8 @@ int delete_tuple_at_cursor(page_cursor* pc_p);
 
 // print page list
 // TODO :: This function will be removed in the future
-void print_page_list_debug(uint32_t page_list_head_page_id, const data_access_methods* dam_p);
+#include<in_memory_data_store.h>
+void print_page_list_debug(uint32_t page_list_head_page_id, const memory_store_context* cntxt, uint32_t page_size, const tuple_def* tpl_d);
 
 // external merge sort
 

@@ -227,6 +227,20 @@ void deinitialize_cursor(page_cursor* pc_p)
 }
 
 // TODO :: This function will be removed in the future
-void print_page_list_debug(uint32_t page_list_head_page_id, const data_access_methods* dam_p);
+#include<in_memory_data_store.h>
+void print_page_list_debug(uint32_t page_list_head_page_id, const memory_store_context* cntxt, uint32_t page_size, const tuple_def* tpl_d)
+{
+	printf("\nPAGE LIST\n\n");
+	uint32_t next_page_id = page_list_head_page_id;
+	while(next_page_id != NULL_PAGE_REFERENCE)
+	{
+		printf("page_id : %u\n", next_page_id);
+		void* page = get_page_for_debug(cntxt, next_page_id);
+		print_page(page, page_size, tpl_d);
+		printf("\n\n");
+		next_page_id = get_reference_page_id(page, NEXT_PAGE_REFERENCE_INDEX);
+	}
+	printf("--xx--\n\n");
+}
 
 void external_merge_sort_the_page_list(uint32_t page_list_head_page_id, uint16_t key_elements_count, const data_access_methods* dam_p);
