@@ -185,16 +185,21 @@ int insert_tuple_at_cursor(page_cursor* pc_p, int after_cursor, const void* tupl
 
 	// a page split is required if the page is full, and it can not accomodate tuple
 	int can_accomodate_tuple = can_accomodate_tuple_insert(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, tuple_to_insert);
-
-	// keep splitting the page while it can not accomodate the tuple
-	while(!can_accomodate_tuple)
+	if(!can_accomodate_tuple)
 	{
+		// first try compaction
+		reinsert_all_for_page_compaction(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d);
+
+		// upon reinsertion we need to re-calculate the tuple offset
+		pc_p->tuple = seek_to_nth_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->tuple_index);
+
+		can_accomodate_tuple = can_accomodate_tuple_insert(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, tuple_to_insert);
+
+		// then try splitting the page_tuple
 		// if the page pointed to by the cursor could not accomodate tuple
 		//  and the page split failed then return 0
 		if(!can_accomodate_tuple && !split_page_at_cursor(pc_p))
 			return 0;
-
-		can_accomodate_tuple = can_accomodate_tuple_insert(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, tuple_to_insert);
 	}
 
 	// before cursor
