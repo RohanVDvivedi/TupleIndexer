@@ -75,22 +75,19 @@ int seek_cursor_to_current_page_first_tuple(page_cursor* pc_p);
 
 // returns 1, if the page was split at the cursor
 // splits page only if the tuple count >= 2
+// the new page will be added to the next or prev of the current page (according to the traversal_dir of the cursor)
 int split_page_at_cursor(page_cursor* pc_p);
 
-// returns 1, if the page was split at the cursor
-// merges the page with the next or previous page (according to the traversal_dir of the cursor)
-// only if the data of the both the pages could be accomodated in one page
+// returns 1, if the page at the cursor was merged with the next or previous page (according to the traversal_dir of the cursor)
+// the merge succeeds, only if the data of the both the pages can be accomodated in one page
 int merge_page_at_cursor(page_cursor* pc_p);
 
-// if inserted successfully, returns 1
 // the tuple is inserted after the cursor if the flag "after_cursor" is set
 // no seek is performed (the number of tuples already seeked remains the same)
-int insert_tuple_at_cursor(page_cursor* pc_p, int after_cursor, const void* tuple_to_insert);
+void insert_tuple_at_cursor(page_cursor* pc_p, int after_cursor, const void* tuple_to_insert);
 
-// if deleted successfully, returns 1
-// else it returns 0
 // no seek is performed (the number of tuples already seeked remains the same)
-int delete_tuple_at_cursor(page_cursor* pc_p);
+void delete_tuple_at_cursor(page_cursor* pc_p);
 
 void deinitialize_cursor(page_cursor* pc_p);
 
