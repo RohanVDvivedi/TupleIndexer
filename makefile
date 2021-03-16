@@ -7,7 +7,7 @@ DOWNLOAD_DIR:=/usr/local
 # we may download all the public headers
 
 # list of public api headers (only these headers will be installed)
-PUBLIC_HEADERS:=page_list.h hash_table.h bplus_tree.h data_access_methods.h in_memory_data_store.h
+PUBLIC_HEADERS:=page_list*.h external_merge_sort.h hash_table.h bplus_tree.h data_access_methods.h in_memory_data_store.h
 # the library, which we will create
 LIBRARY:=lib${PROJECT_NAME}.a
 # the binary, which will use the created library
