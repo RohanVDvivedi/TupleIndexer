@@ -99,9 +99,6 @@ void external_merge_sort_the_page_list(uint32_t page_list_head_page_id, uint16_t
 	GROUND RULES
 
 	* no page can have 0 tuple count, except if the page is the head page with
-	NEXT_PAGE_REFERENCE_INDEX and PREV_PAGE_REFERENCE_INDEX both being NULL_PAGE_REFERENCE
+	NEXT_PAGE_REFERENCE_INDEX and PREV_PAGE_REFERENCE_INDEX both being NULL_PAGE_REFERENCEs
 
-	* upon insertion if the tuple can not accomodated, then the page is split in to two parts
-
-	* upon deletion, a page is removed from the page_list only if it has 0 keys
 */
