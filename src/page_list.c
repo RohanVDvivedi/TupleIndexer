@@ -213,7 +213,7 @@ int split_towards_prev(page_cursor* pc_p, uint16_t prev_tuple_count)
 		set_reference_page_id(new_page, PREV_PAGE_REF_INDEX, prev_page_id);
 
 		// insert tuples from current page to the new_page (the new prev page)
-		uint16_t tuples_copied = tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, 0, prev_tuple_count - 1);
+		uint16_t tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, 0, prev_tuple_count - 1);
 
 	release_lock(pc_p, new_page);
 
@@ -245,7 +245,56 @@ int split_towards_prev(page_cursor* pc_p, uint16_t prev_tuple_count)
 
 int merge_with_next(page_cursor* pc_p)
 {
-	return 0;
+	if(pc_p->lock_type != WRITER_LOCK)
+		return 0;
+
+	if(pc_p->traverse_dir != NEXT_PAGE_DIR)
+		return 0;
+
+	if(pc_p->page_id == NULL_REF)
+		return 0;
+
+	uint32_t free_space_curr_page = get_free_space_in_page(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d);;
+
+	// if there doesn't exist a next page, we can not merge
+	uint32_t next_page_id = get_reference_page_id(pc_p->page, NEXT_PAGE_REF_INDEX);
+	if(next_page_id == NULL_REF)
+		return 0;
+
+	void* next_page = acquire_lock(pc_p, next_page_id);
+
+		uint16_t next_tuple_count = get_tuple_count(next_page);
+		uint32_t next_tuple_data_size = 0;
+		if(next_tuple_count > 0)
+			next_tuple_data_size = get_space_occupied_by_tuples(next_page, pc_p->dam_p->page_size, pc_p->tpl_d, 0, next_tuple_count - 1);
+
+		// check if the curent page could accomodate the tuples of the next page
+		if(free_space_curr_page < next_tuple_data_size)
+		{
+			release_lock(pc_p, next_page);
+			return 0;
+		}
+
+		// reset the prev_page reference of the new next page to the current page
+		uint32_t next_next_page_id = get_reference_page_id(next_page, NEXT_PAGE_REF_INDEX);
+		if(next_next_page_id != NULL_REF)
+		{
+			void* next_next_page = acquire_lock(pc_p, next_page_id);
+				set_reference_page_id(next_next_page, PREV_PAGE_REF_INDEX, pc_p->page_id);
+			release_lock(pc_p, next_next_page);
+		}
+
+		// insert all the tuples from the next_page to the current page
+		if(next_tuple_count > 0)
+			insert_tuples_from_page(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, next_page, 0, next_tuple_count - 1);
+
+	// release lock and free the next page
+	release_lock_and_free_page(pc_p, next_page);
+
+	// set current page's next reference to the 
+	set_reference_page_id(pc_p->page, NEXT_PAGE_REF_INDEX, next_next_page_id);
+
+	return 1;
 }
 
 int merge_with_prev(page_cursor* pc_p)
