@@ -299,7 +299,62 @@ int merge_with_next(page_cursor* pc_p)
 
 int merge_with_prev(page_cursor* pc_p)
 {
-	return 0;
+	if(pc_p->lock_type != WRITER_LOCK)
+		return 0;
+
+	if(pc_p->traverse_dir != PREV_PAGE_DIR)
+		return 0;
+
+	if(pc_p->page_id == NULL_REF)
+		return 0;
+
+	uint32_t free_space_curr_page = get_free_space_in_page(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d);;
+
+	// if there doesn't exist a prev page, we can not merge
+	uint32_t prev_page_id = get_reference_page_id(pc_p->page, PREV_PAGE_REF_INDEX);
+	if(prev_page_id == NULL_REF)
+		return 0;
+
+	void* prev_page = acquire_lock(pc_p, prev_page_id);
+
+		uint16_t prev_tuple_count = get_tuple_count(prev_page);
+		uint32_t prev_tuple_data_size = 0;
+		if(prev_tuple_count > 0)
+			prev_tuple_data_size = get_space_occupied_by_tuples(prev_page, pc_p->dam_p->page_size, pc_p->tpl_d, 0, prev_tuple_count - 1);
+
+		// check if the curent page could accomodate the tuples of the prev page
+		if(free_space_curr_page < prev_tuple_data_size)
+		{
+			release_lock(pc_p, prev_page);
+			return 0;
+		}
+
+		// reset the next_page reference of the new prev page to the current page
+		uint32_t prev_prev_page_id = get_reference_page_id(prev_page, PREV_PAGE_REF_INDEX);
+		if(prev_prev_page_id != NULL_REF)
+		{
+			void* prev_prev_page = acquire_lock(pc_p, prev_page_id);
+				set_reference_page_id(prev_prev_page, NEXT_PAGE_REF_INDEX, pc_p->page_id);
+			release_lock(pc_p, prev_prev_page);
+		}
+
+		// insert all the tuples from the prev_page to the current page
+		if(prev_tuple_count > 0)
+		{
+			uint16_t tuple_count = get_tuple_count(pc_p->page);
+			if(tuple_count > 0)
+				insert_tuples_from_page(prev_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, 0, tuple_count - 1);
+			prev_tuple_count = get_tuple_count(prev_page);
+			insert_tuples_from_page(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, prev_page, 0, prev_tuple_count - 1);
+		}
+
+	// release lock and free the prev page
+	release_lock_and_free_page(pc_p, prev_page);
+
+	// set current page's next reference to the 
+	set_reference_page_id(pc_p->page, PREV_PAGE_REF_INDEX, prev_prev_page_id);
+
+	return 1;
 }
 
 
