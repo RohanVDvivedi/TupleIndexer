@@ -105,7 +105,7 @@ int seek_to_next(page_cursor* pc_p)
 	return 1;
 }
 
-int seek_to_next(page_cursor* pc_p)
+int seek_to_prev(page_cursor* pc_p)
 {
 	if(pc_p->traverse_dir != PREV_PAGE_DIR)
 		return 0;
@@ -146,32 +146,39 @@ int split_towards_next(page_cursor* pc_p, uint16_t next_tuple_count)
 	uint32_t new_page_id;
 	void* new_page = acquire_new_page_with_lock(pc_p, &new_page_id);
 
+		// if there exist an old next page, we need to take locks and fix its prev_page
 		uint32_t next_page_id = get_reference_page_id(pc_p->page, NEXT_PAGE_REF_INDEX);
 		if(next_page_id != NULL_REF)
 		{
 			void* next_page = acquire_lock(pc_p, next_page_id);
-				get_reference_page_id(next_page, PREV_PAGE_REF_INDEX, new_page_id);
+				set_reference_page_id(next_page, PREV_PAGE_REF_INDEX, new_page_id);
 			release_lock(pc_p, next_page);
 		}
 
+		// build the new_page, that will become the new next_page for thr current page
 		init_page(new_page, pc_p->dam_p->page_size, 1, 2, NULL);
-		get_reference_page_id(new_page, NEXT_PAGE_REF_INDEX, next_page_id);
-		get_reference_page_id(new_page, PREV_PAGE_REF_INDEX, pc_p->page_id);
+		set_reference_page_id(new_page, NEXT_PAGE_REF_INDEX, next_page_id);
+		set_reference_page_id(new_page, PREV_PAGE_REF_INDEX, pc_p->page_id);
 
+		// insert tuples from current page to the new_page (the new next page)
 		uint16_t tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, tuple_count - next_tuple_count, tuple_count - 1);
 
-	release_lock(pc_p, next_page);
+	release_lock(pc_p, new_page);
 
+	// delete tuples that were copied to the new_page (the new next_page)
 	while(tuples_copied > 0)
 	{
 		delete_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, get_tuple_count(pc_p->page) - 1);
 		tuples_copied--;
 	}
 
-	get_reference_page_id(next_page, NEXT_PAGE_REF_INDEX, new_page_id);
+	// now we fix its next_page of the current page
+	set_reference_page_id(pc_p->page, NEXT_PAGE_REF_INDEX, new_page_id);
+
+	return 1;
 }
 
-int split_towards_prev(page_cursor* pc_p, uint16_t next_tuple_count)
+int split_towards_prev(page_cursor* pc_p, uint16_t prev_tuple_count)
 {
 	if(pc_p->lock_type != WRITER_LOCK)
 		return 0;
@@ -182,14 +189,58 @@ int split_towards_prev(page_cursor* pc_p, uint16_t next_tuple_count)
 	if(pc_p->page_id == NULL_REF)
 		return 0;
 
-	uint32_t prev_page_id = get_reference_page_id(pc_p->page, PREV_PAGE_REF_INDEX);
+	uint32_t tuple_count = get_tuple_count(pc_p->page);
 
-	if(prev_page_id == NULL_REF)
+	// we must not leave any page empty
+	if(tuple_count == 0 || prev_tuple_count >= tuple_count)
 		return 0;
 
-	void* prev_page = acquire_lock(pc_p, prev_page_id);
-		init_page(prev_page, pc_p->dam_p->page_size, 1, 2, NULL);
-	release_lock(pc_p, prev_page);
+	uint32_t new_page_id;
+	void* new_page = acquire_new_page_with_lock(pc_p, &new_page_id);
+
+		// if there exist an old prev page, we need to take locks and fix its next_page
+		uint32_t prev_page_id = get_reference_page_id(pc_p->page, PREV_PAGE_REF_INDEX);
+		if(prev_page_id != NULL_REF)
+		{
+			void* prev_page = acquire_lock(pc_p, prev_page_id);
+				set_reference_page_id(prev_page, NEXT_PAGE_REF_INDEX, new_page_id);
+			release_lock(pc_p, prev_page);
+		}
+
+		// build the new_page, that will become the new next_page for thr current page
+		init_page(new_page, pc_p->dam_p->page_size, 1, 2, NULL);
+		set_reference_page_id(new_page, NEXT_PAGE_REF_INDEX, pc_p->page_id);
+		set_reference_page_id(new_page, PREV_PAGE_REF_INDEX, prev_page_id);
+
+		// insert tuples from current page to the new_page (the new prev page)
+		uint16_t tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, 0, prev_tuple_count - 1);
+
+	release_lock(pc_p, new_page);
+
+	// delete tuples that were copied to the new_page (the new prev_page)
+	uint16_t delete_tuple_at = 0;
+	uint16_t tuples_deleted = 0;
+	while(tuples_copied > 0)
+	{
+		if(exists_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, delete_tuple_at))
+		{
+			delete_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, delete_tuple_at);
+			tuples_copied--;
+			tuples_deleted++;
+		}
+		else
+			delete_tuple_at++;
+	}
+
+	// since we deleted the tuples from the top, we may have created holes in the page
+	// we fix that using re insertion of all the tuples
+	if(tuples_deleted > ((tuple_count / 3) + 2))
+		reinsert_all_for_page_compaction(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d);
+
+	// now we fix its prev_page of the current page
+	set_reference_page_id(pc_p->page, PREV_PAGE_REF_INDEX, new_page_id);
+
+	return 1;
 }
 
 
@@ -199,13 +250,13 @@ void print_page_list_debug(uint32_t page_list_head_page_id, const memory_store_c
 {
 	printf("\nPAGE LIST\n\n");
 	uint32_t next_page_id = page_list_head_page_id;
-	while(next_page_id != NULL_PAGE_REFERENCE)
+	while(next_page_id != NULL_REF)
 	{
 		printf("page_id : %u\n", next_page_id);
 		void* page = get_page_for_debug(cntxt, next_page_id);
 		print_page(page, page_size, tpl_d);
 		printf("\n\n");
-		next_page_id = get_reference_page_id(page, NEXT_PAGE_REFERENCE_INDEX);
+		next_page_id = get_reference_page_id(page, NEXT_PAGE_REF_INDEX);
 	}
 	printf("--xx--\n\n");
 }
