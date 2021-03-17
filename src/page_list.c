@@ -1,13 +1,13 @@
 #include<page_list.h>
 
-static inline void* acquire_lock(page_cursor* pc_p, uint32_t new_page_id)
+static inline void* acquire_lock(page_cursor* pc_p, uint32_t page_id)
 {
 	switch(pc_p->lock_type)
 	{
 		case READER_LOCK :
-			return pc_p->dam_p->acquire_page_with_reader_lock(pc_p->dam_p->context, new_page_id);
+			return pc_p->dam_p->acquire_page_with_reader_lock(pc_p->dam_p->context, page_id);
 		case WRITER_LOCK :
-			return pc_p->dam_p->acquire_page_with_writer_lock(pc_p->dam_p->context, new_page_id);
+			return pc_p->dam_p->acquire_page_with_writer_lock(pc_p->dam_p->context, page_id);
 	}
 	return NULL;
 }
@@ -49,8 +49,8 @@ uint32_t create_new_page_list(const data_access_methods* dam_p)
 	
 	// initialize the first page and set both of its references, next and prev to nulls
 	init_page(new_page_list_head_page, dam_p->page_size, 1, 2, NULL);
-	set_reference_page_id(new_page_list_head_page, NEXT_PAGE_REFERENCE_INDEX, NULL_PAGE_REFERENCE);
-	set_reference_page_id(new_page_list_head_page, PREV_PAGE_REFERENCE_INDEX, NULL_PAGE_REFERENCE);
+	set_reference_page_id(new_page_list_head_page, NEXT_PAGE_REF_INDEX, NULL_REF);
+	set_reference_page_id(new_page_list_head_page, PREV_PAGE_REF_INDEX, NULL_REF);
 	
 	dam_p->release_writer_lock_on_page(dam_p->context, new_page_list_head_page);
 	return new_page_list_head_page_id;
@@ -73,11 +73,125 @@ void deinitialize_cursor(page_cursor* pc_p)
 	release_lock(pc_p, pc_p->page);
 
 	pc_p->page = NULL;
-	pc_p->page_id = NULL_PAGE_REFERENCE;
+	pc_p->page_id = NULL_REF;
 
 	pc_p->tpl_d = NULL;
 	pc_p->dam_p = NULL;
 }
+
+void* get_page_of_cursor(page_cursor* pc_p)
+{
+	return pc_p->page;
+}
+
+int seek_to_next(page_cursor* pc_p)
+{
+	if(pc_p->traverse_dir != NEXT_PAGE_DIR)
+		return 0;
+
+	if(pc_p->page_id == NULL_REF)
+		return 0;
+
+	uint32_t next_page_id = get_reference_page_id(pc_p->page, NEXT_PAGE_REF_INDEX);
+
+	if(next_page_id == NULL_REF)
+		return 0;
+
+	void* next_page = acquire_lock(pc_p, next_page_id);
+	release_lock(pc_p, pc_p->page);
+
+	pc_p->page = next_page;
+
+	return 1;
+}
+
+int seek_to_next(page_cursor* pc_p)
+{
+	if(pc_p->traverse_dir != PREV_PAGE_DIR)
+		return 0;
+
+	if(pc_p->page_id == NULL_REF)
+		return 0;
+
+	uint32_t prev_page_id = get_reference_page_id(pc_p->page, PREV_PAGE_REF_INDEX);
+
+	if(prev_page_id == NULL_REF)
+		return 0;
+
+	void* prev_page = acquire_lock(pc_p, prev_page_id);
+	release_lock(pc_p, prev_page);
+
+	pc_p->page = prev_page;
+
+	return 1;
+}
+
+int split_towards_next(page_cursor* pc_p, uint16_t next_tuple_count)
+{
+	if(pc_p->lock_type != WRITER_LOCK)
+		return 0;
+
+	if(pc_p->traverse_dir != NEXT_PAGE_DIR)
+		return 0;
+
+	if(pc_p->page_id == NULL_REF)
+		return 0;
+
+	uint32_t tuple_count = get_tuple_count(pc_p->page);
+
+	// we must not leave any page empty
+	if(tuple_count == 0 || next_tuple_count >= tuple_count)
+		return 0;
+
+	uint32_t new_page_id;
+	void* new_page = acquire_new_page_with_lock(pc_p, &new_page_id);
+
+		uint32_t next_page_id = get_reference_page_id(pc_p->page, NEXT_PAGE_REF_INDEX);
+		if(next_page_id != NULL_REF)
+		{
+			void* next_page = acquire_lock(pc_p, next_page_id);
+				get_reference_page_id(next_page, PREV_PAGE_REF_INDEX, new_page_id);
+			release_lock(pc_p, next_page);
+		}
+
+		init_page(new_page, pc_p->dam_p->page_size, 1, 2, NULL);
+		get_reference_page_id(new_page, NEXT_PAGE_REF_INDEX, next_page_id);
+		get_reference_page_id(new_page, PREV_PAGE_REF_INDEX, pc_p->page_id);
+
+		uint16_t tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, tuple_count - next_tuple_count, tuple_count - 1);
+
+	release_lock(pc_p, next_page);
+
+	while(tuples_copied > 0)
+	{
+		delete_tuple(pc_p->page, pc_p->dam_p->page_size, pc_p->tpl_d, get_tuple_count(pc_p->page) - 1);
+		tuples_copied--;
+	}
+
+	get_reference_page_id(next_page, NEXT_PAGE_REF_INDEX, new_page_id);
+}
+
+int split_towards_prev(page_cursor* pc_p, uint16_t next_tuple_count)
+{
+	if(pc_p->lock_type != WRITER_LOCK)
+		return 0;
+
+	if(pc_p->traverse_dir != PREV_PAGE_DIR)
+		return 0;
+
+	if(pc_p->page_id == NULL_REF)
+		return 0;
+
+	uint32_t prev_page_id = get_reference_page_id(pc_p->page, PREV_PAGE_REF_INDEX);
+
+	if(prev_page_id == NULL_REF)
+		return 0;
+
+	void* prev_page = acquire_lock(pc_p, prev_page_id);
+		init_page(prev_page, pc_p->dam_p->page_size, 1, 2, NULL);
+	release_lock(pc_p, prev_page);
+}
+
 
 // TODO :: This function will be removed in the future
 #include<in_memory_data_store.h>
