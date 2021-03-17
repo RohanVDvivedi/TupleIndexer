@@ -245,12 +245,12 @@ int split_towards_prev(page_cursor* pc_p, uint16_t prev_tuple_count)
 
 int merge_with_next(page_cursor* pc_p)
 {
-
+	return 0;
 }
 
 int merge_with_prev(page_cursor* pc_p)
 {
-
+	return 0;
 }
 
 
