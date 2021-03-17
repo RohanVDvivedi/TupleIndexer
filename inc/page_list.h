@@ -43,10 +43,7 @@ struct page_cursor
 	void* page;
 	uint32_t page_id;		// page_id of the locked page
 
-	// the index of the tuple that this page_cursor is pointing to in the given page_id
-	uint16_t tuple_id;	// tuple_index of the tuple in the page
-
-	// the definition of each tuple that this page_cursor may point to
+	// the definition of each tuple that this page_contains
 	const tuple_def* tpl_d;
 
 	// the data_access_methods for access data pages for this page_cursor
@@ -59,13 +56,10 @@ uint32_t create_new_page_list(const data_access_methods* dam_p);
 void initialize_cursor(page_cursor* pc_p, page_cursor_lock_type lock_type, page_cursor_traversal_direction traverse_dir, uint32_t page_list_page_id, const tuple_def* tpl_d, const data_access_methods* dam_p);
 void deinitialize_cursor(page_cursor* pc_p);
 
-#include<page_list_seek.h>
+// external merge sort
 
-#include<page_list_insert.h>
-
-#include<page_list_delete.h>
-
-#include<external_merge_sort.h>
+// here : key_elements_count denote the number of elements to sort on
+void external_merge_sort_the_page_list(uint32_t page_list_head_page_id, uint16_t key_elements_count, const data_access_methods* dam_p);
 
 // print page list
 // TODO :: This function will be removed in the future
