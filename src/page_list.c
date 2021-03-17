@@ -161,7 +161,9 @@ int split_towards_next(page_cursor* pc_p, uint16_t next_tuple_count)
 		set_reference_page_id(new_page, PREV_PAGE_REF_INDEX, pc_p->page_id);
 
 		// insert tuples from current page to the new_page (the new next page)
-		uint16_t tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, tuple_count - next_tuple_count, tuple_count - 1);
+		uint16_t tuples_copied = 0;
+		if(next_tuple_count > 0)
+			tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, tuple_count - next_tuple_count, tuple_count - 1);
 
 	release_lock(pc_p, new_page);
 
@@ -213,7 +215,9 @@ int split_towards_prev(page_cursor* pc_p, uint16_t prev_tuple_count)
 		set_reference_page_id(new_page, PREV_PAGE_REF_INDEX, prev_page_id);
 
 		// insert tuples from current page to the new_page (the new prev page)
-		uint16_t tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, 0, prev_tuple_count - 1);
+		uint16_t tuples_copied = 0;
+		if(prev_tuple_count > 0)
+			tuples_copied = insert_tuples_from_page(new_page, pc_p->dam_p->page_size, pc_p->tpl_d, pc_p->page, 0, prev_tuple_count - 1);
 
 	release_lock(pc_p, new_page);
 
