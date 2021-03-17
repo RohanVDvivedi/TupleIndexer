@@ -1,1 +1,1 @@
-gcc ./test.c -o test.out -lroti -lstupstom -lbufferpool -lcutlery && valgrind -v ./test.out
+gcc -Wall ./test.c -o test.out -lroti -lstupstom -lbufferpool -lrwlock -lcutlery && valgrind -v ./test.out

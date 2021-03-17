@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<alloca.h>
 
 #include<page_list.h>
@@ -10,7 +11,7 @@
 // comment the below macro to test the SLOTTED_PAGE_LAYOUT
 #define TEST_FIXED_ARRAY_PAGE_LAYOUT
 
-#define PAGE_SIZE 128
+#define PAGE_SIZE 512
 
 char temp_page[PAGE_SIZE] = {};
 
@@ -24,11 +25,15 @@ void init_tuple_definition(tuple_def* def)
 	insert_element_def(def,   UINT, 2);
 	#ifndef TEST_FIXED_ARRAY_PAGE_LAYOUT
 		insert_element_def(def, STRING, VARIABLE_SIZED);
+	#else
+		insert_element_def(def, STRING, 16);
 	#endif
 
 	insert_element_def(def,   UINT, 2);
 	#ifndef TEST_FIXED_ARRAY_PAGE_LAYOUT
 		insert_element_def(def, STRING, VARIABLE_SIZED);
+	#else
+		insert_element_def(def, STRING, 16);
 	#endif
 
 	finalize_tuple_def(def);
@@ -95,7 +100,7 @@ int main()
 
 	// ---------------  CREATE A PAGE LIST
 
-	uint32_t head_page_id = create_new_page_list(damp);
+	uint32_t head_page_id = create_new_page_list(dam_p);
 
 	// ---------------  INITIALIZE PAGE CURSOR
 
