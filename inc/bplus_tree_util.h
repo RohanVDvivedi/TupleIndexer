@@ -1,6 +1,7 @@
 #ifndef BPLUS_TREE_UTIL_H
 #define BPLUS_TREE_UTIL_H
 
+// two of the page types found inside a bplus tree
 #define LEAF_PAGE_TYPE 0
 #define INTERIOR_PAGE_TYPE 1
 
