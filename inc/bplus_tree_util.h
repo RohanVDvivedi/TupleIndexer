@@ -29,7 +29,8 @@ struct bplus_tree_tuple_defs
 };
 
 // you may generate tuple definitions before performing any operations
-const bplus_tree_tuple_defs* get_bplus_tree_tuple_defs(tuple_def* record_def, uint16_t key_element_count);
+const bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_record_def(tuple_def* record_def, uint16_t key_element_count);
+const bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_key_value_def(tuple_def* key_def, tuple_def* value_def);
 
 // and then discard when your work with bplus tree is completed
 void del_bplus_tree_tuple_defs(bplus_tree_tuple_defs* bpttds);
