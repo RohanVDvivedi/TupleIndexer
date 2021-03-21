@@ -15,6 +15,9 @@ int is_interior_page(const void* page);
 **
 */
 
+// returns number of records in the leaf page
+uint16_t get_index_entry_count_in_interior_page(const void* page, const bplus_tree_tuple_defs* bpttds);
+
 // returns a pointer to the tuple at index-th position that has tuple definition of index_def
 const void* get_index_entry_from_interior_page(const void* page, uint16_t index, const bplus_tree_tuple_defs* bpttds);
 
