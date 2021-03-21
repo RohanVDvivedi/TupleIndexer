@@ -1,18 +1,17 @@
 
 Stage 1
- * implement both ways seek functions
- * implement both ways split and merge functions
- * implement both ways insert and delete functions
- * implement print_page_list function given head
+ * implement bplus_tree search and insert
  * write test_cases and pass them
+
+Stage 2
+ * implement a page_list
+ * implement a cursor interface to read leaf pages list or any page list
+ * implement support range search, insert and delete queries
 
 STAGE 2
  * implement single page sort (a static funcction)
- * and then an external_merge_sort
-
-STAGE 3
- * implement bplus_tree -> leaf pages are page_list
- * implement hash_table -> each bucket can be a bplus_tree or a page_list
+ * and then an external_merge_sort for the page_list
+ * building a bplus_tree on top if a external_merge_sorted leaf pages (taken as page_list), in multiple runs until there is only 1 page in the tree
 
 Stage 4
  * implement on-disk_data_store using bufferpool
