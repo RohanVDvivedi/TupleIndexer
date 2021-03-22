@@ -16,10 +16,10 @@ int is_interior_page(const void* page);
 */
 
 // returns number of records in the leaf page
-uint16_t get_index_entry_count_in_interior_page(const void* page, const bplus_tree_tuple_defs* bpttds);
+uint16_t get_index_entry_count_in_interior_page(const void* page);
 
 // returns a pointer to the tuple at index-th position that has tuple definition of index_def
-const void* get_index_entry_from_interior_page(const void* page, uint16_t index, const bplus_tree_tuple_defs* bpttds);
+const void* get_index_entry_from_interior_page(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds);
 
 // returns page_id, to search for the least of the tuples that has key equivalent to like_key
 uint32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds);
@@ -32,6 +32,6 @@ uint32_t find_in_interior_page(const void* page, const void* like_key, const bpl
 const void* insert_or_split_interior_page(const void* intr_page, const void* new_index_tuple, const bplus_tree_tuple_defs* bpttds);
 
 // merge 2 pages that are child pages to intr_page each of then is an adjacent page_id to the tuple at given index
-const void* merge_child_pages_at(const void* intr_page, uint16_t index, const bplus_tree_tuple_defs* bpttds)
+const void* merge_child_pages_at(const void* intr_page, uint16_t index, const bplus_tree_tuple_defs* bpttds);
 
 #endif
