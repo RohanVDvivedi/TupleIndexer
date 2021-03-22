@@ -29,8 +29,11 @@ int search_in_sorted_packed_page(
 		mid = (low + high) / 2;
 	}
 
+	// index points to the data that is just equal to the key
 	if(compare == 0)
 		return 1;
+
+	// index points to the data that is just lesser than the key
 	return 0;
 }
 
