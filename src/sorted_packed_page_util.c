@@ -15,12 +15,11 @@ int search_in_sorted_packed_page(
 		return 0;
 
 	uint16_t low = 0;
-	uint16_t high = count;
-	uint16_t mid;
+	uint16_t high = count - 1;
+	uint16_t mid = (low + high) / 2;
 
-	while(low < high)
+	while(low < mid)
 	{
-		mid = (low + high) / 2;
 		const void* tup_mid = get_nth_tuple(page, page_size, key_val_def, mid);
 		int compare = compare_tuples(tup_mid, key, key_def);
 
@@ -32,6 +31,8 @@ int search_in_sorted_packed_page(
 			high = mid;
 		else
 			low = mid;
+
+		mid = (low + high) / 2;
 	}
 
 	return 0;
