@@ -66,24 +66,28 @@ int insert_to_sorted_packed_page(
 	{
 		while(compare > 0)
 		{
-			tup = get_nth_tuple(page, page_size, key_val_def, index_searched);
-			compare = compare_tuples(tup, key_val, key_def);
-
-			index_searched--;
 			if(index_searched == 0)
 				break;
+			index_searched--;
+
+			tup = get_nth_tuple(page, page_size, key_val_def, index_searched);
+			compare = compare_tuples(tup, key_val, key_def);
 		}
+		if(index_searched != 0 && compare > 0)
+			index_searched++;
 	}
 	else
 	{
+		uint16_t tuple_count = get_tuple_count(page);
 		while(compare <= 0)
 		{
+			index_searched++;
+
+			if(index_searched == tuple_count)
+				break;
+
 			tup = get_nth_tuple(page, page_size, key_val_def, index_searched);
 			compare = compare_tuples(tup, key_val, key_def);
-
-			index_searched++;
-			if(index_searched == 0)
-				break;
 		}
 	}
 
