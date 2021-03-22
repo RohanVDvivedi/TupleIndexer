@@ -46,9 +46,28 @@ int insert_to_sorted_packed_page(
 
 int delete_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* key_val_def, 
+									const tuple_def* key_val_def,
 									uint16_t index
-								);
+								)
+{
+	uint16_t count = get_tuple_count(page);
+	if(count == 0 || index >= count)
+		return 0;
+
+	int deleted = delete_tuple(page, page_size, key_val_def, index);
+
+	if(deleted == 0)
+		return 0;
+
+	// move the tombstone to the end
+	while(index < count - 1)
+	{
+		swap_tuples(page, page_size, key_val_def, index, index + 1);
+		index++;
+	}
+
+	return 1;
+}
 
 int transfer_sorted_packed_page(
 									void* src_page, void* dest_page, uint32_t page_size, 
