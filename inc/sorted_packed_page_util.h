@@ -1,6 +1,8 @@
 #ifndef SORTED_PACKED_PAGE_UTIL_H
 #define SORTED_PACKED_PAGE_UTIL_H
 
+#include<tuple_def.h>
+
 // find using binary search in sorted page
 // returns index of the tuple found if, return value == 1
 // else returns index to the element just lesser than the the key with return value 0

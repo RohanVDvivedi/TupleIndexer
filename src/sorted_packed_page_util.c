@@ -1,51 +1,53 @@
 #include<sorted_packed_page_util.h>
 
+#include<tuple.h>
+#include<page_layout.h>
+
 int search_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* key_df, const tuple_def* key_val_def, 
+									const tuple_def* key_def, const tuple_def* key_val_def, 
 									const void* key, 
 									uint16_t* index
 								)
 {
-	uint16_t low = 0;
-	uint16_t high = get_tuple_count(page);
+	uint16_t count = get_tuple_count(page);
+	if(count == 0)
+		return 0;
 
-	uint16_t mid = (low + high) / 2;
+	uint16_t low = 0;
+	uint16_t high = count;
+	uint16_t mid;
 
 	while(low < high)
 	{
-		const void* tup_mid = get_nth_tuple();
-		int compare = compare_tuples(tup_mid, key, key_df);
+		mid = (low + high) / 2;
+		const void* tup_mid = get_nth_tuple(page, page_size, key_val_def, mid);
+		int compare = compare_tuples(tup_mid, key, key_def);
 
 		(*index) = mid;
 
 		if(compare == 0)
-			break;
+			return 1;
 		else if(compare > 0)
 			high = mid;
 		else
 			low = mid;
-
-		mid = (low + high) / 2;
 	}
 
-	// index points to the data that is just equal to the key
-	if(compare == 0)
-		return 1;
-
-	// index points to the data that is just lesser than the key
 	return 0;
 }
 
 int insert_to_sorted_packed_page(
 									void* page, uint32_t page_size, 
 									const tuple_def* key_def, const tuple_def* key_val_def, 
-									const void* tuple, 
+									const void* key_val, 
 									uint16_t* index
 								)
 {
-	uint16_t index;
-	int found = search_in_sorted_packed_page(page, page_size, key_df, key_val_def, key, &index);
+	uint16_t index_searched;
+	int found = search_in_sorted_packed_page(page, page_size, key_def, key_val_def, key_val, &index_searched);
+
+	return 0;
 }
 
 int delete_in_sorted_packed_page(
