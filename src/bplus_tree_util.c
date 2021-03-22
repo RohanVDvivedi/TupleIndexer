@@ -10,7 +10,6 @@ bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_record_def(tuple_def* reco
 
 	bplus_tree_tuple_defs* bpttds = malloc(sizeof(tuple_def*) * 3);
 
-
 	bpttds->key_def = malloc(size_of_tuple_def(key_element_count));
 	memcpy(bpttds->key_def, record_def, size_of_tuple_def(key_element_count));
 	bpttds->key_def->element_count = key_element_count;
