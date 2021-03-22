@@ -42,7 +42,11 @@ int insert_to_sorted_packed_page(
 									const tuple_def* key_def, const tuple_def* key_val_def, 
 									const void* tuple, 
 									uint16_t* index
-								);
+								)
+{
+	uint16_t index;
+	int found = search_in_sorted_packed_page(page, page_size, key_df, key_val_def, key, &index);
+}
 
 int delete_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
