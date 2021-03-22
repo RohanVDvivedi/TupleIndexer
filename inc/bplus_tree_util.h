@@ -1,6 +1,8 @@
 #ifndef BPLUS_TREE_UTIL_H
 #define BPLUS_TREE_UTIL_H
 
+#include<tuple_def.h>
+
 // two of the page types found inside a bplus tree
 #define LEAF_PAGE_TYPE      0
 #define INTERIOR_PAGE_TYPE  1
@@ -29,8 +31,7 @@ struct bplus_tree_tuple_defs
 };
 
 // you may generate tuple definitions before performing any operations
-const bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_record_def(tuple_def* record_def, uint16_t key_element_count);
-const bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_key_value_def(tuple_def* key_def, tuple_def* value_def);
+bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_record_def(tuple_def* record_def, uint16_t key_element_count);
 
 // and then discard when your work with bplus tree is completed
 void del_bplus_tree_tuple_defs(bplus_tree_tuple_defs* bpttds);
