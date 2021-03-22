@@ -29,7 +29,7 @@ int delete_in_sorted_packed_page(
 
 // move n tuples from src page to dest page
 // effectively the tuples moved, will be deleted in src_page and appear in dest_page
-int transfer_to_sorted_packed_page(
+int transfer_sorted_packed_page(
 									void* src_page, void* dest_page, uint32_t page_size, 
 									const tuple_def* tuple_def, 
 									uint16_t start_index, uint16_t end_index
