@@ -5,7 +5,7 @@
 // returns index of the tuple found if, return value == 1
 int search_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* key_def, const tuple_def* tuple_def, 
+									const tuple_def* key_def, const tuple_def* key_val_def, 
 									const void* key, 
 									uint16_t* index
 								);
@@ -14,7 +14,7 @@ int search_in_sorted_packed_page(
 // returns the index of the inserted tuple if, return value == 1
 int insert_to_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* key_def, const tuple_def* tuple_def, 
+									const tuple_def* key_def, const tuple_def* key_val_def, 
 									const void* tuple, 
 									uint16_t* index
 								);
@@ -23,7 +23,7 @@ int insert_to_sorted_packed_page(
 // returns 1, if the tuple was deleted
 int delete_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* tuple_def, 
+									const tuple_def* key_val_def, 
 									uint16_t index
 								);
 
@@ -31,7 +31,7 @@ int delete_in_sorted_packed_page(
 // effectively the tuples moved, will be deleted in src_page and appear in dest_page
 int transfer_sorted_packed_page(
 									void* src_page, void* dest_page, uint32_t page_size, 
-									const tuple_def* tuple_def, 
+									const tuple_def* key_val_def, 
 									uint16_t start_index, uint16_t end_index
 								);
 
