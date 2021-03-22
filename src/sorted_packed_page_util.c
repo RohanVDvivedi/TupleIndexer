@@ -68,12 +68,13 @@ int insert_to_sorted_packed_page(
 		{
 			if(index_searched == 0)
 				break;
+
 			index_searched--;
 
 			tup = get_nth_tuple(page, page_size, key_val_def, index_searched);
 			compare = compare_tuples(tup, key_val, key_def);
 		}
-		if(index_searched != 0 && compare > 0)
+		if(compare <= 0)
 			index_searched++;
 	}
 	else
