@@ -45,8 +45,63 @@ int insert_to_sorted_packed_page(
 									uint16_t* index
 								)
 {
+	if(!can_accomodate_tuple_insert(page, page_size, key_val_def, key_val))
+		return 0;
+
+	// handle edge case when number of elements in the page are 0
+	if(get_tuple_count(page) == 0)
+	{
+		insert_tuple(page, page_size, key_val_def, key_val);
+		(*index) = 0;
+		return 1;
+	}
+
+	// search for a viable index that is closer to that one, which we are planning to insert
 	uint16_t index_searched;
 	int found = search_in_sorted_packed_page(page, page_size, key_def, key_val_def, key_val, &index_searched);
+
+	const void* tup = get_nth_tuple(page, page_size, key_val_def, index_searched);
+	int compare = compare_tuples(tup, key_val, key_def);
+	if(compare > 0)
+	{
+		while(compare > 0)
+		{
+			tup = get_nth_tuple(page, page_size, key_val_def, index_searched);
+			compare = compare_tuples(tup, key_val, key_def);
+
+			index_searched--;
+			if(index_searched == 0)
+				break;
+		}
+	}
+	else
+	{
+		while(compare <= 0)
+		{
+			tup = get_nth_tuple(page, page_size, key_val_def, index_searched);
+			compare = compare_tuples(tup, key_val, key_def);
+
+			index_searched++;
+			if(index_searched == 0)
+				break;
+		}
+	}
+
+	uint16_t new_index = index_searched;
+
+	// tuple inserted to the end of the page
+	insert_tuple(page, page_size, key_val_def, key_val);
+
+	uint16_t tuple_count = get_tuple_count(page);
+	uint16_t index = tuple_count - 1;
+	while(new_index < index)
+	{
+		swap_tuples(page, page_size, key_val_def, index - 1, index);
+		index--;
+	}
+
+
+	(*index) = new_index;
 
 	return 0;
 }
