@@ -31,4 +31,7 @@ uint32_t find_in_interior_page(const void* page, const void* like_key, const bpl
 // the retunred tuple is allocated using malloc and the calling function has to deallocate it after use/insert
 const void* insert_or_split_interior_page(const void* intr_page, const void* new_index_tuple, const bplus_tree_tuple_defs* bpttds);
 
+// merge 2 pages that are child pages to intr_page each of then is an adjacent page_id to the tuple at given index
+const void* merge_child_pages_at(const void* intr_page, uint16_t index, const bplus_tree_tuple_defs* bpttds)
+
 #endif

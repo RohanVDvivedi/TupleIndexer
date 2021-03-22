@@ -9,6 +9,8 @@
 
 #include<data_access_methods.h>
 
+#include<bplus_tree_util.h>
+
 uint32_t create_new_bplus_tree(const data_access_methods* dam_p);
 
 const void* find_in_bplus_tree(const void* key_like, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
