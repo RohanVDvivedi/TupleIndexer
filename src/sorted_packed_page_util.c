@@ -137,6 +137,26 @@ int delete_in_sorted_packed_page(
 	return 1;
 }
 
+int delete_all_in_sorted_packed_page(
+									void* page, uint32_t page_size, 
+									const tuple_def* key_val_def, 
+									uint16_t start_index, uint16_t end_index
+								)
+{
+	uint16_t count = get_tuple_count(page);
+	if(count == 0 || start_index > end_index || end_index >= count)
+		return 0;
+
+	for(uint16_t i = start_index; i <= end_index; i++)
+		delete_tuple(page, page_size, key_val_def, i);
+
+	// move tombstones to the end
+	for(uint16_t i = start_index, j = end_index + 1; j < count; i++, j++)
+		swap_tuples(page, page_size, key_val_def, i, j);
+
+	return 1;
+}
+
 int transfer_sorted_packed_page(
 									void* src_page, void* dest_page, uint32_t page_size, 
 									const tuple_def* key_val_def, 
