@@ -97,6 +97,9 @@ int main()
 	uint16_t deleted_index;
 	int deleted;
 
+	uint16_t start_index;
+	uint16_t end_index;
+
 	// ---------------  INSERTS
 
 	r = &(row){3, 16, "Rohan", 16, "Dvivedi"};
@@ -272,7 +275,28 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
-	// ---------------  DELETES
+	// ---------------  DELETE ALL
+
+	start_index = 10;
+	end_index = 12;
+	deleted = delete_all_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, start_index, end_index);
+	printf("Delete all : %d @ [%u, %u]\n\n", deleted, start_index, end_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	start_index = 0;
+	end_index = 2;
+	deleted = delete_all_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, start_index, end_index);
+	printf("Delete all : %d @ [%u, %u]\n\n", deleted, start_index, end_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	start_index = 1;
+	end_index = 4;
+	deleted = delete_all_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, start_index, end_index);
+	printf("Delete all : %d @ [%u, %u]\n\n", deleted, start_index, end_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
 
 	// ---------------  DESTROY TUPLE DEFINITION
 
