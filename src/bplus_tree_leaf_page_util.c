@@ -28,5 +28,3 @@ const void* get_record_from_leaf_page(const void* page, uint32_t page_size, uint
 }
 
 uint16_t find_in_leaf_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds);
-
-const void* insert_or_split_leaf_page(const void* intr_page, const void* new_record_tuple, const bplus_tree_tuple_defs* bpttds);

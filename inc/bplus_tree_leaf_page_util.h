@@ -17,11 +17,4 @@ const void* get_record_from_leaf_page(const void* page, uint32_t page_size, uint
 // returns index to the first record tuple in the page, that has key that equals the like_key
 uint16_t find_in_leaf_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds);
 
-// inserts a new_record_tuple to the leaf_page
-// if the insert fails due to the page being out of space
-// then this leaf page is split and the non-NULL index tuple is created
-// now this non Null index tuple needs to be inserted into the parent interior page
-// the retunred tuple is allocated using malloc and the calling function has to deallocate it after use/insert
-const void* insert_or_split_leaf_page(const void* intr_page, const void* new_record_tuple, const bplus_tree_tuple_defs* bpttds);
-
 #endif

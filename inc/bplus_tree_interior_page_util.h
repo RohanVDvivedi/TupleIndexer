@@ -27,17 +27,7 @@ uint32_t get_index_page_id_from_interior_page(const void* page, uint32_t page_si
 // the end of this index-th tuple is acccompanied with the index-th reference page_id
 const void* get_index_entry_from_interior_page(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds);
 
-// returns page_id, to search for the least of the tuples that has key equivalent to like_key
-uint32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds);
-
-// inserts a new_index_tuple to the intr_page
-// if the insert fails due to the page being out of space
-// then this interior page is split and the non-NULL index tuple is created
-// now this non Null index tuple needs to be inserted into the parent interior page
-// the retunred tuple is allocated using malloc and the calling function has to deallocate it after use/insert
-const void* insert_or_split_interior_page(const void* intr_page, const void* new_index_tuple, const bplus_tree_tuple_defs* bpttds);
-
-// merge 2 pages that are child pages to intr_page each of then is an adjacent page_id to the tuple at given index
-const void* merge_child_pages_at(const void* intr_page, uint16_t index, const bplus_tree_tuple_defs* bpttds);
+// returns index to the index_page_id, to search for the tuple with like_key
+int32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds);
 
 #endif

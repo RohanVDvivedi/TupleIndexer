@@ -31,8 +31,4 @@ const void* get_index_entry_from_interior_page(const void* page, uint32_t page_s
 	return get_nth_tuple(page, page_size, bpttds->index_def, index);
 }
 
-uint32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds);
-
-const void* insert_or_split_interior_page(const void* intr_page, const void* new_index_tuple, const bplus_tree_tuple_defs* bpttds);
-
-const void* merge_child_pages_at(const void* intr_page, uint16_t index, const bplus_tree_tuple_defs* bpttds);
+int32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds);
