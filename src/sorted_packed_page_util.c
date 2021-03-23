@@ -17,6 +17,7 @@ int search_in_sorted_packed_page(
 	uint16_t low = 0;
 	uint16_t high = count - 1;
 	uint16_t mid = (low + high) / 2;
+	(*index) = mid;
 
 	while(low < mid)
 	{
@@ -57,8 +58,8 @@ int insert_to_sorted_packed_page(
 	}
 
 	// search for a viable index that is closer to that one, which we are planning to insert
-	uint16_t index_searched;
-	int found = search_in_sorted_packed_page(page, page_size, key_def, key_val_def, key_val, &index_searched);
+	uint16_t index_searched = 0;
+	search_in_sorted_packed_page(page, page_size, key_def, key_val_def, key_val, &index_searched);
 
 	const void* tup = get_nth_tuple(page, page_size, key_val_def, index_searched);
 	int compare = compare_tuples(tup, key_val, key_def);
@@ -98,11 +99,11 @@ int insert_to_sorted_packed_page(
 	insert_tuple(page, page_size, key_val_def, key_val);
 
 	uint16_t tuple_count = get_tuple_count(page);
-	uint16_t index = tuple_count - 1;
-	while(new_index < index)
+	uint16_t temp_index = tuple_count - 1;	// current temporary index of the inserted tuple
+	while(new_index < temp_index)
 	{
-		swap_tuples(page, page_size, key_val_def, index - 1, index);
-		index--;
+		swap_tuples(page, page_size, key_val_def, temp_index - 1, temp_index);
+		temp_index--;
 	}
 
 
