@@ -11,7 +11,7 @@
 // comment the below macro to test the SLOTTED_PAGE_LAYOUT
 #define TEST_FIXED_ARRAY_PAGE_LAYOUT
 
-#define PAGE_SIZE 512
+#define PAGE_SIZE 1024
 
 void init_tuple_definition(tuple_def* def)
 {
@@ -245,6 +245,27 @@ int main()
 	printf("\n\n\n");
 
 	r = &(row){1, 16, "Ff", 16, "Dvivedi"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	r = &(row){2, 16, "Rakesh", 16, "Dvivedi"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	r = &(row){6, 16, "Aman", 16, "Patel"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	r = &(row){5, 16, "Sohil", 16, "Patel"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
 	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
 	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
