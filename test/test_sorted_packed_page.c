@@ -62,16 +62,10 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 	int column_no = 0;
 
 	copy_element_to_tuple(def, column_no++, tuple, &(r->c0));
-
 	copy_element_to_tuple(def, column_no++, tuple, &(r->c1));
-	#ifndef TEST_FIXED_ARRAY_PAGE_LAYOUT
-		copy_element_to_tuple(def, column_no++, tuple, (r->c2));
-	#endif
-	
+	copy_element_to_tuple(def, column_no++, tuple, (r->c2));
 	copy_element_to_tuple(def, column_no++, tuple, &(r->c3));
-	#ifndef TEST_FIXED_ARRAY_PAGE_LAYOUT
-		copy_element_to_tuple(def, column_no++, tuple, (r->c4));
-	#endif
+	copy_element_to_tuple(def, column_no++, tuple, (r->c4));
 
 	// output print string
 	char print_buffer[PAGE_SIZE];
