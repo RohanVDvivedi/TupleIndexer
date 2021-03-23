@@ -8,7 +8,7 @@ bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_record_def(tuple_def* reco
 	if(key_element_count == 0 || is_empty_tuple_def(record_def) || key_element_count > record_def->element_count)
 		return NULL;
 
-	bplus_tree_tuple_defs* bpttds = malloc(sizeof(tuple_def*) * 3);
+	bplus_tree_tuple_defs* bpttds = malloc(sizeof(bplus_tree_tuple_defs));
 
 	bpttds->key_def = malloc(size_of_tuple_def(key_element_count));
 	memcpy(bpttds->key_def, record_def, size_of_tuple_def(key_element_count));
