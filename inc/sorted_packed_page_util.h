@@ -30,18 +30,18 @@ int delete_in_sorted_packed_page(
 									uint16_t index
 								);
 
+// insert n tuples from src page to dest page
+// returns the number of tuples inserted
+uint16_t insert_all_from_sorted_packed_page(
+									void* page_dest, void* page_src, uint32_t page_size, 
+									const tuple_def* key_def, const tuple_def* key_val_def, 
+									uint16_t start_index, uint16_t end_index
+								);
+
 // delete all tuples between index range [start_index, end_index] included
 // returns 1, if the tuple was deleted
 int delete_all_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* key_val_def, 
-									uint16_t start_index, uint16_t end_index
-								);
-
-// move n tuples from src page to dest page
-// effectively the tuples moved, will be deleted in src_page and appear in dest_page
-int transfer_all_sorted_packed_page(
-									void* page_dest, void* page_src, uint32_t page_size, 
 									const tuple_def* key_val_def, 
 									uint16_t start_index, uint16_t end_index
 								);

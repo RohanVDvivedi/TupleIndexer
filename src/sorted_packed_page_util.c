@@ -157,9 +157,9 @@ int delete_all_in_sorted_packed_page(
 	return 1;
 }
 
-int transfer_all_sorted_packed_page(
+uint16_t insert_all_from_sorted_packed_page(
 									void* page_dest, void* page_src, uint32_t page_size, 
-									const tuple_def* key_val_def, 
+									const tuple_def* key_def, const tuple_def* key_val_def, 
 									uint16_t start_index, uint16_t end_index
 								)
 {
@@ -167,11 +167,19 @@ int transfer_all_sorted_packed_page(
 	if(count == 0 || start_index > end_index || end_index >= count)
 		return 0;
 
+	uint16_t inserted_count = 0;
+
 	// insert using stupstom api from start_index to end_index
-	insert_tuples_from_page(page_dest, page_size, key_val_def, page_src, start_index, end_index);
+	for(uint16_t index = start_index; index <= end_index; index++)
+	{
+		const void* tup = get_nth_tuple(page_src, page_size, key_val_def, index);
+		uint16_t inserted_index;
+		int inserted = insert_to_sorted_packed_page(page_dest, page_size, key_def, key_val_def, tup, &inserted_index);
+		if(inserted)
+			inserted_count++;
+		else
+			break;
+	}
 
-	// call delete in range function
-	delete_all_in_sorted_packed_page(page_src, page_size, key_val_def, start_index, end_index);
-
-	return 1;
+	return inserted_count;
 }
