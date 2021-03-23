@@ -94,6 +94,9 @@ int main()
 	uint16_t inserted_index;
 	int inserted;
 
+	uint16_t deleted_index;
+	int deleted;
+
 	// ---------------  INSERTS
 
 	r = &(row){3, 16, "Rohan", 16, "Dvivedi"};
@@ -167,6 +170,30 @@ int main()
 	printf("\n\n\n");
 
 	// ---------------  DELETES
+
+	deleted_index = 3;
+	deleted = delete_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, deleted_index);
+	printf("Delete : %d @ [%u]\n\n", deleted, deleted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	deleted_index = 0;
+	deleted = delete_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, deleted_index);
+	printf("Delete : %d @ [%u]\n\n", deleted, deleted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	deleted_index = 5;
+	deleted = delete_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, deleted_index);
+	printf("Delete : %d @ [%u]\n\n", deleted, deleted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	deleted_index = 7;
+	deleted = delete_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, deleted_index);
+	printf("Delete : %d @ [%u]\n\n", deleted, deleted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
 
 	// ---------------  INSERTS
 
