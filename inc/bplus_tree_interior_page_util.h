@@ -18,7 +18,13 @@ int is_interior_page(const void* page);
 // returns number of records in the leaf page
 uint16_t get_index_entry_count_in_interior_page(const void* page);
 
-// returns a pointer to the tuple at index-th position that has tuple definition of index_def
+// returns a uint32_t page_id at index-th position
+// index varies from -1 to get_index_entry_count_in_interior_page() - 1
+uint32_t get_index_page_id_from_interior_page(const void* page, uint32_t page_size, int32_t index, const bplus_tree_tuple_defs* bpttds);
+
+// returns a pointer to the tuple at index-th position that has tuple definition of index_def => {key_def, page_id}
+// index varies from 0 to get_index_entry_count_in_interior_page() - 1
+// the end of this index-th tuple is acccompanied with the index-th reference page_id
 const void* get_index_entry_from_interior_page(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds);
 
 // returns page_id, to search for the least of the tuples that has key equivalent to like_key
