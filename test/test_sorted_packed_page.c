@@ -370,6 +370,34 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
+	// ---------------  INSERT ALL TO TEMP_PAGE and DELETE ALL FROM PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	char temp_page = {};
+
+	start_index = 0;
+	end_index = 2;
+	inserted = insert_all_from_sorted_packed_page(temp_page, page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, start_index, end_index);
+	printf("Insert all : %d @ [%u, %u]\n\n", inserted, start_index, end_index);
+	print_page(temp_page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	start_index = 10;
+	end_index = 12;
+	inserted = insert_all_from_sorted_packed_page(temp_page, page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, start_index, end_index);
+	printf("Insert all : %d @ [%u, %u]\n\n", inserted, start_index, end_index);
+	print_page(temp_page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	start_index = 4;
+	end_index = 7;
+	inserted = insert_all_from_sorted_packed_page(temp_page, page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, start_index, end_index);
+	printf("Insert all : %d @ [%u, %u]\n\n", inserted, start_index, end_index);
+	print_page(temp_page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
 	// ---------------  DESTROY TUPLE DEFINITION
 
 	del_bplus_tree_tuple_defs(bpttds);
