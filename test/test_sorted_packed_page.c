@@ -209,6 +209,48 @@ int main()
 
 	// ---------------  INSERTS
 
+	r = &(row){-2, 16, "Aa", 16, "Dvivedi"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	r = &(row){-3, 16, "Bb", 16, "Patel"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	r = &(row){18, 16, "Cc", 16, "Dvivedi"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	r = &(row){19, 16, "Dd", 16, "Patel"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	r = &(row){4, 16, "Ee", 16, "Patel"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	r = &(row){1, 16, "Ff", 16, "Dvivedi"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
 	// ---------------  DELETES
 
 	// ---------------  DESTROY TUPLE DEFINITION
