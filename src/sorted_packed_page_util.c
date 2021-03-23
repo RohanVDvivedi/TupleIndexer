@@ -167,6 +167,11 @@ uint16_t insert_all_from_sorted_packed_page(
 	if(count == 0 || start_index > end_index || end_index >= count)
 		return 0;
 
+	// if the dest page does not have cany tuples then we can perform a direct insert and that will be in order
+	// i.e. no comparisons needed
+	if(get_tuple_count(page_dest) == 0)
+		return insert_tuples_from_page(page_dest, page_size, key_val_def, page_src, start_index, end_index);
+
 	uint16_t inserted_count = 0;
 
 	// insert using stupstom api from start_index to end_index
