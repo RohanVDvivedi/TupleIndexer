@@ -162,3 +162,5 @@ int transfer_sorted_packed_page(
 									const tuple_def* key_val_def, 
 									uint16_t start_index, uint16_t end_index
 								);
+// insert using stupstom api from start_index to end_index
+// call delete in range function
