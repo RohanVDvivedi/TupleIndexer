@@ -109,7 +109,7 @@ int insert_to_sorted_packed_page(
 
 	(*index) = new_index;
 
-	return 0;
+	return 1;
 }
 
 int delete_in_sorted_packed_page(
