@@ -189,7 +189,19 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
-	deleted_index = 7;
+	deleted_index = 6;
+	deleted = delete_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, deleted_index);
+	printf("Delete : %d @ [%u]\n\n", deleted, deleted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	deleted_index = 0;
+	deleted = delete_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, deleted_index);
+	printf("Delete : %d @ [%u]\n\n", deleted, deleted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
+	deleted_index = 2;
 	deleted = delete_in_sorted_packed_page(page, PAGE_SIZE, bpttds->record_def, deleted_index);
 	printf("Delete : %d @ [%u]\n\n", deleted, deleted_index);
 	print_page(page, PAGE_SIZE, def);
