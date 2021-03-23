@@ -13,14 +13,17 @@ bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_record_def(tuple_def* reco
 	bpttds->key_def = malloc(size_of_tuple_def(key_element_count));
 	memcpy(bpttds->key_def, record_def, size_of_tuple_def(key_element_count));
 	bpttds->key_def->element_count = key_element_count;
+	finalize_tuple_def(bpttds->key_def);
 
 	bpttds->index_def = malloc(size_of_tuple_def(key_element_count + 1));
 	memcpy(bpttds->index_def, record_def, size_of_tuple_def(key_element_count));
 	bpttds->index_def->element_count = key_element_count;
 	insert_element_def(bpttds->index_def, UINT, 4);
+	finalize_tuple_def(bpttds->index_def);
 
 	bpttds->record_def = malloc(size_of_tuple_def(record_def->element_count));
 	memcpy(bpttds->record_def, record_def, size_of_tuple_def(record_def->element_count));
+	finalize_tuple_def(bpttds->record_def);
 	
 	return bpttds;
 }
