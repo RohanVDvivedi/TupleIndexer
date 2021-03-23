@@ -158,7 +158,7 @@ int delete_all_in_sorted_packed_page(
 }
 
 uint16_t insert_all_from_sorted_packed_page(
-									void* page_dest, void* page_src, uint32_t page_size, 
+									void* page_dest, const void* page_src, uint32_t page_size, 
 									const tuple_def* key_def, const tuple_def* key_val_def, 
 									uint16_t start_index, uint16_t end_index
 								)

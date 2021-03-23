@@ -375,7 +375,7 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
-	char temp_page = {};
+	char temp_page[PAGE_SIZE] = {};
 
 	start_index = 0;
 	end_index = 2;
