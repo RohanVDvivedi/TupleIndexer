@@ -3,7 +3,7 @@
 #include<alloca.h>
 
 #include<bplus_tree_util.h>
-#include<sorted_packed_page.h>
+#include<sorted_packed_page_util.h>
 
 #include<page_layout.h>
 #include<tuple.h>
@@ -93,36 +93,41 @@ int main()
 	// ---------------	DECLARE TEMP variables
 
 	char page[PAGE_SIZE] = {};
+	char tuple_cache[PAGE_SIZE] = {};
 	
 	row* r = NULL;
+
+	uint16_t inserted_index;
+	int inserted;
 
 	// ---------------  INSERTS
 
 	r = &(row){3, 16, "Rohan", 16, "Dvivedi"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
 	insert_tuple(page, PAGE_SIZE, def, tuple_cache);
-	printf("Insert : %d\n\n", res);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
 	r = &(row){6, 16, "Aman", 16, "Patel"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	insert_tuple(page, PAGE_SIZE, def, tuple_cache);
-	printf("Insert : %d\n\n", res);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
 	r = &(row){9, 16, "Sahil", 16, "Shah"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	insert_tuple(page, PAGE_SIZE, def, tuple_cache);
-	printf("Insert : %d\n\n", res);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
 	r = &(row){12, 16, "Samip", 16, "Thakkar"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	insert_tuple(page, PAGE_SIZE, def, tuple_cache);
-	printf("Insert : %d\n\n", res);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
