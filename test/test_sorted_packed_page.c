@@ -98,7 +98,6 @@ int main()
 
 	r = &(row){3, 16, "Rohan", 16, "Dvivedi"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	insert_tuple(page, PAGE_SIZE, def, tuple_cache);
 	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
 	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
 	print_page(page, PAGE_SIZE, def);
