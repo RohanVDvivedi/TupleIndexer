@@ -43,10 +43,21 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 		return -1;
 
 	uint16_t index_searched = 0;
-	int found = search_in_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, like_key, &index_searched);
+	search_in_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, like_key, &index_searched);
 
-	if(found)
-		return index_searched;
+	const void* index_searched_tuple =  get_nth_tuple(page, page_size, bpttds->index_def, index_searched);
+	int compare = compare_tuples(like_key, index_searched_tuple, bpttds->key_def);
 
-	// loop one way then the other way
+	// if we found equals
+	// then we try to find the first interior node direction that equals
+	if(compare >= 0)
+	{
+		// loop index_searched decrement
+	}
+	else if(compare < 0)
+	{
+		// loop index_searched increment
+	}
+	
+	return index_searched;
 }
