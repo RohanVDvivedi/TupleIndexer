@@ -19,12 +19,13 @@ int search_in_sorted_packed_page(
 	uint16_t mid = (low + high) / 2;
 	(*index) = mid;
 
+	const void* tup_mid;
+	int compare;
+
 	while(low < high)
 	{
-		const void* tup_mid = get_nth_tuple(page, page_size, key_val_def, mid);
-		int compare = compare_tuples(tup_mid, key, key_def);
-
-		(*index) = mid;
+		tup_mid = get_nth_tuple(page, page_size, key_val_def, mid);
+		compare = compare_tuples(tup_mid, key, key_def);
 
 		if(compare == 0)
 			return 1;
@@ -34,7 +35,14 @@ int search_in_sorted_packed_page(
 			low = mid + 1;
 
 		mid = (low + high) / 2;
+		(*index) = mid;
 	}
+
+	tup_mid = get_nth_tuple(page, page_size, key_val_def, mid);
+	compare = compare_tuples(tup_mid, key, key_def);
+
+	if(compare == 0)
+		return 1;
 
 	return 0;
 }
