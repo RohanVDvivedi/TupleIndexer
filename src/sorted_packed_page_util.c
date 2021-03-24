@@ -19,7 +19,7 @@ int search_in_sorted_packed_page(
 	uint16_t mid = (low + high) / 2;
 	(*index) = mid;
 
-	while(low < mid)
+	while(low < high)
 	{
 		const void* tup_mid = get_nth_tuple(page, page_size, key_val_def, mid);
 		int compare = compare_tuples(tup_mid, key, key_def);
