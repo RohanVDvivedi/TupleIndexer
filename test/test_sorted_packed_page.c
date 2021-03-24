@@ -172,6 +172,13 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
+	r = &(row){4, 16, "Aakash", 16, "Pandya"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
+	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n\n");
+
 	// ---------------  DELETES
 
 	deleted_index = 3;
@@ -261,7 +268,7 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
-	r = &(row){6, 16, "Aman", 16, "Patel"};
+	r = &(row){6, 16, "Aman", 16, "Paatill"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
 	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
 	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
