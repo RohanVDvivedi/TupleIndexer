@@ -31,4 +31,20 @@ const void* get_index_entry_from_interior_page(const void* page, uint32_t page_s
 	return get_nth_tuple(page, page_size, bpttds->index_def, index);
 }
 
-int32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds);
+int32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds)
+{
+	const void* first_index_tuple = get_nth_tuple(page, page_size, bpttds->index_def, 0);
+	int compare = compare_tuples(like_key, first_index_tuple, bpttds->key_def);
+
+	// i.e. get the ALL_LEAST_REF reference
+	if(compare < 0)
+		return -1;
+
+	uint16_t index_searched = 0;
+	int found = search_in_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, like_key, &index_searched);
+
+	if(found)
+		return index_searched;
+
+	// loop one way then the other way
+}
