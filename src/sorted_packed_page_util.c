@@ -16,6 +16,8 @@ int search_in_sorted_packed_page(
 
 	uint16_t low = 0;
 	uint16_t high = count - 1;
+	printf("%u %u\n", low, high);
+
 	uint16_t mid = (low + high) / 2;
 	(*index) = mid;
 
@@ -24,19 +26,32 @@ int search_in_sorted_packed_page(
 
 	while(low < high)
 	{
+		mid = (low + high) / 2;
+		(*index) = mid;
+
 		tup_mid = get_nth_tuple(page, page_size, key_val_def, mid);
 		compare = compare_tuples(tup_mid, key, key_def);
 
-		if(compare == 0)
-			return 1;
-		else if(compare > 0)
+		if(compare > 0)
+		{
+			if(mid == 0)
+				break;
 			high = mid - 1;
-		else
+		}
+		else if(compare < 0)
+		{
+			if(mid == 65535)
+				break;
 			low = mid + 1;
+		}
+		else
+			return 1;
 
-		mid = (low + high) / 2;
-		(*index) = mid;
+		printf("%u %u\n", low, high);
 	}
+
+	mid = (low + high) / 2;
+	(*index) = mid;
 
 	tup_mid = get_nth_tuple(page, page_size, key_val_def, mid);
 	compare = compare_tuples(tup_mid, key, key_def);
