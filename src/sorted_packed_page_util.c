@@ -172,6 +172,15 @@ uint16_t insert_all_from_sorted_packed_page(
 	if(get_tuple_count(page_dest) == 0)
 		return insert_tuples_from_page(page_dest, page_size, key_val_def, page_src, start_index, end_index);
 
+	// compare the last tuple of the dest page and first tuple of the src page
+	const void* last_tuple_dest = get_nth_tuple(page_dest, page_size, key_val_def, get_tuple_count(page_dest) - 1);
+	const void* first_tuple_src = get_nth_tuple(page_src, page_size, key_val_def, 0);
+
+	// if they are in order then perform a direct copy
+	int compare_last_first = compare_tuples(last_tuple_dest, first_tuple_src, key_def);
+	if(compare_last_first <= 0)
+		return insert_tuples_from_page(page_dest, page_size, key_val_def, page_src, start_index, end_index);
+
 	uint16_t inserted_count = 0;
 
 	// insert using stupstom api from start_index to end_index
