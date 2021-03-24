@@ -15,7 +15,7 @@ int search_in_sorted_packed_page(
 		return 0;
 
 	uint16_t low = 0;
-	uint16_t high = count;
+	uint16_t high = count - 1;
 	uint16_t mid = (low + high) / 2;
 	(*index) = mid;
 
@@ -29,7 +29,7 @@ int search_in_sorted_packed_page(
 		if(compare == 0)
 			return 1;
 		else if(compare > 0)
-			high = mid;
+			high = mid - 1;
 		else
 			low = mid + 1;
 
