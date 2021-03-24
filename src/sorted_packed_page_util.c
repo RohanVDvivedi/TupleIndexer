@@ -16,7 +16,6 @@ int search_in_sorted_packed_page(
 
 	uint16_t low = 0;
 	uint16_t high = count - 1;
-	printf("%u %u\n", low, high);
 
 	uint16_t mid = (low + high) / 2;
 	(*index) = mid;
@@ -46,8 +45,6 @@ int search_in_sorted_packed_page(
 		}
 		else
 			return 1;
-
-		printf("%u %u\n", low, high);
 	}
 
 	mid = (low + high) / 2;
