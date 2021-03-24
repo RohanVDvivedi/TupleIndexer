@@ -17,4 +17,13 @@ const void* get_record_from_leaf_page(const void* page, uint32_t page_size, uint
 // returns index to the first record tuple in the page, that has key that equals the like_key
 uint16_t find_in_leaf_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds);
 
+// below functions manage splits and merges of the leaf_pages of the b+tree
+
+// returns the tuple (of bpttds->tuple_def) that we need to insert into the parent page
+// returns non NULL tuple if the page was split
+const void* split_leaf_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+
+// returns true (1), if parent_index_record needs to be deleted from the parent_page
+int merge_leaf_pages(void* page1, const void* parent_index_record, void* page_2, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+
 #endif

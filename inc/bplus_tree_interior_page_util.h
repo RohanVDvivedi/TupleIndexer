@@ -30,4 +30,13 @@ const void* get_index_entry_from_interior_page(const void* page, uint32_t page_s
 // returns index to the index_page_id, to search for the tuple with like_key
 int32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds);
 
+// below functions manage splits and merges of the leaf_pages of the b+tree
+
+// returns the tuple (of bpttds->tuple_def) that we need to insert into the parent page
+// returns non NULL tuple if the page was split
+const void* split_interior_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+
+// returns true (1), if parent_index_record needs to be deleted from the parent_page
+int merge_interior_pages(void* page1, const void* parent_index_record, void* page_2, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+
 #endif
