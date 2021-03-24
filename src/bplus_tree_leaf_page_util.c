@@ -1,6 +1,9 @@
 #include<bplus_tree_leaf_page_util.h>
 
+#include<tuple.h>
 #include<page_layout.h>
+
+#include<sorted_packed_page_util.h>
 
 int is_leaf_page(const void* page)
 {

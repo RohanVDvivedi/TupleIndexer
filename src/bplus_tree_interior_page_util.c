@@ -3,6 +3,8 @@
 #include<tuple.h>
 #include<page_layout.h>
 
+#include<sorted_packed_page_util.h>
+
 int is_interior_page(const void* page)
 {
 	return get_page_type(page) == INTERIOR_PAGE_TYPE;
@@ -31,7 +33,7 @@ const void* get_index_entry_from_interior_page(const void* page, uint32_t page_s
 	return get_nth_tuple(page, page_size, bpttds->index_def, index);
 }
 
-int32_t find_in_interior_page(const void* page, const void* like_key, const bplus_tree_tuple_defs* bpttds)
+int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds)
 {
 	const void* first_index_tuple = get_nth_tuple(page, page_size, bpttds->index_def, 0);
 	int compare = compare_tuples(like_key, first_index_tuple, bpttds->key_def);
