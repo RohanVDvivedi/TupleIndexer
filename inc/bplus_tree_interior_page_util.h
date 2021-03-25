@@ -40,9 +40,9 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 
 // returns the tuple (of bpttds->tuple_def) that we need to insert into the parent page
 // returns non NULL tuple if the page was split
-const void* split_interior_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+const void* split_interior_page(void* page_to_be_split, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
 // returns true (1), if parent_index_record needs to be deleted from the parent_page
-int merge_interior_pages(void* page1, const void* parent_index_record, void* page_2, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+int merge_interior_pages(void* page_to_merge_with, const void* parent_index_record, void* page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
 #endif
