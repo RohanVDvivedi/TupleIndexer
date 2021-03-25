@@ -60,11 +60,26 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 	uint16_t index_searched = 0;
 	int found = search_in_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, like_key, &index_searched);
 
+	uint16_t tuple_count = get_tuple_count(page);
+
 	if(found)
 	{
 		if(pick_last_match)
 		{
 			// loop over index_searched incrementingly while compare == 0
+			for(uint16_t i = index_searched; i < tuple_count; i++)
+			{
+				const void* i_tuple = get_nth_tuple(page, page_size, bpttds->index_def, i);
+				int compare = compare_tuples(like_key, i_tuple, bpttds->key_def);
+				
+				if(compare == 0)
+				{
+					index_searched = i;
+					i++;
+				}
+				else
+					break;
+			}
 			return index_searched;
 		}
 		else
@@ -73,8 +88,6 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 			return index_searched;
 		}
 	}
-
-	uint16_t tuple_count = get_tuple_count(page);
 
 	const void* index_searched_tuple =  get_nth_tuple(page, page_size, bpttds->index_def, index_searched);
 	compare = compare_tuples(like_key, index_searched_tuple, bpttds->key_def);
