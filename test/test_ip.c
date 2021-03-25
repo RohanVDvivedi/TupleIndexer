@@ -191,6 +191,9 @@ int main()
 
 	// ---------------  SEARCHES
 
+	for(int64_t i = -5; i < 60; i++)
+		printf("%lld => %d\n", i, find_in_interior_page(page, PAGE_SIZE, &i, bpttds));
+
 	// ---------------  DESTROY TUPLE DEFINITION
 
 	del_bplus_tree_tuple_defs(bpttds);
