@@ -83,7 +83,6 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 	}
 	else if(compare < 0)
 	{
-
 		uint16_t i = index_searched;
 		while(1)
 		{
