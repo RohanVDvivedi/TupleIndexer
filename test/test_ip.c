@@ -191,8 +191,15 @@ int main()
 
 	// ---------------  SEARCHES
 
+	printf("\n\nPICK_LAST == 0 (i.e. PICK_FIRST)\n");
+
 	for(int64_t i = -5; i < 60; i++)
-		printf("%ld => %d\n", i, find_in_interior_page(page, PAGE_SIZE, &i, bpttds));
+		printf("%ld => %d\n", i, find_in_interior_page(page, PAGE_SIZE, &i, 0, bpttds));
+
+	printf("\n\nPICK_LAST == 1\n");
+
+	for(int64_t i = -5; i < 60; i++)
+		printf("%ld => %d\n", i, find_in_interior_page(page, PAGE_SIZE, &i, 1, bpttds));
 
 	// ---------------  DESTROY TUPLE DEFINITION
 
