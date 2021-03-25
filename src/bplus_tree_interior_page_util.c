@@ -61,7 +61,18 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 	int found = search_in_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, like_key, &index_searched);
 
 	if(found)
-		return index_searched;
+	{
+		if(pick_last_match)
+		{
+			// loop over index_searched incrementingly while compare == 0
+			return index_searched;
+		}
+		else
+		{
+			// loop over index_searched decrementingly while compare == 0
+			return index_searched;
+		}
+	}
 
 	uint16_t tuple_count = get_tuple_count(page);
 
