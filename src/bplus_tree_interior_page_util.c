@@ -63,10 +63,10 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 	if(found)
 		return index_searched;
 
+	uint16_t tuple_count = get_tuple_count(page);
+
 	const void* index_searched_tuple =  get_nth_tuple(page, page_size, bpttds->index_def, index_searched);
 	compare = compare_tuples(like_key, index_searched_tuple, bpttds->key_def);
-
-	uint16_t tuple_count = get_tuple_count(page);
 
 	if(compare > 0)
 	{
