@@ -43,20 +43,45 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 		return -1;
 
 	uint16_t index_searched = 0;
-	search_in_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, like_key, &index_searched);
+	int found = search_in_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, like_key, &index_searched);
+
+	if(found)
+		return index_searched;
 
 	const void* index_searched_tuple =  get_nth_tuple(page, page_size, bpttds->index_def, index_searched);
-	int compare = compare_tuples(like_key, index_searched_tuple, bpttds->key_def);
+	compare = compare_tuples(like_key, index_searched_tuple, bpttds->key_def);
 
-	// if we found equals
-	// then we try to find the first interior node direction that equals
-	if(compare >= 0)
+	uint16_t tuple_count = get_tuple_count(page);
+
+	if(compare > 0)
 	{
-		// loop index_searched decrement
+		for(uint16_t i = index_searched; i < tuple_count; i++)
+		{
+			const void* i_tuple = get_nth_tuple(page, page_size, bpttds->index_def, index_searched);
+			compare = compare_tuples(like_key, i_tuple, bpttds->key_def);
+
+			if(compare > 0)
+				index_searched = i;
+			else
+				break;
+		}
 	}
 	else if(compare < 0)
 	{
-		// loop index_searched increment
+		uint16_t i = index_searched;
+		while(i > 0)
+		{
+			const void* i_tuple = get_nth_tuple(page, page_size, bpttds->index_def, index_searched);
+			compare = compare_tuples(like_key, i_tuple, bpttds->key_def);
+
+			if(compare > 0)
+			{
+				index_searched = i;
+				break;
+			}
+
+			i--;
+		}
 	}
 	
 	return index_searched;
