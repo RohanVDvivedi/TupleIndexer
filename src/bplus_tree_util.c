@@ -18,6 +18,8 @@ bplus_tree_tuple_defs* get_bplus_tree_tuple_defs_from_record_def(const tuple_def
 	bpttds->index_def = malloc(size_of_tuple_def(key_element_count + 1));
 	memmove(bpttds->index_def, record_def, size_of_tuple_def(key_element_count));
 	bpttds->index_def->element_count = key_element_count;
+	if(bpttds->index_def->size != VARIABLE_SIZED)
+		bpttds->index_def->size -= record_def->element_defs[record_def->element_count - 1].size;
 	insert_element_def(bpttds->index_def, UINT, 4);
 	finalize_tuple_def(bpttds->index_def);
 
