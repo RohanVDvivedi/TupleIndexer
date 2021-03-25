@@ -115,7 +115,7 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
-	r = &(row){15, 4};
+	r = &(row){20, 4};
 	build_tuple_from_row_struct(def, tuple_cache, r);
 	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
 	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
@@ -129,7 +129,7 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
-	r = &(row){25, 6};
+	r = &(row){20, 6};
 	build_tuple_from_row_struct(def, tuple_cache, r);
 	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
 	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
@@ -157,7 +157,7 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n\n");
 
-	r = &(row){45, 10};
+	r = &(row){50, 10};
 	build_tuple_from_row_struct(def, tuple_cache, r);
 	inserted = insert_to_sorted_packed_page(page, PAGE_SIZE, bpttds->key_def, bpttds->record_def, tuple_cache, &inserted_index);
 	printf("Insert : %d @ [%u]\n\n", inserted, inserted_index);
