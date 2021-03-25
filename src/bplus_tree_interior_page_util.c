@@ -70,7 +70,7 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 			for(uint16_t i = index_searched; i < tuple_count; i++)
 			{
 				const void* i_tuple = get_nth_tuple(page, page_size, bpttds->index_def, i);
-				int compare = compare_tuples(like_key, i_tuple, bpttds->key_def);
+				compare = compare_tuples(like_key, i_tuple, bpttds->key_def);
 				
 				if(compare == 0)
 				{
@@ -89,7 +89,7 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 			while(1)
 			{
 				const void* i_tuple = get_nth_tuple(page, page_size, bpttds->index_def, i);
-				int compare = compare_tuples(like_key, i_tuple, bpttds->key_def);
+				compare = compare_tuples(like_key, i_tuple, bpttds->key_def);
 				
 				if(compare == 0)
 					index_searched = i;
