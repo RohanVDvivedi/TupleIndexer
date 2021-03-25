@@ -83,8 +83,9 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 	}
 	else if(compare < 0)
 	{
+
 		uint16_t i = index_searched;
-		while(i > 0)
+		while(1)
 		{
 			const void* i_tuple = get_nth_tuple(page, page_size, bpttds->index_def, i);
 			compare = compare_tuples(like_key, i_tuple, bpttds->key_def);
@@ -95,7 +96,10 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 				break;
 			}
 
-			i--;
+			if(i == 0)
+				break;
+			else
+				i--;
 		}
 	}
 	
