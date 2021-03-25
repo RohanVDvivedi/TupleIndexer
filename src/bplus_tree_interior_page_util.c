@@ -28,6 +28,21 @@ uint32_t get_index_page_id_from_interior_page(const void* page, uint32_t page_si
 	return *(get_element(bpttds->index_def, bpttds->index_def->element_count - 1, index_tuple).UINT_4);
 }
 
+int set_index_page_id_in_interior_page(void* page, uint32_t page_size, int32_t index, const bplus_tree_tuple_defs* bpttds, uint32_t page_id)
+{
+	if(index == -1)
+		return set_reference_page_id(page, ALL_LEAST_REF, page_id);
+
+	// if index is out of bounds
+	if(index >= get_tuple_count(page) || index < -1)
+		return 0;
+
+	void* index_tuple = (void*) get_nth_tuple(page, page_size, bpttds->index_def, index);
+	copy_element_to_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, index_tuple, &page_id);
+
+	return 1;
+}
+
 const void* get_index_entry_from_interior_page(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds)
 {
 	return get_nth_tuple(page, page_size, bpttds->index_def, index);

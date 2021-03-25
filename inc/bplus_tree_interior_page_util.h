@@ -22,6 +22,10 @@ uint16_t get_index_entry_count_in_interior_page(const void* page);
 // index varies from -1 to get_index_entry_count_in_interior_page() - 1
 uint32_t get_index_page_id_from_interior_page(const void* page, uint32_t page_size, int32_t index, const bplus_tree_tuple_defs* bpttds);
 
+// returns 1, if a uint32_t page_id at index-th position is set to page_id
+// index varies from -1 to get_index_entry_count_in_interior_page() - 1
+int set_index_page_id_in_interior_page(void* page, uint32_t page_size, int32_t index, const bplus_tree_tuple_defs* bpttds, uint32_t page_id);
+
 // returns a pointer to the tuple at index-th position that has tuple definition of index_def => {key_def, page_id}
 // index varies from 0 to get_index_entry_count_in_interior_page() - 1
 // the end of this index-th tuple is acccompanied with the index-th reference page_id
