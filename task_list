@@ -1,17 +1,24 @@
 
 Stage 1
- * implement bplus_tree search and insert
- * write test_cases and pass them
+ * implement splits and merges functions in interior_page and leaf_page
+ * implement driver funcs for the splits and merges
+ * implement bplus_tree search, insert and delete driver function
+ * implement a way to protect the root reference in the calling function
+
+Stage 1.1
+ * formalize the fixed standard page init function
+ * formalized fixed sized page_reference_id_count in the header, with fixed reference types
+ 	* 4 page references to manage (NEXT_PAGE_REF, PREV_PAGE_REF, ALL_LEAST_REF, next_run(used while sorting only))
 
 Stage 2
  * implement a page_list
  * implement a cursor interface to read leaf pages list or any page list
+ * use the cursor interface to enable range queries for b+ trees
  * implement support range search, insert and delete queries
 
-STAGE 2
- * implement single page sort (a static funcction)
- * and then an external_merge_sort for the page_list
+STAGE 2.1
+ * implement single page sort (use insert_sorted_packed_page) and then an external_merge_sort for the page_list
  * building a bplus_tree on top if a external_merge_sorted leaf pages (taken as page_list), in multiple runs until there is only 1 page in the tree
 
-Stage 4
+Stage 3
  * implement on-disk_data_store using bufferpool
