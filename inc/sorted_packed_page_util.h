@@ -14,18 +14,9 @@ int search_in_sorted_packed_page(
 								);
 
 // insert tuple
-// returns the index of the inserted tuple if, return value == 1
+// returns the index of the inserted tuple in the index ponter (regardless inserted or not)
+// return value == 1, insert succeed
 int insert_to_sorted_packed_page(
-									void* page, uint32_t page_size, 
-									const tuple_def* key_def, const tuple_def* key_val_def, 
-									const void* tuple, 
-									uint16_t* index
-								);
-
-// insert_test tuple, performs a test insert
-// original page is left unchanged
-// returns the index of the index at which the tuple would have been inserted if, return value == 1
-int insert_test_sorted_packed_page(
 									void* page, uint32_t page_size, 
 									const tuple_def* key_def, const tuple_def* key_val_def, 
 									const void* tuple, 

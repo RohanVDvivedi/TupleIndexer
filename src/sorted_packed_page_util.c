@@ -66,15 +66,11 @@ int insert_to_sorted_packed_page(
 									uint16_t* index
 								)
 {
-	if(!can_accomodate_tuple_insert(page, page_size, key_val_def, key_val))
-		return 0;
-
 	// handle edge case when number of elements in the page are 0
 	if(get_tuple_count(page) == 0)
 	{
-		insert_tuple(page, page_size, key_val_def, key_val);
 		(*index) = 0;
-		return 1;
+		return insert_tuple(page, page_size, key_val_def, key_val);
 	}
 
 	// search for a viable index that is closer to that one, which we are planning to insert
@@ -113,10 +109,16 @@ int insert_to_sorted_packed_page(
 		}
 	}
 
+	// this is the final index for the newly inserted element
 	uint16_t new_index = index_searched;
 
-	// tuple inserted to the end of the page
-	insert_tuple(page, page_size, key_val_def, key_val);
+	// set the return value
+	(*index) = new_index;
+
+	// insert tuple to the end of the page
+	int inserted = insert_tuple(page, page_size, key_val_def, key_val);
+	if(!inserted)
+		return 0;
 
 	uint16_t tuple_count = get_tuple_count(page);
 	uint16_t temp_index = tuple_count - 1;	// current temporary index of the inserted tuple
@@ -125,9 +127,6 @@ int insert_to_sorted_packed_page(
 		swap_tuples(page, page_size, key_val_def, temp_index - 1, temp_index);
 		temp_index--;
 	}
-
-
-	(*index) = new_index;
 
 	return 1;
 }
