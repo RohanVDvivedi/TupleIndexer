@@ -10,6 +10,11 @@ int is_interior_page(const void* page)
 	return get_page_type(page) == INTERIOR_PAGE_TYPE;
 }
 
+int init_interior_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+{
+	return init_page(page, page_size, INTERIOR_PAGE_TYPE, 1, bpttds->index_def);
+}
+
 uint16_t get_index_entry_count_in_interior_page(const void* page)
 {
 	return get_tuple_count(page);

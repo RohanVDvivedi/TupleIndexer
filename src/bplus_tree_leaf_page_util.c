@@ -10,6 +10,11 @@ int is_leaf_page(const void* page)
 	return get_page_type(page) == LEAF_PAGE_TYPE;
 }
 
+int init_leaf_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+{
+	return init_page(page, page_size, LEAF_PAGE_TYPE, 2, bpttds->record_def);
+}
+
 uint32_t get_next_leaf_page(const void* page)
 {
 	return get_reference_page_id(page, NEXT_PAGE_REF);

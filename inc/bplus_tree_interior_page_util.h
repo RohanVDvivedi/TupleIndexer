@@ -3,8 +3,6 @@
 
 #include<bplus_tree_util.h>
 
-int is_interior_page(const void* page);
-
 /*
 **
 **	each tuple in the interior page is of the form 
@@ -14,6 +12,11 @@ int is_interior_page(const void* page);
 **	all the records lesser than the first (0th) key are stored at the page_references[ALL_LEAST_REF]
 **
 */
+
+int is_interior_page(const void* page);
+
+// to initialize an interior page
+int init_interior_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
 // returns number of records in the leaf page
 uint16_t get_index_entry_count_in_interior_page(const void* page);
