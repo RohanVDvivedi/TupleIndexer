@@ -35,4 +35,7 @@ const void* get_record_from_leaf_page(const void* page, uint32_t page_size, uint
 	return get_nth_tuple(page, page_size, bpttds->record_def, index);
 }
 
-uint16_t find_in_leaf_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds);
+const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+{
+	
+}
