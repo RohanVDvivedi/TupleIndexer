@@ -8,8 +8,8 @@ int is_leaf_page(const void* page);
 // to initialize a leaf page
 int init_leaf_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
-uint32_t get_next_leaf_page(const void* page);
-uint32_t get_prev_leaf_page(const void* page);
+uint32_t get_next_sibling_leaf_page(const void* page);
+int set_next_sibling_leaf_page(void* page, uint32_t next_page_id);
 
 // returns number of records in the leaf page
 uint16_t get_record_count_in_leaf_page(const void* page);
