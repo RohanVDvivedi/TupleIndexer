@@ -2,7 +2,7 @@
 Stage 1
  * implement splits and merges functions in interior_page and leaf_page
  * implement driver funcs for the splits and merges
- * implement bplus_tree search, insert and delete driver function
+ * implement bplus_tree search (find_greatest & find_least), insert and delete driver function
  * implement a way to protect the root reference in the calling function
 
 Stage 1.1
