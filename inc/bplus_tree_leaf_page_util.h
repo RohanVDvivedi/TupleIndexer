@@ -27,6 +27,6 @@ uint16_t find_in_leaf_page(const void* page, uint32_t page_size, const void* lik
 const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
 // returns true (1), if parent_index_record needs to be deleted from the parent_page
-int merge_leaf_pages(void* page_to_merge_with, const void* parent_index_record, void* page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+int merge_leaf_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
 #endif

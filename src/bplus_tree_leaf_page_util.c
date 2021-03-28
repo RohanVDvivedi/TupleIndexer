@@ -61,18 +61,21 @@ const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new
 	// delete the copied records in the page that is to be split
 	delete_all_in_sorted_packed_page(page_to_be_split, page_size, bpttds->record_def, records_to_move_start, records_to_move_last);
 
+	// reset the next sibling page references
 	uint32_t next_of_page_to_be_split = get_next_sibling_leaf_page(page_to_be_split);
 	set_next_sibling_leaf_page(new_page, next_of_page_to_be_split);
 	set_next_sibling_leaf_page(page_to_be_split, new_page_id);
 
 	// get first record in the new page
 	const void* first_new_page_record = get_record_from_leaf_page(new_page, page_size, 0, bpttds);
-	uint32_t first_new_page_record_size = get_tuple_size(bpttds->key_def, first_new_page_record);
+	uint32_t first_new_page_key_size = get_tuple_size(bpttds->key_def, first_new_page_record);
 
 	// generate the tuple with index_def, that you need to insert in the parent page
-	uint32_t parent_insert_tuple_size = first_new_page_record_size + 4;
+	uint32_t parent_insert_tuple_size = first_new_page_key_size + 4;
 	void* parent_insert = malloc(parent_insert_tuple_size);
-	memmove(parent_insert, first_new_page_record, first_new_page_record_size);
+
+	// set the key and new_page_id for the new index entry that we need to return, to be inserted to the parent page
+	memmove(parent_insert, first_new_page_record, first_new_page_key_size);
 	copy_element_to_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_insert, &new_page_id);
 
 	return parent_insert;
