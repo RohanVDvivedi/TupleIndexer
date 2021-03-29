@@ -199,3 +199,40 @@ const void* split_interior_page(void* page_to_be_split, void* new_page, uint32_t
 
 	return parent_insert;
 }
+
+int merge_interior_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+{
+	// calculate the size of the key of the parent index record
+	uint32_t parent_index_record_key_size = get_tuple_size(bpttds->index_def, parent_index_record);
+
+	// check if all the tuples in the sibling page + the parent_index_record can be inserted into the page
+	if(get_free_space_in_page(page, page_size, bpttds->record_def) < ((parent_index_record_key_size + 4) + get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def)))
+		return 0;
+
+	uint32_t all_least_ref_sibling_page = get_index_page_id_from_interior_page(sibling_page_to_be_merged, page_size, -1, bpttds);
+
+	{// insert parent index entry
+		// create an index entry corresponding to the parent index record
+		void* parent_index_to_be_inserted = malloc(parent_index_record_key_size + 4);
+		memmove(parent_index_to_be_inserted, bpttds->key_def, parent_index_record_key_size);
+		copy_element_to_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_index_to_be_inserted, &all_least_ref_sibling_page);
+
+		// insert the newly created parent_index_entry and insert it to the page
+		uint16_t parent_index_entry_insertion_index;
+		insert_to_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, parent_index_to_be_inserted, &parent_index_entry_insertion_index);
+		free(parent_index_to_be_inserted);
+	}
+
+	{// insert sibling index entries
+		// tuples in the sibling page, that we need to copy to the page
+		uint16_t tuples_to_be_merged = get_tuple_count(sibling_page_to_be_merged);
+
+		// insert sibling page index entries to the page
+		insert_all_from_sorted_packed_page(page, sibling_page_to_be_merged, page_size, bpttds->key_def, bpttds->index_def, 0, tuples_to_be_merged - 1);
+
+		// delete all tuuples in the sibling page (that is to be free, hence a redundant operation)
+		delete_all_in_sorted_packed_page(sibling_page_to_be_merged, page_size, bpttds->index_def, 0, tuples_to_be_merged - 1);
+	}
+
+	return 1;
+}
