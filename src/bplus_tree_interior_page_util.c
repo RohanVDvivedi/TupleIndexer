@@ -222,6 +222,7 @@ int merge_interior_pages(void* page, const void* parent_index_record, void* sibl
 		insert_to_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, parent_index_to_be_inserted, &parent_index_entry_insertion_index);
 		free(parent_index_to_be_inserted);
 
+		// it is redundant operation to set index page_id in a page that we are already going to free
 		set_index_page_id_in_interior_page(sibling_page_to_be_merged, page_size, -1, bpttds, NULL_PAGE_REF);
 	}
 
