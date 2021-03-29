@@ -14,6 +14,8 @@
 // page references on leaf page
 #define NEXT_SIBLING_PAGE_REF       0
 
+#define NULL_PAGE_REF				(~0)
+
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs
 {

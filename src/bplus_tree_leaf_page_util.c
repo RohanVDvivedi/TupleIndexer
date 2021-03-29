@@ -80,3 +80,31 @@ const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new
 
 	return parent_insert;
 }
+
+int merge_leaf_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+{
+	// check if all the tuples in the sibling page can be inserted into the page
+	if(get_free_space_in_page(page, page_size, bpttds->record_def) < get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def))
+		return 0;
+
+	// tuples in the sibling page, that we need to copy to the page
+	uint16_t tuples_to_be_merged = get_tuple_count(sibling_page_to_be_merged);
+
+	if(tuples_to_be_merged > 0)
+	{
+		// insert records to new page
+		insert_all_from_sorted_packed_page(page, sibling_page_to_be_merged, page_size, bpttds->key_def, bpttds->record_def, 0, tuples_to_be_merged - 1);
+
+		// delete all tuuples in the sibling page (that is to be free, hence a redundant operation)
+		delete_all_in_sorted_packed_page(sibling_page_to_be_merged, page_size, bpttds->record_def, 0, tuples_to_be_merged - 1);
+	}
+
+	// fix sibling references
+	uint32_t new_next_page_id = get_next_sibling_leaf_page(sibling_page_to_be_merged);
+	set_next_sibling_leaf_page(page, new_next_page_id);
+
+	// again a redundant operation
+	set_next_sibling_leaf_page(sibling_page_to_be_merged, NULL_PAGE_REF);
+
+	return 1;
+}
