@@ -209,9 +209,9 @@ int merge_interior_pages(void* page, const void* parent_index_record, void* sibl
 	if(get_free_space_in_page(page, page_size, bpttds->record_def) < ((parent_index_record_key_size + 4) + get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def)))
 		return 0;
 
-	uint32_t all_least_ref_sibling_page = get_index_page_id_from_interior_page(sibling_page_to_be_merged, page_size, -1, bpttds);
-
 	{// insert parent index entry
+		uint32_t all_least_ref_sibling_page = get_index_page_id_from_interior_page(sibling_page_to_be_merged, page_size, -1, bpttds);
+
 		// create an index entry corresponding to the parent index record
 		void* parent_index_to_be_inserted = malloc(parent_index_record_key_size + 4);
 		memmove(parent_index_to_be_inserted, bpttds->key_def, parent_index_record_key_size);
@@ -221,6 +221,8 @@ int merge_interior_pages(void* page, const void* parent_index_record, void* sibl
 		uint16_t parent_index_entry_insertion_index;
 		insert_to_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, parent_index_to_be_inserted, &parent_index_entry_insertion_index);
 		free(parent_index_to_be_inserted);
+
+		set_index_page_id_in_interior_page(sibling_page_to_be_merged, page_size, -1, bpttds, NULL_PAGE_REF);
 	}
 
 	{// insert sibling index entries
