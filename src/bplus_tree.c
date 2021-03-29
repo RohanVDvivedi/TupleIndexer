@@ -1,7 +1,12 @@
 #include<bplus_tree.h>
 
+#include<sorted_packed_page_util.h>
+
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
+
+#include<stdlib.h>
+#include<string.h>
 
 uint32_t create_new_bplus_tree(const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
@@ -19,6 +24,8 @@ uint32_t create_new_bplus_tree(const bplus_tree_tuple_defs* bpttds, const data_a
 
 const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
+	void* record_found = NULL;
+
 	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root);
 
 	while(curr_page != NULL)
@@ -28,10 +35,21 @@ const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_
 			case LEAF_PAGE_TYPE :
 			{
 				// find record for the given key in b+tree
+				uint16_t found_index;
+				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, key, &found_index);
+
+				if(found) // then, copy it to record_found
+				{
+					const void* record_found_original = get_nth_tuple(curr_page, dam_p->page_size, bpttds->record_def, found_index);
+					uint32_t record_found_original_size = get_tuple_size(bpttds->record_def, record_found_original);
+
+					record_found = malloc(record_found_original_size);
+					memmove(record_found, record_found_original, record_found_original_size);
+				}
 
 				// release lock and cleanup
 				dam_p->release_reader_lock_on_page(dam_p->context, curr_page);
-				curr_page = NULL
+				curr_page = NULL;
 				break;
 			}
 			case INTERIOR_PAGE_TYPE :
@@ -50,6 +68,8 @@ const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_
 			}
 		}
 	}
+
+	return record_found;
 }
 
 int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
