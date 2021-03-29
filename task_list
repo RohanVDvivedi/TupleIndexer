@@ -1,6 +1,6 @@
 
 Stage 1
- * implement bplus_tree find (find_greatest & find_least), insert and delete driver function
+ * implement bplus_tree find (find_greatest & find_least), insert and delete driver function (i.e. point queries)
 
 Stage 2
  * implement a page_list and a page_cursor interface to read leaf pages list or any page list
