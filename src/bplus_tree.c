@@ -76,7 +76,9 @@ const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_
 
 int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
-	// record.size must be lesser than or equal to half the page size
+	// record size must be lesser than or equal to half the page size
+	if(get_tuple_size(bpttds->record_def, record) >= dam_p->page_size / 2)
+		return 0;
 
 	arraylist locked_parents;
 	initialize_arraylist(&locked_parents, 64);
