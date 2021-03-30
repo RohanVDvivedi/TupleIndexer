@@ -5,7 +5,7 @@
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
 
-#include<queue.h>
+#include<arraylist.h>
 
 #include<stdlib.h>
 #include<string.h>
@@ -76,8 +76,10 @@ const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_
 
 int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
-	queue locked_parents;
-	initialize_queue(&locked_parents, 64);
+	// record.size must be lesser than or equal to half the page size
+
+	arraylist locked_parents;
+	initialize_arraylist(&locked_parents, 64);
 
 	void* curr_locked_page = NULL;
 
@@ -92,16 +94,34 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 		{
 			case LEAF_PAGE_TYPE :
 			{
+				// try to insert record to the curr_page
+				// if insert succeeds, then unlock all pages and quit the loop
+				// else split this leaf node and then insert
+				// set the parent_index_insert, and pop a curr_page (getting immediate parent)
 				break;
 			}
 			case INTERIOR_PAGE_TYPE :
 			{
+				if(parent_index_insert == NULL)
+				{
+					// if the current page is lesser than half full, then release locks on all the locked_parents
+					// search appropriate indirection and lock this next page
+					// insert curr_page to this locked_parents queue, and set next_page to curr_page
+					// release appropriate locks in the locked_parents queue
+				}
+				else	// index insert to parent
+				{
+					// try to insert record to the curr_page
+					// if insert succeeds, then unlock all pages and quit the loop
+					// else split this interior node and then insert
+					// set the parent_index_insert, and pop a curr_page (getting immediate parent)
+				}
 				break;
 			}
 		}
 	}
 
-	deinitialize_queue(locked_parents);
+	deinitialize_arraylist(locked_parents);
 
 	return inserted;
 }
