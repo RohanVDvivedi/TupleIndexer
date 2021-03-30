@@ -35,9 +35,7 @@ int set_index_page_id_in_interior_page(void* page, uint32_t page_size, int32_t i
 const void* get_index_entry_from_interior_page(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds);
 
 // returns index to the index_page_id, to search for the tuple with like_key
-// pick_last_match = 0 => returns the first match indirection to pick (this is used for search in b+ tree)
-// pick_last_match = 1 => returns the last match indirection to pick (this is used for insertion in b+ tree)
-int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* like_key, int pick_last_match, const bplus_tree_tuple_defs* bpttds);
+int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds);
 
 // below functions manage splits and merges of the leaf_pages of the b+tree
 
