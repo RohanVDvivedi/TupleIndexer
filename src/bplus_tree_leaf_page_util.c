@@ -55,17 +55,14 @@ int can_split_leaf_page(void* page_to_be_split, uint32_t page_size, const bplus_
 
 const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
-	// can not split if the page is less than half full
-	if(get_space_occupied_by_all_tuples(page_to_be_split, page_size, bpttds->record_def) < (get_space_allotted_to_all_tuples(page_to_be_split, page_size, bpttds->record_def)/2))
+	// if can not split the page
+	if(!can_split_leaf_page(page_to_be_split, page_size, bpttds))
 		return NULL;
 
+	// record_count before split
 	uint16_t record_count = get_record_count_in_leaf_page(page_to_be_split);
 
-	// can not split a page with lesser than 2 records
-	if(record_count < 2)
-		return NULL;
-
-	// after the split
+	// record_count after the split
 	uint16_t new_record_count = record_count / 2;
 
 	uint16_t records_to_move_start = new_record_count;
