@@ -63,7 +63,7 @@ const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new
 	// record_count before split
 	uint16_t record_count = get_record_count_in_leaf_page(page_to_be_split);
 
-	// record_count after the split
+	// record_count after the split (this logic only works for FIXED_ARRAY_PAGE_LAYOUT pages)
 	uint16_t new_record_count = record_count / 2;
 
 	uint16_t records_to_move_start = new_record_count;

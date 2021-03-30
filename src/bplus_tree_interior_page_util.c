@@ -138,7 +138,7 @@ const void* split_interior_page(void* page_to_be_split, void* new_page, uint32_t
 	// index_entry_count before the split
 	uint32_t index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
 
-	// index_entry_count after the split
+	// index_entry_count after the split (this logic only works for FIXED_ARRAY_PAGE_LAYOUT pages)
 	uint16_t new_index_entry_count = index_entry_count / 2;
 
 	// endex entry that should be moved to the parent page
