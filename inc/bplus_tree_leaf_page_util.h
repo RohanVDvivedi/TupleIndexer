@@ -22,6 +22,9 @@ uint16_t find_in_leaf_page(const void* page, uint32_t page_size, const void* lik
 
 // below functions manage splits and merges of the leaf_pages of the b+tree
 
+// to test if a given leaf page can be split
+int can_split_leaf_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+
 // returns the tuple (of bpttds->tuple_def) that we need to insert into the parent page
 // returns non NULL tuple if the page was split
 const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
