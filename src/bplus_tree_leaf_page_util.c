@@ -4,6 +4,7 @@
 #include<page_layout.h>
 
 #include<sorted_packed_page_util.h>
+#include<storage_capacity_page_util.h>
 
 #include<stdlib.h>
 #include<string.h>
@@ -41,7 +42,7 @@ const void* get_record_from_leaf_page(const void* page, uint32_t page_size, uint
 int can_split_leaf_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// can not split if the page is less than half full
-	if(get_space_occupied_by_all_tuples(page_to_be_split, page_size, bpttds->record_def) < (get_space_allotted_to_all_tuples(page_to_be_split, page_size, bpttds->record_def)/2))
+	if(is_page_lesser_than_half_full(page_to_be_split, page_size, bpttds->record_def))
 		return 0;
 
 	uint16_t record_count = get_record_count_in_leaf_page(page_to_be_split);
@@ -100,10 +101,10 @@ const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new
 int can_merge_leaf_pages(void* page, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// both the pages must be less than half full
-	if(get_space_occupied_by_all_tuples(page, page_size, bpttds->record_def) > (get_space_allotted_to_all_tuples(page, page_size, bpttds->record_def)/2))
+	if(is_page_more_than_half_full(page, page_size, bpttds->record_def))
 		return 0;
 
-	if(get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def) > (get_space_allotted_to_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def)/2))
+	if(is_page_more_than_half_full(sibling_page_to_be_merged, page_size, bpttds->record_def))
 		return 0;
 
 	// check if all the tuples in the sibling page can be inserted into the page

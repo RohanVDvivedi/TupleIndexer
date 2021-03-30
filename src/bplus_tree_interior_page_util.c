@@ -4,6 +4,7 @@
 #include<page_layout.h>
 
 #include<sorted_packed_page_util.h>
+#include<storage_capacity_page_util.h>
 
 #include<string.h>
 #include<stdlib.h>
@@ -116,7 +117,7 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 int can_split_interior_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// can not split if the page is less than half full
-	if(get_space_occupied_by_all_tuples(page_to_be_split, page_size, bpttds->index_def) < (get_space_allotted_to_all_tuples(page_to_be_split, page_size, bpttds->index_def)/2))
+	if(is_page_lesser_than_half_full(page_to_be_split, page_size, bpttds->index_def))
 		return 0;
 
 	uint32_t index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
@@ -180,10 +181,10 @@ const void* split_interior_page(void* page_to_be_split, void* new_page, uint32_t
 int can_merge_interior_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// both the pages must be less than half full
-	if(get_space_occupied_by_all_tuples(page, page_size, bpttds->index_def) > (get_space_allotted_to_all_tuples(page, page_size, bpttds->index_def)/2))
+	if(is_page_more_than_half_full(page, page_size, bpttds->index_def))
 		return 0;
 
-	if(get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->index_def) > (get_space_allotted_to_all_tuples(sibling_page_to_be_merged, page_size, bpttds->index_def)/2))
+	if(is_page_more_than_half_full(sibling_page_to_be_merged, page_size, bpttds->index_def))
 		return 0;
 
 	// calculate the size of the key of the parent index record
