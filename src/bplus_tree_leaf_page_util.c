@@ -97,10 +97,26 @@ const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new
 	return parent_insert;
 }
 
-int merge_leaf_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+int can_merge_leaf_pages(void* page, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
+	// both the pages must be less than half full
+	if(get_space_occupied_by_all_tuples(page, page_size, bpttds->record_def) > (get_space_allotted_to_all_tuples(page, page_size, bpttds->record_def)/2))
+		return 0;
+
+	if(get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def) > (get_space_allotted_to_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def)/2))
+		return 0;
+
 	// check if all the tuples in the sibling page can be inserted into the page
 	if(get_free_space_in_page(page, page_size, bpttds->record_def) < get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def))
+		return 0;
+
+	return 1;
+}
+
+int merge_leaf_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+{
+	// check if pages can be merged
+	if(!can_merge_leaf_pages(page, sibling_page_to_be_merged, page_size, bpttds))
 		return 0;
 
 	// tuples in the sibling page, that we need to copy to the page

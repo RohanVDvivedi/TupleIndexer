@@ -29,6 +29,9 @@ int can_split_leaf_page(void* page_to_be_split, uint32_t page_size, const bplus_
 // returns non NULL tuple if the page was split
 const void* split_leaf_page(void* page_to_be_split, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
+// to test if given leaf pages can be merged
+int can_merge_leaf_pages(void* page, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+
 // returns true (1), if parent_index_record needs to be deleted from the parent_page
 int merge_leaf_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
