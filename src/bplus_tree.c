@@ -5,6 +5,8 @@
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
 
+#include<queue.h>
+
 #include<stdlib.h>
 #include<string.h>
 
@@ -72,6 +74,36 @@ const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_
 	return record_found;
 }
 
-int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+{
+	queue locked_parents;
+	initialize_queue(&locked_parents, 64);
+
+	void* curr_locked_page = NULL;
+
+	void* parent_index_insert = NULL;
+
+	int inserted = 0;
+
+	int quit_loop = 0;
+	while(!quit_loop)
+	{
+		switch(get_page_type(curr_page))
+		{
+			case LEAF_PAGE_TYPE :
+			{
+				break;
+			}
+			case INTERIOR_PAGE_TYPE :
+			{
+				break;
+			}
+		}
+	}
+
+	deinitialize_queue(locked_parents);
+
+	return inserted;
+}
 
 int delete_in_bplus_tree(uint32_t* root, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
