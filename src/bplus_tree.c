@@ -57,7 +57,7 @@ const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_
 			case INTERIOR_PAGE_TYPE :
 			{
 				// find next page_id to jump to the next level in the b+tree
-				int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, key, 0, bpttds);
+				int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, key, bpttds);
 				uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
 
 				// lock next page, prior to releasing the lock on the current page
@@ -90,7 +90,7 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 	int quit_loop = 0;
 	while(!quit_loop)
 	{
-		switch(get_page_type(curr_page))
+		switch(get_page_type(curr_locked_page))
 		{
 			case LEAF_PAGE_TYPE :
 			{
@@ -121,7 +121,7 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 		}
 	}
 
-	deinitialize_arraylist(locked_parents);
+	deinitialize_arraylist(&locked_parents);
 
 	return inserted;
 }

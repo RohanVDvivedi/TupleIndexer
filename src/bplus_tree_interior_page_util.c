@@ -33,7 +33,7 @@ uint32_t get_index_page_id_from_interior_page(const void* page, uint32_t page_si
 		return 0;
 
 	const void* index_tuple = get_nth_tuple(page, page_size, bpttds->index_def, index);
-	return *(get_element(bpttds->index_def, bpttds->index_def->element_count - 1, index_tuple).UINT_4);
+	return *(get_element_from_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, index_tuple).UINT_4);
 }
 
 int set_index_page_id_in_interior_page(void* page, uint32_t page_size, int32_t index, const bplus_tree_tuple_defs* bpttds, uint32_t page_id)
