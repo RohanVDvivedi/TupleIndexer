@@ -1,5 +1,6 @@
 
 Stage 1
+ * implement size based split function, the current tuple split functionality splits the page into two based on the number of tuples contained, i.e. giving half tuples to each of the pages, we need a function that splits the tuples such that both the pages are almost or lesser than half full. so that they would accomodate the new tuple easily.
  * implement bplus_tree find (find_greatest & find_least), insert and delete driver function (i.e. point queries)
 
 Stage 2
@@ -12,6 +13,3 @@ Stage 2
 STAGE 3
  * implement single page sort (use insert_sorted_packed_page) and then an external_merge_sort for the page_list
  * building a bplus_tree on top if a external_merge_sorted leaf pages (taken as page_list), in multiple runs until there is only 1 page in the tree
-
-Stage 4
- * implement on-disk_data_store using bufferpool
