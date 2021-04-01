@@ -44,7 +44,7 @@ int can_split_interior_page(void* page_to_be_split, uint32_t page_size, const bp
 
 // returns the tuple (of bpttds->tuple_def) that we need to insert into the parent page
 // returns non NULL tuple if the page was split
-const void* split_interior_page(void* page_to_be_split, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+const void* split_insert_interior_page(void* page_to_be_split, const void* new_index_entry, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
 // to test if given interior pages can be merged
 int can_merge_interior_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
