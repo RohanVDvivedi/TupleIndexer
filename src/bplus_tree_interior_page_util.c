@@ -135,45 +135,81 @@ const void* split_insert_interior_page(void* page_to_be_split, const void* new_i
 	if(!can_split_interior_page(page_to_be_split, page_size, bpttds))
 		return NULL;
 
+	uint32_t space_alloted_to_tuples = get_space_allotted_to_all_tuples(page_to_be_split, page_size, bpttds->record_def);
+
 	// index_entry_count before the split
 	uint32_t index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
 
-	// index_entry_count after the split (this logic only works for FIXED_ARRAY_PAGE_LAYOUT pages)
-	uint16_t new_index_entry_count = index_entry_count / 2;
+	// initialize temp page
+	uint32_t temp_page_size = 2 * page_size;
+	void* temp_page = malloc(page_size);
 
-	// endex entry that should be moved to the parent page
-	uint16_t index_entry_parent = new_index_entry_count;
+	{
+		// init as any other interior page
+		init_interior_page(temp_page, temp_page_size, bpttds);
 
-	uint16_t index_entries_to_move_start = new_index_entry_count + 1;
-	uint16_t index_entries_to_move_last = index_entry_count;
+		// insert all records to the temp_page (including the new record)
+		for(uint16_t i = 0; i < index_entry_count; i++)
+		{
+			const void* tuple_to_move = get_nth_tuple(page_to_be_split, page_size, bpttds->index_def, i);
+			insert_tuple(temp_page, temp_page_size, bpttds->record_def, tuple_to_move);
+		}
+		uint16_t new_index_entry_index;
+		insert_to_sorted_packed_page(temp_page, temp_page_size, bpttds->key_def, bpttds->index_def, new_index_entry, &new_index_entry_index);
 
-	// init a new interior page
-	init_interior_page(new_page, page_size, bpttds);
+		// init new interior page
+		init_interior_page(new_page, page_size, bpttds);
 
-	// insert index entries to new page
-	insert_all_from_sorted_packed_page(new_page, page_to_be_split, page_size, bpttds->key_def, bpttds->index_def, index_entries_to_move_start, index_entries_to_move_last);
+		// delete all in page_to_be_split
+		delete_all_tuples(page_to_be_split, page_size, bpttds->record_def);
+	}
 
-	// delete the copied endex entries in the page that is to be split
-	delete_all_in_sorted_packed_page(page_to_be_split, page_size, bpttds->index_def, index_entries_to_move_start, index_entries_to_move_last);
+	index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
 
-	// set ALL_LEAST_PAGE_REF for the new_page
-	uint32_t all_least_values_ref_new_page = get_index_page_id_from_interior_page(page_to_be_split, page_size, index_entry_parent, bpttds);
-	set_index_page_id_in_interior_page(new_page, page_size, -1, bpttds, all_least_values_ref_new_page);
+	// the return value
+	void* parent_insert = NULL;
 
-	// get first record in the new page
-	const void* page_entry_to_insert = get_index_entry_from_interior_page(page_to_be_split, page_size, index_entry_parent, bpttds);
-	uint32_t page_entry_to_insert_key_size = get_tuple_size(bpttds->key_def, page_entry_to_insert);
+	// actual move operation, to move tuples to either of page_to_be_split or to new_page
+	{
+		uint16_t tuple_to_insert = 0;
 
-	// generate the tuple with index_def, that you need to insert in the parent page
-	uint32_t parent_insert_tuple_size = page_entry_to_insert_key_size + 4;
-	void* parent_insert = malloc(parent_insert_tuple_size);
+		uint32_t page_size_1 = 0;
+		while(page_size_1 < space_alloted_to_tuples / 2)
+		{
+			const void* tuple_to_move = get_nth_tuple(temp_page, temp_page_size, bpttds->index_def, tuple_to_insert);
+			int inserted = insert_tuple(page_to_be_split, page_size, bpttds->index_def, tuple_to_move);
+			if(inserted)
+			{
+				page_size_1 = get_space_occupied_by_all_tuples(temp_page, temp_page_size, bpttds->record_def);
+				tuple_to_insert++;
+			}
+			else
+				break;
+		}
 
-	// set the key and new_page_id for the new index entry that we need to return, to be inserted to the parent page
-	memmove(parent_insert, page_entry_to_insert, page_entry_to_insert_key_size);
-	copy_element_to_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_insert, &new_page_id);
+		// get this next to be inserted index_entry
+		const void* page_entry_to_insert = get_index_entry_from_interior_page(temp_page, temp_page_size, tuple_to_insert, bpttds);
+		uint32_t page_entry_to_insert_key_size = get_tuple_size(bpttds->key_def, page_entry_to_insert);
 
-	// delete the index_entry that is to be inserted to the parent
-	delete_in_sorted_packed_page(page_to_be_split, page_size, bpttds->index_def, index_entry_parent);
+		// now prepare the parent record
+		parent_insert = malloc(page_entry_to_insert_key_size + 4);
+		memmove(parent_insert, page_entry_to_insert, page_entry_to_insert_key_size);
+		copy_element_to_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_insert, &new_page_id);
+
+		// use this same entry to set the ALL_LEAST_REF of the new_page
+		uint32_t all_least_values_ref_new_page = get_index_page_id_from_interior_page(temp_page, temp_page_size, tuple_to_insert, bpttds);
+		set_index_page_id_in_interior_page(new_page, page_size, -1, bpttds, all_least_values_ref_new_page);
+
+		tuple_to_insert++;
+
+		for(; tuple_to_insert < index_entry_count; tuple_to_insert++)
+		{
+			const void* tuple_to_move = get_nth_tuple(temp_page, temp_page_size, bpttds->record_def, tuple_to_insert);
+			insert_tuple(new_page, page_size, bpttds->record_def, tuple_to_move);
+		}
+	}
+
+	free(temp_page);
 
 	return parent_insert;
 }
