@@ -102,7 +102,7 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 			int inserted = insert_tuple(page_to_be_split, page_size, bpttds->record_def, tuple_to_move);
 			if(inserted)
 			{
-				page_size_1 = get_space_occupied_by_all_tuples(temp_page, temp_page_size, bpttds->record_def);
+				page_size_1 = get_space_occupied_by_all_tuples(page_to_be_split, page_size, bpttds->record_def);
 				tuple_to_insert++;
 			}
 			else
