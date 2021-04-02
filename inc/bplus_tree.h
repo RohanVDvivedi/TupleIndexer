@@ -19,6 +19,6 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 
 int delete_in_bplus_tree(uint32_t* root_id, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
-void print_inorder_bplus_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+void print_bplus_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
 #endif
