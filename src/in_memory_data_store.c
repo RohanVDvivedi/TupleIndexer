@@ -77,7 +77,7 @@ static void* get_new_page_with_write_lock(void* context, uint32_t* page_id_retur
 			remove_head(&(cntxt->free_pages));
 			
 			// calculate its index
-			uint32_t free_page_id = ((uintptr_t)(free_page_p - cntxt->memory)) / cntxt->page_size;
+			free_page_id = ((uintptr_t)(free_page_p - cntxt->memory)) / cntxt->page_size;
 
 			// clear the free flag bit
 			cntxt->page_states[free_page_id].flags &= (~IS_FREE_FLAG);
