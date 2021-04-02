@@ -293,7 +293,7 @@ void print_bplus_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, con
 
 			// call print on itself
 			printf("INTR page_id = %u\n", root_id);
-			print_page(curr_page, dam_p->page_size, bpttds->record_def);
+			print_page(curr_page, dam_p->page_size, bpttds->index_def);
 
 			break;
 		}
