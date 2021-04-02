@@ -85,7 +85,7 @@ int main()
 
 	// declare temp variables
 	row* r = NULL;
-	char tuple_cache[PAGE_SIZE] = {};
+	char rc[PAGE_SIZE] = {};
 
 	// create a new bplus tree
 	uint32_t root_id = create_new_bplus_tree(bpttds, dam_p);
