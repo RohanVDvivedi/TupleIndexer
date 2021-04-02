@@ -97,8 +97,14 @@ int main()
 
 	// test inserts, finds and deletes
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){1, 16, "Rohan", 16, "Dvivedi"}));
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){0, 16, "Rohan", 16, "Dvivedi"}));
 	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){5, 16, "Samip", 16, "Thakkar"}));
+	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	//build_tuple_from_row_struct(bpttds->record_def, rc, &((row){10, 16, "Sahil", 16, "Shah"}));
+	//insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(root_id, bpttds, dam_p);
