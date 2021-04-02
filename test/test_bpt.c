@@ -95,6 +95,8 @@ int main()
 
 	// test inserts, finds and deletes
 
+	print_bplus_tree(root_id, bpttds, dam_p);
+
 
 	// ---------- TESTS COMPLETE
 
