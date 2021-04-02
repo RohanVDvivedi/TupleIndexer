@@ -84,7 +84,6 @@ int main()
 	data_access_methods* dam_p = get_new_in_memory_data_store(PAGE_SIZE, PAGE_COUNT);
 
 	// declare temp variables
-	row* r = NULL;
 	char rc[PAGE_SIZE] = {};
 
 	// create a new bplus tree
@@ -92,10 +91,18 @@ int main()
 
 	// ---------- INITIALIZATION COMLETE
 
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(root_id, bpttds, dam_p);
+	printf(" ================== \n\n");
 
 	// test inserts, finds and deletes
 
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){1, 16, "Rohan", 16, "Dvivedi"}));
+	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(root_id, bpttds, dam_p);
+	printf(" ================== \n\n");
 
 
 	// ---------- TESTS COMPLETE
