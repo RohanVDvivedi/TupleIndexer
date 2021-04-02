@@ -253,31 +253,28 @@ void print_bplus_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, con
 {
 	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_id);
 
-	while(curr_page != NULL)
+	switch(get_page_type(curr_page))
 	{
-		switch(get_page_type(curr_page))
+		case LEAF_PAGE_TYPE :
 		{
-			case LEAF_PAGE_TYPE :
+			printf("LEAF page_id = %u\n", root_id);
+			print_page(curr_page, dam_p->page_size, bpttds->record_def);
+			break;
+		}
+		case INTERIOR_PAGE_TYPE :
+		{
+			// call print on all its children
+			for(int32_t i = -1; i < ((int32_t)(get_index_entry_count_in_interior_page(curr_page))); i++)
 			{
-				printf("LEAF page_id = %u\n", root_id);
-				print_page(curr_page, dam_p->page_size, bpttds->record_def);
-				break;
+				uint32_t child_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, i, bpttds);
+				print_bplus_tree(child_id, bpttds, dam_p);
 			}
-			case INTERIOR_PAGE_TYPE :
-			{
-				// call print on all its children
-				for(int32_t i = -1; i < ((int32_t)(get_index_entry_count_in_interior_page(curr_page))); i++)
-				{
-					uint32_t child_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, i, bpttds);
-					print_bplus_tree(child_id, bpttds, dam_p);
-				}
-				
-				// call print on itself
-				printf("INTR page_id = %u\n", root_id);
-				print_page(curr_page, dam_p->page_size, bpttds->record_def);
 
-				break;
-			}
+			// call print on itself
+			printf("INTR page_id = %u\n", root_id);
+			print_page(curr_page, dam_p->page_size, bpttds->record_def);
+
+			break;
 		}
 	}
 
