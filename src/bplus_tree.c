@@ -166,18 +166,48 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 				else if(parent_index_insert != NULL && inserted)	// index insert to parent
 				{
 					// try to insert record to the curr_page
-					int parent_index_inserted = 0;
+					uint16_t parent_index_inserted_index;
+					int parent_index_inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
 
 					// if insert succeeds, then unlock all pages and quit the loop
 					if(parent_index_inserted)
 					{
+						free(parent_index_insert);
+						parent_index_insert = NULL;
+
+						while(!is_empty_arraylist(&locked_parents))
+						{
+							// pop from the list queue_wise and release the lock
+							void* some_parent = (void*) get_front(&locked_parents);
+							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
+							pop_front(&locked_parents);
+						}
+
+						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
+						curr_page = NULL;
 					}
 					// else split this interior node and then insert
 					else
 					{
+						// get new blank page, to split this page into
+						uint32_t new_page_id;
+						void* new_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_page_id);
+
+						// split_insert to this node
+						void* next_parent_index_insert = split_insert_interior_page(curr_page, parent_index_insert, new_page, new_page_id, dam_p->page_size, bpttds);
+						free(parent_index_insert);
+						parent_index_insert = next_parent_index_insert;
+
+						// pop a curr_page (getting immediate parent)
+						// if there are locked parents, we need to propogate the split
+						if(!is_empty_arraylist(&locked_parents))
+						{
+							curr_page = (void*) get_back(&locked_parents);
+							pop_back(&locked_parents);
+						}
+						else
+							curr_page = NULL;
 					}
-					
-					// set the parent_index_insert, and pop a curr_page (getting immediate parent)
 				}
 				break;
 			}
