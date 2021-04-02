@@ -77,7 +77,7 @@ static void* get_new_page_with_write_lock(void* context, uint32_t* page_id_retur
 			remove_head(&(cntxt->free_pages));
 			
 			// calculate its index
-			uint32_t free_page_id = ((uintptr_t)(cntxt-> memory - free_page_p)) / cntxt->page_size;
+			uint32_t free_page_id = ((uintptr_t)(free_page_p - cntxt->memory)) / cntxt->page_size;
 
 			// clear the free flag bit
 			cntxt->page_states[free_page_id].flags &= (~IS_FREE_FLAG);
@@ -167,11 +167,11 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 	memory_store_context* cntxt = context;
 
 	// invalid page pointer
-	if( (((uintptr_t)(cntxt->memory - pg_ptr)) % cntxt->page_size) != 0 )
+	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -202,11 +202,11 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 	memory_store_context* cntxt = context;
 
 	// invalid page pointer
-	if( (((uintptr_t)(cntxt->memory - pg_ptr)) % cntxt->page_size) != 0 )
+	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -237,11 +237,11 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr)
 	memory_store_context* cntxt = context;
 
 	// invalid page pointer
-	if( (((uintptr_t)(cntxt->memory - pg_ptr)) % cntxt->page_size) != 0 )
+	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -272,11 +272,11 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 	memory_store_context* cntxt = context;
 
 	// invalid page pointer
-	if( (((uintptr_t)(cntxt->memory - pg_ptr)) % cntxt->page_size) != 0 )
+	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -320,11 +320,11 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 	memory_store_context* cntxt = context;
 
 	// invalid page pointer
-	if( (((uintptr_t)(cntxt->memory - pg_ptr)) % cntxt->page_size) != 0 )
+	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(cntxt->memory - pg_ptr)) / cntxt->page_size;
+	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -412,10 +412,4 @@ int close_and_destroy_in_memory_data_store(data_access_methods* dam_p)
 	free(dam_p->context);
 	free(dam_p);
 	return result;
-}
-
-// TODO :: This function will be removed in the future
-void* get_page_for_debug(const memory_store_context* cntxt, uint32_t i)
-{
-	return cntxt->memory + i * cntxt->page_size;
 }
