@@ -142,7 +142,7 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 
 	// initialize temp page
 	uint32_t temp_page_size = 2 * page_size;
-	void* temp_page = malloc(page_size);
+	void* temp_page = malloc(temp_page_size);
 
 	{
 		// init as any other interior page
