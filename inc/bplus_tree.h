@@ -13,10 +13,12 @@
 
 uint32_t create_new_bplus_tree(const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
-const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+const void* find_in_bplus_tree(uint32_t root_id, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
-int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
-int delete_in_bplus_tree(uint32_t* root, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+int delete_in_bplus_tree(uint32_t* root_id, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+
+void print_inorder_bplus_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
 #endif

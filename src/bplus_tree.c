@@ -24,11 +24,11 @@ uint32_t create_new_bplus_tree(const bplus_tree_tuple_defs* bpttds, const data_a
 	return root_page_id;
 }
 
-const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+const void* find_in_bplus_tree(uint32_t root_id, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	void* record_found = NULL;
 
-	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root);
+	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_id);
 
 	while(curr_page != NULL)
 	{
