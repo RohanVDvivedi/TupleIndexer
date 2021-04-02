@@ -7,8 +7,4 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t p
 
 int close_and_destroy_in_memory_data_store(data_access_methods* dam_p);
 
-// TODO :: This function will be removed in the future
-typedef struct memory_store_context memory_store_context;
-void* get_page_for_debug(const memory_store_context* cntxt, uint32_t i);
-
 #endif
