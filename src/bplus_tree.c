@@ -83,27 +83,35 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 	arraylist locked_parents;
 	initialize_arraylist(&locked_parents, 64);
 
-	void* curr_page = NULL;
+	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, *root);
 
 	void* parent_index_insert = NULL;
 
+	int found = 0;
 	int inserted = 0;
 
-	int quit_loop = 0;
-	while(!quit_loop)
+	// quit when no locks are held
+	while( ! (is_empty_arraylist(&locked_parents) && curr_page == NULL) )
 	{
 		switch(get_page_type(curr_page))
 		{
 			case LEAF_PAGE_TYPE :
 			{
-				// try to insert record to the curr_page
-				uint16_t inserted_index;
-				inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record,	&inserted_index);
-				
-				// if insert succeeds, then unlock this page and unlock all parent pages
-				if(inserted)
+				// the key should not be present
+				uint16_t found_index;
+				found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, &found_index);
+
+				if(!found)
 				{
-					while(!is_empty_arraylist(locked_parents))
+					// try to insert record to the curr_page
+					uint16_t inserted_index;
+					inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, &inserted_index);
+				}
+				
+				// if inserted or found, then unlock this page and all the parent pages
+				if(found || inserted)
+				{
+					while(!is_empty_arraylist(&locked_parents))
 					{
 						// pop from the list queue_wise and release the lock
 						void* some_parent = (void*) get_front(&locked_parents);
@@ -111,53 +119,58 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 						pop_front(&locked_parents);
 					}
 
-					quit_loop = 1;
+					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
+					curr_page = NULL;
 				}
-				else
+				else if(!found)
 				{
-					// get new blank page
+					// get new blank page, to split this page into
 					uint32_t new_page_id;
 					void* new_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_page_id);
 					
-					// else split this leaf node and propogate the parent_index_insert
-					parent_index_insert = split_leaf_page(curr_page, new_page, new_page_id, dam_p->page_size, bpttds);
+					// else split and insert to this leaf node and propogate the parent_index_insert
+					parent_index_insert = split_insert_leaf_page(curr_page, record, new_page, new_page_id, dam_p->page_size, bpttds);
 
-					// now pop a curr_page stack_wise (getting immediate parent) to propogate the split
+					// release lock on both: new and curr page
+					dam_p->release_writer_lock_on_page(dam_p->context, new_page);
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
 					// if there are locked parents, we need to propogate the split
-					if(!is_empty_arraylist(locked_parents))
+					if(!is_empty_arraylist(&locked_parents))
 					{
-						curr_page = get_back(&locked_parents);
+						curr_page = (void*) get_back(&locked_parents);
 						pop_back(&locked_parents);
 					}
+					else
+						curr_page = NULL;
 				}
 				break;
 			}
 			case INTERIOR_PAGE_TYPE :
 			{
-				if(parent_index_insert == NULL)
+				if(parent_index_insert == NULL && !inserted)
 				{
 					// search appropriate indirection and lock this next page
-					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, key, bpttds);
+					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, record, bpttds);
 					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
 					void* next_page = dam_p->acquire_page_with_writer_lock(dam_p->context, next_page_id);
 
-					// if the next page is lesser than half full, then release locks on all the locked_parents
+					// if the next page is lesser than half full, i.e. can handle an insert without a split
+					// then release locks on all the locked_parents
 
 					// else insert curr_page to this locked_parents queue, and set next_page to curr_page
 					push_back(&locked_parents, curr_page);
 					
 					curr_page = next_page;
 				}
-				else	// index insert to parent
+				else if(parent_index_insert != NULL && inserted)	// index insert to parent
 				{
 					// try to insert record to the curr_page
+					int parent_index_inserted = 0;
 
 					// if insert succeeds, then unlock all pages and quit the loop
-					if()
+					if(parent_index_inserted)
 					{
-						parent_index_insert = NULL;
 					}
 					// else split this interior node and then insert
 					else

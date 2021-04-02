@@ -129,7 +129,7 @@ int can_split_interior_page(void* page_to_be_split, uint32_t page_size, const bp
 	return 1;
 }
 
-const void* split_insert_interior_page(void* page_to_be_split, const void* new_index_entry, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+void* split_insert_interior_page(void* page_to_be_split, const void* new_index_entry, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// if can not split the page
 	if(!can_split_interior_page(page_to_be_split, page_size, bpttds))
