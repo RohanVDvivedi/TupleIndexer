@@ -221,7 +221,7 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 
 							// insert the only entry for a new root level
 							uint16_t parent_index_inserted_index;
-							int parent_index_inserted = insert_to_sorted_packed_page(new_root_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
+							insert_to_sorted_packed_page(new_root_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
 							parent_index_insert = NULL;
 
 							// update all least referenc of this is page
