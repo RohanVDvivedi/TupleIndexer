@@ -74,7 +74,7 @@ const void* find_in_bplus_tree(uint32_t root, const void* key, const bplus_tree_
 	return record_found;
 }
 
-int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	// record size must be lesser than or equal to half the page size
 	if(get_tuple_size(bpttds->record_def, record) >= dam_p->page_size / 2)
@@ -83,7 +83,7 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 	arraylist locked_parents;
 	initialize_arraylist(&locked_parents, 64);
 
-	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, *root);
+	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, *root_id);
 
 	void* parent_index_insert = NULL;
 
@@ -213,7 +213,28 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 							pop_back(&locked_parents);
 						}
 						else
+						{
+							// this is the case when we need to insert root
+							uint32_t new_root_page_id;
+							void* new_root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_root_page_id);
+							init_interior_page(new_root_page, dam_p->page_size, bpttds);
+
+							// insert the only entry for a new root level
+							uint16_t parent_index_inserted_index;
+							int parent_index_inserted = insert_to_sorted_packed_page(new_root_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
+							parent_index_insert = NULL;
+
+							// update all least referenc of this is page
+							uint32_t old_root_id = *(root_id);
+							set_index_page_id_in_interior_page(new_root_page, dam_p->page_size, -1, bpttds, old_root_id);
+
+							dam_p->release_writer_lock_on_page(dam_p->context, new_root_page);
+
+							// update root
+							*root_id = new_root_page_id;
+
 							curr_page = NULL;
+						}
 					}
 				}
 				break;
