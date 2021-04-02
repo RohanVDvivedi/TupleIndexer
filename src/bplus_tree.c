@@ -131,6 +131,9 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 					// else split and insert to this leaf node and propogate the parent_index_insert
 					parent_index_insert = split_insert_leaf_page(curr_page, record, new_page, new_page_id, dam_p->page_size, bpttds);
 
+					// set the inserted flag
+					inserted = 1;
+
 					// release lock on both: new and curr page
 					dam_p->release_writer_lock_on_page(dam_p->context, new_page);
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
@@ -197,6 +200,10 @@ int insert_in_bplus_tree(uint32_t* root, const void* record, const bplus_tree_tu
 						void* next_parent_index_insert = split_insert_interior_page(curr_page, parent_index_insert, new_page, new_page_id, dam_p->page_size, bpttds);
 						free(parent_index_insert);
 						parent_index_insert = next_parent_index_insert;
+
+						// release lock on both: new and curr page
+						dam_p->release_writer_lock_on_page(dam_p->context, new_page);
+						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
 						// pop a curr_page (getting immediate parent)
 						// if there are locked parents, we need to propogate the split
