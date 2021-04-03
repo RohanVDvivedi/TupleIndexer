@@ -95,8 +95,6 @@ int main()
 	print_bplus_tree(root_id, bpttds, dam_p);
 	printf(" ================== \n\n");
 
-	// test inserts, finds and deletes
-
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){0, 16, "Rohan", 16, "Dvivedi"}));
 	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
 
@@ -104,6 +102,32 @@ int main()
 	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){10, 16, "Sahil", 16, "Shah"}));
+	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(root_id, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){2, 16, "Jyotirmoy", 16, "Pain"}));
+	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){7, 16, "Shrey", 16, "Bansal"}));
+	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){12, 16, "Aman", 16, "Garg"}));
+	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(root_id, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){4, 16, "Harsha", 16, "Grandhi"}));
+	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){9, 16, "Parthiv", 16, "Kativarapu"}));
+	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){14, 16, "Anurag", 16, "Anand"}));
 	insert_in_bplus_tree(&root_id, rc, bpttds, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
