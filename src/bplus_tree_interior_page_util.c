@@ -114,16 +114,14 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 	return index_searched;
 }
 
-int can_split_interior_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+static int can_split_interior_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// can not split if the page is less than half full
 	if(is_page_lesser_than_half_full(page_to_be_split, page_size, bpttds->index_def))
 		return 0;
 
-	uint32_t index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
-
-	// can not split if the index entry count is lesser than 3
-	if(index_entry_count < 3)
+	// can not split if the index entry count is lesser than 2
+	if(get_index_entry_count_in_interior_page(page_to_be_split) < 2)
 		return 0;
 
 	return 1;
@@ -135,7 +133,7 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 	if(!can_split_interior_page(page_to_be_split, page_size, bpttds))
 		return NULL;
 
-	uint32_t space_alloted_to_tuples = get_space_allotted_to_all_tuples(page_to_be_split, page_size, bpttds->record_def);
+	uint32_t space_alloted_to_tuples = get_space_allotted_to_all_tuples(page_to_be_split, page_size, bpttds->index_def);
 
 	// index_entry_count before the split
 	uint32_t index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
@@ -152,19 +150,22 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 		for(uint16_t i = 0; i < index_entry_count; i++)
 		{
 			const void* tuple_to_move = get_nth_tuple(page_to_be_split, page_size, bpttds->index_def, i);
-			insert_tuple(temp_page, temp_page_size, bpttds->record_def, tuple_to_move);
+			insert_tuple(temp_page, temp_page_size, bpttds->index_def, tuple_to_move);
 		}
 		uint16_t new_index_entry_index;
 		insert_to_sorted_packed_page(temp_page, temp_page_size, bpttds->key_def, bpttds->index_def, new_index_entry, &new_index_entry_index);
+
+		// and reset both the pages, to insert the split tuples
 
 		// init new interior page
 		init_interior_page(new_page, page_size, bpttds);
 
 		// delete all in page_to_be_split
-		delete_all_tuples(page_to_be_split, page_size, bpttds->record_def);
+		delete_all_tuples(page_to_be_split, page_size, bpttds->index_def);
 	}
 
-	index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
+	// this is the new index entry count, considering that the new tuple is inserted to this one temp page, instead of 2 split pages
+	index_entry_count = get_index_entry_count_in_interior_page(temp_page);
 
 	// the return value
 	void* parent_insert = NULL;
@@ -180,7 +181,7 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 			int inserted = insert_tuple(page_to_be_split, page_size, bpttds->index_def, tuple_to_move);
 			if(inserted)
 			{
-				page_size_1 = get_space_occupied_by_all_tuples(page_to_be_split, page_size, bpttds->record_def);
+				page_size_1 = get_space_occupied_by_all_tuples(page_to_be_split, page_size, bpttds->index_def);
 				tuple_to_insert++;
 			}
 			else
@@ -204,8 +205,8 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 
 		for(; tuple_to_insert < index_entry_count; tuple_to_insert++)
 		{
-			const void* tuple_to_move = get_nth_tuple(temp_page, temp_page_size, bpttds->record_def, tuple_to_insert);
-			insert_tuple(new_page, page_size, bpttds->record_def, tuple_to_move);
+			const void* tuple_to_move = get_nth_tuple(temp_page, temp_page_size, bpttds->index_def, tuple_to_insert);
+			insert_tuple(new_page, page_size, bpttds->index_def, tuple_to_move);
 		}
 	}
 
@@ -227,7 +228,7 @@ int can_merge_interior_pages(void* page, const void* parent_index_record, void* 
 	uint32_t parent_index_record_key_size = get_tuple_size(bpttds->index_def, parent_index_record);
 
 	// check if all the tuples in the sibling page + the parent_index_record can be inserted into the page
-	if(get_free_space_in_page(page, page_size, bpttds->record_def) < ((parent_index_record_key_size + 4) + get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->record_def)))
+	if(get_free_space_in_page(page, page_size, bpttds->index_def) < ((parent_index_record_key_size + 4) + get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->index_def)))
 		return 0;
 
 	return 1;
