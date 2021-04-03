@@ -1,7 +1,8 @@
 
 Stage 1
- * implement size based split function, the current tuple split functionality splits the page into two based on the number of tuples contained, i.e. giving half tuples to each of the pages, we need a function that splits the tuples such that both the pages are almost or lesser than half full. so that they would accomodate the new tuple easily.
- * implement bplus_tree find (find_greatest & find_least), insert and delete driver function (i.e. point queries)
+ * implement bplus_tree delete function (i.e. point queries)
+ * test find and insert functions
+ * implement a interface way to handle root page id, use a singular code sequence to handle insert root page
 
 Stage 2
  * implement a page_list and a page_cursor interface to read leaf pages list or any page list
