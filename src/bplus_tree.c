@@ -5,6 +5,8 @@
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
 
+#include<storage_capacity_page_util.h>
+
 #include<arraylist.h>
 
 #include<stdlib.h>
@@ -162,7 +164,17 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 				if(parent_index_insert == NULL && !inserted)
 				{
 					// if the curr page can handle an insert without a split
-					// then release locks on all the locked_parents
+					// then release locks on all the locked_parents that were locked until now
+					// since we won't have to propogate the split
+					if(is_page_lesser_than_or_equal_to_half_full(curr_page, dam_p->page_size, bpttds->index_def))
+					{
+						while(!is_empty_arraylist(&locked_parents))
+						{
+							void* some_parent = (void*) get_front(&locked_parents);
+							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
+							pop_front(&locked_parents);
+						}
+					}
 
 					// search appropriate indirection page_id from curr_page
 					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, record, bpttds);
