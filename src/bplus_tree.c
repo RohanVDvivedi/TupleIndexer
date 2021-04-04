@@ -175,13 +175,13 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 			{
 				if(parent_index_insert == NULL && !inserted)
 				{
+					// if the curr page can handle an insert without a split
+					// then release locks on all the locked_parents
+
 					// search appropriate indirection and lock this next page
 					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, record, bpttds);
 					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
 					void* next_page = dam_p->acquire_page_with_writer_lock(dam_p->context, next_page_id);
-
-					// if the next page is lesser than half full, i.e. can handle an insert without a split
-					// then release locks on all the locked_parents
 
 					// else insert curr_page to this locked_parents queue, and set next_page to curr_page
 					push_back(&locked_parents, curr_page);
