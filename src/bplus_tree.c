@@ -127,7 +127,6 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 				{
 					while(!is_empty_arraylist(&locked_parents))
 					{
-						// pop from the list queue_wise and release the lock
 						void* some_parent = (void*) get_front(&locked_parents);
 						dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
 						pop_front(&locked_parents);
@@ -136,13 +135,14 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 					curr_page = NULL;
 				}
+				// insert forcefully with a split
 				else if(!found)
 				{
 					// get new blank page, to split this page into
 					uint32_t new_page_id;
 					void* new_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_page_id);
 					
-					// else split and insert to this leaf node and propogate the parent_index_insert
+					// split and insert to this leaf node and propogate the parent_index_insert
 					parent_index_insert = split_insert_leaf_page(curr_page, record, new_page, new_page_id, dam_p->page_size, bpttds);
 
 					// set the inserted flag
@@ -158,7 +158,7 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 						curr_page = (void*) get_back(&locked_parents);
 						pop_back(&locked_parents);
 					}
-					else
+					else // if there are no immediate parents, insert root
 					{
 						uint32_t new_root_page_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
 
@@ -173,22 +173,25 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 			}
 			case INTERIOR_PAGE_TYPE :
 			{
+				// we are looping forwards to search for a leaf page to insert this record
 				if(parent_index_insert == NULL && !inserted)
 				{
 					// if the curr page can handle an insert without a split
 					// then release locks on all the locked_parents
 
-					// search appropriate indirection and lock this next page
+					// search appropriate indirection page_id from curr_page
 					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, record, bpttds);
 					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
+					
+					// lock this next page
 					void* next_page = dam_p->acquire_page_with_writer_lock(dam_p->context, next_page_id);
 
-					// else insert curr_page to this locked_parents queue, and set next_page to curr_page
+					// now curr_page is a locked parent of this next_page
 					push_back(&locked_parents, curr_page);
-					
 					curr_page = next_page;
 				}
-				else if(parent_index_insert != NULL && inserted)	// index insert to parent
+				// we are looping backwards to propogate the split
+				else if(parent_index_insert != NULL && inserted)
 				{
 					// try to insert record to the curr_page
 					int parent_index_inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, NULL);
@@ -201,7 +204,6 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 
 						while(!is_empty_arraylist(&locked_parents))
 						{
-							// pop from the list queue_wise and release the lock
 							void* some_parent = (void*) get_front(&locked_parents);
 							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
 							pop_front(&locked_parents);
@@ -210,7 +212,7 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 						curr_page = NULL;
 					}
-					// else split this interior node and then insert
+					// else split this interior node to insert
 					else
 					{
 						// get new blank page, to split this page into
@@ -226,14 +228,13 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 						dam_p->release_writer_lock_on_page(dam_p->context, new_page);
 						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
-						// pop a curr_page (getting immediate parent)
-						// if there are locked parents, we need to propogate the split
+						// pop a curr_page (getting immediate parent) to propogate the split
 						if(!is_empty_arraylist(&locked_parents))
 						{
 							curr_page = (void*) get_back(&locked_parents);
 							pop_back(&locked_parents);
 						}
-						else
+						else // if there are no immediate parents, insert root
 						{
 							uint32_t new_root_page_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
 
