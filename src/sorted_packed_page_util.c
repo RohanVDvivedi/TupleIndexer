@@ -69,7 +69,8 @@ int insert_to_sorted_packed_page(
 	// handle edge case when number of elements in the page are 0
 	if(get_tuple_count(page) == 0)
 	{
-		(*index) = 0;
+		if(index != NULL)
+			(*index) = 0;
 		return insert_tuple(page, page_size, key_val_def, key_val);
 	}
 
@@ -113,7 +114,8 @@ int insert_to_sorted_packed_page(
 	uint16_t new_index = index_searched;
 
 	// set the return value
-	(*index) = new_index;
+	if(index != NULL)
+		(*index) = new_index;
 
 	// insert tuple to the end of the page
 	int inserted = insert_tuple(page, page_size, key_val_def, key_val);
