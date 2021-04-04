@@ -10,7 +10,7 @@ Stage 2
  * implement a page_list and a page_cursor interface to read leaf pages list or any page list
    * insert only if tail locked with write, i.e. insert only at the tail
    * read page with seek_page only in one direction
- * use this page_cursor interface to enable range queries for b+ trees
+ * use this page_cursor interface to enable range search queries for b+ trees
  * implement support range search and delete queries
 
 STAGE 3
