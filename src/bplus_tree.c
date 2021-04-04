@@ -161,7 +161,8 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 					else
 					{
 						uint32_t new_root_page_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
-					
+
+						free(parent_index_insert);
 						parent_index_insert = NULL;
 						*root_id = new_root_page_id;
 
@@ -235,7 +236,8 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 						else
 						{
 							uint32_t new_root_page_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
-					
+
+							free(parent_index_insert);
 							parent_index_insert = NULL;
 							*root_id = new_root_page_id;
 
