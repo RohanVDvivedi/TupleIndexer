@@ -158,16 +158,8 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 						curr_page = (void*) get_back(&locked_parents);
 						pop_back(&locked_parents);
 					}
-					else // if there are no immediate parents, insert root
-					{
-						uint32_t new_root_page_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
-
-						free(parent_index_insert);
-						parent_index_insert = NULL;
-						*root_id = new_root_page_id;
-
+					else // if there are no immediate parents, then quit this loop to insert root
 						curr_page = NULL;
-					}
 				}
 				break;
 			}
@@ -234,21 +226,22 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 							curr_page = (void*) get_back(&locked_parents);
 							pop_back(&locked_parents);
 						}
-						else // if there are no immediate parents, insert root
-						{
-							uint32_t new_root_page_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
-
-							free(parent_index_insert);
-							parent_index_insert = NULL;
-							*root_id = new_root_page_id;
-
+						else // if there are no immediate parents, then quit to insert root
 							curr_page = NULL;
-						}
 					}
 				}
 				break;
 			}
 		}
+	}
+
+	// need to insert root to this bplus tree
+	if(parent_index_insert != NULL)
+	{
+		*root_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
+
+		free(parent_index_insert);
+		parent_index_insert = NULL;
 	}
 
 	deinitialize_arraylist(&locked_parents);
