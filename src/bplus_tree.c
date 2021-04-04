@@ -74,6 +74,24 @@ const void* find_in_bplus_tree(uint32_t root_id, const void* key, const bplus_tr
 	return record_found;
 }
 
+static uint32_t insert_new_root_node(uint32_t old_root_id, const void* parent_index_insert, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+{
+	uint32_t new_root_page_id;
+	void* new_root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_root_page_id);
+	init_interior_page(new_root_page, dam_p->page_size, bpttds);
+
+	// insert the only entry for a new root level
+	uint16_t parent_index_inserted_index;
+	insert_to_sorted_packed_page(new_root_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
+
+	// update all least referenc of this is page
+	set_index_page_id_in_interior_page(new_root_page, dam_p->page_size, -1, bpttds, old_root_id);
+
+	dam_p->release_writer_lock_on_page(dam_p->context, new_root_page);
+
+	return new_root_page_id;
+}
+
 int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	// record size must be lesser than or equal to half the page size
@@ -146,23 +164,9 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 					}
 					else
 					{
-						// this is the case when we need to insert root
-						uint32_t new_root_page_id;
-						void* new_root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_root_page_id);
-						init_interior_page(new_root_page, dam_p->page_size, bpttds);
-
-						// insert the only entry for a new root level
-						uint16_t parent_index_inserted_index;
-						insert_to_sorted_packed_page(new_root_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
+						uint32_t new_root_page_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
+					
 						parent_index_insert = NULL;
-
-						// update all least referenc of this is page
-						uint32_t old_root_id = *(root_id);
-						set_index_page_id_in_interior_page(new_root_page, dam_p->page_size, -1, bpttds, old_root_id);
-
-						dam_p->release_writer_lock_on_page(dam_p->context, new_root_page);
-
-						// update root
 						*root_id = new_root_page_id;
 
 						curr_page = NULL;
@@ -235,23 +239,9 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 						}
 						else
 						{
-							// this is the case when we need to insert root
-							uint32_t new_root_page_id;
-							void* new_root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_root_page_id);
-							init_interior_page(new_root_page, dam_p->page_size, bpttds);
-
-							// insert the only entry for a new root level
-							uint16_t parent_index_inserted_index;
-							insert_to_sorted_packed_page(new_root_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
+							uint32_t new_root_page_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
+					
 							parent_index_insert = NULL;
-
-							// update all least referenc of this is page
-							uint32_t old_root_id = *(root_id);
-							set_index_page_id_in_interior_page(new_root_page, dam_p->page_size, -1, bpttds, old_root_id);
-
-							dam_p->release_writer_lock_on_page(dam_p->context, new_root_page);
-
-							// update root
 							*root_id = new_root_page_id;
 
 							curr_page = NULL;
