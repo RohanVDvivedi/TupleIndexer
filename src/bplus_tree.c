@@ -81,8 +81,7 @@ static uint32_t insert_new_root_node(uint32_t old_root_id, const void* parent_in
 	init_interior_page(new_root_page, dam_p->page_size, bpttds);
 
 	// insert the only entry for a new root level
-	uint16_t parent_index_inserted_index;
-	insert_to_sorted_packed_page(new_root_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
+	insert_to_sorted_packed_page(new_root_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, NULL);
 
 	// update all least referenc of this is page
 	set_index_page_id_in_interior_page(new_root_page, dam_p->page_size, -1, bpttds, old_root_id);
@@ -119,12 +118,9 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 				uint16_t found_index;
 				found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, &found_index);
 
+				// try to insert record to the curr_page, only if the key is not found on the page
 				if(!found)
-				{
-					// try to insert record to the curr_page
-					uint16_t inserted_index;
-					inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, &inserted_index);
-				}
+					inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, NULL);
 				
 				// if inserted or found, then unlock this page and all the parent pages
 				if(found || inserted)
@@ -194,8 +190,7 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 				else if(parent_index_insert != NULL && inserted)	// index insert to parent
 				{
 					// try to insert record to the curr_page
-					uint16_t parent_index_inserted_index;
-					int parent_index_inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, &parent_index_inserted_index);
+					int parent_index_inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->index_def, parent_index_insert, NULL);
 
 					// if insert succeeds, then unlock all pages and quit the loop
 					if(parent_index_inserted)

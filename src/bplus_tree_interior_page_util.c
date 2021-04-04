@@ -152,8 +152,7 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 			const void* tuple_to_move = get_nth_tuple(page_to_be_split, page_size, bpttds->index_def, i);
 			insert_tuple(temp_page, temp_page_size, bpttds->index_def, tuple_to_move);
 		}
-		uint16_t new_index_entry_index;
-		insert_to_sorted_packed_page(temp_page, temp_page_size, bpttds->key_def, bpttds->index_def, new_index_entry, &new_index_entry_index);
+		insert_to_sorted_packed_page(temp_page, temp_page_size, bpttds->key_def, bpttds->index_def, new_index_entry, NULL);
 
 		// and reset both the pages, to insert the split tuples
 
@@ -252,8 +251,7 @@ int merge_interior_pages(void* page, const void* parent_index_record, void* sibl
 		copy_element_to_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_index_to_be_inserted, &all_least_ref_sibling_page);
 
 		// insert the newly created parent_index_entry and insert it to the page
-		uint16_t parent_index_entry_insertion_index;
-		insert_to_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, parent_index_to_be_inserted, &parent_index_entry_insertion_index);
+		insert_to_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, parent_index_to_be_inserted, NULL);
 		free(parent_index_to_be_inserted);
 
 		// it is redundant operation to set index page_id in a page that we are already going to free

@@ -208,8 +208,7 @@ uint16_t insert_all_from_sorted_packed_page(
 	for(uint16_t index = start_index; index <= end_index; index++)
 	{
 		const void* tup = get_nth_tuple(page_src, page_size, key_val_def, index);
-		uint16_t inserted_index;
-		int inserted = insert_to_sorted_packed_page(page_dest, page_size, key_def, key_val_def, tup, &inserted_index);
+		int inserted = insert_to_sorted_packed_page(page_dest, page_size, key_def, key_val_def, tup, NULL);
 		if(inserted)
 			inserted_count++;
 		else

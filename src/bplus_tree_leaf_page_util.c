@@ -73,8 +73,7 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 			const void* tuple_to_move = get_nth_tuple(page_to_be_split, page_size, bpttds->record_def, i);
 			insert_tuple(temp_page, temp_page_size, bpttds->record_def, tuple_to_move);
 		}
-		uint16_t new_record_index;
-		insert_to_sorted_packed_page(temp_page, temp_page_size, bpttds->key_def, bpttds->record_def, new_record, &new_record_index);
+		insert_to_sorted_packed_page(temp_page, temp_page_size, bpttds->key_def, bpttds->record_def, new_record, NULL);
 
 		// and reset both the pages, to insert the split tuples
 
