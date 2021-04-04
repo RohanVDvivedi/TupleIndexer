@@ -106,7 +106,6 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 
 	void* parent_index_insert = NULL;
 
-	int found = 0;
 	int inserted = 0;
 
 	// quit when no locks are held
@@ -115,10 +114,9 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 		switch(get_page_type(curr_page))
 		{
 			case LEAF_PAGE_TYPE :
-			{
+			{// no duplicates allowed
 				// the key should not be present
-				uint16_t found_index;
-				found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, &found_index);
+				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, NULL);
 
 				// try to insert record to the curr_page, only if the key is not found on the page
 				if(!found)
