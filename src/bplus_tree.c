@@ -38,7 +38,11 @@ const void* find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const b
 {
 	void* record_found = NULL;
 
-	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_id);
+	read_lock(&(bpth->handle_lock));
+
+	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, bpth->root_id);
+
+	read_unlock(&(bpth->handle_lock));
 
 	while(curr_page != NULL)
 	{
