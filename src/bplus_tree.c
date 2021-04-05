@@ -12,7 +12,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-uint32_t create_new_bplus_tree(const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+int create_new_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	uint32_t root_page_id;
 	void* root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &root_page_id);
@@ -26,7 +26,7 @@ uint32_t create_new_bplus_tree(const bplus_tree_tuple_defs* bpttds, const data_a
 	return root_page_id;
 }
 
-const void* find_in_bplus_tree(uint32_t root_id, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+const void* find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	void* record_found = NULL;
 
@@ -93,7 +93,7 @@ static uint32_t insert_new_root_node(uint32_t old_root_id, const void* parent_in
 	return new_root_page_id;
 }
 
-int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	// record size must be lesser than or equal to half the page size
 	if(get_tuple_size(bpttds->record_def, record) >= dam_p->page_size / 2)
@@ -247,9 +247,9 @@ int insert_in_bplus_tree(uint32_t* root_id, const void* record, const bplus_tree
 	return inserted;
 }
 
-int delete_in_bplus_tree(uint32_t* root, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
-void print_bplus_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+void print_bplus_tree_sub_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_id);
 
@@ -279,4 +279,13 @@ void print_bplus_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, con
 	}
 
 	dam_p->release_reader_lock_on_page(dam_p->context, curr_page);
+}
+
+void print_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+{
+	read_lock(&(bpth->handle_lock));
+
+	print_bplus_tree_sub_tree(bpth->root_id, bpttds, dam_p);
+
+	read_unlock(&(bpth->handle_lock));
 }
