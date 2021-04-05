@@ -1,6 +1,5 @@
 
 Stage 1
- * review code for insert
  * test find and insert functions
  * impl
    * implement a interface way to handle root page id, use a singular code sequence to handle insert root page
