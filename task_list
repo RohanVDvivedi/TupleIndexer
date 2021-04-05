@@ -1,6 +1,5 @@
 
 Stage 1
- * test find and insert functions
  * review merge util functions
  * move conditions to check for feasibility to merge to static functions
  * implement bplus_tree delete function
