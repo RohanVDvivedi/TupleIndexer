@@ -5,8 +5,6 @@ Stage 1
  * impl
    * implement a interface way to handle root page id, use a singular code sequence to handle insert root page
    * use accumulative approach to test page size occupancy while performing splits
- * optimization
-   * while inserts release locks on parents not required, formalize pattern of locking and add appropriate comments
  * implement bplus_tree delete function
 
 Stage 2
