@@ -1,8 +1,8 @@
 
 Stage 1
- * test find and insert functions
- * implement find and insert using the handle interface
  * use accumulative approach to test page size occupancy while performing splits
+ * implement find and insert using the handle interface
+ * test find and insert functions
  * implement bplus_tree delete function
 
 Stage 2
