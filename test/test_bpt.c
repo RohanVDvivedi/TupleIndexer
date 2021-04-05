@@ -142,7 +142,7 @@ int main()
 	printf(" ================== \n\n");
 
 	printf("FIND LOOP\n\n");
-	for(int i = 0; i < 20; i++)
+	for(int64_t i = 0; i < 20; i++)
 	{
 		const void* found_record = find_in_bplus_tree(&bpth, &i, bpttds, dam_p);
 		if(found_record == NULL)
