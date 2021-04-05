@@ -78,7 +78,7 @@ int main()
 	init_tuple_definition(def);
 
 	// initialize tuple definition and insert element definitions for bplus tree
-	bplus_tree_tuple_defs* bpttds = get_bplus_tree_tuple_defs_from_record_def(def, 3);
+	bplus_tree_tuple_defs* bpttds = get_bplus_tree_tuple_defs_from_record_def(def, 1);
 
 	// initialize data store
 	data_access_methods* dam_p = get_new_in_memory_data_store(PAGE_SIZE, PAGE_COUNT);
@@ -140,6 +140,23 @@ int main()
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(&bpth, bpttds, dam_p);
 	printf(" ================== \n\n");
+
+	printf("FIND LOOP\n\n");
+	for(int i = 0; i < 20; i++)
+	{
+		const void* found_record = find_in_bplus_tree(&bpth, &i, bpttds, dam_p);
+		if(found_record == NULL)
+			printf("%d -> NULL\n\n", i);
+		else
+		{
+			printf("%d -> ", i);
+			char print_str[PAGE_SIZE];
+			sprint_tuple(print_str, found_record, bpttds->record_def);
+			printf("%s\n\n", print_str);
+			free(found_record);
+		}
+	}
+	printf("\n");
 
 
 	// ---------- TESTS COMPLETE
