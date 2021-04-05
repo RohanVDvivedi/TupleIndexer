@@ -14,16 +14,24 @@
 
 int create_new_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
-	uint32_t root_page_id;
-	void* root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &root_page_id);
-		if(root_page == NULL)
-			return NULL_PAGE_REF;
+	write_lock(&(bpth->handle_lock));
 
-		init_leaf_page(root_page, dam_p->page_size, bpttds);
+	void* root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &(bpth->root_id));
+
+	// getting new page to write failed
+	if(root_page == NULL)
+	{
+		write_unlock(&(bpth->handle_lock));
+		return 0;
+	}
+
+	write_unlock(&(bpth->handle_lock));
+
+	init_leaf_page(root_page, dam_p->page_size, bpttds);
 	
 	dam_p->release_writer_lock_on_page(dam_p->context, root_page);
 	
-	return root_page_id;
+	return 1;
 }
 
 const void* find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
