@@ -1,8 +1,10 @@
 
 Stage 1
- * implement find and insert using the handle interface
  * test find and insert functions
+ * review merge util functions
+ * move conditions to check for feasibility to merge to static functions
  * implement bplus_tree delete function
+ * implement bplus_tree update function
 
 Stage 2
  * implement a page_list and a page_cursor interface to read leaf pages list or any page list
