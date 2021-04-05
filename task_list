@@ -1,9 +1,8 @@
 
 Stage 1
  * test find and insert functions
- * impl
-   * implement a interface way to handle root page id, use a singular code sequence to handle insert root page
-   * use accumulative approach to test page size occupancy while performing splits
+ * implement find and insert using the handle interface
+ * use accumulative approach to test page size occupancy while performing splits
  * implement bplus_tree delete function
 
 Stage 2
