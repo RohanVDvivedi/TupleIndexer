@@ -88,8 +88,10 @@ const void* find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const b
 	return record_found;
 }
 
-static uint32_t insert_new_root_node(uint32_t old_root_id, const void* parent_index_insert, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+static void insert_new_root_node_HANDLE_UNSAFE(bplus_tree_handle* bpth, const void* parent_index_insert, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
+	uint32_t old_root_id = bpth->root_id;
+	
 	uint32_t new_root_page_id;
 	void* new_root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_root_page_id);
 	init_interior_page(new_root_page, dam_p->page_size, bpttds);
@@ -102,7 +104,7 @@ static uint32_t insert_new_root_node(uint32_t old_root_id, const void* parent_in
 
 	dam_p->release_writer_lock_on_page(dam_p->context, new_root_page);
 
-	return new_root_page_id;
+	bpth->root_id = new_root_page_id;
 }
 
 int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
@@ -114,7 +116,18 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 	arraylist locked_parents;
 	initialize_arraylist(&locked_parents, 64);
 
-	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, *root_id);
+	write_lock(&(bpth->handle_lock));
+	int is_handle_locked = 1;
+
+	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
+
+	// if the curr_page, i.e. the root page is lesser than half full than, a split is unlikely
+	// so we could release lock on the bplus tree handle if it is locked
+	if(is_page_lesser_than_or_equal_to_half_full(curr_page, dam_p->page_size, bpttds->index_def))
+	{
+		write_unlock(&(bpth->handle_lock));
+		is_handle_locked = 0;
+	}
 
 	void* parent_index_insert = NULL;
 
@@ -248,10 +261,17 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 	// need to insert root to this bplus tree
 	if(parent_index_insert != NULL)
 	{
-		*root_id = insert_new_root_node(*root_id, parent_index_insert, bpttds, dam_p);
+		insert_new_root_node_HANDLE_UNSAFE(bpth, parent_index_insert, bpttds, dam_p);
 
 		free(parent_index_insert);
 		parent_index_insert = NULL;
+	}
+
+	// before quit check if the bplus tree handle is locked
+	if(is_handle_locked)
+	{
+		write_unlock(&(bpth->handle_lock));
+		is_handle_locked = 0;
 	}
 
 	deinitialize_arraylist(&locked_parents);
@@ -261,7 +281,7 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 
 int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
-void print_bplus_tree_sub_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+static void print_bplus_tree_sub_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_id);
 
@@ -279,7 +299,7 @@ void print_bplus_tree_sub_tree(uint32_t root_id, const bplus_tree_tuple_defs* bp
 			for(int32_t i = -1; i < ((int32_t)(get_index_entry_count_in_interior_page(curr_page))); i++)
 			{
 				uint32_t child_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, i, bpttds);
-				print_bplus_tree(child_id, bpttds, dam_p);
+				print_bplus_tree_sub_tree(child_id, bpttds, dam_p);
 			}
 
 			// call print on itself
