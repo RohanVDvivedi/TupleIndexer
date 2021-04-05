@@ -121,14 +121,6 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 
 	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
 
-	// if the curr_page, i.e. the root page is lesser than half full than, a split is unlikely
-	// so we could release lock on the bplus tree handle if it is locked
-	if(is_page_lesser_than_or_equal_to_half_full(curr_page, dam_p->page_size, bpttds->index_def))
-	{
-		write_unlock(&(bpth->handle_lock));
-		is_handle_locked = 0;
-	}
-
 	void* parent_index_insert = NULL;
 
 	int inserted = 0;
@@ -191,6 +183,13 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 					// since we won't have to propogate the split
 					if(is_page_lesser_than_or_equal_to_half_full(curr_page, dam_p->page_size, bpttds->index_def))
 					{
+						// we need a lock on the handle only if we could be splitting the root
+						if(is_handle_locked)
+						{
+							write_unlock(&(bpth->handle_lock));
+							is_handle_locked = 0;
+						}
+
 						while(!is_empty_arraylist(&locked_parents))
 						{
 							void* some_parent = (void*) get_front(&locked_parents);
@@ -259,7 +258,7 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 	}
 
 	// need to insert root to this bplus tree
-	if(parent_index_insert != NULL)
+	if(parent_index_insert != NULL) // && is_handle_locked => the handle lock condition will always be satisfied
 	{
 		insert_new_root_node_HANDLE_UNSAFE(bpth, parent_index_insert, bpttds, dam_p);
 
