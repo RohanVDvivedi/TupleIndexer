@@ -1,9 +1,14 @@
 
 Stage 1
- * review merge util functions
- * move conditions to check for feasibility to merge to static functions
+ * max insert size of record < allotted space for tuples on the page / 2
+   * build necessary functions for this in stupstom
+ * review / refactor merge functions
+   * review size calculations for parent insert tuples
+   * make can_merge function to a static functions
  * implement bplus_tree delete function
- * implement bplus_tree update function
+
+STAGE 1.1
+ * implement bplus_tree update function (* at a latter stage)
 
 Stage 2
  * implement a page_list and a page_cursor interface to read leaf pages list or any page list
@@ -13,5 +18,12 @@ Stage 2
  * implement support range search and delete queries
 
 STAGE 3
- * implement single page sort (use insert_sorted_packed_page) and then an external_merge_sort for the page_list
- * building a bplus_tree on top if a external_merge_sorted leaf pages (taken as page_list), in multiple runs until there is only 1 page in the tree
+ * external_merge_sort for the page_list
+ * reverse a sorted page list
+ * building a bplus_tree on top of an external_merge_sorted page_list, in multiple runs until there is only 1 page in the tree
+
+STAGE 4
+ * hash_index
+
+STAGE 5
+ * persistent storage using bufferpool library, providing a simple data_access_methods
