@@ -112,7 +112,9 @@ static void insert_new_root_node_HANDLE_UNSAFE(bplus_tree_handle* bpth, const vo
 int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	// record size must be lesser than or equal to half the page size
-	if(get_tuple_size(bpttds->record_def, record) >= dam_p->page_size / 2)
+	uint32_t record_size_on_page = get_tuple_size(bpttds->record_def, record) + get_additional_space_occupied_per_tuple(dam_p->page_size, bpttds->record_def);
+	uint32_t max_record_size_on_page = get_space_to_be_allotted_for_all_tuples(1, dam_p->page_size, bpttds->record_def) / 2;
+	if(record_size_on_page > max_record_size_on_page)
 		return 0;
 
 	arraylist locked_parents;
