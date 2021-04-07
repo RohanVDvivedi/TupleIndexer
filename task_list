@@ -1,7 +1,6 @@
 
 Stage 1
  * max insert size of record < allotted space for tuples on the page / 2
-   * build necessary functions for this in stupstom
  * review / refactor merge functions
    * review size calculations for parent insert tuples
    * make can_merge function to a static functions
