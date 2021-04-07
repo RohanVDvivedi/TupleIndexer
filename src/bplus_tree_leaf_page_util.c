@@ -134,13 +134,11 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 	}
 }
 
-int can_merge_leaf_pages(void* page, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+static int can_merge_leaf_pages(void* page, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
-	// both the pages must be less than half full
-	if(is_page_more_than_half_full(page, page_size, bpttds->record_def))
-		return 0;
-
-	if(is_page_more_than_half_full(sibling_page_to_be_merged, page_size, bpttds->record_def))
+	// atleast one of the two pages must be lesser than half full
+	if(is_page_more_than_or_equal_to_half_full(page, page_size, bpttds->record_def) &&
+		is_page_more_than_or_equal_to_half_full(sibling_page_to_be_merged, page_size, bpttds->record_def))
 		return 0;
 
 	// check if all the tuples in the sibling page can be inserted into the page

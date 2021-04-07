@@ -214,20 +214,19 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 	return parent_insert;
 }
 
-int can_merge_interior_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+static int can_merge_interior_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
-	// both the pages must be less than half full
-	if(is_page_more_than_half_full(page, page_size, bpttds->index_def))
+	// atleast one of the two pages must be lesser than half full
+	if(is_page_more_than_or_equal_to_half_full(page, page_size, bpttds->index_def) &&
+		is_page_more_than_or_equal_to_half_full(sibling_page_to_be_merged, page_size, bpttds->index_def))
 		return 0;
 
-	if(is_page_more_than_half_full(sibling_page_to_be_merged, page_size, bpttds->index_def))
-		return 0;
-
-	// calculate the size of the key of the parent index record
-	uint32_t parent_index_record_key_size = get_tuple_size(bpttds->index_def, parent_index_record);
+	// calculate the size of the parent index record, that we have to insert to the merged page
+	uint32_t parent_index_record_size = get_tuple_size(bpttds->index_def, parent_index_record)
+									+ get_additional_space_occupied_per_tuple(page_size, bpttds->index_def);
 
 	// check if all the tuples in the sibling page + the parent_index_record can be inserted into the page
-	if(get_free_space_in_page(page, page_size, bpttds->index_def) < ((parent_index_record_key_size + 4) + get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->index_def)))
+	if(get_free_space_in_page(page, page_size, bpttds->index_def) < (parent_index_record_size + get_space_occupied_by_all_tuples(sibling_page_to_be_merged, page_size, bpttds->index_def)))
 		return 0;
 
 	return 1;
