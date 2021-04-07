@@ -1,8 +1,6 @@
 
 Stage 1
- * review / refactor merge functions
-   * review size calculations for parent insert tuples
-   * make can_merge function to a static functions
+ * review merge_intr and merge_leaf functions
  * implement bplus_tree delete function
 
 STAGE 1.1
