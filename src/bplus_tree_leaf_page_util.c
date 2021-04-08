@@ -162,7 +162,7 @@ int merge_leaf_pages(void* page, const void* parent_index_record, void* sibling_
 		// insert sibling page entriess to page
 		insert_all_from_sorted_packed_page(page, sibling_page_to_be_merged, page_size, bpttds->key_def, bpttds->record_def, 0, tuples_to_be_merged - 1);
 
-		// delete all tuuples in the sibling page (that is to be free, hence a redundant operation)
+		// delete all tuples in the sibling page (that is to be free, hence a redundant operation)
 		delete_all_in_sorted_packed_page(sibling_page_to_be_merged, page_size, bpttds->record_def, 0, tuples_to_be_merged - 1);
 	}
 
