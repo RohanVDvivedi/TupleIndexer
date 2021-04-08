@@ -305,19 +305,27 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 		switch(get_page_type(curr_page))
 		{
 			case LEAF_PAGE_TYPE :
-			{
-				int found = 0;// find if the record with given key exists
+			{// no duplicates
+				// a record must be found to be deleted
+				uint32_t found_index;
+				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, key, &found_index);
 				
-				// if yes then delete it
+				// delete the only record with the given key
 				if(found)
-				{
-					// delete the record
-					deleted = 1;
-				}
+					deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->record_def, found_index);
 
-				if(!found && !deleted)
+				if(!found)
 				{
 					// release locks on all parents
+					while(!is_empty_arraylist(&locked_parents))
+					{
+						void* some_parent = (void*) get_front(&locked_parents);
+						dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
+						pop_front(&locked_parents);
+					}
+
+					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
+					curr_page = NULL;
 				}
 				else if(deleted)
 				{
