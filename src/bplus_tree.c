@@ -341,18 +341,36 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				// page indirection to reach corresponding leaf page
 				if(!delete_parent_index_entry && !deleted)
 				{
-					// get next indirection page id => next page id
+					// search appropriate indirection page_id from curr_page
+					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, record, bpttds);
+					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
 
-					// if the curr_page would be more than half full, even if the index_entry for the next jump is removed,
+					// if the curr_page would be more than half full,
+					// even if the tuple at next_indirection_index OR (next_indirection_index + 1) is removed,
 					// then remove locks on all the locked_parents pages
-					if(1)
+					if(0)
 					{
-						// release locks on all previous parents
+						// we need a lock on the handle only if we could be splitting the root
+						if(is_handle_locked)
+						{
+							write_unlock(&(bpth->handle_lock));
+							is_handle_locked = 0;
+						}
+
+						while(!is_empty_arraylist(&locked_parents))
+						{
+							void* some_parent = (void*) get_front(&locked_parents);
+							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
+							pop_front(&locked_parents);
+						}
 					}
 
-					// lock the next_page
-					// push curr_page to the locked_parents
-					// set curr_page to next_page
+					// lock this next page
+					void* next_page = dam_p->acquire_page_with_writer_lock(dam_p->context, next_page_id);
+
+					// now curr_page is a locked parent of this next_page
+					push_back(&locked_parents, curr_page);
+					curr_page = next_page;
 				}
 				// merge logic
 				else if(delete_parent_index_entry && deleted)
