@@ -316,8 +316,20 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				if(found)
 					deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->record_def, found_index);
 
-				// exit loop if
-				if(!deleted /*|| the curr_page is more than half full */)
+				// to check if a merge was performed
+				int merged = 0;
+
+				// we try to merge curr_page with the next page only if deleted was successfull
+				if(deleted)
+				{
+					// try merge with next page (merging with previous page will cause lock contention)
+					merged = 0;
+
+					if(merged)
+						delete_parent_index_entry_at_index = 0;
+				}
+
+				if(!merged) // exit loop, we continue loop to only propogate the merge
 				{
 					// release locks on all parents
 					while(!is_empty_arraylist(&locked_parents))
@@ -332,10 +344,12 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				}
 				else
 				{
-					// try merge with next page (merging with previous page will cause lock contention)
-					// if merged
-						delete_parent_index_entry = 1;
-						delete_parent_index_entry_at_index = 1;
+					// propogate the merge, by deleting the index entry
+					delete_parent_index_entry = 1;
+
+					// pop a curr_page (getting immediate parent) to propogate the split
+					curr_page = (void*) get_back(&locked_parents);
+					pop_back(&locked_parents);
 				}
 				break;
 			}
@@ -380,11 +394,13 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					// delete delete_parent_index_entry index from the curr_page
 
 					// if the page is lesser than half full
-						// try merge with the previous page
-						// if it fails try merge with next page
+						// try merge with next page
 						// if merged
 							delete_parent_index_entry = 1;
 							delete_parent_index_entry_at_index = 1;
+
+					// if every thing fails
+						// release all locks on all parents to exit loop
 				}
 				break;
 			}
