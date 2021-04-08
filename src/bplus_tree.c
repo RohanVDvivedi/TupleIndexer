@@ -282,7 +282,59 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 	return inserted;
 }
 
-int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+{
+	arraylist locked_parents;
+	initialize_arraylist(&locked_parents, 64);
+
+	write_lock(&(bpth->handle_lock));
+	int is_handle_locked = 1;
+
+	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
+
+	int deleted = 0;
+
+	// quit when no locks are held
+	while( ! (is_empty_arraylist(&locked_parents) && curr_page == NULL) )
+	{
+		switch(get_page_type(curr_page))
+		{
+			case LEAF_PAGE_TYPE :
+			{
+				break;
+			}
+			case INTERIOR_PAGE_TYPE :
+			{
+				// page indirection to reach corresponding leaf page
+				if(1)
+				{
+					// if the curr_page is XXX full
+					if(1)
+					{
+						// release locks on all previous parents
+					}
+				}
+				// merge logic
+				else
+				{
+					// merge with previous page or next page
+				}
+				break;
+			}
+		}
+	}
+
+	// before quit check if the bplus tree handle is locked
+	if(is_handle_locked)
+	{
+		write_unlock(&(bpth->handle_lock));
+		is_handle_locked = 0;
+	}
+
+	deinitialize_arraylist(&locked_parents);
+
+	return deleted;
+}
 
 static void print_bplus_tree_sub_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
