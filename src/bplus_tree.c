@@ -111,10 +111,12 @@ static void insert_new_root_node_HANDLE_UNSAFE(bplus_tree_handle* bpth, const vo
 
 int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
-	// record size must be lesser than or equal to half the page size
+	// record size must be lesser than or equal to half the allotted page size
+	// or even generated index entry size must be lesser than or equal to half the allotted page size
 	uint32_t record_size_on_page = get_tuple_size(bpttds->record_def, record) + get_additional_space_occupied_per_tuple(dam_p->page_size, bpttds->record_def);
-	uint32_t max_record_size_on_page = get_space_to_be_allotted_for_all_tuples(1, dam_p->page_size, bpttds->record_def) / 2;
-	if(record_size_on_page > max_record_size_on_page)
+	uint32_t index_entry_size_on_page = (get_tuple_size(bpttds->key_def, record) + 4) + get_additional_space_occupied_per_tuple(dam_p->page_size, bpttds->record_def);
+	uint32_t max_tuple_size_on_page = get_space_to_be_allotted_for_all_tuples(1, dam_p->page_size, bpttds->record_def) / 2;
+	if(record_size_on_page > max_tuple_size_on_page || index_entry_size_on_page > max_tuple_size_on_page)
 		return 0;
 
 	arraylist locked_parents;
@@ -307,7 +309,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 			case LEAF_PAGE_TYPE :
 			{// no duplicates
 				// a record must be found to be deleted
-				uint32_t found_index;
+				uint16_t found_index;
 				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, key, &found_index);
 				
 				// delete the only record with the given key
@@ -342,7 +344,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				if(!delete_parent_index_entry && !deleted)
 				{
 					// search appropriate indirection page_id from curr_page
-					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, record, bpttds);
+					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, key, bpttds);
 					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
 
 					// if the curr_page would be more than half full,
