@@ -294,6 +294,11 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 	int deleted = 0;
 
+	int delete_parent_index_entry = 0;
+
+	// if delete_parent_index_entry == 1, we need to delete this index
+	uint16_t delete_parent_index_entry_index = 0;
+
 	// quit when no locks are held
 	while( ! (is_empty_arraylist(&locked_parents) && curr_page == NULL) )
 	{
@@ -301,23 +306,53 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 		{
 			case LEAF_PAGE_TYPE :
 			{
+				int found = 0;// find if the record with given key exists
+				
+				// if yes then delete it
+				if(found)
+				{
+					// delete the record
+					deleted = 1;
+				}
+
+				if(!found && !deleted)
+				{
+					// release locks on all parents
+				}
+				else if(deleted)
+				{
+					// try merge with the previous page
+					// if it fails try merge with next page
+					// if merged
+						delete_parent_index_entry = 1;
+				}
 				break;
 			}
 			case INTERIOR_PAGE_TYPE :
 			{
 				// page indirection to reach corresponding leaf page
-				if(1)
+				if(!delete_parent_index_entry && !deleted)
 				{
-					// if the curr_page is XXX full
+					// get next indirection page id => next page id
+
+					// if the curr_page would be more than half full, even if the index_entry for the next jump is removed,
+					// then remove locks on all the locked_parents pages
 					if(1)
 					{
 						// release locks on all previous parents
 					}
+
+					// lock the next_page
+					// push curr_page to the locked_parents
+					// set curr_page to next_page
 				}
 				// merge logic
-				else
+				else if(delete_parent_index_entry && deleted)
 				{
-					// merge with previous page or next page
+					// try merge with the previous page
+					// if it fails try merge with next page
+					// if merged
+						delete_parent_index_entry = 1;
 				}
 				break;
 			}
