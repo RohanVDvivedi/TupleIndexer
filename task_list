@@ -1,6 +1,5 @@
 
 Stage 1
- * review merge_intr and merge_leaf functions
  * implement bplus_tree delete function
 
 STAGE 1.1
