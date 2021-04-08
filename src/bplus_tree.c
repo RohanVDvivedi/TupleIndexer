@@ -299,7 +299,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 	int delete_parent_index_entry = 0;
 
 	// if delete_parent_index_entry == 1, we need to delete this index
-	uint16_t delete_parent_index_entry_index = 0;
+	uint16_t delete_parent_index_entry_at_index = 0;
 
 	// quit when no locks are held
 	while( ! (is_empty_arraylist(&locked_parents) && curr_page == NULL) )
@@ -316,7 +316,8 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				if(found)
 					deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->record_def, found_index);
 
-				if(!found)
+				// exit loop if
+				if(!deleted /*|| the curr_page is more than half full */)
 				{
 					// release locks on all parents
 					while(!is_empty_arraylist(&locked_parents))
@@ -329,12 +330,12 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 					curr_page = NULL;
 				}
-				else if(deleted)
+				else
 				{
-					// try merge with the previous page
-					// if it fails try merge with next page
+					// try merge with next page (merging with previous page will cause lock contention)
 					// if merged
 						delete_parent_index_entry = 1;
+						delete_parent_index_entry_at_index = 1;
 				}
 				break;
 			}
@@ -374,13 +375,16 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					push_back(&locked_parents, curr_page);
 					curr_page = next_page;
 				}
-				// merge logic
 				else if(delete_parent_index_entry && deleted)
 				{
-					// try merge with the previous page
-					// if it fails try merge with next page
-					// if merged
-						delete_parent_index_entry = 1;
+					// delete delete_parent_index_entry index from the curr_page
+
+					// if the page is lesser than half full
+						// try merge with the previous page
+						// if it fails try merge with next page
+						// if merged
+							delete_parent_index_entry = 1;
+							delete_parent_index_entry_at_index = 1;
 				}
 				break;
 			}
