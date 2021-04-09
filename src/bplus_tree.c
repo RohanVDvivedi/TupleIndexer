@@ -304,6 +304,9 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 	int deleted = 0;
 
+	// this flag is set by child when the child is lesser than half full
+	int check_for_merge = 0;
+
 	// quit when no locks are held
 	while( ! (is_empty_arraylist(&locked_parents) && curr_page == NULL) )
 	{
@@ -334,6 +337,9 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				}
 				else // we continue loop to only let the parent page merge
 				{
+					// let parent decide if merge is possible
+					check_for_merge = 1;
+
 					// pop a curr_page (getting immediate parent) to propogate the merge
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
@@ -395,7 +401,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 					int32_t next_index = index + 1;
 
-					// merge indexed page with next one
+					// merge indexed page with next one, if merge wasn't performed
 					if(merged == 0 && next_index < get_index_entry_count_in_interior_page(curr_page))
 					{
 						// if is page at index is empty
@@ -405,8 +411,11 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					// check page storage efficiency
 					// run compaction if needed
 
-					if(merged)
+					if(is_page_more_than_or_equal_to_half_full(curr_page, dam_p->page_size, bpttds->index_def))
 					{
+						// let parent decide if merge is possible
+						check_for_merge = 1;
+
 						// pop a curr_page (getting immediate parent) to propogate the merge
 						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
@@ -426,11 +435,18 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 						curr_page = NULL;
+
+						check_for_merge = 0;
 					}
 				}
 				break;
 			}
 		}
+	}
+
+	if(check_for_merge && is_handle_locked)
+	{
+		// remove bplus tree root condition
 	}
 
 	// before quit check if the bplus tree handle is locked
