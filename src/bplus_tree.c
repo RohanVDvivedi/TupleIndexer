@@ -294,6 +294,14 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
 
+	// if the curr_page i.e. the root page is a leaf page OR has more than one index entry, then release handle lock
+	// i.e we will not have to remove the root node
+	if(is_leaf_page(curr_page) || get_index_entry_count_in_interior_page(curr_page) > 1)
+	{
+		write_unlock(&(bpth->handle_lock));
+		is_handle_locked = 0;
+	}
+
 	int deleted = 0;
 
 	int delete_parent_index_entry = 0;
