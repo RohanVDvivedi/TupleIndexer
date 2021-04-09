@@ -322,33 +322,37 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				if(found)
 					deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->record_def, found_index);
 
-				void* parent_page = (void*) get_back(&locked_parents);
-				if(parent_page != NULL)
+				// if this delete made the page lesser than half full, we might have to merge
+				if(is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->record_def))
 				{
-					int32_t curr_index = find_in_interior_page(parent_page, dam_p->page_size, key, bpttds);
-					uint32_t curr_page_id = get_index_page_id_from_interior_page(parent_page, dam_p->page_size, curr_index, bpttds);
-
-					// due to lock contention issues with read threads, we can only merge with next siblings
-					int32_t sibbling_index = curr_index + 1;
-
-					if(sibbling_index < get_index_entry_count_in_interior_page(parent_page))
+					void* parent_page = (void*) get_back(&locked_parents);
+					if(parent_page != NULL)
 					{
-						const void* parent_index_record = get_index_entry_from_interior_page(parent_page, dam_p->page_size, sibbling_index, bpttds);
+						// index of the current page in the parent_page's indirection indexes
+						int32_t curr_index = find_in_interior_page(parent_page, dam_p->page_size, key, bpttds);
 
-						// get sibling page id and lock it
-						uint32_t sibbling_page_id = get_index_page_id_from_interior_page(parent_page, dam_p->page_size, sibbling_index, bpttds);
-						void* sibbling_page = dam_p->acquire_page_with_writer_lock(dam_p->context, sibbling_page_id);
+						// due to lock contention issues with read threads, we can only merge with next siblings
+						int32_t sibbling_index = curr_index + 1;
 
-						// try to merge, and if merge mark the parent index entry that we need to delete in the next iteration
-						delete_parent_index_entry = merge_leaf_pages(curr_page, parent_index_record, sibling_page, dam_p->page_size, bpttds);
-						if(delete_parent_index_entry)
-							delete_parent_index_entry_at_index = sibbling_index;
+						if(sibbling_index < get_index_entry_count_in_interior_page(parent_page))
+						{
+							// this is the exact parent index entry that we would have to delete, if the merge succeeds
+							const void* parent_index_record = get_index_entry_from_interior_page(parent_page, dam_p->page_size, sibbling_index, bpttds);
 
-						// release lock on sibling page
-						dam_p->release_writer_lock_on_page(dam_p->context, sibbling_page);
+							// get sibling page id and lock it
+							uint32_t sibbling_page_id = get_index_page_id_from_interior_page(parent_page, dam_p->page_size, sibbling_index, bpttds);
+							void* sibbling_page = dam_p->acquire_page_with_writer_lock(dam_p->context, sibbling_page_id);
+
+							// try to merge, and if merge mark the parent index entry that we need to delete in the next iteration
+							delete_parent_index_entry = merge_leaf_pages(curr_page, parent_index_record, sibbling_page, dam_p->page_size, bpttds);
+							if(delete_parent_index_entry)
+								delete_parent_index_entry_at_index = sibbling_index;
+
+							// release lock on sibling page
+							dam_p->release_writer_lock_on_page(dam_p->context, sibbling_page);
+						}
 					}
 				}
-
 
 				if(!delete_parent_index_entry) // exit loop
 				{
@@ -411,6 +415,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				}
 				else if(deleted && delete_parent_index_entry_at_index) // handling merges
 				{
+					// perform delete as the conditions suggest
 				}
 				break;
 			}
