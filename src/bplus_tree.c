@@ -383,9 +383,10 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				{
 					// search appropriate indirection page_id from curr_page
 					int32_t index = find_in_interior_page(curr_page, dam_p->page_size, key, bpttds);
+					int32_t next_index = index + 1;
 
-					// if index + 1 exists on page
-						// perform merge test with index and index + 1
+					// if next_index < index_entry_count on curr_page
+						// perform merge test with index and next_index
 					// else index is last on the page
 						// if is page at index is empty
 						// then remove index at index from curr_page
