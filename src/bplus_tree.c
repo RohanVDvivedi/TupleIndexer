@@ -304,11 +304,6 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 	int deleted = 0;
 
-	int delete_parent_index_entry = 0;
-
-	// if delete_parent_index_entry == 1, we need to delete this index
-	uint16_t delete_parent_index_entry_at_index = 0;
-
 	// quit when no locks are held
 	while( ! (is_empty_arraylist(&locked_parents) && curr_page == NULL) )
 	{
@@ -324,20 +319,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				if(found)
 					deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->record_def, found_index);
 
-				// to check if a merge was performed
-				int merged = 0;
-
-				// we try to merge curr_page with the next page only if deleted was successfull
-				if(deleted)
-				{
-					// try merge with next page (merging with previous page will cause lock contention)
-					merged = 0;
-
-					if(merged)
-						delete_parent_index_entry_at_index = 0;
-				}
-
-				if(!merged) // exit loop, we continue loop to only propogate the merge
+				if(!deleted) // exit loop
 				{
 					// release locks on all parents
 					while(!is_empty_arraylist(&locked_parents))
@@ -350,12 +332,12 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 					curr_page = NULL;
 				}
-				else
+				else // we continue loop to only let the parent page merge
 				{
-					// propogate the merge, by deleting the index entry
-					delete_parent_index_entry = 1;
+					// pop a curr_page (getting immediate parent) to propogate the merge
+					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
-					// pop a curr_page (getting immediate parent) to propogate the split
+					// shift to parent page to decide if we could merge
 					curr_page = (void*) get_back(&locked_parents);
 					pop_back(&locked_parents);
 				}
@@ -371,7 +353,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
 
 					// if the curr_page would be more than half full,
-					// even if the tuple at next_indirection_index OR (next_indirection_index + 1) is removed,
+					// even if the tuple at (next_indirection_index + 1) is removed,
 					// then remove locks on all the locked_parents pages
 					if(0)
 					{
@@ -397,17 +379,23 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					push_back(&locked_parents, curr_page);
 					curr_page = next_page;
 				}
-				else if(delete_parent_index_entry && deleted)
+				else if(delete_parent_index_entry && deleted) // handling merges
 				{
-					// delete delete_parent_index_entry index from the curr_page
+					// search appropriate indirection page_id from curr_page
+					int32_t index = find_in_interior_page(curr_page, dam_p->page_size, key, bpttds);
 
-					// if the page is lesser than half full
-						// try merge with next page
-						// if merged
-							delete_parent_index_entry = 1;
-							delete_parent_index_entry_at_index = 1;
+					// if index + 1 exists on page
+						// perform merge test with index and index + 1
+					// else index is last on the page
+						// if is page at index is empty
+						// then remove index at index from curr_page
 
-					// if every thing fails
+					// check page storage efficiency
+					// run compaction if needed
+
+					// if an index entry was removed and the curr_page is lesser than half full
+						// pop immediate parent and make it curr_page
+					// else
 						// release all locks on all parents to exit loop
 				}
 				break;
