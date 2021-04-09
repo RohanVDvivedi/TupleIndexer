@@ -322,6 +322,8 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				if(found)
 					deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->record_def, found_index);
 
+				delete_parent_index_entry = 0;
+				
 				// if this delete made the page lesser than half full, we might have to merge
 				if(is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->record_def))
 				{
@@ -416,6 +418,39 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				else if(deleted && delete_parent_index_entry_at_index) // handling merges
 				{
 					// perform delete as the conditions suggest
+					int parent_index_deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->index_def, delete_parent_index_entry_at_index);
+
+					delete_parent_index_entry = 0;
+
+					// if this delete made the page lesser than half full, we might have to merge
+					if(is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->record_def))
+					{
+						// perform merge of curr_page with next_page
+						// if unsuccessfull perform merge of curr_page with prev_page
+					}
+
+					if(!delete_parent_index_entry) // exit loop
+					{
+						// release locks on all parents
+						while(!is_empty_arraylist(&locked_parents))
+						{
+							void* some_parent = (void*) get_front(&locked_parents);
+							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
+							pop_front(&locked_parents);
+						}
+
+						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
+						curr_page = NULL;
+					}
+					else
+					{
+						// pop a curr_page (getting immediate parent) to propogate the merge
+						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
+
+						// shift to parent page to decide if we could merge
+						curr_page = (void*) get_back(&locked_parents);
+						pop_back(&locked_parents);
+					}
 				}
 				break;
 			}
