@@ -25,5 +25,7 @@ STAGE 3
  * reverse a sorted page list
  * building a bplus_tree on top of an external_merge_sorted page_list, in multiple runs until there is only 1 page in the tree
 
+-- OPTIONAL TASKS BELOW (no to worry about it now) --
+
 STAGE 4
  * persistent storage using bufferpool library, providing a simple data_access_methods
