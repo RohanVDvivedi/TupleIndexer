@@ -1,6 +1,5 @@
 
 Stage 1
- * remove redundant condition check from insert function
  * test again the insert and then with with 256 byte sized pages
  * implement bplus_tree delete function
    * handle edge case of removing the root (only if it is a interior node)
