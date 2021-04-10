@@ -423,10 +423,35 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					delete_parent_index_entry = 0;
 
 					// if this delete made the page lesser than half full, we might have to merge
-					if(is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->record_def))
+					if(parent_index_deleted && is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->record_def))
 					{
-						// perform merge of curr_page with next_page
-						// if unsuccessfull perform merge of curr_page with prev_page
+						void* parent_page = (void*) get_back(&locked_parents);
+						if(parent_page != NULL)
+						{
+							// index of the current page in the parent_page's indirection indexes
+							int32_t curr_index = find_in_interior_page(parent_page, dam_p->page_size, key, bpttds);
+
+
+							// due to lock contention issues with read threads, we can only merge with next siblings
+							int32_t next_sibbling_index = curr_index + 1;
+							int merge_success_with_next = 0;
+							
+							// perform merge of curr_page with next_page
+							if(next_sibbling_index < get_index_entry_count_in_interior_page(parent_page))
+							{
+								// merge with next sibling
+							}
+
+
+							// due to lock contention issues with read threads, we can only merge with next siblings
+							int32_t prev_sibbling_index = curr_index + 1;
+
+							// if unsuccessfull perform merge of curr_page with prev_page
+							if(!merge_success_with_next && (prev_sibbling_index > -1))
+							{
+								// merge with prev sibling
+							}
+						}
 					}
 
 					if(!delete_parent_index_entry) // exit loop
