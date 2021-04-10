@@ -9,7 +9,10 @@ Stage 1
  * make all checks using free space on the page, instead of occupied_tuples_size in storage capacity page_util
 
 STAGE 1.1
- * implement bplus_tree update function (* at a latter stage)
+ * implement bplus_tree update function
+   * insert function will be modified to provide an insert_update like functionality
+   * make update_tuple call for updating, if it fails, delete the original tuple and call split_insert. i.e. falling back to insert
+   * this is the fastest and best way to implement a update as, update will lead to no memory reclamation for fixed sized records and for slotted page tuple, memory is reclaimed only if we updated the record to a smaller size and it is settled at the end of the page
 
 Stage 2
  * implement a page_list and a page_cursor interface to read leaf pages list or any page list
