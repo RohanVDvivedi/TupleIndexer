@@ -42,7 +42,7 @@ const void* get_record_from_leaf_page(const void* page, uint32_t page_size, uint
 static int can_split_leaf_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// can not split if the page is less than half full
-	if(is_page_lesser_than_half_full(page_to_be_split, page_size, bpttds->record_def))
+	if(is_page_lesser_than_or_equal_to_half_full(page_to_be_split, page_size, bpttds->record_def))
 		return 0;
 
 	return 1;

@@ -117,11 +117,7 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 static int can_split_interior_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// can not split if the page is less than half full
-	if(is_page_lesser_than_half_full(page_to_be_split, page_size, bpttds->index_def))
-		return 0;
-
-	// can not split if the index entry count is lesser than 2
-	if(get_index_entry_count_in_interior_page(page_to_be_split) < 2)
+	if(is_page_lesser_than_or_equal_to_half_full(page_to_be_split, page_size, bpttds->index_def))
 		return 0;
 
 	return 1;
