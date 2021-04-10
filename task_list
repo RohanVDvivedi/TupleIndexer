@@ -1,6 +1,11 @@
 
 Stage 1
  * implement bplus_tree delete function
+   * handle edge case of removing the root (only if it is a interior node)
+   * handle un latching if the node is more than half full upon removal
+   * handle merge with prev for leaf node by correcting the latch acquisition order
+ * remove redundant condition check from insert function
+ * make all checks using free space on the page, instead of occupied_tuples_size in storage capacity page_util
 
 STAGE 1.1
  * implement bplus_tree update function (* at a latter stage)
