@@ -142,7 +142,7 @@ int main()
 	printf(" ================== \n\n");
 
 	printf("FIND LOOP\n\n");
-	for(int64_t i = 0; i < 20; i++)
+	for(int64_t i = 0; i <= 25; i++)
 	{
 		const void* found_record = find_in_bplus_tree(&bpth, &i, bpttds, dam_p);
 		if(found_record == NULL)
@@ -158,6 +158,51 @@ int main()
 	}
 	printf("\n");
 
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){15, 16, "Vidhan", 16, "Jain"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){17, 16, "Aakash", 16, "Goel"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){20, 16, "Pushpinder", 16, "Patel"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(&bpth, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){3, 16, "Sharon", 16, "Teacher"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){9, 16, "Pradeep", 16, "Sir"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){13, 16, "Soumya", 16, "Madam"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){19, 16, "Shubham", 16, "Sir"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(&bpth, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	printf("FIND LOOP\n\n");
+	for(int64_t i = 0; i <= 25; i++)
+	{
+		const void* found_record = find_in_bplus_tree(&bpth, &i, bpttds, dam_p);
+		if(found_record == NULL)
+			printf("%d -> NULL\n\n", i);
+		else
+		{
+			printf("%d -> ", i);
+			char print_str[PAGE_SIZE];
+			sprint_tuple(print_str, found_record, bpttds->record_def);
+			printf("%s\n\n", print_str);
+			free(found_record);
+		}
+	}
+	printf("\n");
 
 	// ---------- TESTS COMPLETE
 
