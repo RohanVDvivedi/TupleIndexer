@@ -501,7 +501,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 		}
 	}
 
-	if(delete_parent_index_entry && is_handle_locked)
+	if(delete_parent_index_entry)
 	{
 		// remove bplus tree root, only if it is an interior page
 		// we do not remove the last root leaf page
