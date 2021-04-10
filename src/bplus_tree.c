@@ -445,7 +445,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 								void* next_sibbling_page = dam_p->acquire_page_with_writer_lock(dam_p->context, next_sibbling_page_id);
 
 								// merge with next sibling
-								delete_parent_index_entry = 0;
+								delete_parent_index_entry = merge_interior_pages(curr_page, parent_index_record, next_sibbling_page, dam_p->page_size, bpttds);
 								if(delete_parent_index_entry)
 									merge_success_with_next = 1;
 
@@ -466,7 +466,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 								void* prev_sibbling_page = dam_p->acquire_page_with_writer_lock(dam_p->context, prev_sibbling_page_id);
 
 								// merge with prev sibling
-								delete_parent_index_entry = 0;
+								delete_parent_index_entry = merge_interior_pages(prev_sibbling_page, parent_index_record, curr_page, dam_p->page_size, bpttds);
 
 								dam_p->release_writer_lock_on_page(dam_p->context, prev_sibbling_page);
 							}
