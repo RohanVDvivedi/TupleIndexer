@@ -1,6 +1,5 @@
 
 Stage 1
- * test additional inserts and find with on paper algorithm
  * remove redundant condition check from insert function
  * test again the insert and then with with 256 byte sized pages
  * implement bplus_tree delete function
