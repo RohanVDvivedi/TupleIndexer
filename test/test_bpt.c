@@ -8,6 +8,7 @@
 #define TEST_FIXED_ARRAY_PAGE_LAYOUT
 
 #define PAGE_SIZE    128
+//#define PAGE_SIZE    256
 #define PAGE_COUNT  1024
 
 void init_tuple_definition(tuple_def* def)
