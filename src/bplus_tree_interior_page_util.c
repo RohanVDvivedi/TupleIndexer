@@ -212,7 +212,7 @@ static int can_merge_interior_pages(void* page, const void* parent_index_record,
 		return 0;
 
 	// calculate the size of the parent index record, that we have to insert to the merged page
-	uint32_t parent_index_record_size = get_tuple_size(bpttds->index_def, parent_index_record)
+	uint32_t parent_index_record_size = get_tuple_size(bpttds->key_def, parent_index_record) + 4
 									+ get_additional_space_occupied_per_tuple(page_size, bpttds->index_def);
 
 	// check if all the tuples in the sibling page + the parent_index_record can be inserted into the page
@@ -229,7 +229,7 @@ int merge_interior_pages(void* page, const void* parent_index_record, void* sibl
 		return 0;
 
 	// calculate the size of the key of the parent index record
-	uint32_t parent_index_record_key_size = get_tuple_size(bpttds->index_def, parent_index_record);
+	uint32_t parent_index_record_key_size = get_tuple_size(bpttds->key_def, parent_index_record);
 
 	{// insert parent index entry
 		uint32_t all_least_ref_sibling_page = get_index_page_id_from_interior_page(sibling_page_to_be_merged, page_size, -1, bpttds);
