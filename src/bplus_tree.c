@@ -351,8 +351,8 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 							if(delete_parent_index_entry)
 								merge_success_with_next = 1;
 
-							// release lock on sibling page
-							dam_p->release_writer_lock_on_page(dam_p->context, next_sibbling_page);
+							// release lock and free the next sibling page
+							dam_p->release_writer_lock_and_free_page(dam_p->context, next_sibbling_page);
 						}
 
 						int32_t prev_sibbling_index = curr_index - 1;
@@ -377,8 +377,10 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 							// try to merge, and if merge mark the parent index entry that we need to delete in the next iteration
 							delete_parent_index_entry = merge_leaf_pages(prev_sibbling_page, parent_index_record, curr_page, dam_p->page_size, bpttds);
 
-							// release lock on sibling page
-							dam_p->release_writer_lock_on_page(dam_p->context, prev_sibbling_page);
+							// release lock and free the previous sibling page
+							dam_p->release_writer_lock_and_free_page(dam_p->context, curr_page);
+							// set the curr_page to the previous sibling page of the curr_page
+							curr_page = prev_sibbling_page;
 						}
 					}
 				}
@@ -477,7 +479,8 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 								if(delete_parent_index_entry)
 									merge_success_with_next = 1;
 
-								dam_p->release_writer_lock_on_page(dam_p->context, next_sibbling_page);
+								// release and free the next sibling page
+								dam_p->release_writer_lock_and_free_page(dam_p->context, next_sibbling_page);
 							}
 
 
@@ -496,7 +499,10 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 								// merge with prev sibling
 								delete_parent_index_entry = merge_interior_pages(prev_sibbling_page, parent_index_record, curr_page, dam_p->page_size, bpttds);
 
-								dam_p->release_writer_lock_on_page(dam_p->context, prev_sibbling_page);
+								// release lock and free curr_page
+								dam_p->release_writer_lock_and_free_page(dam_p->context, curr_page);
+								// set the curr_page to the previous sibling page of the curr_page
+								curr_page = prev_sibbling_page;
 							}
 						}
 					}
