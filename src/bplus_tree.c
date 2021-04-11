@@ -313,8 +313,8 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 		switch(get_page_type(curr_page))
 		{
 			case LEAF_PAGE_TYPE :
-			{// no duplicates
-				// a record must be found to be deleted
+			{
+				// no duplicates, a record must be found to be deleted
 				uint16_t found_index;
 				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, key, &found_index);
 				
