@@ -2,8 +2,8 @@
 Stage 1
  * implement bplus_tree delete function
    * handle edge case of removing the root (only if it is a interior node)
-   * handle un latching if the node is more than half full upon removal
    * handle merge with prev for leaf node by correcting the latch acquisition order
+   * handle un latching all parents if the node is more than half full upon removal of index and index + 1 index entries
    * upon delete perform compaction by checking the efficiency at random
 
 STAGE 1.1
