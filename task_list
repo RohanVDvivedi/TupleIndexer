@@ -5,7 +5,6 @@ Stage 1
    * handle un latching if the node is more than half full upon removal
    * handle merge with prev for leaf node by correcting the latch acquisition order
    * upon delete perform compaction by checking the efficiency at random
- * make all checks using free space on the page, instead of occupied_tuples_size in storage capacity page_util
 
 STAGE 1.1
  * implement bplus_tree update function
