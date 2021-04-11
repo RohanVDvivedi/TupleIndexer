@@ -372,7 +372,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 							// get curr page id and lock it
 							uint32_t curr_page_id = get_index_page_id_from_interior_page(parent_page, dam_p->page_size, curr_index, bpttds);
-							void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, curr_page_id);
+							curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, curr_page_id);
 
 							// try to merge, and if merge mark the parent index entry that we need to delete in the next iteration
 							delete_parent_index_entry = merge_leaf_pages(prev_sibbling_page, parent_index_record, curr_page, dam_p->page_size, bpttds);
