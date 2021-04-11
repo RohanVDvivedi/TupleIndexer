@@ -109,8 +109,12 @@ static void insert_new_root_node_HANDLE_UNSAFE(bplus_tree_handle* bpth, const vo
 	bpth->root_id = new_root_page_id;
 }
 
-int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+int insert_or_update_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p, int operation)
 {
+	// the operation is a NONE, which is a success
+	if(operation == 0)
+		return 1;
+
 	// record size must be lesser than or equal to half the allotted page size
 	// or even generated index entry size must be lesser than or equal to half the allotted page size
 	uint32_t record_size_on_page = get_tuple_size(bpttds->record_def, record) + get_additional_space_occupied_per_tuple(dam_p->page_size, bpttds->record_def);
@@ -139,14 +143,21 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 			case LEAF_PAGE_TYPE :
 			{// no duplicates allowed
 				// the key should not be present
-				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, NULL);
+				uint16_t found_index;
+				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, &found_index);
 
 				// try to insert record to the curr_page, only if the key is not found on the page
-				if(!found)
+				if((operation & INSERT_BPT) && !found)
 					inserted = insert_to_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, record, NULL);
+				else if((operation & UPDATE_BPT) && found)
+				{
+					inserted = update_tuple(curr_page, dam_p->page_size, bpttds->record_def, found_index, record);
+					if(!inserted)
+						delete_tuple(curr_page, dam_p->page_size, bpttds->record_def, found_index);
+				}
 				
 				// if inserted or found, then unlock this page and all the parent pages
-				if(found || inserted)
+				if(((operation & INSERT_BPT) && (found || inserted)) || ((operation & UPDATE_BPT) && (!found || inserted)))
 				{
 					while(!is_empty_arraylist(&locked_parents))
 					{
@@ -159,7 +170,7 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 					curr_page = NULL;
 				}
 				// insert forcefully with a split
-				else if(!found)
+				else
 				{
 					// get new blank page, to split this page into
 					uint32_t new_page_id;
