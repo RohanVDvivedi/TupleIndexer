@@ -236,7 +236,7 @@ int merge_interior_pages(void* page, const void* parent_index_record, void* sibl
 
 		// create an index entry corresponding to the parent index record
 		void* parent_index_to_be_inserted = malloc(parent_index_record_key_size + 4);
-		memmove(parent_index_to_be_inserted, bpttds->key_def, parent_index_record_key_size);
+		memmove(parent_index_to_be_inserted, parent_index_record, parent_index_record_key_size);
 		copy_element_to_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_index_to_be_inserted, &all_least_ref_sibling_page);
 
 		// insert the newly created parent_index_entry and insert it to the page
