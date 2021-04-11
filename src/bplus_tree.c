@@ -309,11 +309,11 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 	// quit when no locks are held
 	while( ! (is_empty_arraylist(&locked_parents) && curr_page == NULL) )
-	{
+	{printf("LOOP START\n");
 		switch(get_page_type(curr_page))
 		{
 			case LEAF_PAGE_TYPE :
-			{
+			{printf("LEAF\n");
 				// no duplicates, a record must be found to be deleted
 				uint16_t found_index;
 				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, key, &found_index);
@@ -410,9 +410,9 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				break;
 			}
 			case INTERIOR_PAGE_TYPE :
-			{
+			{printf("INTERIOR\n");
 				if(!deleted) // page indirection to reach corresponding leaf page
-				{
+				{printf("FORWARD\n");
 					// search appropriate indirection page_id from curr_page
 					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, key, bpttds);
 					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
@@ -445,7 +445,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					curr_page = next_page;
 				}
 				else if(deleted && delete_parent_index_entry) // handling merges
-				{
+				{printf("BACKWARD\n");
 					// perform delete as the conditions suggest
 					int parent_index_deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->index_def, delete_parent_index_entry_at_index);
 
@@ -564,8 +564,9 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 static void print_bplus_tree_sub_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
+printf("sub_root_id : %u\n\n", root_id);
 	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_id);
-
+printf("sub_root    : %p\n\n", curr_page);
 	switch(get_page_type(curr_page))
 	{
 		case LEAF_PAGE_TYPE :

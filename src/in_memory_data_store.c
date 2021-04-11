@@ -102,7 +102,7 @@ static void* acquire_page_with_reader_lock(void* context, uint32_t page_id)
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
-		return 0;
+		return NULL;
 
 	// to check if the page that you requested is not free
 	// i.e. you can not directly acquire a lock to the free page (use the methof above)
@@ -135,7 +135,7 @@ static void* acquire_page_with_writer_lock(void* context, uint32_t page_id)
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
-		return 0;
+		return NULL;
 
 	// to check if the page that you requested is not free
 	// i.e. you can not directly acquire a lock to the free page (use the method above)
