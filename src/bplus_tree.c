@@ -578,9 +578,8 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 static void print_bplus_tree_sub_tree(uint32_t root_id, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
-printf("sub_root_id : %u\n\n", root_id);
 	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_id);
-printf("sub_root    : %p\n\n", curr_page);
+
 	switch(get_page_type(curr_page))
 	{
 		case LEAF_PAGE_TYPE :
