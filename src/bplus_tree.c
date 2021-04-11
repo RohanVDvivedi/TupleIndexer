@@ -529,10 +529,19 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 		}
 	}
 
-	if(delete_parent_index_entry)
+	if(is_handle_locked)
 	{
-		// remove bplus tree root, only if it is an interior page
-		// we do not remove the last root leaf page
+		void* root_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
+
+		// remove bplus tree root, only if it is an interior page and is empty
+		if(is_interior_page(root_page) && get_index_entry_count_in_interior_page(root_page) == 0)
+		{
+			// the new root is at the ALL_LEAST_REF of the current interior root page
+			bpth->root_id = get_index_page_id_from_interior_page(root_page, dam_p->page_size, -1, bpttds);
+			dam_p->release_writer_lock_and_free_page(dam_p->context, root_page);
+		}
+		else
+			dam_p->release_writer_lock_on_page(dam_p->context, root_page);
 	}
 
 	// before quit check if the bplus tree handle is locked
