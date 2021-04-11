@@ -148,10 +148,10 @@ int main()
 	{
 		const void* found_record = find_in_bplus_tree(&bpth, &i, bpttds, dam_p);
 		if(found_record == NULL)
-			printf("%d -> NULL\n\n", i);
+			printf("%ld -> NULL\n\n", i);
 		else
 		{
-			printf("%d -> ", i);
+			printf("%ld -> ", i);
 			char print_str[PAGE_SIZE];
 			sprint_tuple(print_str, found_record, bpttds->record_def);
 			printf("%s\n\n", print_str);
@@ -189,36 +189,46 @@ int main()
 	print_bplus_tree(&bpth, bpttds, dam_p);
 	printf(" ================== \n\n");
 
-	del_id = 5; printf("Deleting id : %llu\n\n", del_id);
+	del_id = 5; printf("Deleting id : %lu\n\n", del_id);
 	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
 
-	del_id = 7; printf("Deleting id : %llu\n\n", del_id);
+	del_id = 7; printf("Deleting id : %lu\n\n", del_id);
 	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
 
-	del_id = 9; printf("Deleting id : %llu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
-
-	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
-	printf(" ================== \n\n");
-
-	del_id = 5; printf("Deleting id : %llu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
-
-	del_id = 15; printf("Deleting id : %llu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
-
-	del_id = 17; printf("Deleting id : %llu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
-
-	del_id = 20; printf("Deleting id : %llu\n\n", del_id);
+	del_id = 9; printf("Deleting id : %lu\n\n", del_id);
 	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(&bpth, bpttds, dam_p);
 	printf(" ================== \n\n");
 
-	del_id = 12; printf("Deleting id : %llu\n\n", del_id);
+	del_id = 5; printf("Deleting id : %lu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 15; printf("Deleting id : %lu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 17; printf("Deleting id : %lu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 20; printf("Deleting id : %lu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(&bpth, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	del_id = 12; printf("Deleting id : %lu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(&bpth, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	del_id = 4; printf("Deleting id : %lu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 13; printf("Deleting id : %lu\n\n", del_id);
 	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
@@ -230,10 +240,10 @@ int main()
 	{
 		const void* found_record = find_in_bplus_tree(&bpth, &i, bpttds, dam_p);
 		if(found_record == NULL)
-			printf("%d -> NULL\n\n", i);
+			printf("%ld -> NULL\n\n", i);
 		else
 		{
-			printf("%d -> ", i);
+			printf("%ld -> ", i);
 			char print_str[PAGE_SIZE];
 			sprint_tuple(print_str, found_record, bpttds->record_def);
 			printf("%s\n\n", print_str);
