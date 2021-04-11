@@ -27,13 +27,11 @@ int create_new_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* 
 
 const void* find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
-// use only following macros as parameters to operation
-#define INSERT_BPT 0x01
-#define UPDATE_BPT 0x10
-
-int insert_or_update_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p, int operation);
+int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
 int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+
+int update_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p, int insert_if_absent);
 
 void print_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
