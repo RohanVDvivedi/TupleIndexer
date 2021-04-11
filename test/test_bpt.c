@@ -192,6 +192,10 @@ int main()
 	del_id = 5; printf("Deleting id : %llu\n\n", del_id);
 	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
 
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(&bpth, bpttds, dam_p);
+	printf(" ================== \n\n");
+
 	del_id = 7; printf("Deleting id : %llu\n\n", del_id);
 	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
 
