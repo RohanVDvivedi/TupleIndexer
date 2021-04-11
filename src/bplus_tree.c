@@ -309,11 +309,11 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 	// quit when no locks are held
 	while( ! (is_empty_arraylist(&locked_parents) && curr_page == NULL) )
-	{printf("LOOP START\n");
+	{
 		switch(get_page_type(curr_page))
 		{
 			case LEAF_PAGE_TYPE :
-			{printf("LEAF\n");
+			{
 				// no duplicates, a record must be found to be deleted
 				uint16_t found_index;
 				int found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, key, &found_index);
@@ -351,8 +351,10 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 							if(delete_parent_index_entry)
 								merge_success_with_next = 1;
 
-							// release lock and free the next sibling page
-							dam_p->release_writer_lock_and_free_page(dam_p->context, next_sibbling_page);
+							if(delete_parent_index_entry)	// release lock and free the next sibling page
+								dam_p->release_writer_lock_and_free_page(dam_p->context, next_sibbling_page);
+							else 							// else just release lock
+								dam_p->release_writer_lock_on_page(dam_p->context, next_sibbling_page);
 						}
 
 						int32_t prev_sibbling_index = curr_index - 1;
@@ -377,10 +379,15 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 							// try to merge, and if merge mark the parent index entry that we need to delete in the next iteration
 							delete_parent_index_entry = merge_leaf_pages(prev_sibbling_page, parent_index_record, curr_page, dam_p->page_size, bpttds);
 
-							// release lock and free the previous sibling page
-							dam_p->release_writer_lock_and_free_page(dam_p->context, curr_page);
-							// set the curr_page to the previous sibling page of the curr_page
-							curr_page = prev_sibbling_page;
+							if(delete_parent_index_entry)
+							{
+								// release lock and free the curr page
+								dam_p->release_writer_lock_and_free_page(dam_p->context, curr_page);
+								// set the curr_page to the previous sibling page of the curr_page
+								curr_page = prev_sibbling_page;
+							}
+							else	// else just release lock
+								dam_p->release_writer_lock_on_page(dam_p->context, prev_sibbling_page);
 						}
 					}
 				}
@@ -410,9 +417,9 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				break;
 			}
 			case INTERIOR_PAGE_TYPE :
-			{printf("INTERIOR\n");
+			{
 				if(!deleted) // page indirection to reach corresponding leaf page
-				{printf("FORWARD\n");
+				{
 					// search appropriate indirection page_id from curr_page
 					int32_t next_indirection_index = find_in_interior_page(curr_page, dam_p->page_size, key, bpttds);
 					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
@@ -445,7 +452,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					curr_page = next_page;
 				}
 				else if(deleted && delete_parent_index_entry) // handling merges
-				{printf("BACKWARD\n");
+				{
 					// perform delete as the conditions suggest
 					int parent_index_deleted = delete_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->index_def, delete_parent_index_entry_at_index);
 
@@ -479,8 +486,10 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 								if(delete_parent_index_entry)
 									merge_success_with_next = 1;
 
-								// release and free the next sibling page
-								dam_p->release_writer_lock_and_free_page(dam_p->context, next_sibbling_page);
+								if(delete_parent_index_entry)	// release and free the next sibling page
+									dam_p->release_writer_lock_and_free_page(dam_p->context, next_sibbling_page);
+								else							// else just release lock
+									dam_p->release_writer_lock_on_page(dam_p->context, next_sibbling_page);
 							}
 
 
@@ -499,10 +508,15 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 								// merge with prev sibling
 								delete_parent_index_entry = merge_interior_pages(prev_sibbling_page, parent_index_record, curr_page, dam_p->page_size, bpttds);
 
-								// release lock and free curr_page
-								dam_p->release_writer_lock_and_free_page(dam_p->context, curr_page);
-								// set the curr_page to the previous sibling page of the curr_page
-								curr_page = prev_sibbling_page;
+								if(delete_parent_index_entry)
+								{
+									// release lock and free curr_page
+									dam_p->release_writer_lock_and_free_page(dam_p->context, curr_page);
+									// set the curr_page to the previous sibling page of the curr_page
+									curr_page = prev_sibbling_page;
+								}
+								else	// else just release lock
+									dam_p->release_writer_lock_on_page(dam_p->context, prev_sibbling_page);
 							}
 						}
 					}
