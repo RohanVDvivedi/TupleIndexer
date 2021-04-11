@@ -11,12 +11,15 @@ Stage 2
  * use this page_cursor interface to enable range search queries for b+ trees
  * implement support range search and delete queries
 
+STAGE 3
+ * create a separate update function, that has int insert_if_absent flag as parameter, this update function can split or merge pages based on size of the new tuple
+
 -- OPTIONAL TASKS BELOW (no to worry about it now) --
 
-STAGE 3
+STAGE 4
  * external_merge_sort for the page_list
  * reverse a sorted page list
  * building a bplus_tree on top of an external_merge_sorted page_list, in multiple runs until there is only 1 page in the tree
 
-STAGE 4
+STAGE 5
  * persistent storage using bufferpool library, providing a simple data_access_methods
