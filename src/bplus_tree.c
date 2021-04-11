@@ -156,8 +156,10 @@ int insert_or_update_in_bplus_tree(bplus_tree_handle* bpth, const void* record, 
 						delete_tuple(curr_page, dam_p->page_size, bpttds->record_def, found_index);
 				}
 				
-				// if inserted or found, then unlock this page and all the parent pages
-				if(((operation & INSERT_BPT) && (found || inserted)) || ((operation & UPDATE_BPT) && (!found || inserted)))
+				// condition to quit the loop
+				if( inserted 																	// inserted => quit because success without split
+					|| (!(operation & UPDATE_BPT) &&  (operation & INSERT_BPT) && ( found)) 	// else if only INSERT and we found the given keyed record
+					|| ( (operation & UPDATE_BPT) && !(operation & INSERT_BPT) && (!found))	)	// else if only UPDATE and we did not find the similar keyed record
 				{
 					while(!is_empty_arraylist(&locked_parents))
 					{
