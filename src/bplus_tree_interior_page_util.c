@@ -129,8 +129,6 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 	if(!can_split_interior_page(page_to_be_split, page_size, bpttds))
 		return NULL;
 
-	uint32_t space_alloted_to_tuples = get_space_allotted_to_all_tuples(page_to_be_split, page_size, bpttds->index_def);
-
 	// index_entry_count before the split
 	uint32_t index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
 
@@ -169,16 +167,12 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 	{
 		uint16_t tuple_to_insert = 0;
 
-		uint32_t free_space_page_1 = space_alloted_to_tuples;
-		while(free_space_page_1 >= space_alloted_to_tuples / 2)
+		while(is_page_lesser_than_half_full(page_to_be_split, page_size, bpttds->index_def))
 		{
 			const void* tuple_to_move = get_nth_tuple(temp_page, temp_page_size, bpttds->index_def, tuple_to_insert);
 			int inserted = insert_tuple(page_to_be_split, page_size, bpttds->index_def, tuple_to_move);
 			if(inserted)
-			{
-				free_space_page_1 = get_free_space_in_page(page_to_be_split, page_size, bpttds->index_def);
 				tuple_to_insert++;
-			}
 			else
 				break;
 		}

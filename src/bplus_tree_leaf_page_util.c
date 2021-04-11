@@ -54,8 +54,6 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 	if(!can_split_leaf_page(page_to_be_split, page_size, bpttds))
 		return NULL;
 
-	uint32_t space_alloted_to_tuples = get_space_allotted_to_all_tuples(page_to_be_split, page_size, bpttds->record_def);
-
 	// record_count before split
 	uint16_t record_count = get_record_count_in_leaf_page(page_to_be_split);
 
@@ -96,16 +94,12 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 	{
 		uint16_t tuple_to_insert = 0;
 
-		uint32_t free_space_page_1 = space_alloted_to_tuples;
-		while(free_space_page_1 >= space_alloted_to_tuples / 2)
+		while(is_page_lesser_than_half_full(page_to_be_split, page_size, bpttds->record_def))
 		{
 			const void* tuple_to_move = get_nth_tuple(temp_page, temp_page_size, bpttds->record_def, tuple_to_insert);
 			int inserted = insert_tuple(page_to_be_split, page_size, bpttds->record_def, tuple_to_move);
 			if(inserted)
-			{
-				free_space_page_1 = get_free_space_in_page(page_to_be_split, page_size, bpttds->record_def);
 				tuple_to_insert++;
-			}
 			else
 				break;
 		}
