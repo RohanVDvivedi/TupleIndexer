@@ -6,7 +6,6 @@ Stage 1
    * handle merge with prev for leaf node by correcting the latch acquisition order
    * upon delete perform compaction by checking the efficiency at random
  * make all checks using free space on the page, instead of occupied_tuples_size in storage capacity page_util
- * use in built size checks for split functions, while inserting from temp page to curr_page
 
 STAGE 1.1
  * implement bplus_tree update function
