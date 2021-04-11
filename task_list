@@ -1,8 +1,9 @@
 
 Stage 1
- * test vigorously the update, insert and delete functionality
- * handle un latching all parents if the node is more than half full upon removal of index and index + 1 indexed entries
- * upon insert/update/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
+ * handle un latching all parents if the node is more than half full even after removal of index and index + 1 indexed entries
+ * add condition to release un latching all parents if the page can accomodate a new tuple without a split
+ * test vigorously the insert and delete functionality
+ * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
 
 Stage 2
  * implement a page_list and a page_cursor interface to read leaf pages list or any page list
@@ -18,8 +19,5 @@ STAGE 3
 
 STAGE 4
  * external_merge_sort for the page_list
- * reverse a sorted page list
- * building a bplus_tree on top of an external_merge_sorted page_list, in multiple runs until there is only 1 page in the tree
-
-STAGE 5
+ * building a bplus_tree on top of an external_merge_sorted page_list.
  * persistent storage using bufferpool library, providing a simple data_access_methods
