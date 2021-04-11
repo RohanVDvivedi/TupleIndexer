@@ -105,39 +105,39 @@ int main()
 	printf(" ================== \n\n");
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){0, 16, "Rohan", 16, "Dvivedi"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){5, 16, "Samip", 16, "Thakkar"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){10, 16, "Sahil", 16, "Shah"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(&bpth, bpttds, dam_p);
 	printf(" ================== \n\n");
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){2, 16, "Jyotirmoy", 16, "Pain"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){7, 16, "Shrey", 16, "Bansal"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){12, 16, "Aman", 16, "Garg"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(&bpth, bpttds, dam_p);
 	printf(" ================== \n\n");
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){4, 16, "Harsha", 16, "Grandhi"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){9, 16, "Parthiv", 16, "Kativarapu"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){14, 16, "Anurag", 16, "Anand"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(&bpth, bpttds, dam_p);
@@ -161,29 +161,29 @@ int main()
 	printf("\n");
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){15, 16, "Vidhan", 16, "Jain"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){17, 16, "Aakash", 16, "Goel"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){20, 16, "Pushpinder", 16, "Patel"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(&bpth, bpttds, dam_p);
 	printf(" ================== \n\n");
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){3, 16, "Sharon", 16, "Teacher"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){9, 16, "Pradeep", 16, "Sir"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){13, 16, "Soumya", 16, "Madam"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){19, 16, "Shubham", 16, "Sir"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	insert_or_update_in_bplus_tree(&bpth, rc, bpttds, dam_p, INSERT_BPT);
 
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(&bpth, bpttds, dam_p);
