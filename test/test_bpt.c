@@ -89,6 +89,7 @@ int main()
 
 	// declare temp variables
 	char rc[PAGE_SIZE] = {};
+	int64_t del_id;
 
 	// create a new bplus tree
 	if(!create_new_bplus_tree(&bpth, bpttds, dam_p))
@@ -183,6 +184,35 @@ int main()
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){19, 16, "Shubham", 16, "Sir"}));
 	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(&bpth, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	del_id = 5; printf("Deleting id : %llu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 7; printf("Deleting id : %llu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 9; printf("Deleting id : %llu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(&bpth, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	del_id = 5; printf("Deleting id : %llu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 15; printf("Deleting id : %llu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 17; printf("Deleting id : %llu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+
+	del_id = 20; printf("Deleting id : %llu\n\n", del_id);
+	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
 	print_bplus_tree(&bpth, bpttds, dam_p);
