@@ -485,10 +485,10 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 
 							// due to lock contention issues with read threads, we can only merge with next siblings
-							int32_t prev_sibbling_index = curr_index + 1;
+							int32_t prev_sibbling_index = curr_index - 1;
 
 							// if unsuccessfull perform merge of curr_page with prev_page
-							if(!merge_success_with_next && (prev_sibbling_index > -1))
+							if(!merge_success_with_next && (prev_sibbling_index >= -1))
 							{
 								delete_parent_index_entry_at_index = curr_index;
 								const void* parent_index_record = get_index_entry_from_interior_page(parent_page, dam_p->page_size, delete_parent_index_entry_at_index, bpttds);
