@@ -2,10 +2,6 @@
 Stage 1
  * implement bplus_tree delete function
    * handle un latching all parents if the node is more than half full upon removal of index and index + 1 indexed entries
- * implement bplus_tree update function
-   * insert function will be modified to provide an insert_update like functionality
-   * make update_tuple call for updating, if it fails, delete the original tuple and call split_insert. i.e. falling back to insert
-   * this is the fastest and best way to implement a update as, update will lead to no memory reclamation for fixed sized records and for slotted page tuple, memory is reclaimed only if we updated the record to a smaller size and it is settled at the end of the page
  * upon insert/update/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
 
 Stage 2
