@@ -59,6 +59,12 @@ const void* get_index_entry_from_interior_page(const void* page, uint32_t page_s
 
 int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds)
 {
+	uint16_t tuple_count = get_tuple_count(page);
+
+	// if there are no index tuples we may just jump to the ALL_LEAST_VALUES_REF reference
+	if(tuple_count == 0)
+		return -1;
+
 	const void* first_index_tuple = get_nth_tuple(page, page_size, bpttds->index_def, 0);
 	int compare = compare_tuples(like_key, first_index_tuple, bpttds->key_def);
 
@@ -68,8 +74,6 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 
 	uint16_t index_searched = 0;
 	int found = search_in_sorted_packed_page(page, page_size, bpttds->key_def, bpttds->index_def, like_key, &index_searched);
-
-	uint16_t tuple_count = get_tuple_count(page);
 
 	if(found)
 		return index_searched;
