@@ -80,6 +80,12 @@ int main()
 
 	// initialize tuple definition and insert element definitions for bplus tree
 	bplus_tree_tuple_defs* bpttds = get_bplus_tree_tuple_defs_from_record_def(def, 1);
+	print_tuple_def(bpttds->key_def);
+	printf("\n\n");
+	print_tuple_def(bpttds->index_def);
+	printf("\n\n");
+	print_tuple_def(bpttds->record_def);
+	printf("\n\n");
 
 	// initialize data store
 	data_access_methods* dam_p = get_new_in_memory_data_store(PAGE_SIZE, PAGE_COUNT);
