@@ -187,7 +187,7 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 					// if the curr page can handle an insert without a split
 					// then release locks on all the locked_parents that were locked until now
 					// since we won't have to propogate the split
-					if(is_page_lesser_than_or_equal_to_half_full(curr_page, dam_p->page_size, bpttds->index_def))
+					if(can_accomodate_new_index_entry_without_split_interior_page(curr_page, dam_p->page_size, bpttds))
 					{
 						// we need a lock on the handle only if we could be splitting the root
 						if(is_handle_locked)
