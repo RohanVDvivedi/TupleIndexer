@@ -4,11 +4,8 @@ Stage 1
  * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
 
 Stage 2
- * implement a page_list and a page_cursor interface to read leaf pages list or any page list
-   * insert only if tail locked with write, i.e. insert only at the tail
-   * read page with seek_page only in one direction
- * use this page_cursor interface to enable range search queries for b+ trees
- * implement support range search and delete queries
+ * implement a page_cursor interface to read leaf pages list, seekable only in one direction, now use this page_cursor interface to enable range search queries for b+ trees
+ * implement support range search queries
 
 STAGE 3
  * create a separate update function, that has int insert_if_absent flag as parameter, this update function can split or merge pages based on size of the new tuple
