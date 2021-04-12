@@ -39,6 +39,8 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 
 // below functions manage splits and merges of the leaf_pages of the b+tree
 
+int can_accomodate_new_index_entry_without_split_interior_page(const void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
+
 // returns the tuple (of bpttds->tuple_def) that we need to insert into the parent page
 // returns non NULL tuple if the page was split
 void* split_insert_interior_page(void* page_to_be_split, const void* new_index_entry, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);

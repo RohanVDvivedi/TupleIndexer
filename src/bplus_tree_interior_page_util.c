@@ -118,6 +118,25 @@ int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* 
 	return index_searched;
 }
 
+int can_accomodate_new_index_entry_without_split_interior_page(const void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
+{
+	switch(get_page_layout_type(bpttds->index_def))
+	{
+		case FIXED_ARRAY_PAGE_LAYOUT :
+		{
+			uint32_t free_space = get_free_space_in_page(page, page_size, bpttds->index_def);
+			uint32_t new_tuple_size = bpttds->index_def->size + get_additional_space_occupied_per_tuple(page_size, bpttds->index_def);
+			return free_space >= new_tuple_size;
+		}
+		default :
+		{
+			// since each record/index tuple is lesser than half full
+			// we assume that a page lesser than or half full will surely accomodate any new the tuple to this page
+			return is_page_lesser_than_or_equal_to_half_full(page, page_size, bpttds->index_def);
+		}
+	}
+}
+
 static int can_split_interior_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// can not split if the page is less than half full
