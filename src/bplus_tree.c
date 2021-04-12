@@ -425,9 +425,11 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					uint32_t next_page_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, next_indirection_index, bpttds);
 
 					// if the curr_page would be more than half full,
-					// even if the tuple at (next_indirection_index + 1) is removed,
+					// even if the tuple at next_indirection_index or (next_indirection_index + 1) is removed,
 					// then remove locks on all the locked_parents pages
-					if(0)
+					int32_t next_indirection_index_1 = next_indirection_index + 1;
+					if( ((next_indirection_index == -1) || is_surely_more_than_half_full_even_after_delete_at_index(curr_page, dam_p->page_size, next_indirection_index, bpttds))
+						&& ((next_indirection_index_1 == get_index_entry_count_in_interior_page(curr_page)) || is_surely_more_than_half_full_even_after_delete_at_index(curr_page, dam_p->page_size, next_indirection_index_1, bpttds)))
 					{
 						// we need a lock on the handle only if we could be splitting the root
 						if(is_handle_locked)

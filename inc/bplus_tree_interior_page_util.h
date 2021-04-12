@@ -45,6 +45,8 @@ int can_accomodate_new_index_entry_without_split_interior_page(const void* page,
 // returns non NULL tuple if the page was split
 void* split_insert_interior_page(void* page_to_be_split, const void* new_index_entry, void* new_page, uint32_t new_page_id, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
+int is_surely_more_than_half_full_even_after_delete_at_index(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds);
+
 // returns true (1), if parent_index_record needs to be deleted from the parent_page
 int merge_interior_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 

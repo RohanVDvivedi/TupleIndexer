@@ -227,6 +227,16 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 	return parent_insert;
 }
 
+int is_surely_more_than_half_full_even_after_delete_at_index(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds)
+{
+	uint32_t tuple_size = get_space_occupied_by_tuples(page, page_size, bpttds->index_def, index, index);
+	uint32_t free_space = get_free_space_in_page(page, page_size, bpttds->index_def);
+	uint32_t new_best_case_free_space = free_space + tuple_size;
+	uint32_t allotted_space = get_space_allotted_to_all_tuples(page, page_size, bpttds->index_def);
+	uint32_t new_best_case_used_space = allotted_space - new_best_case_free_space;
+	return new_best_case_used_space > (allotted_space / 2);
+}
+
 static int can_merge_interior_pages(void* page, const void* parent_index_record, void* sibling_page_to_be_merged, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// atleast one of the two pages must be lesser than half full
