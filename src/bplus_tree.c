@@ -325,7 +325,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 				delete_parent_index_entry = 0;
 				
 				// if this delete made the page lesser than half full, we might have to merge
-				if(is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->record_def))
+				if(deleted && is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->record_def))
 				{
 					void* parent_page = (void*) get_back(&locked_parents);
 					if(parent_page != NULL)
