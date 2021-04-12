@@ -359,7 +359,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 						int32_t prev_sibbling_index = curr_index - 1;
 
-						if(!merge_success_with_next && prev_sibbling_index >= -1)
+						if(!merge_success_with_next && (prev_sibbling_index >= -1))
 						{
 							// release lock on curr page, since we have to reorder taking the lock only for leaf page
 							dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
