@@ -1,6 +1,5 @@
 
 Stage 1
- * fix bpttds issue with sized
  * handle un latching all parents if the node is more than half full even after removal of index and index + 1 indexed entries
  * add condition to release un latching all parents if the page can accomodate a new tuple without a split
  * test vigorously the insert and delete functionality
