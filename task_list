@@ -1,6 +1,5 @@
 
 Stage 1
- * test vigorously the insert and delete functionality
  * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
 
 Stage 2
