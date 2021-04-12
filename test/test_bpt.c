@@ -182,13 +182,29 @@ int main()
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){3, 16, "Sharon", 16, "Teacher"}));
 	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){9, 16, "Pradeep", 16, "Sir"}));
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){11, 16, "Pradeep", 16, "Sir"}));
 	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){13, 16, "Soumya", 16, "Madam"}));
 	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
 
 	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){19, 16, "Shubham", 16, "Sir"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	printf(" === BPLUS TREE === \n\n");
+	print_bplus_tree(&bpth, bpttds, dam_p);
+	printf(" ================== \n\n");
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){6, 16, "Roopa", 16, "Dvivedi"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){16, 16, "Vipul", 16, "Dvivedi"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){18, 16, "Devashree", 16, "Dvivedi"}));
+	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+
+	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){21, 16, "Manan", 16, "Joshi"}));
 	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
