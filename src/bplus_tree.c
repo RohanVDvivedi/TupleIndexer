@@ -114,7 +114,7 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 	// record size must be lesser than or equal to half the allotted page size
 	// or even generated index entry size must be lesser than or equal to half the allotted page size
 	uint32_t record_size_on_page = get_tuple_size(bpttds->record_def, record) + get_additional_space_occupied_per_tuple(dam_p->page_size, bpttds->record_def);
-	uint32_t index_entry_size_on_page = (get_tuple_size(bpttds->key_def, record) + 4) + get_additional_space_occupied_per_tuple(dam_p->page_size, bpttds->record_def);
+	uint32_t index_entry_size_on_page = (get_tuple_size(bpttds->key_def, record) + 4) + get_additional_space_occupied_per_tuple(dam_p->page_size, bpttds->index_def);
 	uint32_t max_tuple_size_on_page = get_space_to_be_allotted_for_all_tuples(1, dam_p->page_size, bpttds->record_def) / 2;
 	if(record_size_on_page > max_tuple_size_on_page || index_entry_size_on_page > max_tuple_size_on_page)
 		return 0;
@@ -462,7 +462,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					delete_parent_index_entry = 0;
 
 					// if this delete made the page lesser than half full, we might have to merge
-					if(parent_index_deleted && is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->record_def))
+					if(parent_index_deleted && is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpttds->index_def))
 					{
 						void* parent_page = (void*) get_back(&locked_parents);
 						if(parent_page != NULL)
