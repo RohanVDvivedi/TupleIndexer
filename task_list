@@ -1,10 +1,8 @@
 
 Stage 1
  * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
-
-Stage 2
- * implement a page_cursor interface to read leaf pages list, seekable only in one direction, now use this page_cursor interface to enable range search queries for b+ trees
- * implement support for range search queries
+ * range queries
+  * modify bplus tree find, to find equals or the next largest in the list
 
 STAGE 2.1
  * set up test source for multi threaded insert delete and search operations
