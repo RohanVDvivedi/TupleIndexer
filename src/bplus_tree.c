@@ -120,6 +120,8 @@ const void* get_record_from_read_cursor(bplus_tree_read_cursor* rc, const bplus_
 void close_read_cursor(bplus_tree_read_cursor* rc, const data_access_methods* dam_p)
 {
 	dam_p->release_reader_lock_on_page(dam_p->context, rc->read_page);
+	rc->read_page = NULL;
+	rc->record_id = 0;
 }
 
 static void insert_new_root_node_HANDLE_UNSAFE(bplus_tree_handle* bpth, const void* parent_index_insert, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
