@@ -95,6 +95,7 @@ int main()
 
 	// declare temp variables
 	char rc[PAGE_SIZE] = {};
+	bplus_tree_read_cursor btrc;
 	int64_t del_id;
 
 	// create a new bplus tree
@@ -152,17 +153,18 @@ int main()
 	printf("FIND LOOP\n\n");
 	for(int64_t i = 0; i <= 25; i++)
 	{
-		const void* found_record = find_in_bplus_tree(&bpth, &i, bpttds, dam_p);
-		if(found_record == NULL)
+		int found = find_in_bplus_tree(&bpth, &i, &btrc, bpttds, dam_p);
+		if(!found)
 			printf("%ld -> NULL\n\n", i);
 		else
 		{
+			const void* found_record = get_record_from_read_cursor(&btrc, bpttds, dam_p);
 			printf("%ld -> ", i);
 			char print_str[PAGE_SIZE];
 			sprint_tuple(print_str, found_record, bpttds->record_def);
 			printf("%s\n\n", print_str);
-			free(found_record);
 		}
+		close_read_cursor(&btrc, dam_p);
 	}
 	printf("\n");
 
@@ -260,17 +262,18 @@ int main()
 	printf("FIND LOOP\n\n");
 	for(int64_t i = 0; i <= 25; i++)
 	{
-		const void* found_record = find_in_bplus_tree(&bpth, &i, bpttds, dam_p);
-		if(found_record == NULL)
+		int found = find_in_bplus_tree(&bpth, &i, &btrc, bpttds, dam_p);
+		if(!found)
 			printf("%ld -> NULL\n\n", i);
 		else
 		{
+			const void* found_record = get_record_from_read_cursor(&btrc, bpttds, dam_p);
 			printf("%ld -> ", i);
 			char print_str[PAGE_SIZE];
 			sprint_tuple(print_str, found_record, bpttds->record_def);
 			printf("%s\n\n", print_str);
-			free(found_record);
 		}
+		close_read_cursor(&btrc, dam_p);
 	}
 	printf("\n");
 
