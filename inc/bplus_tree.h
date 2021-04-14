@@ -51,13 +51,14 @@ const void* get_record_from_read_cursor(bplus_tree_read_cursor* rc);
 void close_read_cursor(bplus_tree_read_cursor* rc);
 
 
-
+// point insert
 int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
+// point delete
 int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
 
-
+// print complete b+ tree
 void print_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
 #endif
