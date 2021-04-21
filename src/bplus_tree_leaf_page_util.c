@@ -16,7 +16,10 @@ int is_leaf_page(const void* page)
 
 int init_leaf_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
-	return init_page(page, page_size, LEAF_PAGE_TYPE, 1, bpttds->record_def);
+	int inited = init_page(page, page_size, LEAF_PAGE_TYPE, 1, bpttds->record_def);
+	if(inited)
+		set_next_sibling_leaf_page(page, NULL_PAGE_REF);
+	return inited;
 }
 
 uint32_t get_next_sibling_leaf_page(const void* page)

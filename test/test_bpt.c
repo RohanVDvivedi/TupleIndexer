@@ -154,12 +154,12 @@ int main()
 	for(int64_t i = 0; i <= 25; i++)
 	{
 		int found = find_in_bplus_tree(&bpth, &i, &btrc, bpttds, dam_p);
-		if(!found)
-			printf("%ld -> NULL\n\n", i);
+		printf("%ld -> %d -> ", i, found);
+		const void* found_record = get_record_from_read_cursor(&btrc, bpttds, dam_p);
+		if(found_record == NULL)
+			printf("NULL\n\n");
 		else
 		{
-			const void* found_record = get_record_from_read_cursor(&btrc, bpttds, dam_p);
-			printf("%ld -> ", i);
 			char print_str[PAGE_SIZE];
 			sprint_tuple(print_str, found_record, bpttds->record_def);
 			printf("%s\n\n", print_str);
@@ -263,12 +263,12 @@ int main()
 	for(int64_t i = 0; i <= 25; i++)
 	{
 		int found = find_in_bplus_tree(&bpth, &i, &btrc, bpttds, dam_p);
-		if(!found)
-			printf("%ld -> NULL\n\n", i);
+		printf("%ld -> %d -> ", i, found);
+		const void* found_record = get_record_from_read_cursor(&btrc, bpttds, dam_p);
+		if(found_record == NULL)
+			printf("NULL\n\n");
 		else
 		{
-			const void* found_record = get_record_from_read_cursor(&btrc, bpttds, dam_p);
-			printf("%ld -> ", i);
 			char print_str[PAGE_SIZE];
 			sprint_tuple(print_str, found_record, bpttds->record_def);
 			printf("%s\n\n", print_str);
