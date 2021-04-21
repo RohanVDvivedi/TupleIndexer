@@ -56,12 +56,63 @@ int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, bplus_tree_read
 				uint16_t found_index;
 				found = search_in_sorted_packed_page(curr_page, dam_p->page_size, bpttds->key_def, bpttds->record_def, key, &found_index);
 
+				if(!found)
+				{
+					uint16_t test_index = found_index;
+					const void* test_record = get_nth_tuple(curr_page, dam_p->page_size, bpttds->record_def, test_index);
+					int compare = compare_tuples(test_record, key, bpttds->key_def);
+
+					if(compare > 0)
+					{
+						while(1)
+						{
+							test_record = get_nth_tuple(curr_page, dam_p->page_size, bpttds->record_def, test_index);
+							compare = compare_tuples(test_record, key, bpttds->key_def);
+							if(compare > 0)
+							{
+								found_index = test_index;
+								if(test_index > 0)
+									test_index--;
+								else
+									break;
+							}
+							else
+								break;
+						}
+					}
+					else if(compare < 0)
+					{
+						while(1)
+						{
+							test_record = get_nth_tuple(curr_page, dam_p->page_size, bpttds->record_def, test_index);
+							compare = compare_tuples(test_record, key, bpttds->key_def);
+							if(compare < 0)
+							{
+								test_index++;
+								if(test_index == get_record_count_in_leaf_page(curr_page))
+								{
+									found_index = test_index;
+									break;
+								}
+							}
+							else
+							{
+								found_index = test_index;
+								break;
+							}
+						}
+					}
+
+				}
+
 				if(rc == NULL)	// release lock and cleanup
 					dam_p->release_reader_lock_on_page(dam_p->context, curr_page);
 				else
 				{
 					rc->read_page = curr_page;
 					rc->record_id = found_index;
+					if(found_index == get_record_count_in_leaf_page(curr_page))
+						seek_next_read_cursor(rc, bpttds, dam_p);
 				}
 				curr_page = NULL;
 				break;
@@ -88,9 +139,13 @@ int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, bplus_tree_read
 
 int seek_next_read_cursor(bplus_tree_read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
-	rc->record_id++;
-	if(rc->record_id < get_record_count_in_leaf_page(rc->read_page))
-		return 1;
+	if(get_record_count_in_leaf_page(rc->read_page) > 0 && 
+		rc->record_id < get_record_count_in_leaf_page(rc->read_page) - 1)
+	{
+		rc->record_id++;
+		if(rc->record_id < get_record_count_in_leaf_page(rc->read_page))
+			return 1;
+	}
 
 	rc->record_id = 0;
 
