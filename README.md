@@ -4,7 +4,6 @@ The tuple is laid out as per specifications of SimpleTupleStorageModel library.
 
 Note: 
  * persistent storage using bufferpool library (not implemented yet).
- * range search queries are also work in progress.
 
 ## Setup instructions
 **Install dependencies :**
