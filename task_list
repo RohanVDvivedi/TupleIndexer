@@ -1,8 +1,6 @@
 
 Stage 1
  * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
- * range queries
-  * modify bplus tree find, to find equals or the next largest in the list
 
 STAGE 2.1
  * set up test source for multi threaded insert delete and search operations
