@@ -147,8 +147,6 @@ int seek_next_read_cursor(bplus_tree_read_cursor* rc, const bplus_tree_tuple_def
 			return 1;
 	}
 
-	rc->record_id = 0;
-
 	do
 	{
 		uint32_t next_sibling_page_id = get_next_sibling_leaf_page(rc->read_page);
@@ -157,6 +155,7 @@ int seek_next_read_cursor(bplus_tree_read_cursor* rc, const bplus_tree_tuple_def
 			void* next_sibling_page = dam_p->acquire_page_with_reader_lock(dam_p->context, next_sibling_page_id);
 			dam_p->release_reader_lock_on_page(dam_p->context, rc->read_page);
 			rc->read_page = next_sibling_page;
+			rc->record_id = 0;
 		}
 		else
 			return 0;	// i.e. end of leaf pages
