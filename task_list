@@ -7,7 +7,7 @@ STAGE 2.1
 
 -- OPTIONAL TASKS BELOW (no to worry about it now) --
 
-STAGE 4
+STAGE 2
  * external_merge_sort for the page_list
  * building a bplus_tree on top of an external_merge_sorted page_list.
  * persistent storage using bufferpool library, providing a simple data_access_methods
