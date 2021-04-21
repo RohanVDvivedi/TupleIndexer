@@ -16,7 +16,10 @@ int is_interior_page(const void* page)
 
 int init_interior_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
-	return init_page(page, page_size, INTERIOR_PAGE_TYPE, 1, bpttds->index_def);
+	int inited = init_page(page, page_size, INTERIOR_PAGE_TYPE, 1, bpttds->index_def);
+	if(inited)
+		set_reference_page_id(page, ALL_LEAST_VALUES_REF, NULL_PAGE_REF);
+	return inited;
 }
 
 uint16_t get_index_entry_count_in_interior_page(const void* page)
