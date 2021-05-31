@@ -109,8 +109,7 @@ int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, read_cursor* rc
 					dam_p->release_reader_lock_on_page(dam_p->context, curr_page);
 				else
 				{
-					rc->read_page = curr_page;
-					rc->record_id = found_index;
+					open_read_cursor(rc, curr_page, found_index, bpttds->record_def);
 					if(found_index == get_record_count_in_leaf_page(curr_page))
 						seek_next_read_cursor(rc, dam_p);
 				}
