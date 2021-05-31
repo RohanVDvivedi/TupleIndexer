@@ -5,8 +5,8 @@
 
 #include<rwlock.h>
 
-typedef struct page_list page_list;
-struct page_list
+typedef struct page_list_handle page_list_handle;
+struct page_list_handle
 {
 	// lock to protect head_id of the page list
 	rwlock handle_lock;

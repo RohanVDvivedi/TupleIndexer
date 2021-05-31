@@ -3,6 +3,8 @@
 
 #include<tuple_def.h>
 
+#include<page_offset_util.h>
+
 // two of the page types found inside a bplus tree
 #define LEAF_PAGE_TYPE      0
 #define INTERIOR_PAGE_TYPE  1
@@ -12,9 +14,8 @@
 #define ALL_LEAST_VALUES_REF        0
 
 // page references on leaf page
+// this must equal NEXT_PAGE_ID
 #define NEXT_SIBLING_PAGE_REF       0
-
-#define NULL_PAGE_REF				(~0)
 
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs

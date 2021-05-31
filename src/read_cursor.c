@@ -1,13 +1,19 @@
 #include<read_cursor.h>
 
+#include<page_list_util.h>
+
 int lock_page_and_open_read_cursor(read_cursor* rc, uint32_t read_page_id, uint32_t record_id, const tuple_def* record_def, const data_access_methods* dam_p)
 {
-
+	rc->read_page = dam_p->acquire_page_with_reader_lock(dam_p->context, read_page_id);
+	rc->record_def = record_def;
+	rc->record_id = record_id;
 }
 
 int open_read_cursor(read_cursor* rc, const void* read_page, uint32_t record_id, const tuple_def* record_def)
 {
-
+	rc->read_page = read_page;
+	rc->record_def = record_def;
+	rc->record_id = record_id;
 }
 
 int seek_next_read_cursor(read_cursor* rc, const data_access_methods* dam_p)
