@@ -13,6 +13,8 @@
 
 #include<bplus_tree_util.h>
 
+#include<read_cursor.h>
+
 typedef struct bplus_tree_handle bplus_tree_handle;
 struct bplus_tree_handle
 {

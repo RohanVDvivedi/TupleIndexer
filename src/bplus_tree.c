@@ -36,7 +36,7 @@ int create_new_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* 
 	return 1;
 }
 
-int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, bplus_tree_read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	int found = 0;
 
@@ -112,7 +112,7 @@ int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, bplus_tree_read
 					rc->read_page = curr_page;
 					rc->record_id = found_index;
 					if(found_index == get_record_count_in_leaf_page(curr_page))
-						seek_next_read_cursor(rc, bpttds, dam_p);
+						seek_next_read_cursor(rc, dam_p);
 				}
 				curr_page = NULL;
 				break;
