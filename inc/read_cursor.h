@@ -13,7 +13,7 @@ typedef struct read_cursor read_cursor;
 struct read_cursor
 {
 	// the page that is locked for reading
-	void* read_page;
+	void const * read_page;
 
 	// definition of each record on the page
 	tuple_def const * record_def;
