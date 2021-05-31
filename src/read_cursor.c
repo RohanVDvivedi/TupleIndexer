@@ -2,6 +2,8 @@
 
 #include<page_list_util.h>
 
+#include<page_layout.h>
+
 int lock_page_and_open_read_cursor(read_cursor* rc, uint32_t read_page_id, uint32_t record_id, const tuple_def* record_def, const data_access_methods* dam_p)
 {
 	rc->read_page = dam_p->acquire_page_with_reader_lock(dam_p->context, read_page_id);
