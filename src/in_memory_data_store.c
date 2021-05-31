@@ -267,54 +267,6 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr)
 		return 0;
 }
 
-static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
-{
-	memory_store_context* cntxt = context;
-
-	// invalid page pointer
-	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
-		return 0;
-
-	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
-
-	// page_id is out of bounds
-	if(page_id >= cntxt->pages_count)
-		return 0;
-
-	// to check if the page that you requested was freed ( after pthread_mutex_unlock(&(cntxt->free_pages_lock)) call )
-	// i.e. you can not free an already freed page
-	int was_page_freed = 0;
-
-	pthread_mutex_lock(&(cntxt->free_pages_lock));
-
-		// check if the page is free
-		int is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
-
-		// if the page is not free, free it
-		if(!is_free_page)
-		{
-			// insert the page to the head of the free_pages list
-			insert_head(&(cntxt->free_pages), pg_ptr);
-
-			// set the free flag bit
-			cntxt->page_states[page_id].flags |= IS_FREE_FLAG;
-
-			was_page_freed = 1;
-		}
-
-	pthread_mutex_unlock(&(cntxt->free_pages_lock));
-
-	// if the page was freed, then release its lock
-	if(was_page_freed)
-	{
-		read_unlock(&(cntxt->page_states[page_id].reader_writer_page_lock));
-		return 1;
-	}
-	else
-		return 0;
-}
-
 static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
@@ -386,7 +338,6 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t p
 	dam_p->downgrade_writer_lock_to_reader_lock_on_page = downgrade_writer_lock_to_reader_lock_on_page;
 	dam_p->release_reader_lock_on_page = release_reader_lock_on_page;
 	dam_p->release_writer_lock_on_page = release_writer_lock_on_page;
-	dam_p->release_reader_lock_and_free_page = release_reader_lock_and_free_page;
 	dam_p->release_writer_lock_and_free_page = release_writer_lock_and_free_page;
 	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
