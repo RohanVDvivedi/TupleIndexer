@@ -137,47 +137,6 @@ int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, bplus_tree_read
 	return found;
 }
 
-int seek_next_read_cursor(bplus_tree_read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
-{
-	if(get_record_count_in_leaf_page(rc->read_page) > 0 && 
-		rc->record_id < get_record_count_in_leaf_page(rc->read_page) - 1)
-	{
-		rc->record_id++;
-		if(rc->record_id < get_record_count_in_leaf_page(rc->read_page))
-			return 1;
-	}
-
-	do
-	{
-		uint32_t next_sibling_page_id = get_next_sibling_leaf_page(rc->read_page);
-		if(next_sibling_page_id != NULL_PAGE_REF)
-		{
-			void* next_sibling_page = dam_p->acquire_page_with_reader_lock(dam_p->context, next_sibling_page_id);
-			dam_p->release_reader_lock_on_page(dam_p->context, rc->read_page);
-			rc->read_page = next_sibling_page;
-			rc->record_id = 0;
-		}
-		else
-			return 0;	// i.e. end of leaf pages
-	}
-	while(get_record_count_in_leaf_page(rc->read_page) == 0);
-	// if pointing to empty page then re iterate
-
-	return 1;
-}
-
-const void* get_record_from_read_cursor(bplus_tree_read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
-{
-	return get_nth_tuple(rc->read_page, dam_p->page_size, bpttds->record_def, rc->record_id);
-}
-
-void close_read_cursor(bplus_tree_read_cursor* rc, const data_access_methods* dam_p)
-{
-	dam_p->release_reader_lock_on_page(dam_p->context, rc->read_page);
-	rc->read_page = NULL;
-	rc->record_id = 0;
-}
-
 static void insert_new_root_node_HANDLE_UNSAFE(bplus_tree_handle* bpth, const void* parent_index_insert, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	uint32_t old_root_id = bpth->root_id;

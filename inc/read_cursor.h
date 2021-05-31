@@ -1,6 +1,12 @@
 #ifndef READ_CURSOR_H
 #define READ_CURSOR_H
 
+#include<stdint.h>
+
+#include<tuple_def.h>
+
+#include<data_access_methods.h>
+
 // this read cursor is used to read either of page_list or bplus_tree
 
 typedef struct read_cursor read_cursor;
@@ -25,7 +31,7 @@ int open_read_cursor(read_cursor* rc, const void* read_page, uint32_t record_id,
 int seek_next_read_cursor(read_cursor* rc, const data_access_methods* dam_p);
 
 // returns pointer to the record that the read cursor is pointing to
-const void* get_record_from_read_cursor(read_cursor* rc);
+const void* get_record_from_read_cursor(read_cursor* rc, const data_access_methods* dam_p);
 
 // you must call this method to release the locked page by the read cursor
 void close_read_cursor(read_cursor* rc, const data_access_methods* dam_p);
