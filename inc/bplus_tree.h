@@ -23,34 +23,13 @@ struct bplus_tree_handle
 	uint32_t root_id;
 };
 
-typedef struct bplus_tree_read_cursor bplus_tree_read_cursor;
-struct bplus_tree_read_cursor
-{
-	// the page that is locked for reading
-	void* read_page;
-
-	// index of the record that is yet to be read
-	uint32_t record_id;
-};
-
 int create_new_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
 
 // find function uses a read cursor
 // returns 1 if an exact match was found
 // read cursor can be NULL, this allows find to return 1, if the record with given key exists
-int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, bplus_tree_read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
-
-// seek returns 1, if the seek was success full
-// it fails with 0, if we reached the end of b+tree
-int seek_next_read_cursor(bplus_tree_read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
-
-// returns pointer to the record that the read cursor is pointing to
-const void* get_record_from_read_cursor(bplus_tree_read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
-
-// you must call this method to release the locked page by the read cursor
-void close_read_cursor(bplus_tree_read_cursor* rc, const data_access_methods* dam_p);
-
+int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
 
 // point insert
 int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
