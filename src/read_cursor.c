@@ -14,7 +14,7 @@ int lock_page_and_open_read_cursor(read_cursor* rc, uint32_t read_page_id, uint3
 	return 1;
 }
 
-int open_read_cursor(read_cursor* rc, const void* read_page, uint32_t record_id, const tuple_def* record_def)
+int open_read_cursor(read_cursor* rc, void* read_page, uint32_t record_id, const tuple_def* record_def)
 {
 	rc->read_page = read_page;
 	rc->record_def = record_def;
