@@ -31,8 +31,7 @@ struct data_access_methods
 	int (*release_reader_lock_on_page)(void* context, void* pg_ptr);
 	int (*release_writer_lock_on_page)(void* context, void* pg_ptr);
 
-	// releases lock and mark the page as free
-	int (*release_reader_lock_and_free_page)(void* context, void* pg_ptr);
+	// releases writer lock and mark the page as free
 	int (*release_writer_lock_and_free_page)(void* context, void* pg_ptr);
 
 	// equivalent to msync
