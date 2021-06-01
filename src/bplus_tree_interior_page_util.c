@@ -9,22 +9,12 @@
 #include<string.h>
 #include<stdlib.h>
 
-int is_interior_page(const void* page)
-{
-	return get_page_type(page) == INTERIOR_PAGE_TYPE;
-}
-
 int init_interior_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	int inited = init_page(page, page_size, INTERIOR_PAGE_TYPE, 1, bpttds->index_def);
 	if(inited)
 		set_reference_page_id(page, ALL_LEAST_VALUES_REF, NULL_PAGE_REF);
 	return inited;
-}
-
-uint16_t get_index_entry_count_in_interior_page(const void* page)
-{
-	return get_tuple_count(page);
 }
 
 uint32_t get_index_page_id_from_interior_page(const void* page, uint32_t page_size, int32_t index, const bplus_tree_tuple_defs* bpttds)
@@ -53,11 +43,6 @@ int set_index_page_id_in_interior_page(void* page, uint32_t page_size, int32_t i
 	copy_element_to_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, index_tuple, &page_id);
 
 	return 1;
-}
-
-const void* get_index_entry_from_interior_page(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds)
-{
-	return get_nth_tuple(page, page_size, bpttds->index_def, index);
 }
 
 int32_t find_in_interior_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds)
@@ -156,7 +141,7 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 		return NULL;
 
 	// index_entry_count before the split
-	uint32_t index_entry_count = get_index_entry_count_in_interior_page(page_to_be_split);
+	uint32_t index_entry_count = get_tuple_count(page_to_be_split);
 
 	// initialize temp page
 	uint32_t temp_page_size = 2 * page_size;
@@ -184,7 +169,7 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 	}
 
 	// this is the new index entry count, considering that the new tuple is inserted to this one temp page, instead of 2 split pages
-	index_entry_count = get_index_entry_count_in_interior_page(temp_page);
+	index_entry_count = get_tuple_count(temp_page);
 
 	// the return value
 	void* parent_insert = NULL;
