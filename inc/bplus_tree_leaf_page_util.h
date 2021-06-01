@@ -9,9 +9,6 @@ int init_leaf_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* 
 uint32_t get_next_sibling_leaf_page(const void* page);
 int set_next_sibling_leaf_page(void* page, uint32_t next_page_id);
 
-// returns a pointer in the page that points to index-th record, and has tuple definition of that of a record_def
-const void* get_record_from_leaf_page(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds);
-
 // returns index to the first record tuple in the page, that has key that equals the like_key
 uint16_t find_in_leaf_page(const void* page, uint32_t page_size, const void* like_key, const bplus_tree_tuple_defs* bpttds);
 
