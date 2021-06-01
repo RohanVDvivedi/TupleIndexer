@@ -390,7 +390,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 						{
 							// this is the exact parent index entry that we would have to delete, if the merge succeeds
 							delete_parent_index_entry_at_index = next_sibbling_index;
-							const void* parent_index_record = get_index_entry_from_interior_page(parent_page, dam_p->page_size, delete_parent_index_entry_at_index, bpttds);
+							const void* parent_index_record = get_nth_tuple(parent_page, dam_p->page_size, bpttds->index_def, delete_parent_index_entry_at_index);
 
 							// get sibling page id and lock it
 							uint32_t next_sibbling_page_id = get_index_page_id_from_interior_page(parent_page, dam_p->page_size, next_sibbling_index, bpttds);
@@ -416,7 +416,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 							// this is the exact parent index entry that we would have to delete, if the merge succeeds
 							delete_parent_index_entry_at_index = curr_index;
-							const void* parent_index_record = get_index_entry_from_interior_page(parent_page, dam_p->page_size, delete_parent_index_entry_at_index, bpttds);
+							const void* parent_index_record = get_nth_tuple(parent_page, dam_p->page_size, bpttds->index_def, delete_parent_index_entry_at_index);
 
 							// get prev sibling page id and lock it
 							uint32_t prev_sibbling_page_id = get_index_page_id_from_interior_page(parent_page, dam_p->page_size, prev_sibbling_index, bpttds);
@@ -529,7 +529,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 							if(next_sibbling_index < get_tuple_count(parent_page))
 							{
 								delete_parent_index_entry_at_index = next_sibbling_index;
-								const void* parent_index_record = get_index_entry_from_interior_page(parent_page, dam_p->page_size, delete_parent_index_entry_at_index, bpttds);
+								const void* parent_index_record = get_nth_tuple(parent_page, dam_p->page_size, bpttds->index_def, delete_parent_index_entry_at_index);
 
 								uint32_t next_sibbling_page_id = get_index_page_id_from_interior_page(parent_page, dam_p->page_size, next_sibbling_index, bpttds);
 								void* next_sibbling_page = dam_p->acquire_page_with_writer_lock(dam_p->context, next_sibbling_page_id);
@@ -553,7 +553,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 							if(!merge_success_with_next && (prev_sibbling_index >= -1))
 							{
 								delete_parent_index_entry_at_index = curr_index;
-								const void* parent_index_record = get_index_entry_from_interior_page(parent_page, dam_p->page_size, delete_parent_index_entry_at_index, bpttds);
+								const void* parent_index_record = get_nth_tuple(parent_page, dam_p->page_size, bpttds->index_def, delete_parent_index_entry_at_index);
 
 								uint32_t prev_sibbling_page_id = get_index_page_id_from_interior_page(parent_page, dam_p->page_size, prev_sibbling_index, bpttds);
 								void* prev_sibbling_page = dam_p->acquire_page_with_writer_lock(dam_p->context, prev_sibbling_page_id);
