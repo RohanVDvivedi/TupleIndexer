@@ -3,6 +3,7 @@
 
 #include<in_memory_data_store.h>
 #include<bplus_tree.h>
+#include<read_cursor.h>
 
 // comment the below macro to test the SLOTTED_PAGE_LAYOUT
 #define TEST_FIXED_ARRAY_PAGE_LAYOUT
@@ -95,7 +96,7 @@ int main()
 
 	// declare temp variables
 	char rc[PAGE_SIZE] = {};
-	bplus_tree_read_cursor btrc;
+	read_cursor btrc;
 	int64_t del_id;
 
 	// create a new bplus tree
@@ -155,7 +156,7 @@ int main()
 	{
 		int found = find_in_bplus_tree(&bpth, &i, &btrc, bpttds, dam_p);
 		printf("%ld -> %d -> ", i, found);
-		const void* found_record = get_record_from_read_cursor(&btrc, bpttds, dam_p);
+		const void* found_record = get_record_from_read_cursor(&btrc, dam_p);
 		if(found_record == NULL)
 			printf("NULL\n\n");
 		else
@@ -264,7 +265,7 @@ int main()
 	{
 		int found = find_in_bplus_tree(&bpth, &i, &btrc, bpttds, dam_p);
 		printf("%ld -> %d -> ", i, found);
-		const void* found_record = get_record_from_read_cursor(&btrc, bpttds, dam_p);
+		const void* found_record = get_record_from_read_cursor(&btrc, dam_p);
 		if(found_record == NULL)
 			printf("NULL\n\n");
 		else
