@@ -189,7 +189,7 @@ void* split_insert_interior_page(void* page_to_be_split, const void* new_index_e
 		}
 
 		// get this next to be inserted index_entry
-		const void* page_entry_to_insert = get_index_entry_from_interior_page(temp_page, temp_page_size, tuple_to_insert, bpttds);
+		const void* page_entry_to_insert = get_nth_tuple(temp_page, temp_page_size, bpttds->index_def, tuple_to_insert);
 		uint32_t page_entry_to_insert_key_size = get_tuple_size(bpttds->key_def, page_entry_to_insert);
 
 		// now prepare the parent record
