@@ -346,7 +346,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 	// if the curr_page i.e. the root page is a leaf page OR has more than one index entry, then release handle lock
 	// i.e we will not have to remove the root node
-	if(is_leaf_page(curr_page) || get_index_entry_count_in_interior_page(curr_page) > 1)
+	if(get_page_type(curr_page) == LEAF_PAGE_TYPE || get_index_entry_count_in_interior_page(curr_page) > 1)
 	{
 		write_unlock(&(bpth->handle_lock));
 		is_handle_locked = 0;
@@ -607,7 +607,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 		void* root_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
 
 		// remove bplus tree root, only if it is an interior page and is empty
-		if(is_interior_page(root_page) && get_index_entry_count_in_interior_page(root_page) == 0)
+		if(get_page_type(root_page) == INTERIOR_PAGE_TYPE && get_index_entry_count_in_interior_page(root_page) == 0)
 		{
 			// the new root is at the ALL_LEAST_REF of the current interior root page
 			bpth->root_id = get_index_page_id_from_interior_page(root_page, dam_p->page_size, -1, bpttds);
