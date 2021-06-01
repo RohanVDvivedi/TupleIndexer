@@ -89,7 +89,7 @@ int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, read_cursor* rc
 							if(compare < 0)
 							{
 								test_index++;
-								if(test_index == get_record_count_in_leaf_page(curr_page))
+								if(test_index == get_tuple_count(curr_page))
 								{
 									found_index = test_index;
 									break;
@@ -110,7 +110,7 @@ int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, read_cursor* rc
 				else
 				{
 					open_read_cursor(rc, curr_page, found_index, bpttds->record_def);
-					if(found_index == get_record_count_in_leaf_page(curr_page))
+					if(found_index == get_tuple_count(curr_page))
 						seek_next_read_cursor(rc, dam_p);
 				}
 				curr_page = NULL;
@@ -346,7 +346,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 
 	// if the curr_page i.e. the root page is a leaf page OR has more than one index entry, then release handle lock
 	// i.e we will not have to remove the root node
-	if(get_page_type(curr_page) == LEAF_PAGE_TYPE || get_index_entry_count_in_interior_page(curr_page) > 1)
+	if(get_page_type(curr_page) == LEAF_PAGE_TYPE || get_tuple_count(curr_page) > 1)
 	{
 		write_unlock(&(bpth->handle_lock));
 		is_handle_locked = 0;
@@ -386,7 +386,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 						int32_t next_sibbling_index = curr_index + 1;
 						int merge_success_with_next = 0;
 
-						if(next_sibbling_index < get_index_entry_count_in_interior_page(parent_page))
+						if(next_sibbling_index < get_tuple_count(parent_page))
 						{
 							// this is the exact parent index entry that we would have to delete, if the merge succeeds
 							delete_parent_index_entry_at_index = next_sibbling_index;
@@ -480,7 +480,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 					int32_t next_indirection_index_1 = next_indirection_index + 1;
 					if( is_page_more_than_half_full(curr_page, dam_p->page_size, bpttds->index_def)
 						&& ( (next_indirection_index == -1) || is_surely_more_than_half_full_even_after_delete_at_index(curr_page, dam_p->page_size, next_indirection_index, bpttds) )
-						&& ( (next_indirection_index_1 == get_index_entry_count_in_interior_page(curr_page)) || is_surely_more_than_half_full_even_after_delete_at_index(curr_page, dam_p->page_size, next_indirection_index_1, bpttds) )
+						&& ( (next_indirection_index_1 == get_tuple_count(curr_page)) || is_surely_more_than_half_full_even_after_delete_at_index(curr_page, dam_p->page_size, next_indirection_index_1, bpttds) )
 					){
 						// we need a lock on the handle only if we could be splitting the root
 						if(is_handle_locked)
@@ -526,7 +526,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 							int merge_success_with_next = 0;
 							
 							// perform merge of curr_page with next_page
-							if(next_sibbling_index < get_index_entry_count_in_interior_page(parent_page))
+							if(next_sibbling_index < get_tuple_count(parent_page))
 							{
 								delete_parent_index_entry_at_index = next_sibbling_index;
 								const void* parent_index_record = get_index_entry_from_interior_page(parent_page, dam_p->page_size, delete_parent_index_entry_at_index, bpttds);
@@ -607,7 +607,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 		void* root_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
 
 		// remove bplus tree root, only if it is an interior page and is empty
-		if(get_page_type(root_page) == INTERIOR_PAGE_TYPE && get_index_entry_count_in_interior_page(root_page) == 0)
+		if(get_page_type(root_page) == INTERIOR_PAGE_TYPE && get_tuple_count(root_page) == 0)
 		{
 			// the new root is at the ALL_LEAST_REF of the current interior root page
 			bpth->root_id = get_index_page_id_from_interior_page(root_page, dam_p->page_size, -1, bpttds);
@@ -644,7 +644,7 @@ static void print_bplus_tree_sub_tree(uint32_t root_id, const bplus_tree_tuple_d
 		case INTERIOR_PAGE_TYPE :
 		{
 			// call print on all its children
-			for(int32_t i = -1; i < ((int32_t)(get_index_entry_count_in_interior_page(curr_page))); i++)
+			for(int32_t i = -1; i < get_tuple_count(curr_page); i++)
 			{
 				uint32_t child_id = get_index_page_id_from_interior_page(curr_page, dam_p->page_size, i, bpttds);
 				print_bplus_tree_sub_tree(child_id, bpttds, dam_p);

@@ -16,9 +16,6 @@
 // to initialize an interior page
 int init_interior_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 
-// returns number of records in the leaf page
-uint16_t get_index_entry_count_in_interior_page(const void* page);
-
 // returns a uint32_t page_id at index-th position
 // index varies from -1 to get_index_entry_count_in_interior_page() - 1
 uint32_t get_index_page_id_from_interior_page(const void* page, uint32_t page_size, int32_t index, const bplus_tree_tuple_defs* bpttds);

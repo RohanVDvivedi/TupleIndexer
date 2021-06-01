@@ -24,11 +24,11 @@ int open_read_cursor(read_cursor* rc, void* read_page, uint32_t record_id, const
 
 int seek_next_read_cursor(read_cursor* rc, const data_access_methods* dam_p)
 {
-	if(get_record_count_in_list_page(rc->read_page) > 0 && 
-		rc->record_id < get_record_count_in_list_page(rc->read_page) - 1)
+	if(get_tuple_count(rc->read_page) > 0 && 
+		rc->record_id < get_tuple_count(rc->read_page) - 1)
 	{
 		rc->record_id++;
-		if(rc->record_id < get_record_count_in_list_page(rc->read_page))
+		if(rc->record_id < get_tuple_count(rc->read_page))
 			return 1;
 	}
 
@@ -45,7 +45,7 @@ int seek_next_read_cursor(read_cursor* rc, const data_access_methods* dam_p)
 		else
 			return 0;	// i.e. end of leaf pages
 	}
-	while(get_record_count_in_list_page(rc->read_page) == 0);
+	while(get_tuple_count(rc->read_page) == 0);
 	// if pointing to empty page then re iterate
 
 	return 1;
