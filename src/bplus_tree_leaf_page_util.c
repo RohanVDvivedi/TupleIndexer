@@ -9,11 +9,6 @@
 #include<stdlib.h>
 #include<string.h>
 
-int is_leaf_page(const void* page)
-{
-	return get_page_type(page) == LEAF_PAGE_TYPE;
-}
-
 int init_leaf_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	int inited = init_page(page, page_size, LEAF_PAGE_TYPE, 1, bpttds->record_def);
@@ -32,16 +27,6 @@ int set_next_sibling_leaf_page(void* page, uint32_t next_page_id)
 	return set_reference_page_id(page, NEXT_SIBLING_PAGE_REF, next_page_id);
 }
 
-uint16_t get_record_count_in_leaf_page(const void* page)
-{
-	return get_tuple_count(page);
-}
-
-const void* get_record_from_leaf_page(const void* page, uint32_t page_size, uint16_t index, const bplus_tree_tuple_defs* bpttds)
-{
-	return get_nth_tuple(page, page_size, bpttds->record_def, index);
-}
-
 static int can_split_leaf_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
 {
 	// can not split if the page is less than half full
@@ -58,7 +43,7 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 		return NULL;
 
 	// record_count before split
-	uint16_t record_count = get_record_count_in_leaf_page(page_to_be_split);
+	uint16_t record_count = get_tuple_count(page_to_be_split);
 
 	// initialize temp page
 	uint32_t temp_page_size = 2 * page_size;
@@ -91,7 +76,7 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 	}
 
 	// this is the new record count, considering that the new tuple is inserted to this one temp page, instead of 2 split pages
-	record_count = get_record_count_in_leaf_page(temp_page);
+	record_count = get_tuple_count(temp_page);
 
 	// actual move operation, to move tuples to either of page_to_be_split or to new_page
 	{
@@ -119,7 +104,7 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 	// build the parent_index that we need to return
 	{
 		// get first record in the new page
-		const void* first_new_page_record = get_record_from_leaf_page(new_page, page_size, 0, bpttds);
+		const void* first_new_page_record = get_nth_tuple(new_page, page_size, bpttds->record_def, 0);
 		uint32_t first_new_page_key_size = get_tuple_size(bpttds->key_def, first_new_page_record);
 
 		// generate the tuple with index_def, that you need to insert in the parent page
