@@ -34,7 +34,7 @@ int seek_next_read_cursor(read_cursor* rc, const data_access_methods* dam_p)
 
 	do
 	{
-		uint32_t next_sibling_page_id = get_next_list_page(rc->read_page);
+		uint32_t next_sibling_page_id = get_reference_page_id(rc->read_page, NEXT_PAGE_REF);
 		if(next_sibling_page_id != NULL_PAGE_REF)
 		{
 			void* next_sibling_page = dam_p->acquire_page_with_reader_lock(dam_p->context, next_sibling_page_id);
