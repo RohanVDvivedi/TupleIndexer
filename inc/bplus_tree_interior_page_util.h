@@ -13,8 +13,6 @@
 **
 */
 
-int is_interior_page(const void* page);
-
 // to initialize an interior page
 int init_interior_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);
 

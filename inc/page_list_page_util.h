@@ -7,8 +7,6 @@
 
 #include<page_list_util.h>
 
-int is_list_page(const void* page);
-
 // to initialize a page list page
 int init_list_page(void* page, uint32_t page_size, const tuple_def* record_def);
 
