@@ -5,18 +5,6 @@
 
 #include<page_offset_util.h>
 
-// two of the page types found inside a bplus tree
-#define LEAF_PAGE_TYPE      0
-#define INTERIOR_PAGE_TYPE  1
-
-// page reference on interior page
-// i.e. page reference to the sub-bplus_tree that contains all data that is lesser than the least key on this page
-#define ALL_LEAST_VALUES_REF        0
-
-// page references on leaf page
-// this must equal NEXT_PAGE_ID
-#define NEXT_SIBLING_PAGE_REF       0
-
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs
 {

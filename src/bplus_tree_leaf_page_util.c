@@ -13,18 +13,8 @@ int init_leaf_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* 
 {
 	int inited = init_page(page, page_size, LEAF_PAGE_TYPE, 1, bpttds->record_def);
 	if(inited)
-		set_next_sibling_leaf_page(page, NULL_PAGE_REF);
+		set_reference_page_id(page, NEXT_SIBLING_PAGE_REF, NULL_PAGE_REF);
 	return inited;
-}
-
-uint32_t get_next_sibling_leaf_page(const void* page)
-{
-	return get_reference_page_id(page, NEXT_SIBLING_PAGE_REF);
-}
-
-int set_next_sibling_leaf_page(void* page, uint32_t next_page_id)
-{
-	return set_reference_page_id(page, NEXT_SIBLING_PAGE_REF, next_page_id);
 }
 
 static int can_split_leaf_page(void* page_to_be_split, uint32_t page_size, const bplus_tree_tuple_defs* bpttds)
@@ -70,9 +60,9 @@ void* split_insert_leaf_page(void* page_to_be_split, const void* new_record, voi
 		delete_all_tuples(page_to_be_split, page_size, bpttds->record_def);
 
 		// fix sibling references of both the pages
-		uint32_t next_of_page_to_be_split = get_next_sibling_leaf_page(page_to_be_split);
-		set_next_sibling_leaf_page(new_page, next_of_page_to_be_split);
-		set_next_sibling_leaf_page(page_to_be_split, new_page_id);
+		uint32_t next_of_page_to_be_split = get_reference_page_id(page_to_be_split, NEXT_SIBLING_PAGE_REF);
+		set_reference_page_id(new_page, NEXT_SIBLING_PAGE_REF, next_of_page_to_be_split);
+		set_reference_page_id(page_to_be_split, NEXT_SIBLING_PAGE_REF, new_page_id);
 	}
 
 	// this is the new record count, considering that the new tuple is inserted to this one temp page, instead of 2 split pages
@@ -149,11 +139,11 @@ int merge_leaf_pages(void* page, const void* parent_index_record, void* sibling_
 	}
 
 	// fix sibling references
-	uint32_t new_next_page_id = get_next_sibling_leaf_page(sibling_page_to_be_merged);
-	set_next_sibling_leaf_page(page, new_next_page_id);
+	uint32_t new_next_page_id = get_reference_page_id(sibling_page_to_be_merged, NEXT_SIBLING_PAGE_REF);
+	set_reference_page_id(page, NEXT_SIBLING_PAGE_REF, new_next_page_id);
 
 	// again a redundant operation
-	set_next_sibling_leaf_page(sibling_page_to_be_merged, NULL_PAGE_REF);
+	set_reference_page_id(sibling_page_to_be_merged, NEXT_SIBLING_PAGE_REF, NULL_PAGE_REF);
 
 	return 1;
 }
