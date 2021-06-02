@@ -7,10 +7,13 @@ STAGE 2.1
 
 -- OPTIONAL TASKS BELOW (no to worry about it now) --
 
-STAGE 3
- * remove last empty leaf page from the bplus tree, i.e. an empty bplus_tree hoards no page and its handle points to NULL_PAGE_REF
+STAGE 3.1
  * implement page_list_handle api
  * implement page_list_writable_handle api
+
+STAGE 3.2
+ * remove last empty leaf page from the bplus tree, i.e. an empty bplus_tree hoards no page and its handle points to NULL_PAGE_REF
+ * implement init deinit both method for bplus_tree and page_list
 
 STAGE 4
  * external_merge_sort for the page_list
