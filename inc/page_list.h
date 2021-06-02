@@ -5,7 +5,9 @@
 
 #include<rwlock.h>
 
+#include<page_offset_util.h>
 #include<read_cursor.h>
+#include<page_list_writable_handle.h>
 
 typedef struct page_list_handle page_list_handle;
 struct page_list_handle
@@ -17,12 +19,12 @@ struct page_list_handle
 	uint32_t head_id;
 };
 
-#include<page_list_writable_handle.h>
-
 int create_new_page_list(page_list_handle* plh);
 
-int init_read_cursor(page_list_handle* plh, read_cursor* rc);
+// fails with 0, if the page_list is empty
+int init_read_cursor(page_list_handle* plh, read_cursor* rc, data_access_methods* dam_p);
 
-int init_writable_handle(page_list_handle* plh, page_list_writable_handle* plwh);
+// fails with 0, if the page_list is empty
+int init_writable_handle(page_list_handle* plh, page_list_writable_handle* plwh, data_access_methods* dam_p);
 
 #endif
