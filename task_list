@@ -11,7 +11,8 @@ STAGE 3
  * remove last empty leaf page from the bplus tree, i.e. an empty bplus_tree hoards no page and its handle points to NULL_PAGE_REF
  * implement page_list_write_handle
  	* it stores prev_page, page_list and curr_page pointers
- * api - insert_page_after_curr_page, insert_page_before_curr_page, delete_curr_page, get_curr_page
+ * page_list api - get_read_cursor, get_writable_handle
+ * page_list_write_handle api - insert_page_after_curr_page, insert_page_before_curr_page, delete_curr_page, get_curr_page
 
 STAGE 4
  * external_merge_sort for the page_list
