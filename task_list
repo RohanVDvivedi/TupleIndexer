@@ -1,21 +1,19 @@
-
-Stage 1
- * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
-
-STAGE 2.1
- * set up test source for multi threaded insert delete and search operations
-
--- OPTIONAL TASKS BELOW (no to worry about it now) --
-
-STAGE 3.1
+STAGE 1
  * implement page_list_handle api
  * implement page_list_writable_handle api
 
-STAGE 3.2
+STAGE 2
  * remove last empty leaf page from the bplus tree, i.e. an empty bplus_tree hoards no page and its handle points to NULL_PAGE_REF
  * implement init deinit both method for bplus_tree and page_list
+
+STAGE 3
+ * perform splits in bplus_tree without a double sized empty page on the stack
+ * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
 
 STAGE 4
  * external_merge_sort for the page_list
  * building a bplus_tree on top of an external_merge_sorted page_list.
  * persistent storage using bufferpool library, providing a simple data_access_methods
+
+STAGE 5
+ * set up test source for multi threaded insert delete and search operations
