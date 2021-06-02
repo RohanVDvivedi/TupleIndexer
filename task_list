@@ -9,7 +9,7 @@ STAGE 2.1
 
 STAGE 3
  * remove last empty leaf page from the bplus tree, i.e. an empty bplus_tree hoards no page and its handle points to NULL_PAGE_REF
- * page_list_handle api - create_new_page_list, get_read_cursor, get_writable_handle
+ * page_list_handle api - create_new_page_list, init_read_cursor, init_writable_handle
  * page_list_writable_handle api - insert_new_page_after_curr_page, insert_new_page_before_curr_page, delete_curr_page, get_curr_page, get_prev_page, seek_to_next_page
 
 STAGE 4
