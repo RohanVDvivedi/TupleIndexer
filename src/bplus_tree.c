@@ -600,11 +600,15 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 	{
 		void* root_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
 
-		// remove bplus tree root, only if it is an interior page and is empty
-		if(get_page_type(root_page) == INTERIOR_PAGE_TYPE && get_tuple_count(root_page) == 0)
+		// remove bplus tree root, only if it is empty
+		if(get_tuple_count(root_page) == 0)
 		{
-			// the new root is at the ALL_LEAST_REF of the current interior root page
-			bpth->root_id = get_index_page_id_from_interior_page(root_page, dam_p->page_size, -1, bpttds);
+			if(get_page_type(root_page) == INTERIOR_PAGE_TYPE)
+				// the new root is at the ALL_LEAST_REF of the current interior root page
+				bpth->root_id = get_index_page_id_from_interior_page(root_page, dam_p->page_size, -1, bpttds);
+			else	// if the empty root node is LEAF_PAGE_TYPE, the bplus tree is empty
+				bpth->root_id = NULL_PAGE_REF;
+
 			dam_p->release_writer_lock_and_free_page(dam_p->context, root_page);
 		}
 		else
