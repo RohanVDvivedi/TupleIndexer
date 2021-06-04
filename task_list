@@ -1,5 +1,4 @@
 STAGE 2
- * remove last empty leaf page from the bplus tree, i.e. an empty bplus_tree hoards no page and its handle points to NULL_PAGE_REF
  * implement init deinit both method for bplus_tree and page_list
  * make all tuple definitions part of the handle or the read cursor
 
