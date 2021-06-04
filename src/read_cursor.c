@@ -24,6 +24,9 @@ int open_read_cursor(read_cursor* rc, void* read_page, uint32_t record_id, const
 
 int seek_next_read_cursor(read_cursor* rc, const data_access_methods* dam_p)
 {
+	if(rc->read_page == NULL)
+		return 0;
+
 	if(get_tuple_count(rc->read_page) > 0 && 
 		rc->record_id < get_tuple_count(rc->read_page) - 1)
 	{
@@ -53,12 +56,15 @@ int seek_next_read_cursor(read_cursor* rc, const data_access_methods* dam_p)
 
 const void* get_record_from_read_cursor(read_cursor* rc, const data_access_methods* dam_p)
 {
+	if(rc->read_page == NULL)
+		return NULL;
 	return get_nth_tuple(rc->read_page, dam_p->page_size, rc->record_def, rc->record_id);
 }
 
 void close_read_cursor(read_cursor* rc, const data_access_methods* dam_p)
 {
-	dam_p->release_reader_lock_on_page(dam_p->context, rc->read_page);
+	if(rc->read_page != NULL)
+		dam_p->release_reader_lock_on_page(dam_p->context, rc->read_page);
 	rc->read_page = NULL;
 	rc->record_id = 0;
 }
