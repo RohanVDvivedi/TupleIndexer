@@ -1,6 +1,3 @@
-STAGE 1
- * implement page_list_writable_handle api
-
 STAGE 2
  * remove last empty leaf page from the bplus tree, i.e. an empty bplus_tree hoards no page and its handle points to NULL_PAGE_REF
  * implement init deinit both method for bplus_tree and page_list
