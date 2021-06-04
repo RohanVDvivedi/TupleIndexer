@@ -163,6 +163,11 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 	void* curr_page = NULL;
 	if(bpth->root_id != NULL_PAGE_REF)
 		curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
+	else // create a new leaf and add it as the root page
+	{
+		curr_page = dam_p->get_new_page_with_write_lock(dam_p->context, &(bpth->root_id));
+		init_leaf_page(curr_page, dam_p->page_size, bpttds);
+	}
 
 	void* parent_index_insert = NULL;
 
