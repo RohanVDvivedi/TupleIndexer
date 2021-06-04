@@ -40,6 +40,14 @@ int insert_new_page_after_curr_page(page_list_writable_handle* plwh, const data_
 {
 	if(plwh->curr_page == NULL)
 		return 0;
+
+	uint32_t new_page_id;
+	void* new_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_page_id);
+	init_list_page(new_page, dam_p->page_size, NULL);
+
+	set_reference_page_id(new_page, NEXT_PAGE_REF, get_reference_page_id(plwh->curr_page, NEXT_PAGE_REF));
+	set_reference_page_id(plwh->curr_page, NEXT_PAGE_REF, new_page_id);
+
 	return 1;
 }
 
@@ -47,6 +55,25 @@ int insert_new_page_before_curr_page(page_list_writable_handle* plwh, const data
 {
 	if(plwh->curr_page == NULL)
 		return 0;
+
+	uint32_t new_page_id;
+	void* new_page = dam_p->get_new_page_with_write_lock(dam_p->context, &new_page_id);
+	init_list_page(new_page, dam_p->page_size, NULL);
+
+	if(plwh->is_curr_the_first_page)
+	{
+		set_reference_page_id(new_page, NEXT_PAGE_REF, plwh->parent_page_list->head_id);
+		plwh->parent_page_list->head_id = new_page_id;
+	}
+	else
+	{
+		set_reference_page_id(new_page, NEXT_PAGE_REF, get_reference_page_id(plwh->prev_page, NEXT_PAGE_REF));
+		set_reference_page_id(plwh->prev_page, NEXT_PAGE_REF, new_page_id);
+	}
+
+	dam_p->release_writer_lock_on_page(dam_p->context, plwh->curr_page);
+	plwh->curr_page = new_page;
+
 	return 1;
 }
 
