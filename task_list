@@ -9,6 +9,7 @@ STAGE 2
 STAGE 3
  * perform splits in bplus_tree without a double sized empty page on the stack
  * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
+ * implement error handling, when any of dam_p calls fail
 
 STAGE 4
  * external_merge_sort for the page_list
