@@ -25,7 +25,9 @@ int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, read_cursor* rc
 
 	read_lock(&(bpth->handle_lock));
 
-	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, bpth->root_id);
+	void* curr_page = NULL;
+	if(bpth->root_id != NULL_PAGE_REF)
+		curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, bpth->root_id);
 
 	read_unlock(&(bpth->handle_lock));
 
@@ -158,7 +160,9 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplu
 	write_lock(&(bpth->handle_lock));
 	int is_handle_locked = 1;
 
-	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
+	void* curr_page = NULL;
+	if(bpth->root_id != NULL_PAGE_REF)
+		curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
 
 	void* parent_index_insert = NULL;
 
@@ -325,7 +329,9 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_t
 	write_lock(&(bpth->handle_lock));
 	int is_handle_locked = 1;
 
-	void* curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
+	void* curr_page = NULL;
+	if(bpth->root_id != NULL_PAGE_REF)
+		curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, bpth->root_id);
 
 	// if the curr_page i.e. the root page is a leaf page OR has more than one index entry, then release handle lock
 	// i.e we will not have to remove the root node
