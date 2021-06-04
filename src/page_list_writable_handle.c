@@ -40,18 +40,37 @@ int insert_new_page_after_curr_page(page_list_writable_handle* plwh, const data_
 {
 	if(plwh->curr_page == NULL)
 		return 0;
+	return 1;
 }
 
 int insert_new_page_before_curr_page(page_list_writable_handle* plwh, const data_access_methods* dam_p)
 {
 	if(plwh->curr_page == NULL)
 		return 0;
+	return 1;
 }
 
 int delete_curr_page(page_list_writable_handle* plwh, const data_access_methods* dam_p)
 {
 	if(plwh->curr_page == NULL)
 		return 0;
+
+	uint32_t new_next_page_id = get_reference_page_id(plwh->curr_page, NEXT_PAGE_REF);
+	dam_p->release_writer_lock_and_free_page(dam_p->context, plwh->curr_page);
+
+	// update the previos to point to the new next_page, instead of the curr_page
+	if(plwh->is_curr_the_first_page)
+		plwh->parent_page_list->head_id = new_next_page_id;
+	else
+		set_reference_page_id(plwh->curr_page, NEXT_PAGE_REF, new_next_page_id);
+
+	// if the curr_page was not the last page, we need to make the new next_page as the curr_page
+	if(new_next_page_id != NULL_PAGE_REF)
+		plwh->curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, new_next_page_id);
+	else
+		plwh->curr_page = NULL;
+
+	return 1;
 }
 
 int close_page_list_writable_handle(page_list_writable_handle* plwh, const data_access_methods* dam_p)
