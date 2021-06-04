@@ -654,7 +654,10 @@ void print_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bptt
 {
 	read_lock(&(bpth->handle_lock));
 
-	print_bplus_tree_sub_tree(bpth->root_id, bpttds, dam_p);
+	if(bpth->root_id != NULL_PAGE_REF)
+		print_bplus_tree_sub_tree(bpth->root_id, bpttds, dam_p);
+	else
+		printf("EMPTY BPLUS_TREE\n");
 
 	read_unlock(&(bpth->handle_lock));
 }
