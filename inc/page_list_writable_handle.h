@@ -12,7 +12,7 @@ typedef struct page_list_writable_handle page_list_writable_handle;
 struct page_list_writable_handle
 {
 	// the page_list that this handle belongs to
-	struct page_list_handle* plh;
+	struct page_list_handle* parent_page_list;
 
 	// set to 1 if the curr is the first page of the page_list
 	// this indicates that prev must be NULL and the page_list_handle is locked
