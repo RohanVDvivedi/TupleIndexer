@@ -15,24 +15,7 @@
 int create_new_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	initialize_rwlock(&(bpth->handle_lock));
-
-	write_lock(&(bpth->handle_lock));
-
-	void* root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &(bpth->root_id));
-
-	// getting new page to write failed
-	if(root_page == NULL)
-	{
-		write_unlock(&(bpth->handle_lock));
-		return 0;
-	}
-
-	write_unlock(&(bpth->handle_lock));
-
-	init_leaf_page(root_page, dam_p->page_size, bpttds);
-	
-	dam_p->release_writer_lock_on_page(dam_p->context, root_page);
-	
+	bpth->root_id = NULL_PAGE_REF;
 	return 1;
 }
 
