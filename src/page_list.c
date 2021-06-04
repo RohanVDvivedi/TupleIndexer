@@ -18,21 +18,13 @@ int init_writable_handle(page_list_handle* plh, page_list_writable_handle* plwh,
 {
 	if(plh->head_id == NULL_PAGE_REF)
 		return 0;
-	// open writable handle
+
 	plwh->parent_page_list = plh;
 	write_lock(&(plh->handle_lock));
 
 	plwh->prev_page = NULL;
 	plwh->is_curr_the_first_page = 1;
 	plwh->curr_page = dam_p->acquire_page_with_writer_lock(dam_p->context, plh->head_id);
-
-	// if getting lock fails, do cleanup
-	if(plwh->curr_page == NULL)
-	{
-		write_unlock(&(plh->handle_lock));
-		plwh->is_curr_the_first_page = 0;
-		return 0;
-	}
 
 	return 1;
 }
