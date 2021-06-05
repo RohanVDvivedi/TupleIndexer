@@ -12,9 +12,16 @@
 #include<stdlib.h>
 #include<string.h>
 
-int create_new_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
+int init_bplus_tree(bplus_tree_handle* bpth, uint32_t root_id)
 {
 	initialize_rwlock(&(bpth->handle_lock));
+	bpth->root_id = root_id;
+	return 1;
+}
+
+int deinit_bplus_tree(bplus_tree_handle* bpth)
+{
+	deinitialize_rwlock(&(bpth->handle_lock));
 	bpth->root_id = NULL_PAGE_REF;
 	return 1;
 }

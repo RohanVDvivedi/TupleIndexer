@@ -25,8 +25,9 @@ struct bplus_tree_handle
 	uint32_t root_id;
 };
 
-int create_new_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
-
+// root_id == NULL_PAGE_REF for a new bplus_tree
+int init_bplus_tree(bplus_tree_handle* bpth, uint32_t root_id);
+int deinit_bplus_tree(bplus_tree_handle* bpth);
 
 // find function uses a read cursor
 // returns 1 if an exact match was found

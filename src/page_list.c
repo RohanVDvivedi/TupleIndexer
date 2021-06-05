@@ -1,8 +1,15 @@
 #include<page_list.h>
 
-int create_new_page_list(page_list_handle* plh)
+int create_new_page_list(page_list_handle* plh, uint32_t head_id)
 {
 	initialize_rwlock(&(plh->handle_lock));
+	plh->head_id = head_id;
+	return 1;
+}
+
+int deinit_page_list(page_list_handle* plh)
+{
+	deinitialize_rwlock(&(plh->handle_lock));
 	plh->head_id = NULL_PAGE_REF;
 	return 1;
 }

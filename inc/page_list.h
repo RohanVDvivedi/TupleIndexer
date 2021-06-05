@@ -19,7 +19,9 @@ struct page_list_handle
 	uint32_t head_id;
 };
 
-int create_new_page_list(page_list_handle* plh);
+// for a new page_list head_id == NULL_PAGE_REF
+int init_page_list(page_list_handle* plh, uint32_t head_id);
+int deinit_page_list(page_list_handle* plh);
 
 // fails with 0, if the page_list is empty
 int init_read_cursor(page_list_handle* plh, read_cursor* rc, const tuple_def* record_def, const data_access_methods* dam_p);
