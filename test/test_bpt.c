@@ -100,7 +100,7 @@ int main()
 	int64_t del_id;
 
 	// init a new bplus tree handle
-	init_bplus_tree(&bpth, NUL_PAGE_REF);
+	init_bplus_tree(&bpth, NULL_PAGE_REF);
 
 	// ---------- INITIALIZATION COMLETE
 
