@@ -1,5 +1,4 @@
 STAGE 2
- * implement init deinit both method for bplus_tree and page_list
  * make all tuple definitions part of the handle or the read cursor
 
 STAGE 3
