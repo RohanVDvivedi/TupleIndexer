@@ -99,12 +99,8 @@ int main()
 	read_cursor btrc;
 	int64_t del_id;
 
-	// create a new bplus tree
-	if(!create_new_bplus_tree(&bpth, bpttds, dam_p))
-	{
-		printf("COULD NOT CREATE A NEW BPLUS TREE\n");
-		return -1;
-	}
+	// init a new bplus tree handle
+	init_bplus_tree(&bpth, NUL_PAGE_REF);
 
 	// ---------- INITIALIZATION COMLETE
 
@@ -279,6 +275,9 @@ int main()
 	printf("\n");
 
 	// ---------- TESTS COMPLETE
+
+	// deinitialize the bplus tree handle
+	deinit_bplus_tree(&bpth);
 
 	// cleanup data store
 	close_and_destroy_in_memory_data_store(dam_p);
