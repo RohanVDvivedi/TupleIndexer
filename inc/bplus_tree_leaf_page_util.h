@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_LEAF_PAGE_UTIL_H
 #define BPLUS_TREE_LEAF_PAGE_UTIL_H
 
-#include<bplus_tree_util.h>
+#include<bplus_tree.h>
 
 // to initialize a leaf page
 int init_leaf_page(void* page, uint32_t page_size, const bplus_tree_tuple_defs* bpttds);

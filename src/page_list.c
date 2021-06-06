@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-int create_new_page_list(page_list_handle* plh, tuple_def* record_def, uint32_t head_id)
+int create_new_page_list(page_list_handle* plh, const tuple_def* record_def, uint32_t head_id)
 {
 	initialize_rwlock(&(plh->handle_lock));
 	plh->head_id = head_id;
@@ -16,6 +16,7 @@ int deinit_page_list(page_list_handle* plh)
 {
 	deinitialize_rwlock(&(plh->handle_lock));
 	plh->head_id = NULL_PAGE_REF;
+	free(plh->record_def);
 	return 1;
 }
 

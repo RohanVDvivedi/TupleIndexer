@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_INTERIOR_PAGE_UTIL_H
 #define BPLUS_TREE_INTERIOR_PAGE_UTIL_H
 
-#include<bplus_tree_util.h>
+#include<bplus_tree.h>
 
 /*
 **
