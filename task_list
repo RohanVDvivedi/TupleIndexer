@@ -4,14 +4,14 @@ STAGE 2
 STAGE 3
  * perform splits in bplus_tree without a double sized empty page on the stack
  * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
- * implement error handling, when any of dam_p calls fail
- 	* in bplus_tree insert/delete loops use _failed_dam_p flag to denote exiting loop on dam_p failures
- * update in-place function for bplus tree -> succeeds only for update when the get_tuple_size for the new tuple is smaller than or equal to that of existing tuple
 
 STAGE 4
  * external_merge_sort for the page_list
  * building a bplus_tree on top of an external_merge_sorted page_list.
  * persistent storage using bufferpool library, providing a simple data_access_methods
 
-STAGE 5
- * set up test source for multi threaded insert, delete and search operations
+STAGE 5 - FINAL_STAGE
+ * set up test source for multi threaded insert, delete and search operations from a test csv file
+ * implement error handling, when any of dam_p calls fail
+ 	* in bplus_tree insert/delete loops use _failed_dam_p flag to denote exiting loop on dam_p failures
+ * update in-place function for bplus tree -> succeeds only for update when the get_tuple_size for the new tuple is smaller than or equal to that of existing tuple
