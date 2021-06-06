@@ -24,7 +24,7 @@ struct page_list_handle
 };
 
 // for a new page_list head_id == NULL_PAGE_REF
-int init_page_list(page_list_handle* plh, tuple_def* record_def, uint32_t head_id);
+int init_page_list(page_list_handle* plh, const tuple_def* record_def, uint32_t head_id);
 int deinit_page_list(page_list_handle* plh);
 
 // fails with 0, if the page_list is empty

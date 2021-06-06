@@ -12,10 +12,32 @@
 #include<stdlib.h>
 #include<string.h>
 
-int init_bplus_tree(bplus_tree_handle* bpth, uint32_t root_id)
+int init_bplus_tree(bplus_tree_handle* bpth, const tuple_def* record_def, uint16_t key_element_count, uint32_t root_id)
 {
 	initialize_rwlock(&(bpth->handle_lock));
 	bpth->root_id = root_id;
+
+	// initialize all the tuple definitions that will be used in the bplus tree
+
+	// tuple definition initialization fails if
+	if(key_element_count == 0 || is_empty_tuple_def(record_def) || key_element_count > record_def->element_count)
+		return 0;
+
+	bpth->tuple_definitions.key_def = malloc(size_of_tuple_def(key_element_count));
+	memmove(bpth->tuple_definitions.key_def, record_def, size_of_tuple_def(key_element_count));
+	bpth->tuple_definitions.key_def->element_count = key_element_count;
+	finalize_tuple_def(bpth->tuple_definitions.key_def);
+
+	bpth->tuple_definitions.index_def = malloc(size_of_tuple_def(key_element_count + 1));
+	memmove(bpth->tuple_definitions.index_def, record_def, size_of_tuple_def(key_element_count));
+	bpth->tuple_definitions.index_def->element_count = key_element_count;
+	insert_element_def(bpth->tuple_definitions.index_def, UINT, 4);
+	finalize_tuple_def(bpth->tuple_definitions.index_def);
+
+	bpth->tuple_definitions.record_def = malloc(size_of_tuple_def(record_def->element_count));
+	memmove(bpth->tuple_definitions.record_def, record_def, size_of_tuple_def(record_def->element_count));
+	finalize_tuple_def(bpth->tuple_definitions.record_def);
+
 	return 1;
 }
 
@@ -23,6 +45,9 @@ int deinit_bplus_tree(bplus_tree_handle* bpth)
 {
 	deinitialize_rwlock(&(bpth->handle_lock));
 	bpth->root_id = NULL_PAGE_REF;
+	free(bpth->tuple_definitions.key_def);
+	free(bpth->tuple_definitions.index_def);
+	free(bpth->tuple_definitions.record_def);
 	return 1;
 }
 
