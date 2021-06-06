@@ -79,15 +79,6 @@ int main()
 	tuple_def* def = alloca(size_of_tuple_def(16));
 	init_tuple_definition(def);
 
-	// initialize tuple definition and insert element definitions for bplus tree
-	bplus_tree_tuple_defs* bpttds = get_bplus_tree_tuple_defs_from_record_def(def, 1);
-	print_tuple_def(bpttds->key_def);
-	printf("\n\n");
-	print_tuple_def(bpttds->index_def);
-	printf("\n\n");
-	print_tuple_def(bpttds->record_def);
-	printf("\n\n");
-
 	// initialize data store
 	data_access_methods* dam_p = get_new_in_memory_data_store(PAGE_SIZE, PAGE_COUNT);
 
@@ -100,57 +91,64 @@ int main()
 	int64_t del_id;
 
 	// init a new bplus tree handle
-	init_bplus_tree(&bpth, NULL_PAGE_REF);
+	init_bplus_tree(&bpth, def, 1, NULL_PAGE_REF);
+
+	print_tuple_def(bpth.tuple_definitions.key_def);
+	printf("\n\n");
+	print_tuple_def(bpth.tuple_definitions.index_def);
+	printf("\n\n");
+	print_tuple_def(bpth.tuple_definitions.record_def);
+	printf("\n\n");
 
 	// ---------- INITIALIZATION COMLETE
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){0, 16, "Rohan", 16, "Dvivedi"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){0, 16, "Rohan", 16, "Dvivedi"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){5, 16, "Samip", 16, "Thakkar"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){5, 16, "Samip", 16, "Thakkar"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){10, 16, "Sahil", 16, "Shah"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){10, 16, "Sahil", 16, "Shah"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){2, 16, "Jyotirmoy", 16, "Pain"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){2, 16, "Jyotirmoy", 16, "Pain"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){7, 16, "Shrey", 16, "Bansal"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){7, 16, "Shrey", 16, "Bansal"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){12, 16, "Aman", 16, "Garg"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){12, 16, "Aman", 16, "Garg"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){4, 16, "Harsha", 16, "Grandhi"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){4, 16, "Harsha", 16, "Grandhi"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){9, 16, "Parthiv", 16, "Kativarapu"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){9, 16, "Parthiv", 16, "Kativarapu"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){14, 16, "Anurag", 16, "Anand"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){14, 16, "Anurag", 16, "Anand"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
 	printf("FIND LOOP\n\n");
 	for(int64_t i = 0; i <= 25; i++)
 	{
-		int found = find_in_bplus_tree(&bpth, &i, &btrc, bpttds, dam_p);
+		int found = find_in_bplus_tree(&bpth, &i, &btrc, dam_p);
 		printf("%ld -> %d -> ", i, found);
 		const void* found_record = get_record_from_read_cursor(&btrc, dam_p);
 		if(found_record == NULL)
@@ -158,108 +156,108 @@ int main()
 		else
 		{
 			char print_str[PAGE_SIZE];
-			sprint_tuple(print_str, found_record, bpttds->record_def);
+			sprint_tuple(print_str, found_record, def);
 			printf("%s\n\n", print_str);
 		}
 		close_read_cursor(&btrc, dam_p);
 	}
 	printf("\n");
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){15, 16, "Vidhan", 16, "Jain"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){15, 16, "Vidhan", 16, "Jain"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){17, 16, "Aakash", 16, "Goel"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){17, 16, "Aakash", 16, "Goel"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){20, 16, "Pushpinder", 16, "Patel"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){20, 16, "Pushpinder", 16, "Patel"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){3, 16, "Sharon", 16, "Teacher"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){3, 16, "Sharon", 16, "Teacher"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){11, 16, "Pradeep", 16, "Sir"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){11, 16, "Pradeep", 16, "Sir"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){13, 16, "Soumya", 16, "Madam"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){13, 16, "Soumya", 16, "Madam"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){19, 16, "Shubham", 16, "Sir"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){19, 16, "Shubham", 16, "Sir"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){6, 16, "Roopa", 16, "Dvivedi"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){6, 16, "Roopa", 16, "Dvivedi"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){16, 16, "Vipul", 16, "Dvivedi"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){16, 16, "Vipul", 16, "Dvivedi"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){18, 16, "Devashree", 16, "Dvivedi"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){18, 16, "Devashree", 16, "Dvivedi"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
-	build_tuple_from_row_struct(bpttds->record_def, rc, &((row){21, 16, "Manan", 16, "Joshi"}));
-	insert_in_bplus_tree(&bpth, rc, bpttds, dam_p);
+	build_tuple_from_row_struct(def, rc, &((row){21, 16, "Manan", 16, "Joshi"}));
+	insert_in_bplus_tree(&bpth, rc, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
 	del_id = 5; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	del_id = 7; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	del_id = 9; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
 	del_id = 5; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	del_id = 15; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	del_id = 17; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	del_id = 20; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
 	del_id = 12; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
 	del_id = 4; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	del_id = 13; printf("Deleting id : %lu\n\n", del_id);
-	delete_in_bplus_tree(&bpth, &del_id, bpttds, dam_p);
+	delete_in_bplus_tree(&bpth, &del_id, dam_p);
 
 	printf(" === BPLUS TREE === \n\n");
-	print_bplus_tree(&bpth, bpttds, dam_p);
+	print_bplus_tree(&bpth, dam_p);
 	printf(" ================== \n\n");
 
 	printf("FIND LOOP\n\n");
 	for(int64_t i = 0; i <= 25; i++)
 	{
-		int found = find_in_bplus_tree(&bpth, &i, &btrc, bpttds, dam_p);
+		int found = find_in_bplus_tree(&bpth, &i, &btrc, dam_p);
 		printf("%ld -> %d -> ", i, found);
 		const void* found_record = get_record_from_read_cursor(&btrc, dam_p);
 		if(found_record == NULL)
@@ -267,7 +265,7 @@ int main()
 		else
 		{
 			char print_str[PAGE_SIZE];
-			sprint_tuple(print_str, found_record, bpttds->record_def);
+			sprint_tuple(print_str, found_record, def);
 			printf("%s\n\n", print_str);
 		}
 		close_read_cursor(&btrc, dam_p);
@@ -281,7 +279,4 @@ int main()
 
 	// cleanup data store
 	close_and_destroy_in_memory_data_store(dam_p);
-
-	// clean up bplus tree tuple definition
-	del_bplus_tree_tuple_defs(bpttds);
 }
