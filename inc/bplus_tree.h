@@ -50,16 +50,16 @@ int deinit_bplus_tree(bplus_tree_handle* bpth);
 // find function uses a read cursor
 // returns 1 if an exact match was found
 // read cursor can be NULL, this allows find to return 1, if the record with given key exists
-int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, read_cursor* rc, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+int find_in_bplus_tree(bplus_tree_handle* bpth, const void* key, read_cursor* rc, const data_access_methods* dam_p);
 
 // point insert
-int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const data_access_methods* dam_p);
 
 // point delete
-int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const data_access_methods* dam_p);
 
 
 // print complete b+ tree
-void print_bplus_tree(bplus_tree_handle* bpth, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p);
+void print_bplus_tree(bplus_tree_handle* bpth, const data_access_methods* dam_p);
 
 #endif
