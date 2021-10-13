@@ -1,3 +1,6 @@
+STAGE 1
+ * use binary search for insertion point finding and page splitting of the tree
+
 STAGE 3
  * perform splits in bplus_tree without a double sized empty page on the stack
  * upon insert/delete perform compaction by checking the efficiency of the page at random (propbability 0.5) if the efficiency drops below 0.7
