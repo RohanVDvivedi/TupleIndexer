@@ -51,7 +51,7 @@ static int open_data_file(void* context)
 	{
 		void* mem = cntxt->memory + (cntxt->page_size * i);
 		initialize_llnode(mem);
-		insert_tail(&(cntxt->free_pages), mem);
+		insert_tail_in_linkedlist(&(cntxt->free_pages), mem);
 		cntxt->page_states[i].flags |= IS_FREE_FLAG;
 		initialize_rwlock(&(cntxt->page_states[i].reader_writer_page_lock));
 	}
@@ -73,8 +73,8 @@ static void* get_new_page_with_write_lock(void* context, uint32_t* page_id_retur
 		if(!is_empty_linkedlist(&(cntxt->free_pages)))
 		{
 			// get a free page from the head of the free_pages list, and remove it
-			free_page_p = (void*) get_head(&(cntxt->free_pages));
-			remove_head(&(cntxt->free_pages));
+			free_page_p = (void*) get_head_of_linkedlist(&(cntxt->free_pages));
+			remove_head_from_linkedlist(&(cntxt->free_pages));
 			
 			// calculate its index
 			free_page_id = ((uintptr_t)(free_page_p - cntxt->memory)) / cntxt->page_size;
@@ -295,7 +295,7 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 		if(!is_free_page)
 		{
 			// insert the page to the head of the free_pages list
-			insert_head(&(cntxt->free_pages), pg_ptr);
+			insert_head_in_linkedlist(&(cntxt->free_pages), pg_ptr);
 
 			// set the free flag bit
 			cntxt->page_states[page_id].flags |= IS_FREE_FLAG;

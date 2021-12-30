@@ -224,9 +224,9 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const data
 				{
 					while(!is_empty_arraylist(&locked_parents))
 					{
-						void* some_parent = (void*) get_front(&locked_parents);
+						void* some_parent = (void*) get_front_of_arraylist(&locked_parents);
 						dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
-						pop_front(&locked_parents);
+						pop_front_from_arraylist(&locked_parents);
 					}
 
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
@@ -248,8 +248,8 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const data
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
 					// if there are locked parents, we need to propogate the split
-					curr_page = (void*) get_back(&locked_parents);
-					pop_back(&locked_parents);
+					curr_page = (void*) get_back_of_arraylist(&locked_parents);
+					pop_back_from_arraylist(&locked_parents);
 				}
 				break;
 			}
@@ -272,9 +272,9 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const data
 
 						while(!is_empty_arraylist(&locked_parents))
 						{
-							void* some_parent = (void*) get_front(&locked_parents);
+							void* some_parent = (void*) get_front_of_arraylist(&locked_parents);
 							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
-							pop_front(&locked_parents);
+							pop_front_from_arraylist(&locked_parents);
 						}
 					}
 
@@ -286,7 +286,7 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const data
 					void* next_page = dam_p->acquire_page_with_writer_lock(dam_p->context, next_page_id);
 
 					// now curr_page is a locked parent of this next_page
-					push_back(&locked_parents, curr_page);
+					push_back_to_arraylist(&locked_parents, curr_page);
 					curr_page = next_page;
 				}
 				// we are looping backwards to propogate the split
@@ -303,9 +303,9 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const data
 
 						while(!is_empty_arraylist(&locked_parents))
 						{
-							void* some_parent = (void*) get_front(&locked_parents);
+							void* some_parent = (void*) get_front_of_arraylist(&locked_parents);
 							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
-							pop_front(&locked_parents);
+							pop_front_from_arraylist(&locked_parents);
 						}
 
 						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
@@ -328,8 +328,8 @@ int insert_in_bplus_tree(bplus_tree_handle* bpth, const void* record, const data
 						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
 						// pop a curr_page (getting immediate parent) to propogate the split
-						curr_page = (void*) get_back(&locked_parents);
-						pop_back(&locked_parents);
+						curr_page = (void*) get_back_of_arraylist(&locked_parents);
+						pop_back_from_arraylist(&locked_parents);
 					}
 				}
 				break;
@@ -403,7 +403,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const data_ac
 				// if this delete made the page lesser than half full, we might have to merge
 				if(deleted && is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpth->tuple_definitions.record_def))
 				{
-					void* parent_page = (void*) get_back(&locked_parents);
+					void* parent_page = (void*) get_back_of_arraylist(&locked_parents);
 					if(parent_page != NULL)
 					{
 						// index of the current page in the parent_page's indirection indexes
@@ -474,17 +474,17 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const data_ac
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
 					// shift to parent page to decide if we could merge
-					curr_page = (void*) get_back(&locked_parents);
-					pop_back(&locked_parents);
+					curr_page = (void*) get_back_of_arraylist(&locked_parents);
+					pop_back_from_arraylist(&locked_parents);
 				}
 				else  // exit loop
 				{
 					// release locks on all parents
 					while(!is_empty_arraylist(&locked_parents))
 					{
-						void* some_parent = (void*) get_front(&locked_parents);
+						void* some_parent = (void*) get_front_of_arraylist(&locked_parents);
 						dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
-						pop_front(&locked_parents);
+						pop_front_from_arraylist(&locked_parents);
 					}
 
 					dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
@@ -517,9 +517,9 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const data_ac
 
 						while(!is_empty_arraylist(&locked_parents))
 						{
-							void* some_parent = (void*) get_front(&locked_parents);
+							void* some_parent = (void*) get_front_of_arraylist(&locked_parents);
 							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
-							pop_front(&locked_parents);
+							pop_front_from_arraylist(&locked_parents);
 						}
 					}
 
@@ -527,7 +527,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const data_ac
 					void* next_page = dam_p->acquire_page_with_writer_lock(dam_p->context, next_page_id);
 
 					// now curr_page is a locked parent of this next_page
-					push_back(&locked_parents, curr_page);
+					push_back_to_arraylist(&locked_parents, curr_page);
 					curr_page = next_page;
 				}
 				else if(deleted && delete_parent_index_entry) // handling merges
@@ -540,7 +540,7 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const data_ac
 					// if this delete made the page lesser than half full, we might have to merge
 					if(parent_index_deleted && is_page_lesser_than_half_full(curr_page, dam_p->page_size, bpth->tuple_definitions.index_def))
 					{
-						void* parent_page = (void*) get_back(&locked_parents);
+						void* parent_page = (void*) get_back_of_arraylist(&locked_parents);
 						if(parent_page != NULL)
 						{
 							// index of the current page in the parent_page's indirection indexes
@@ -605,9 +605,9 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const data_ac
 						// release locks on all parents
 						while(!is_empty_arraylist(&locked_parents))
 						{
-							void* some_parent = (void*) get_front(&locked_parents);
+							void* some_parent = (void*) get_front_of_arraylist(&locked_parents);
 							dam_p->release_writer_lock_on_page(dam_p->context, some_parent);
-							pop_front(&locked_parents);
+							pop_front_from_arraylist(&locked_parents);
 						}
 
 						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
@@ -619,8 +619,8 @@ int delete_in_bplus_tree(bplus_tree_handle* bpth, const void* key, const data_ac
 						dam_p->release_writer_lock_on_page(dam_p->context, curr_page);
 
 						// shift to parent page to decide if we could merge
-						curr_page = (void*) get_back(&locked_parents);
-						pop_back(&locked_parents);
+						curr_page = (void*) get_back_of_arraylist(&locked_parents);
+						pop_back_from_arraylist(&locked_parents);
 					}
 				}
 				break;
