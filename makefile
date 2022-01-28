@@ -1,5 +1,5 @@
 # project name
-PROJECT_NAME:=roti
+PROJECT_NAME:=tupleindexer
 
 # this is the place where we download in your system
 DOWNLOAD_DIR:=/usr/local
@@ -25,7 +25,7 @@ CC:=gcc
 # compiler flags
 CFLAGS:=-Wall -O3 -I${INC_DIR}
 # linker flags, this will used to compile the binary
-LFLAGS:=-L${LIB_DIR} -l${PROJECT_NAME} -lstupstom -lbufferpool -lcutlery
+LFLAGS:=-L${LIB_DIR} -l${PROJECT_NAME} -ltuplestore -lbufferpool -lcutlery
 # Archiver
 AR:=ar rcs
 
