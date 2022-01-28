@@ -1,6 +1,6 @@
-# Row oriented Tuple Indexer
+# TupleIndexer
 A c library that enables you to build a bplus_tree (a b+ tree) for your data, over a data store accessible in fixed sized pages (either persistent or non-persistent store).
-The tuple is laid out as per specifications of SimpleTupleStorageModel library.
+The tuple is laid out as per specifications of TupleStore library.
 
 Note: 
  * persistent storage using bufferpool library (not implemented yet).
@@ -8,16 +8,16 @@ Note:
 ## Setup instructions
 **Install dependencies :**
  * [Cutlery](https://github.com/RohanVDvivedi/Cutlery)
- * [SimpleTupleStorageModel](https://github.com/RohanVDvivedi/SimpleTupleStorageModel)
+ * [TupleStore](https://github.com/RohanVDvivedi/TupleStore)
  * [BoomPar](https://github.com/RohanVDvivedi/BoomPar)
  * [ReaderWriterLock](https://github.com/RohanVDvivedi/ReaderWriterLock)
  * [Bufferpool](https://github.com/RohanVDvivedi/Bufferpool)
 
 **Download source code :**
- * `git clone https://github.com/RohanVDvivedi/Row-oriented-Tuple-Indexer.git`
+ * `git clone https://github.com/RohanVDvivedi/TupleIndexer.git`
 
 **Build from source :**
- * `cd Row-oriented-Tuple-Indexer`
+ * `cd TupleIndexer`
  * `make clean all`
 
 **Install from the build :**
@@ -25,7 +25,7 @@ Note:
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-lroti -lstupstom -lbufferpool -lcutlery` linker flag, while compiling your application
+ * add `-lroti -ltuplestore -lbufferpool -lcutlery` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `<bplus_tree.h>`
    * `<in_memory_data_store.h>`
@@ -33,5 +33,5 @@ Note:
 ## Instructions for uninstalling library
 
 **Uninstall :**
- * `cd Row-oriented-Tuple-Indexer`
+ * `cd TupleIndexer`
  * `sudo make uninstall`
