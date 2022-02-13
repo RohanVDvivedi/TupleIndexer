@@ -370,13 +370,15 @@ int main()
 			printf("FIND LAST = %s\n", "NOT_FOUND");
 		else
 			printf("FIND LAST = %u\n", index);
-/*
+
+		printf("\n");
+
 		index = find_preceding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("PRECEDING = %s\n", "NOT_FOUND");
 		else
 			printf("PRECEDING = %u\n", index);
-
+/*
 		index = find_preceding_equals_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("PRECEDING EQUALS = %s\n", "NOT_FOUND");
