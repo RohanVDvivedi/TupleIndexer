@@ -139,15 +139,8 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 			insertion_index = mid;
 			high = mid - 1;
 		}
-		else if(compare < 0)
-			low = mid + 1;
 		else
-		{
-			insertion_index = mid;
-			if(mid == 0)
-				break;
 			low = mid + 1;
-		}
 	}
 
 	return insertion_index;
