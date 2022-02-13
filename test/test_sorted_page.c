@@ -216,6 +216,102 @@ int main()
 
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){2, "Rupa", "wife of Vipul"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){3, "Vipul", "husband of Rupa"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){2, "Rupa", "can also be called Roopa"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){3, "Vipul", "can also be called Milan"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){7, "Jumbo", "not just a squirrel"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){7, "Jumbo", "eats dried nuts"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){6, "Sai", "not just a tortoise"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){6, "Sai", "eats green veggies"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
 	
 	return 0;
 }
