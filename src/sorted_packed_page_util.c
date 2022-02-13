@@ -146,7 +146,7 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 	return insertion_index;
 }
 
-uint32_t search_in_sorted_packed_page(
+uint32_t find_first_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
 									const void* tuple
@@ -181,3 +181,33 @@ uint32_t search_in_sorted_packed_page(
 
 	return NOT_FOUND;
 }
+
+uint32_t find_last_in_sorted_packed_page(
+									const void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									const void* tuple
+								);
+
+uint32_t find_preceding_in_sorted_packed_page(
+									const void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									const void* tuple
+								);
+
+uint32_t find_preceding_equals_in_sorted_packed_page(
+									const void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									const void* tuple
+								);
+
+uint32_t find_succeeding_equals_in_sorted_packed_page(
+									const void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									const void* tuple
+								);
+
+uint32_t find_succeeding_in_sorted_packed_page(
+									const void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									const void* tuple
+								);
