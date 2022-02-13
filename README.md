@@ -25,7 +25,7 @@ Note:
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-lroti -ltuplestore -lbufferpool -lcutlery` linker flag, while compiling your application
+ * add `-ltupleindexer -ltuplestore -lbufferpool -lcutlery` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `<bplus_tree.h>`
    * `<in_memory_data_store.h>`
