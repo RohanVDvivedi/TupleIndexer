@@ -216,14 +216,6 @@ int main()
 
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
-
-	printf("compare = %d\n", compare_tuples(
-										get_nth_tuple(page, PAGE_SIZE, def, 2), 
-										get_nth_tuple(page, PAGE_SIZE, def, 3),
-										def,
-										1,
-										(uint32_t[]){1}
-										));
 	
 	return 0;
 }
