@@ -11,8 +11,4 @@ int is_page_more_than_or_equal_to_half_full(const void* page, uint32_t page_size
 
 int is_page_more_than_half_full(const void* page, uint32_t page_size, const tuple_def* def);
 
-float get_storage_capacity_used_for_page(const void* page, uint32_t page_size, const tuple_def* def);
-
-float get_storage_efficiency_for_page(const void* page, uint32_t page_size, const tuple_def* def);
-
 #endif
