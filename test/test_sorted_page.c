@@ -13,8 +13,6 @@
 
 char page[PAGE_SIZE] = {};
 
-char temp_page[PAGE_SIZE] = {};
-
 void init_tuple_definition(tuple_def* def)
 {
 	// initialize tuple definition and insert element definitions
@@ -146,6 +144,86 @@ int main()
 
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){5, "Adam", "First man"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){4, "Eve", "First woman"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){4, "Eve", "exclaimed Eeeewwwweeehhh"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){5, "Adam", "exclaimed OOOOOOooooohhhhhh"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){1, "Rohan", "created this project"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){0, "Devashre", "sister of Rohan"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	printf("compare = %d\n", compare_tuples(
+										get_nth_tuple(page, PAGE_SIZE, def, 2), 
+										get_nth_tuple(page, PAGE_SIZE, def, 3),
+										def,
+										1,
+										(uint32_t[]){1}
+										));
 	
 	return 0;
 }
