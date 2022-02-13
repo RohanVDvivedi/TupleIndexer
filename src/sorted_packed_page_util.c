@@ -138,25 +138,14 @@ int insert_to_sorted_packed_page(
 
 int delete_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* key_val_def,
+									const tuple_def* tpl_def,
 									uint16_t index
 								)
 {
-	uint16_t count = get_tuple_count(page);
-	if(count == 0 || index >= count)
+	if(!delete_tuple(page, page_size, key_val_def, index))
 		return 0;
 
-	int deleted = delete_tuple(page, page_size, key_val_def, index);
-
-	if(deleted == 0)
-		return 0;
-
-	// move the tombstone to the end
-	while(index < count - 1)
-	{
-		swap_tuples(page, page_size, key_val_def, index, index + 1);
-		index++;
-	}
+	run_page_compaction(page, page_size, tpl_def, 1, 0);
 
 	return 1;
 }
