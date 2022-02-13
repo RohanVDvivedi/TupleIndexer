@@ -40,45 +40,9 @@ int delete_all_in_sorted_packed_page(
 #define NOT_FOUND (~((uint32_t)0))
 
 // returns index of the tuple found
-uint32_t search_first_equals_in_sorted_packed_page(
+uint32_t search_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* key
+									const void* tuple
 								);
-
-// returns index of the tuple found
-uint32_t search_last_equals_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* key
-								);
-
-// returns index of the tuple found
-uint32_t search_preceding_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* key
-								);
-
-// returns index of the tuple found
-uint32_t search_preceding_equals_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* key
-								);
-
-// returns index of the tuple found
-uint32_t search_succeeding_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* key
-								);
-
-// returns index of the tuple found
-uint32_t search_succeeding_equals_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* key
-								);
-
 #endif
