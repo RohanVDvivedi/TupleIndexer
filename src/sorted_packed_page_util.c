@@ -10,19 +10,8 @@ int insert_to_sorted_packed_page(
 									uint32_t* index
 								)
 {
-	// case when number of elements in the page are 0
-	if(get_tuple_count(page, page_size, tpl_def) == 0)
-	{
-		if(index != NULL)
-			(*index) = 0;
-		return insert_tuple(page, page_size, tpl_def, tuple);
-	}
-
 	// search for a viable index for the new tuple to insert
-	uint32_t new_index = NOT_FOUND;
-
-	// find the new_index using binary search
-	// TODO
+	uint32_t new_index = find_insertion_point_in_sorted_packed_page(page, page_size, tpl_def, keys_to_compare, keys_count, tuple);
 
 	// this is the final index for the newly inserted element
 	if(index != NULL)
@@ -113,6 +102,55 @@ uint32_t insert_all_from_sorted_packed_page(
 	}
 
 	return inserted_count;
+}
+
+uint32_t find_insertion_point_in_sorted_packed_page(
+									const void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									const void* tuple
+									)
+{
+	uint32_t count = get_tuple_count(page, page_size, tpl_def);
+	if(count == 0)
+		return 0;
+
+	// if the provided tuple is lesser than the first tuple
+	const void* tup_first = get_nth_tuple(page, page_size, tpl_def, 0);
+	if(compare_tuples(tup_first, tuple, tpl_def, keys_count, keys_to_compare) > 0)
+		return 0;
+
+	uint32_t insertion_index = NOT_FOUND;
+
+	uint32_t low = 0;
+	uint32_t high = count;
+
+	while(low <= high)
+	{
+		uint32_t mid = low + (high - low) / 2;
+
+		if(mid == count)
+			break;
+
+		const void* tup_mid = get_nth_tuple(page, page_size, tpl_def, mid);
+		int compare = compare_tuples(tup_mid, tuple, tpl_def, keys_count, keys_to_compare);
+
+		if(compare > 0)
+		{
+			insertion_index = mid;
+			high = mid - 1;
+		}
+		else if(compare < 0)
+			low = mid + 1;
+		else
+		{
+			insertion_index = mid;
+			if(mid == 0)
+				break;
+			low = mid + 1;
+		}
+	}
+
+	return insertion_index;
 }
 
 uint32_t search_in_sorted_packed_page(

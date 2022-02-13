@@ -3,6 +3,13 @@
 
 #include<tuple_def.h>
 
+// returns index at which a new tuple may be inserted
+uint32_t find_insertion_point_in_sorted_packed_page(
+									const void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									const void* tuple
+									);
+
 // insert tuple
 // returns 1 tuple was inserted
 // returns the index the new tuple is inserted on
