@@ -353,6 +353,10 @@ int main()
 
 	for(int32_t i = 0; i <= 25; i++)
 	{
+
+		printf("---------------------------------------------------\n\n");
+		printf("finding %d -> \n\n", i);
+
 		uint32_t index;
 
 		index = find_first_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
@@ -366,7 +370,7 @@ int main()
 			printf("FIND LAST = %s\n", "NOT_FOUND");
 		else
 			printf("FIND LAST = %u\n", index);
-
+/*
 		index = find_preceding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("PRECEDING = %s\n", "NOT_FOUND");
@@ -390,6 +394,9 @@ int main()
 			printf("SUCCEEDING = %s\n", "NOT_FOUND");
 		else
 			printf("SUCCEEDING = %u\n", index);
+*/
+
+		printf("\n\n");
 	}
 	
 	return 0;
