@@ -1,7 +1,9 @@
- * implement may_need_to_split_for_insert function to guess if the splitting will be required in the wort case
+ * implement find_first, find_last, preceding, preceding equals, succeeding and succeeding equals for sorted packed page
+ * implement may_need_to_split_for_insert function to guess if the splitting will be required in the worst case
  * implement get_largest_insertable_record_size function
  * implement separated structs for page headers for leaf and internal page
-   * and methods as required
+   * and add methods as required
+   * implement get_header_size for pages
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
    * implement insert search and delete functionality
    * all leaf pages are organized as linkedlist
