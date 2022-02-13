@@ -384,19 +384,22 @@ int main()
 			printf("PRECEDING EQUALS = %s\n", "NOT_FOUND");
 		else
 			printf("PRECEDING EQUALS = %u\n", index);
-
+*/
+		printf("\n");
+/*
 		index = find_succeeding_equals_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("SUCCEEDING EQUALS = %s\n", "NOT_FOUND");
 		else
 			printf("SUCCEEDING EQUALS = %u\n", index);
+*/
 
 		index = find_succeeding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("SUCCEEDING = %s\n", "NOT_FOUND");
 		else
 			printf("SUCCEEDING = %u\n", index);
-*/
+
 
 		printf("\n\n");
 	}
