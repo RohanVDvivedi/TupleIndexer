@@ -355,37 +355,37 @@ int main()
 	{
 		uint32_t index;
 
-		index = find_first_in_sorted_packed_page(page, page_size, def, NULL, 1, &i);
+		index = find_first_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("FIND FIRST = %s\n", "NOT_FOUND");
 		else
 			printf("FIND FIRST = %u\n", index);
 
-		index = find_last_in_sorted_packed_page(page, page_size, def, NULL, 1, &i);
+		index = find_last_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("FIND LAST = %s\n", "NOT_FOUND");
 		else
 			printf("FIND LAST = %u\n", index);
 
-		index = find_preceding_in_sorted_packed_page(page, page_size, def, NULL, 1, &i);
+		index = find_preceding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("PRECEDING = %s\n", "NOT_FOUND");
 		else
 			printf("PRECEDING = %u\n", index);
 
-		index = find_preceding_equals_in_sorted_packed_page(page, page_size, def, NULL, 1, &i);
+		index = find_preceding_equals_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("PRECEDING EQUALS = %s\n", "NOT_FOUND");
 		else
 			printf("PRECEDING EQUALS = %u\n", index);
 
-		index = find_succeeding_equals_in_sorted_packed_page(page, page_size, def, NULL, 1, &i);
+		index = find_succeeding_equals_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("SUCCEEDING EQUALS = %s\n", "NOT_FOUND");
 		else
 			printf("SUCCEEDING EQUALS = %u\n", index);
 
-		index = find_succeeding_in_sorted_packed_page(page, page_size, def, NULL, 1, &i);
+		index = find_succeeding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, &i);
 		if(index == NOT_FOUND)
 			printf("SUCCEEDING = %s\n", "NOT_FOUND");
 		else
