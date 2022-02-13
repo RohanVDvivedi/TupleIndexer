@@ -1,3 +1,10 @@
+URGENT
+ * make project compatible with TupleStore api
+   * make tuple indices as uint32_t
+   * implement and test search preceding, preceding equals, succeeding, and succeeding equals in sorted packed page
+   * implement header structs for all pages
+
+
 STAGE 1
  * use binary search for insertion point finding and page splitting of the tree
 
