@@ -1,5 +1,7 @@
  * implement get_largest_insertable_record_size function
- * and add setter/getter/size_of methods for page header structs
- * implement split and merge for interior and leaf pages
+ * implement getter and setter for records and entry of the leaf and interior page
+ * implement bplus_tree_page_lock_stack using array list
+ * implement will_split_on_insert and can_merge functions
+ * implement split_insert_*_page and merge_*_pages for leaf and interior page
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
    * implement insert search and delete functionality
