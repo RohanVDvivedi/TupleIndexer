@@ -1,4 +1,6 @@
  * implement get_largest_insertable_record_size function
+ * implement get_bplus_tree_tuple_definitions function
+ * implement may_require_merge on deleting at ith (merge with previous) or i+1th index (merge with next)
  * implement sort_ function for sorted_packed_page
  * implement getter and setter for records and entry of the leaf and interior page
  * implement bplus_tree_page_lock_stack using array list
