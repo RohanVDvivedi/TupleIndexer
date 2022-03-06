@@ -10,6 +10,8 @@ struct bplus_tree_page_header
 	uint32_t level;
 };
 
+// getter and setter for the level of the page
 uint32_t get_level_of_bplus_tree_page(const void* page, uint32_t page_size);
+void set_level_of_bplus_tree_page(void* page, uint32_t page_size, uint32_t level);
 
 #endif

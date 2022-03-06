@@ -17,6 +17,8 @@ struct page_header
 	uint16_t type;
 };
 
+// getter and setter for page type of the page
 page_type get_type_of_page(const void* page, uint32_t page_size);
+void set_type_of_page(void* page, uint32_t page_size, page_type type);
 
 #endif
