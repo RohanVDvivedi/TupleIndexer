@@ -13,8 +13,8 @@ struct bplus_tree_leaf_page_header
 
 #define sizeof_LEAF_PAGE_HEADER (sizeof(page_header) + sizeof(bplustree_page_header) + sizeof(bplus_tree_leaf_page_header))
 
-uint32_t get_next_of_bplus_tree_leaf_page(const void* page, uint32_t page_size);
+uint32_t get_next_page_id_of_bplus_tree_leaf_page(const void* page, uint32_t page_size);
 
-uint32_t get_prev_of_bplus_tree_leaf_page(const void* page, uint32_t page_size);
+uint32_t get_prev_page_id_of_bplus_tree_leaf_page(const void* page, uint32_t page_size);
 
 #endif
