@@ -8,4 +8,6 @@ struct bplus_tree_page_header
 	uint32_t page_level;
 };
 
+uint32_t get_page_level_of_bplus_tree_page(void* page);
+
 #endif

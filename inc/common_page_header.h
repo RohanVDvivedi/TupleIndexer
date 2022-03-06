@@ -3,7 +3,6 @@
 
 typedef enum page_type page_type;
 {
-	BPLUS_TREE_ROOT_PAGE,
 	BPLUS_TREE_INTERIOR_PAGE,
 	BPLUS_TREE_LEAF_PAGE,
 };
@@ -13,5 +12,7 @@ struct page_header
 {
 	uint16_t page_type;
 };
+
+page_type get_page_type_of_page(void* page);
 
 #endif
