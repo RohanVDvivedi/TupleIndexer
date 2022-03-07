@@ -94,4 +94,10 @@ void reverse_sort_order_on_sorted_packed_page(
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count
 								);
 
+// creates a page into its sorted_packed_page form
+void sort_and_convert_to_sorted_packed_page(
+									void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count
+								);
+
 #endif
