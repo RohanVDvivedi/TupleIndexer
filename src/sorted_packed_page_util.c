@@ -402,6 +402,7 @@ void reverse_sort_order_on_sorted_packed_page(
 		swap_tuples(page, page_size, tpl_def, i, count - 1 - i);
 }
 
+// on page quick sort algorithm
 static void sort_and_convert_to_sorted_packed_page_recursively(
 									void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
@@ -434,9 +435,14 @@ void sort_and_convert_to_sorted_packed_page(
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count
 								)
 {
+	// remove tomb stones of deleted tuples
+	run_page_compaction(page, page_size, tpl_def, 1, 0);
+
+	// if tuple count is lesser or equal to 1, then there is nothing to do
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
 	if(count <= 1)
 		return ;
 
+	// use quick sort to sort in place
 	sort_and_convert_to_sorted_packed_page_recursively(page, page_size, tpl_def, keys_to_compare, keys_count, 0, count - 1);
 }
