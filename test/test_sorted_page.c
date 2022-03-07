@@ -402,6 +402,16 @@ int main()
 
 		printf("\n\n");
 	}
+
+	// ----------------  REVERSE PAGE SORT
+
+	reverse_sort_order_on_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1);
+	printf("\n\n");
+
+	// ----------------  CONVERT IT BACK TO SORTED PACKED PAGE
+
+	sort_and_convert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1);
+	printf("\n\n");
 	
 	return 0;
 }
