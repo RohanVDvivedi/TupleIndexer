@@ -401,3 +401,42 @@ void reverse_sort_order_on_sorted_packed_page(
 	for(uint32_t i = 0; i < count / 2; i++)
 		swap_tuples(page, page_size, tpl_def, i, count - 1 - i);
 }
+
+static void sort_and_convert_to_sorted_packed_page_recursively(
+									void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									uint32_t first, uint32_t last
+								)
+{
+	if(first >= last)
+		return;
+
+	const void* pivot = get_nth_tuple(page, page_size, tpl_def, last);
+
+	uint32_t j = first;
+	for(uint32_t i = first; i <= last; i++)
+	{
+		const void* ith_tuple = get_nth_tuple(page, page_size, tpl_def, i);
+		if(compare_tuples(ith_tuple, pivot, tpl_def, keys_count, keys_to_compare) <= 0)
+			swap_tuples(page, page_size, tpl_def, i, j++);
+	}
+
+	uint32_t pivot_index = j - 1;
+
+	if(pivot_index > first)
+		sort_and_convert_to_sorted_packed_page_recursively(page, page_size, tpl_def, keys_to_compare, keys_count, first, pivot_index - 1);
+	if(pivot_index < last)
+		sort_and_convert_to_sorted_packed_page_recursively(page, page_size, tpl_def, keys_to_compare, keys_count, pivot_index + 1, last);
+}
+
+void sort_and_convert_to_sorted_packed_page(
+									void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count
+								)
+{
+	uint32_t count = get_tuple_count(page, page_size, tpl_def);
+	if(count <= 1)
+		return ;
+
+	sort_and_convert_to_sorted_packed_page_recursively(page, page_size, tpl_def, keys_to_compare, keys_count, 0, count - 1);
+}
