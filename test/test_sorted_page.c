@@ -24,7 +24,7 @@ void init_tuple_definition(tuple_def* def)
 
 	res = insert_element_def(def, "val", VAR_STRING, 1);
 
-	finalize_tuple_def(def);
+	finalize_tuple_def(def, PAGE_SIZE);
 
 	if(is_empty_tuple_def(def))
 	{
@@ -47,11 +47,13 @@ struct row
 
 void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r)
 {
+	init_tuple(def, tuple);
+
 	int column_no = 0;
 
-	copy_element_to_tuple(def, column_no++, tuple, &(r->key1), -1);
-	copy_element_to_tuple(def, column_no++, tuple, (r->key2), -1);
-	copy_element_to_tuple(def, column_no++, tuple, (r->val), -1);
+	set_element_in_tuple(def, column_no++, tuple, &(r->key1), -1);
+	set_element_in_tuple(def, column_no++, tuple, (r->key2), -1);
+	set_element_in_tuple(def, column_no++, tuple, (r->val), -1);
 
 	// output print string
 	char print_buffer[PAGE_SIZE];
