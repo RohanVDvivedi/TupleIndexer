@@ -153,7 +153,10 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 		uint32_t mid = low + (high - low) / 2;
 
 		if(mid == count)
+		{
+			insertion_index = count;
 			break;
+		}
 
 		const void* tup_mid = get_nth_tuple(page, page_size, tpl_def, mid);
 		int compare = compare_tuples(tup_mid, tpl_def, keys_to_compare, tuple, tpl_def, keys_to_compare, keys_count);
