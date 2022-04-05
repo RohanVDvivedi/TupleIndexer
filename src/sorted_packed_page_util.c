@@ -3,6 +3,42 @@
 #include<tuple.h>
 #include<page_layout.h>
 
+// the 0 <= index <= tuple_count
+// internal function to insert a tuple at a specified index
+// this function does not check that the sort order is maintained
+static int insert_at_in_page(
+									void* page, uint32_t page_size, 
+									const tuple_def* tpl_def,
+									const void* tuple, 
+									uint32_t index
+								)
+{
+	uint32_t tuple_count = get_tuple_count(page, page_size, tpl_def);
+
+	// if the index is not valid we fail the insertion
+	if( !(0 <= index && index <= tuple_count) )
+		return 0;
+
+	// insert tuple to the end of the page
+	if(!insert_tuple(page, page_size, tpl_def, tuple))
+		return 0;
+
+	// insert succeedded, so tuple_count incremented
+	tuple_count++;
+
+	// curr_index that the tuple is at
+	uint32_t curr_index = tuple_count - 1;
+
+	// swap until the new tuple is not at index
+	while(index != curr_index)
+	{
+		swap_tuples(page, page_size, tpl_def, curr_index - 1, curr_index);
+		curr_index--;
+	}
+
+	return 1;
+}
+
 int insert_to_sorted_packed_page(
 									void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
@@ -17,20 +53,8 @@ int insert_to_sorted_packed_page(
 	if(index != NULL)
 		(*index) = new_index;
 
-	// insert tuple to the end of the page
-	if(!insert_tuple(page, page_size, tpl_def, tuple))
-		return 0;
-
-	// swap until the new tuple is not at new_index
-	uint32_t tuple_count = get_tuple_count(page, page_size, tpl_def);
-	uint32_t temp_index = tuple_count - 1;
-	while(new_index < temp_index)
-	{
-		swap_tuples(page, page_size, tpl_def, temp_index - 1, temp_index);
-		temp_index--;
-	}
-
-	return 1;
+	// insert tuple to the page at the desired index
+	return insert_at_in_page(page, page_size, tpl_def, tuple, new_index);
 }
 
 int delete_in_sorted_packed_page(
