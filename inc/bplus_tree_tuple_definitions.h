@@ -18,7 +18,7 @@ struct bplus_tree_tuple_defs
 	tuple_def* record_def;
 };
 
-void init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, uint32_t key_element_count);
+void init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, uint32_t key_element_count, uint32_t page_size);
 
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
 
