@@ -123,7 +123,32 @@ int update_resiliently_at_in_sorted_packed_page(
 			return 0;
 	}
 
-	int update_successfull = 1;
+	int update_successfull = update_tuple(page, page_size, tpl_def, index, tuple);
+
+	// if simple update was successfull (without defragmenting and discarding tombstones)
+	if(update_successfull)
+		return update_successfull;
+
+	// get free space on page
+	uint32_t free_space = get_free_space(page, page_size, tpl_def);
+
+	// get size of existing tuple (at index = index)
+	const void* existing_tuple = get_nth_tuple(page, page_size, tpl_def, index);
+	uint32_t existing_tuple_size = get_tuple_size(tpl_def, existing_tuple);
+
+	// if discarding the existing tuple can make enough room for the new tuple then
+	if(free_space + existing_tuple_size >= get_tuple_size(tpl_def, tuple))
+	{
+		// delete the old tuple at the index
+		delete_tuple(page, page_size, tpl_def, index);
+
+		// defragment the page (do not discard the tomb stones here)
+		run_page_compaction(page, page_size, tpl_def, 0, 1);
+
+		// then at the end attempt to update the tuple again
+		// this time it must succeed
+		update_successfull = update_tuple(page, page_size, tpl_def, index, tuple);
+	}
 
 	return update_successfull;
 }
