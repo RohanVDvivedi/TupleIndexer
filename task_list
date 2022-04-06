@@ -1,6 +1,6 @@
  * implement get_largest_insertable_record_size function
 
- ** test update_resiliently_to_sorted_packed_page and succeeding predeeding equals etc ordering functions
+ ** test update_resiliently_to_sorted_packed_page function
 
  * implement bplus_tree_page_lock_stack using array list, that also stores the index ed direction that the page pointer pointed to
  * implement will_split_on_insert and can_merge functions
