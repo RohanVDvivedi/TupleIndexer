@@ -20,6 +20,16 @@ int insert_to_sorted_packed_page(
 									uint32_t* index
 								);
 
+// insert tuple at given index (pushing elements at index >= index, down)
+// returns 1 tuple was inserted
+// returns the index the new tuple is inserted on
+int insert_at_in_sorted_packed_page(
+									void* page, uint32_t page_size, 
+									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
+									const void* tuple, 
+									uint32_t index
+								);
+
 // delete tuple at given index
 // returns 1, if the tuple was deleted
 int delete_in_sorted_packed_page(
