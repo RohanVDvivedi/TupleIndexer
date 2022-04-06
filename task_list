@@ -1,5 +1,5 @@
  * implement get_largest_insertable_record_size function
- * implement insert_at_in_sorted_packed_page and update_resiliently_to_sorted_packed_page (its deletes and defragments page if required)
+ * implement update_resiliently_to_sorted_packed_page (its deletes and defragments page if required)
  * implement bplus_tree_page_lock_stack using array list, that also stores the index ed direction that the page pointer pointed to
  * implement will_split_on_insert and can_merge functions
  * implement split_insert_*_page and merge_*_pages for leaf and interior page
