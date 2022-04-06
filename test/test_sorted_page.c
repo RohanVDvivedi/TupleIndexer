@@ -422,7 +422,7 @@ int main()
 
 	// ----------------  REVERSE PAGE SORT
 
-	reverse_sort_order_on_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1);
+	reverse_sort_order_on_sorted_packed_page(page, PAGE_SIZE, def);
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
 
