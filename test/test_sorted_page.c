@@ -91,8 +91,20 @@ int main()
 
 	r = &(row){5, "Rohan", "Son of Vipul"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL);
+	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 0);
 	printf("Insert : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
+	// ---------------	INSERT
+
+	r = &(row){5, "Zohan", "YOU DONT MESS WITH ZOHAN"};
+	build_tuple_from_row_struct(def, tuple_cache, r);
+	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 1);
+	printf("Insert_at : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
 
@@ -413,7 +425,7 @@ int main()
 
 	// ----------------  CONVERT IT BACK TO SORTED PACKED PAGE
 
-	sort_and_convert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1);
+	sort_and_convert_to_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2);
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
 
@@ -421,21 +433,21 @@ int main()
 
 	r = &(row){16, "insert_at", "failed 1"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 19);
+	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 20);
 	printf("Insert_at : %d\n\n\n", res);
 
 	// ---------------	INSERT
 
 	r = &(row){21, "insert_at", "failed 2"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 19);
+	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 20);
 	printf("Insert_at : %d\n\n\n", res);
 
 	// ---------------	INSERT
 
 	r = &(row){20, "Ainsert_at", "passed"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 19);
+	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 20);
 	printf("Insert_at : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
