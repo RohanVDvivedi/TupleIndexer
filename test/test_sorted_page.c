@@ -433,7 +433,7 @@ int main()
 
 	// ---------------	INSERT
 
-	r = &(row){20, "insert_at", "passed"};
+	r = &(row){20, "Ainsert_at", "passed"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
 	res = insert_at_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 2, tuple_cache, 19);
 	printf("Insert_at : %d\n\n\n", res);
