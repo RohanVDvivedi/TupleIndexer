@@ -1,1 +1,1 @@
-gcc -Wall ./test_$1.c -o test_$1.out -ltupleindexer -ltuplestore -lbufferpool -lrwlock -lcutlery && valgrind -v ./test_$1.out
+gcc -Wall ./test_$1.c -o test_$1.out -ltupleindexer -ltuplestore -lbufferpool -lrwlock -lcutlery && valgrind -v --track-origins=yes ./test_$1.out

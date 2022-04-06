@@ -40,7 +40,7 @@ void init_tuple_definition(tuple_def* def)
 typedef struct row row;
 struct row
 {
-	uint32_t key1;
+	int32_t key1;
 	char* key2;
 	char* val;
 };
@@ -52,8 +52,8 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 	int column_no = 0;
 
 	set_element_in_tuple(def, column_no++, tuple, &(r->key1), -1);
-	set_element_in_tuple(def, column_no++, tuple, (r->key2), -1);
-	set_element_in_tuple(def, column_no++, tuple, (r->val), -1);
+	set_element_in_tuple(def, column_no++, tuple,  (r->key2), -1);
+	set_element_in_tuple(def, column_no++, tuple,  (r->val),  -1);
 
 	// output print string
 	char print_buffer[PAGE_SIZE];
