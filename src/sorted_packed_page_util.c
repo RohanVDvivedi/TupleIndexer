@@ -129,20 +129,21 @@ int update_resiliently_at_in_sorted_packed_page(
 	if(update_successfull)
 		return update_successfull;
 
-	// get free space on page
-	uint32_t free_space = get_free_space(page, page_size, tpl_def);
+	// get free space on page after it gets defragmented
+	// here we assume that the page passed to this functions has no tombstones as should be the case with sorted_packed_page
+	uint32_t free_space_after_defragmentation = get_free_space(page, page_size, tpl_def) + get_fragmentation_space(page, page_size, tpl_def);
 
 	// get size of existing tuple (at index = index)
 	const void* existing_tuple = get_nth_tuple(page, page_size, tpl_def, index);
 	uint32_t existing_tuple_size = get_tuple_size(tpl_def, existing_tuple);
 
 	// if discarding the existing tuple can make enough room for the new tuple then
-	if(free_space + existing_tuple_size >= get_tuple_size(tpl_def, tuple))
+	if(free_space_after_defragmentation + existing_tuple_size >= get_tuple_size(tpl_def, tuple))
 	{
 		// delete the old tuple at the index
 		delete_tuple(page, page_size, tpl_def, index);
 
-		// defragment the page (do not discard the tomb stones here)
+		// defragment the page (do not discard the tomb stone of the tuple we just deleted above)
 		run_page_compaction(page, page_size, tpl_def, 0, 1);
 
 		// then at the end attempt to update the tuple again
