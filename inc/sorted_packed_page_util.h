@@ -109,7 +109,7 @@ uint32_t find_succeeding_in_sorted_packed_page(
 // reverses the sort order on the sorted packed page
 void reverse_sort_order_on_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count
+									const tuple_def* tpl_def
 								);
 
 // creates a page into its sorted_packed_page form
