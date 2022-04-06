@@ -5,6 +5,8 @@
  * add accessor methods i.e. getter and setters for leaf_page_util and interior_page_util page pointers and their ith tuple
  * implement bplus_tree_page_lock_stack using array list, that also stores the index ed direction that the page pointer pointed to
 
+ ** read innodb, postgresql and wiredtiger b+tree implementations to figure out how they supported use of duplicate keys and redistribution while deleting
+
  * implement will_split_on_insert and can_merge functions
  * create complete declarations for split and merge page functions
  * implement split_insert_*_page and merge_*_pages for leaf and interior page
