@@ -240,7 +240,7 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 	if(compare_tuples(tup_first, tpl_def, keys_to_compare, tuple, tpl_def, keys_to_compare, keys_count) > 0)
 		return 0;
 
-	uint32_t insertion_index = NOT_FOUND;
+	uint32_t insertion_index = NO_TUPLE_FOUND;
 
 	uint32_t low = 0;
 	uint32_t high = count;
@@ -278,17 +278,17 @@ uint32_t find_first_in_sorted_packed_page(
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
 	if(count == 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	// if the provided tuple is lesser than the first tuple
 	const void* tup_first = get_nth_tuple(page, page_size, tpl_def, 0);
 	if(compare_tuples(tup_first, tpl_def, keys_to_compare, tuple, tpl_def, keys_to_compare, keys_count) > 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	uint32_t low = 0;
 	uint32_t high = count - 1;
 
-	uint32_t found_index = NOT_FOUND;
+	uint32_t found_index = NO_TUPLE_FOUND;
 
 	while(low <= high)
 	{
@@ -321,17 +321,17 @@ uint32_t find_last_in_sorted_packed_page(
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
 	if(count == 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	// if the provided tuple is lesser than the first tuple
 	const void* tup_first = get_nth_tuple(page, page_size, tpl_def, 0);
 	if(compare_tuples(tup_first, tpl_def, keys_to_compare, tuple, tpl_def, keys_to_compare, keys_count) > 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	uint32_t low = 0;
 	uint32_t high = count - 1;
 
-	uint32_t found_index = NOT_FOUND;
+	uint32_t found_index = NO_TUPLE_FOUND;
 
 	while(low <= high)
 	{
@@ -362,17 +362,17 @@ uint32_t find_preceding_in_sorted_packed_page(
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
 	if(count == 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	// if the provided tuple is lesser than or equal to the first tuple
 	const void* tup_first = get_nth_tuple(page, page_size, tpl_def, 0);
 	if(compare_tuples(tup_first, tpl_def, keys_to_compare, tuple, tpl_def, keys_to_compare, keys_count) >= 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	uint32_t low = 0;
 	uint32_t high = count - 1;
 
-	uint32_t found_index = NOT_FOUND;
+	uint32_t found_index = NO_TUPLE_FOUND;
 
 	while(low <= high)
 	{
@@ -401,17 +401,17 @@ uint32_t find_preceding_equals_in_sorted_packed_page(
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
 	if(count == 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	// if the provided tuple is lesser than or equal to the first tuple
 	const void* tup_first = get_nth_tuple(page, page_size, tpl_def, 0);
 	if(compare_tuples(tup_first, tpl_def, keys_to_compare, tuple, tpl_def, keys_to_compare, keys_count) > 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	uint32_t low = 0;
 	uint32_t high = count - 1;
 
-	uint32_t found_index = NOT_FOUND;
+	uint32_t found_index = NO_TUPLE_FOUND;
 
 	while(low <= high)
 	{
@@ -440,7 +440,7 @@ uint32_t find_succeeding_equals_in_sorted_packed_page(
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
 	if(count == 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	// if the provided tuple is lesser than the first tuple
 	const void* tup_first = get_nth_tuple(page, page_size, tpl_def, 0);
@@ -450,7 +450,7 @@ uint32_t find_succeeding_equals_in_sorted_packed_page(
 	uint32_t low = 0;
 	uint32_t high = count - 1;
 
-	uint32_t found_index = NOT_FOUND;
+	uint32_t found_index = NO_TUPLE_FOUND;
 
 	while(low <= high)
 	{
@@ -481,7 +481,7 @@ uint32_t find_succeeding_in_sorted_packed_page(
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
 	if(count == 0)
-		return NOT_FOUND;
+		return NO_TUPLE_FOUND;
 
 	// if the provided tuple is lesser than the first tuple
 	const void* tup_first = get_nth_tuple(page, page_size, tpl_def, 0);
@@ -491,7 +491,7 @@ uint32_t find_succeeding_in_sorted_packed_page(
 	uint32_t low = 0;
 	uint32_t high = count - 1;
 
-	uint32_t found_index = NOT_FOUND;
+	uint32_t found_index = NO_TUPLE_FOUND;
 
 	while(low <= high)
 	{

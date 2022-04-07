@@ -62,7 +62,7 @@ int delete_all_in_sorted_packed_page(
 									uint32_t start_index, uint32_t end_index
 								);
 
-#define NOT_FOUND (~((uint32_t)0))
+#define NO_TUPLE_FOUND (~((uint32_t)0))
 
 // returns index of the tuple found
 uint32_t find_first_in_sorted_packed_page(
