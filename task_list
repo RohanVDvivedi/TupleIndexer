@@ -13,5 +13,44 @@
  * implement split_insert_*_page and merge_*_pages for leaf and interior page
  * implement redistribute keys functions
 
+ ***** python pseudo code to inplace split operation (start)
+oldPage = [0, 1, 3, 4, 5]
+oldPageSize = len(oldPage)
+newIndex = 2
+newTuple = 2
+
+totalTuples = oldPageSize + 1
+tuplesWantedInOldPage = 5
+tuplesWantedInNewPage = totalTuples - tuplesWantedInOldPage
+
+newTupleInNewPage = not (newIndex < tuplesWantedInOldPage)
+
+tuplesStaying = 0
+if newTupleInNewPage :
+    tuplesStaying = tuplesWantedInOldPage
+else:
+    tuplesStaying = tuplesWantedInOldPage - 1
+tuplesLeaving = oldPageSize - tuplesStaying
+
+newPage = []
+
+if(newTupleInNewPage):
+    moveFrom = oldPageSize - tuplesLeaving
+    for i in range(moveFrom, oldPageSize) :
+        if(i == newIndex):
+            newPage.append(newTuple)
+        newPage.append(oldPage[i])
+        oldPage[i] = -1
+else:
+    moveFrom = oldPageSize - tuplesLeaving
+    for i in range(moveFrom, oldPageSize) :
+        newPage.append(oldPage[i])
+        oldPage[i] = -1
+    oldPage.insert(newIndex, newTuple)
+        
+print(oldPage)
+print(newPage)
+  ***** python pseudo code to inplace split operation (complete)
+
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
    * implement insert search and delete functionality
