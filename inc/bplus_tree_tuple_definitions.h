@@ -6,20 +6,27 @@
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs
 {
-	// tuple definition to compare keys in the bplus_tree
-	tuple_def* key_def;
+	uint32_t key_element_count;
 
-	// tuple definition of the interior pages in the bplus_tree
-	// this is equal to { key_def : page_id(u4)) }
-	tuple_def* index_def;
+	// element ids of the keys (as per their element_ids in record_def) in the order as you want them to be ordered
+	const uint32_t* key_element_ids;
+
+	// ith element_def in index_def has the same type, name and size as the key_element_ids[i] th element_def in record_def
 
 	// tuple definition of the leaf pages in the bplus_tree
-	// this is equal to { key_def : value_def }
-	tuple_def* record_def;
+	const tuple_def* record_def;
+
+	// tuple definition of the interior pages in the bplus_tree
+	tuple_def* index_def;
 };
 
-void init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, uint32_t key_element_count, uint32_t page_size);
+// initializes the attributes in bplus_tree_tuple_defs struct as per the provided parameters
+// it allocates memory only for index_def
+// returns 1 for success, it fails with 0, if the record_def has element_count 0 OR key_element_count == 0 OR key_elements == NULL OR if any of the key_element_ids is out of bounds
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size);
 
+// it deallocates the index_def and
+// then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
 
 #endif
