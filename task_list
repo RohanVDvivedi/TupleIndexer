@@ -1,9 +1,7 @@
  * implement get_largest_insertable_record_size function
 
  ** test update_resiliently_to_sorted_packed_page function
-
- ** implement keys_array that represent keys in order as a mapping such that ith key element is at index keys[i] in the keys array
-    * this allows the tuples to have a different order than their keys
+ ** test bplus_tree_tuple_defs
 
  * add accessor methods i.e. getter and setters for leaf_page_util and interior_page_util page pointers and their ith tuple
  * implement bplus_tree_page_lock_stack using array list, that also stores the index ed direction that the page pointer pointed to
