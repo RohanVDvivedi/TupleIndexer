@@ -8,6 +8,10 @@
     void* page;
     uint32_t level;
     int is_root;
+
+    // only used if level > 0
+    // it signifies the direction that we took while traversing the bplus_tree through this interior node
+    uint32_t child_index;
  };
 
  * implement will_split_on_insert and can_merge functions
