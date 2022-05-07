@@ -1,20 +1,13 @@
 #ifndef BPLUS_TREE_INTERIOR_PAGE_H
 #define BPLUS_TREE_INTERIOR_PAGE_H
 
-#include<stdint.h>
-
 #include<common_page_header.h>
 #include<bplus_tree_page.h>
+#include<bplus_tree_tuple_definitions.h>
 
-typedef struct bplus_tree_interior_page_header bplus_tree_interior_page_header;
-struct bplus_tree_interior_page_header
-{
-	uint32_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
-};
+uint32_t sizeof_INTERIOR_PAGE_HEADER(bplus_tree_tuple_defs* bpttd_p);
 
-#define sizeof_INTERIOR_PAGE_HEADER (sizeof(page_header) + sizeof(bplus_tree_page_header) + sizeof(bplus_tree_interior_page_header))
-
-uint32_t get_least_keys_page_id_of_bplus_tree_interior_page(const void* page, uint32_t page_size);
-void set_least_keys_page_id_of_bplus_tree_interior_page(void* page, uint32_t page_size, uint32_t page_id);
+uint64_t get_least_keys_page_id_of_bplus_tree_interior_page(const void* page, bplus_tree_tuple_defs* bpttd_p);
+void set_least_keys_page_id_of_bplus_tree_interior_page(void* page, uint64_t page_id, bplus_tree_tuple_defs* bpttd_p);
 
 #endif
