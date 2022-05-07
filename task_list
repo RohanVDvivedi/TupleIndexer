@@ -1,18 +1,6 @@
  * implement get_largest_insertable_record_size function
 
- * implement bplus_tree_page_lock_stack using array list, that also stores the index ed direction that the page pointer pointed to
- * the struct in this stack must look like this (as below)
- struct locked_page_info
- {
-    uint64_t page_id;
-    void* page;
-    uint32_t level;
-    int is_root;
-
-    // only used if level > 0
-    // it signifies the direction that we took while traversing the bplus_tree through this interior node
-    uint32_t child_index;
- };
+ * implement bplus_tree_page_lock_stack using array list
 
  * implement will_split_on_insert and can_merge functions
  * create complete declarations for split and merge page functions
