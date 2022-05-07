@@ -315,6 +315,20 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 		return 0;
 }
 
+uint32_t get_page_id_for_page(void* context, void* pg_ptr)
+{
+	memory_store_context* cntxt = context;
+
+	// invalid page pointer
+	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
+		return 0;
+
+	// calculate the page_id for the pg_ptr
+	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
+
+	return page_id;
+}
+
 static int force_write_to_disk(void* context, uint32_t page_id){ /* NOOP */ return 1;}
 
 static int close_data_file(void* context)
@@ -339,6 +353,7 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t p
 	dam_p->release_reader_lock_on_page = release_reader_lock_on_page;
 	dam_p->release_writer_lock_on_page = release_writer_lock_on_page;
 	dam_p->release_writer_lock_and_free_page = release_writer_lock_and_free_page;
+	dam_p->get_page_id_for_page = get_page_id_for_page;
 	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
 	dam_p->page_size = page_size;
