@@ -30,6 +30,7 @@ struct locked_page_info
 	uint32_t child_index;
 };
 
+// in case of an error to get read/write lock on the page, this function returns a NULL
 locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, int is_root, data_access_methods* dam_p);
 
 int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, data_access_methods* dam_p);

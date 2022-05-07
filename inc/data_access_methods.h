@@ -9,6 +9,7 @@
 
 /*
 **	All operations must return 1 or Non NULL when they have succeeded
+**  0 or NULL impiles an error with the corresponding operation
 */
 
 typedef struct data_access_methods data_access_methods;
