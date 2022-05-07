@@ -41,7 +41,7 @@ static int insert_at_in_page(
 
 int insert_to_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t* index
 								)
@@ -59,7 +59,7 @@ int insert_to_sorted_packed_page(
 
 int insert_at_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t index
 								)
@@ -94,7 +94,7 @@ int insert_at_in_sorted_packed_page(
 
 int update_resiliently_at_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t index
 								)
@@ -188,7 +188,7 @@ int delete_all_in_sorted_packed_page(
 
 uint32_t insert_all_from_sorted_packed_page(
 									void* page_dest, const void* page_src, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									uint32_t start_index, uint32_t end_index
 								)
 {
@@ -227,7 +227,7 @@ uint32_t insert_all_from_sorted_packed_page(
 
 uint32_t find_insertion_point_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple
 									)
 {
@@ -272,8 +272,8 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 
 uint32_t find_first_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
@@ -315,8 +315,8 @@ uint32_t find_first_in_sorted_packed_page(
 
 uint32_t find_last_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
@@ -356,8 +356,8 @@ uint32_t find_last_in_sorted_packed_page(
 
 uint32_t find_preceding_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
@@ -395,8 +395,8 @@ uint32_t find_preceding_in_sorted_packed_page(
 
 uint32_t find_preceding_equals_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
@@ -434,8 +434,8 @@ uint32_t find_preceding_equals_in_sorted_packed_page(
 
 uint32_t find_succeeding_equals_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
@@ -475,8 +475,8 @@ uint32_t find_succeeding_equals_in_sorted_packed_page(
 
 uint32_t find_succeeding_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
@@ -529,7 +529,7 @@ void reverse_sort_order_on_sorted_packed_page(
 // on page quick sort algorithm
 static void sort_and_convert_to_sorted_packed_page_recursively(
 									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									uint32_t first, uint32_t last
 								)
 {
@@ -556,7 +556,7 @@ static void sort_and_convert_to_sorted_packed_page_recursively(
 
 void sort_and_convert_to_sorted_packed_page(
 									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, uint32_t* tuple_keys_to_compare, uint32_t keys_count
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count
 								)
 {
 	// remove tomb stones of deleted tuples
