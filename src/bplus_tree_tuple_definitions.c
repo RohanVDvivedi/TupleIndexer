@@ -14,6 +14,8 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 		return 0;
 
 	// initialize struct attributes
+	bpttd_p->page_id_width = page_id_width;
+	bpttd_p->page_size = page_size;
 	bpttd_p->key_element_count = key_element_count;
 	bpttd_p->key_element_ids = key_element_ids;
 	bpttd_p->record_def = record_def;

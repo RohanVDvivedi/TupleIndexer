@@ -6,6 +6,13 @@
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs
 {
+	// page_id_with is bytes required for storing page_id, it can be 1,2,4 or 8
+	int page_id_width;
+
+	// size of each page inside this bplus tree
+	uint32_t page_size;
+
+	// number of elements considered as keys
 	uint32_t key_element_count;
 
 	// element ids of the keys (as per their element_ids in record_def) in the order as you want them to be ordered
