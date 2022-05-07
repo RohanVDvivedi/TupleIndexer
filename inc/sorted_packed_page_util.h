@@ -68,42 +68,42 @@ int delete_all_in_sorted_packed_page(
 uint32_t find_first_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* tuple
+									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
 								);
 
 // returns index of the tuple found
 uint32_t find_last_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* tuple
+									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
 								);
 
 // returns index of the tuple found
 uint32_t find_preceding_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* tuple
+									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
 								);
 
 // returns index of the tuple found
 uint32_t find_preceding_equals_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* tuple
+									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
 								);
 
 // returns index of the tuple found
 uint32_t find_succeeding_equals_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* tuple
+									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
 								);
 
 // returns index of the tuple found
 uint32_t find_succeeding_in_sorted_packed_page(
 									const void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, uint32_t* keys_to_compare, uint32_t keys_count,
-									const void* tuple
+									const void* key, const tuple_def* key_def, uint32_t* key_elements_to_compare
 								);
 
 // reverses the sort order on the sorted packed page
