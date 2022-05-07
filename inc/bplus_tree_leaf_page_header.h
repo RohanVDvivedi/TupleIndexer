@@ -1,5 +1,5 @@
-#ifndef BPLUS_TREE_LEAF_PAGE_H
-#define BPLUS_TREE_LEAF_PAGE_H
+#ifndef BPLUS_TREE_LEAF_PAGE_HEADER_H
+#define BPLUS_TREE_LEAF_PAGE_HEADER_H
 
 #include<common_page_header.h>
 #include<bplus_tree_page.h>
