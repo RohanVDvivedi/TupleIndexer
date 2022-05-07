@@ -34,6 +34,9 @@ struct data_access_methods
 	// releases writer lock and mark the page as free
 	int (*release_writer_lock_and_free_page)(void* context, void* pg_ptr);
 
+	// get page id corresponding to a pg_ptr
+	uint32_t (*get_page_id_for_page)(void* context, void* pg_ptr);
+
 	// equivalent to msync
 	// you must call this function while holding a reader lock on the page
 	int (*force_write_to_disk)(void* context, uint32_t page_id);
