@@ -27,7 +27,7 @@ uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, con
 	uint64_t child_page_id = 0;
 
 	// tuple of the interior page that is at index
-	void* index_tuple = get_nth_tuple(page, bpttd_p->page_size, bpttd_p->index_def, index);
+	const void* index_tuple = get_nth_tuple(page, bpttd_p->page_size, bpttd_p->index_def, index);
 
 	// populate child_id using the appropriate element at the end of the tuple
 	switch(bpttd_p->page_id_width)
