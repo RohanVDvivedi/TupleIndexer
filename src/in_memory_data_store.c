@@ -25,7 +25,7 @@ struct memory_store_context
 	uint32_t page_size;
 
 	// constant
-	uint32_t pages_count;
+	uint64_t pages_count;
 
 	// count
 	void* memory;	// points to mmap-ed memory of size (page_size * page_count)
@@ -47,7 +47,7 @@ static int open_data_file(void* context)
 	pthread_mutex_init(&(cntxt->free_pages_lock), NULL);
 	initialize_linkedlist(&(cntxt->free_pages), 0);
 	cntxt->memory = mmap(NULL, cntxt->page_size * cntxt->pages_count, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE, -1, 0);
-	for(uint32_t i = 0; i < cntxt->pages_count; i++)
+	for(uint64_t i = 0; i < cntxt->pages_count; i++)
 	{
 		void* mem = cntxt->memory + (cntxt->page_size * i);
 		initialize_llnode(mem);
@@ -59,13 +59,13 @@ static int open_data_file(void* context)
 	return 1;
 }
 
-static void* get_new_page_with_write_lock(void* context, uint32_t* page_id_returned)
+static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_returned)
 {
 	memory_store_context* cntxt = context;
 
 	// we have to find this free page and return it
 	void* free_page_p = NULL;
-	uint32_t free_page_id = 0;
+	uint64_t free_page_id = 0;
 
 	pthread_mutex_lock(&(cntxt->free_pages_lock));
 
@@ -96,7 +96,7 @@ static void* get_new_page_with_write_lock(void* context, uint32_t* page_id_retur
 	return free_page_p;
 }
 
-static void* acquire_page_with_reader_lock(void* context, uint32_t page_id)
+static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 {
 	memory_store_context* cntxt = context;
 
@@ -129,7 +129,7 @@ static void* acquire_page_with_reader_lock(void* context, uint32_t page_id)
 		return NULL;
 }
 
-static void* acquire_page_with_writer_lock(void* context, uint32_t page_id)
+static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 {
 	memory_store_context* cntxt = context;
 
@@ -171,7 +171,7 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
+	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -206,7 +206,7 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
+	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -241,7 +241,7 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr)
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
+	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -276,7 +276,7 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
+	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	// page_id is out of bounds
 	if(page_id >= cntxt->pages_count)
@@ -315,7 +315,7 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 		return 0;
 }
 
-uint32_t get_page_id_for_page(void* context, void* pg_ptr)
+uint64_t get_page_id_for_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
@@ -324,12 +324,12 @@ uint32_t get_page_id_for_page(void* context, void* pg_ptr)
 		return 0;
 
 	// calculate the page_id for the pg_ptr
-	uint32_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
+	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
 
 	return page_id;
 }
 
-static int force_write_to_disk(void* context, uint32_t page_id){ /* NOOP */ return 1;}
+static int force_write_to_disk(void* context, uint64_t page_id){ /* NOOP */ return 1;}
 
 static int close_data_file(void* context)
 {
@@ -337,12 +337,12 @@ static int close_data_file(void* context)
 
 	pthread_mutex_destroy(&(cntxt->free_pages_lock));
 	munmap(cntxt->memory, cntxt->page_size * cntxt->pages_count);
-	for(uint32_t i = 0; i < cntxt->pages_count; i++)
+	for(uint64_t i = 0; i < cntxt->pages_count; i++)
 		deinitialize_rwlock(&(cntxt->page_states[i].reader_writer_page_lock));
 	return 1;
 }
 
-data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t pages_count)
+data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint64_t pages_count)
 {
 	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
 	dam_p->open_data_file = open_data_file;
@@ -357,6 +357,7 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint32_t p
 	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
 	dam_p->page_size = page_size;
+	dam_p->page_id_width = 64;
 	dam_p->context = malloc(size_of_memory_store_context(pages_count));
 	
 	((memory_store_context*)(dam_p->context))->page_size = page_size;
