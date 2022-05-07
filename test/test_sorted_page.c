@@ -365,24 +365,30 @@ int main()
 
 	// ----------------  TEST ALL FIND FUNCTIONS
 
+	// intialize single integer key definition
+	tuple_def* key_def = alloca(size_of_tuple_def(16));
+	init_tuple_def(key_def, "my_table");
+	res = insert_element_def(key_def, "key_1", INT, 4);
+	finalize_tuple_def(key_def, PAGE_SIZE);
+
 	for(int32_t i = 0; i <= 25; i++)
 	{
 
 		printf("---------------------------------------------------\n\n");
 		printf("finding %d -> \n\n", i);
 
-		r = &(row){i, NULL, NULL};
-		build_tuple_from_row_struct(def, tuple_cache, r);
+		init_tuple(key_def, tuple_cache);
+		set_element_in_tuple(key_def, 0, tuple_cache, &i, -1);
 
 		uint32_t index;
 
-		index = find_first_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache);
+		index = find_first_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("FIND FIRST = %s\n", "NO_TUPLE_FOUND");
 		else
 			printf("FIND FIRST = %u\n", index);
 
-		index = find_last_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache);
+		index = find_last_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("FIND LAST = %s\n", "NO_TUPLE_FOUND");
 		else
@@ -390,13 +396,13 @@ int main()
 
 		printf("\n");
 
-		index = find_preceding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache);
+		index = find_preceding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("PRECEDING = %s\n", "NO_TUPLE_FOUND");
 		else
 			printf("PRECEDING = %u\n", index);
 
-		index = find_preceding_equals_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache);
+		index = find_preceding_equals_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("PRECEDING EQUALS = %s\n", "NO_TUPLE_FOUND");
 		else
@@ -404,13 +410,13 @@ int main()
 
 		printf("\n");
 
-		index = find_succeeding_equals_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache);
+		index = find_succeeding_equals_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("SUCCEEDING EQUALS = %s\n", "NO_TUPLE_FOUND");
 		else
 			printf("SUCCEEDING EQUALS = %u\n", index);
 
-		index = find_succeeding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache);
+		index = find_succeeding_in_sorted_packed_page(page, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("SUCCEEDING = %s\n", "NO_TUPLE_FOUND");
 		else
