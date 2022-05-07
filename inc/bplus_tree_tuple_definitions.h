@@ -25,6 +25,10 @@ struct bplus_tree_tuple_defs
 
 	// tuple definition of the interior pages in the bplus_tree
 	tuple_def* index_def;
+
+	// tuple definition of the key to be used with this bplus_tree
+	// for all of find, insert and delete functionalities
+	tuple_def* key_def;
 };
 
 // initializes the attributes in bplus_tree_tuple_defs struct as per the provided parameters

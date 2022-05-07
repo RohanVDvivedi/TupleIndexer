@@ -20,6 +20,9 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 	bpttd_p->key_element_ids = key_element_ids;
 	bpttd_p->record_def = record_def;
 
+
+	// initialize index_def
+
 	// allocate memory for index def and initialize it
 	bpttd_p->index_def = malloc(size_of_tuple_def(key_element_count + 1));
 	init_tuple_def(bpttd_p->index_def, "temp_index_def");
@@ -66,12 +69,38 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 	// end step
 	finalize_tuple_def(bpttd_p->index_def, page_size);
 
+	// initialize key def
+
+	// allocate memory for key_def and initialize it
+	bpttd_p->key_def = malloc(size_of_tuple_def(key_element_count));
+	init_tuple_def(bpttd_p->key_def, "temp_key_def");
+
+	// result of inserting element_definitions to key_def
+	res = 1;
+
+	// initialize element_defs of the key_def
+	for(uint32_t i = 0; i < key_element_count && res == 1; i++)
+		res = insert_copy_of_element_def(bpttd_p->key_def, NULL, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+	
+	// if any of the index element_definitions could not be inserted
+	if(!res)
+	{
+		deinit_bplus_tree_tuple_definitions(bpttd_p);
+		return 0;
+	}
+
+	// end step
+	finalize_tuple_def(bpttd_p->key_def, page_size);
+
 	return 1;
 }
 
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 {
-	free(bpttd_p->index_def);
+	if(bpttd_p->index_def)
+		free(bpttd_p->index_def);
+	if(bpttd_p->key_def)
+		free(bpttd_p->key_def);
 
 	bpttd_p->page_id_width = 0;
 	bpttd_p->page_size = 0;
@@ -79,4 +108,5 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	bpttd_p->key_element_ids = NULL;
 	bpttd_p->record_def = NULL;
 	bpttd_p->index_def = NULL;
+	bpttd_p->key_def = NULL;
 }
