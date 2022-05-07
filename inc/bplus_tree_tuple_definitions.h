@@ -23,7 +23,8 @@ struct bplus_tree_tuple_defs
 // initializes the attributes in bplus_tree_tuple_defs struct as per the provided parameters
 // it allocates memory only for index_def
 // returns 1 for success, it fails with 0, if the record_def has element_count 0 OR key_element_count == 0 OR key_elements == NULL OR if any of the key_element_ids is out of bounds
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size);
+// page_id_with is bytes required for storing page_id, it can be 1,2,4 or 8
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, int page_id_width);
 
 // it deallocates the index_def and
 // then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0
