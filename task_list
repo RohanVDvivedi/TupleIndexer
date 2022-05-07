@@ -3,10 +3,8 @@
  ** test update_resiliently_to_sorted_packed_page function
  ** test bplus_tree_tuple_defs
 
- * add accessor methods i.e. getter and setters for leaf_page_util and interior_page_util page pointers and their ith tuple
+ * implement find methods for leaf_page_util and interior_page_util source files (declarations already present) - use functions from sorted_packed_page_util
  * implement bplus_tree_page_lock_stack using array list, that also stores the index ed direction that the page pointer pointed to
-
- ** read innodb, postgresql and wiredtiger b+tree implementations to figure out how they supported use of duplicate keys and redistribution while deleting
 
  * implement will_split_on_insert and can_merge functions
  * create complete declarations for split and merge page functions
@@ -55,5 +53,4 @@ print(newPage)
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
    * implement insert search and delete functionality
 
- * update implementation of bplus tree and data access methods to allow 64 bit page ids
  * update implementation of in_memory_data_store to use single mutex lock and a separate condition variables for each page ids. free pages being stored in a heap data structure ordered by their page ids. i.e. allocating lowest page id first and allowing memory store to grow and shrink on demand.
