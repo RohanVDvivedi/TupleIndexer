@@ -18,11 +18,11 @@ struct data_access_methods
 
 	// a request method to get a new blank page from the page manager with write lock on the page
 	// the page_id_returned is set with the page_id of the new_page
-	void* (*get_new_page_with_write_lock)(void* context, uint32_t* page_id_returned);
+	void* (*get_new_page_with_write_lock)(void* context, uint64_t* page_id_returned);
 
 	// locks a page for read or write, if successfull must return pointer to the in-memory of the page
-	void* (*acquire_page_with_reader_lock)(void* context, uint32_t page_id);
-	void* (*acquire_page_with_writer_lock)(void* context, uint32_t page_id);
+	void* (*acquire_page_with_reader_lock)(void* context, uint64_t page_id);
+	void* (*acquire_page_with_writer_lock)(void* context, uint64_t page_id);
 
 	// downgrade a writer lock to a reader lock
 	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, void* pg_ptr);
@@ -35,11 +35,11 @@ struct data_access_methods
 	int (*release_writer_lock_and_free_page)(void* context, void* pg_ptr);
 
 	// get page id corresponding to a pg_ptr
-	uint32_t (*get_page_id_for_page)(void* context, void* pg_ptr);
+	uint64_t (*get_page_id_for_page)(void* context, void* pg_ptr);
 
 	// equivalent to msync
 	// you must call this function while holding a reader lock on the page
-	int (*force_write_to_disk)(void* context, uint32_t page_id);
+	int (*force_write_to_disk)(void* context, uint64_t page_id);
 
 	int (*close_data_file)(void* context);
 
@@ -48,7 +48,7 @@ struct data_access_methods
 
 	// number of bytes in the page id
 	// this can be 1, 2, 4, or 8
-	int bytes_to_represent_page_id;
+	int page_id_width;
 
 	// context to pass on every page access
 	void* context;
