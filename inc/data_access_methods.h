@@ -46,6 +46,10 @@ struct data_access_methods
 	// size of page in bytes
 	uint32_t page_size;
 
+	// number of bytes in the page id
+	// this can be 1, 2, 4, or 8
+	int bytes_to_represent_page_id;
+
 	// context to pass on every page access
 	void* context;
 };
