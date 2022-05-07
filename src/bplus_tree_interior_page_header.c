@@ -5,13 +5,13 @@
 typedef struct bplus_tree_interior_page_header1 bplus_tree_interior_page_header1;
 struct bplus_tree_interior_page_header1
 {
-	uint32_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
+	uint8_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
 };
 
 typedef struct bplus_tree_interior_page_header2 bplus_tree_interior_page_header2;
 struct bplus_tree_interior_page_header2
 {
-	uint32_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
+	uint16_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
 };
 
 typedef struct bplus_tree_interior_page_header4 bplus_tree_interior_page_header4;
@@ -23,7 +23,7 @@ struct bplus_tree_interior_page_header4
 typedef struct bplus_tree_interior_page_header8 bplus_tree_interior_page_header8;
 struct bplus_tree_interior_page_header8
 {
-	uint32_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
+	uint64_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
 };
 
 uint32_t sizeof_INTERIOR_PAGE_HEADER(bplus_tree_tuple_defs* bpttd_p)
