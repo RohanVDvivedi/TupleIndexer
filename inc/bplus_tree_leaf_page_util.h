@@ -1,0 +1,4 @@
+#ifndef BPLUS_TREE_LEAF_PAGE_UTIL_H
+#define BPLUS_TREE_LEAF_PAGE_UTIL_H
+
+#endif
