@@ -30,7 +30,7 @@ struct bplus_tree_leaf_page_header8
 	uint64_t next_page_id;	// towards all greater data
 };
 
-uint32_t sizeof_LEAF_PAGE_HEADER(bplus_tree_tuple_defs* bpttd_p)
+uint32_t sizeof_LEAF_PAGE_HEADER(const bplus_tree_tuple_defs* bpttd_p)
 {
 	switch(bpttd_p->page_id_width)
 	{
@@ -46,7 +46,7 @@ uint32_t sizeof_LEAF_PAGE_HEADER(bplus_tree_tuple_defs* bpttd_p)
 	return 0;
 }
 
-uint64_t get_next_page_id_of_bplus_tree_leaf_page(const void* page, bplus_tree_tuple_defs* bpttd_p)
+uint64_t get_next_page_id_of_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
 	const void* lph = get_page_header((void*)page, bpttd_p->page_size) + sizeof(page_header) + sizeof(bplus_tree_page_header);
 	switch(bpttd_p->page_id_width)
@@ -63,7 +63,7 @@ uint64_t get_next_page_id_of_bplus_tree_leaf_page(const void* page, bplus_tree_t
 	return 0;
 }
 
-void set_next_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, bplus_tree_tuple_defs* bpttd_p)
+void set_next_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p)
 {
 	void* lph = get_page_header(page, bpttd_p->page_size) + sizeof(page_header) + sizeof(bplus_tree_page_header);
 	switch(bpttd_p->page_id_width)
@@ -91,7 +91,7 @@ void set_next_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, bplu
 	}
 }
 
-uint64_t get_prev_page_id_of_bplus_tree_leaf_page(const void* page, bplus_tree_tuple_defs* bpttd_p)
+uint64_t get_prev_page_id_of_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
 	const void* lph = get_page_header((void*)page, bpttd_p->page_size) + sizeof(page_header) + sizeof(bplus_tree_page_header);
 	switch(bpttd_p->page_id_width)
@@ -108,7 +108,7 @@ uint64_t get_prev_page_id_of_bplus_tree_leaf_page(const void* page, bplus_tree_t
 	return 0;
 }
 
-void set_prev_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, bplus_tree_tuple_defs* bpttd_p)
+void set_prev_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p)
 {
 	void* lph = get_page_header(page, bpttd_p->page_size) + sizeof(page_header) + sizeof(bplus_tree_page_header);
 	switch(bpttd_p->page_id_width)
