@@ -73,6 +73,8 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 {
 	free(bpttd_p->index_def);
 
+	bpttd_p->page_id_width = 0;
+	bpttd_p->page_size = 0;
 	bpttd_p->key_element_count = 0;
 	bpttd_p->key_element_ids = NULL;
 	bpttd_p->record_def = NULL;
