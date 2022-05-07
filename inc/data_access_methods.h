@@ -35,6 +35,13 @@ struct data_access_methods
 	// releases writer lock and mark the page as free
 	int (*release_writer_lock_and_free_page)(void* context, void* pg_ptr);
 
+	// releases reader lock and mark the page as free
+	// all the threads waiting for lock on this page must be denied lock on this page
+	// no further locks on this page should be issued until this page is freed
+	// free this page only after the last reader has unlocked it
+	// multiple calls to this function by all the readers holding lock on this page must be allowed
+	int (*release_reader_lock_and_free_page)(void* context, void* pg_ptr);
+
 	// get page id corresponding to a pg_ptr
 	uint64_t (*get_page_id_for_page)(void* context, void* pg_ptr);
 

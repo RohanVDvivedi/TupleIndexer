@@ -31,9 +31,11 @@ struct locked_page_info
 };
 
 // in case of an error to get read/write lock on the page, this function returns a NULL
+// the page is locked with a write lock if get_write_lock == 1, and with a read lock if it is 0
 locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, int is_root, data_access_methods* dam_p);
 
-int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, data_access_methods* dam_p);
+// you can also request to make the page free, by passing should_free_this_page = 1
+int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_free_this_page, data_access_methods* dam_p);
 
 // pushes the locked page info of a locked page to the stack
 void push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, locked_page_info* lpi_p);
@@ -47,6 +49,7 @@ locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p
 // unlocks all the pages in the same order as they were pushed (first in first out)
 // unlocks pages in direction from root to leaf (and may not include root and leaf pages themselves, only the pages whose info have been pushed)
 // it also frees up memory that is being used by all the lock_page_info structs
+// it only unlocks the pages, it does not free those pages, THIS IS EXPECTED BEHAVIOUR
 void fifo_unlock_all_bplus_tree_locked_pages_stack(arraylist* btlps_p, data_access_methods* dam_p);
 
 #endif
