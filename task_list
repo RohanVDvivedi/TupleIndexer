@@ -54,3 +54,6 @@ print(newPage)
 
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
    * implement insert search and delete functionality
+
+ * update implementation of bplus tree and data access methods to allow 64 bit page ids
+ * update implementation of in_memory_data_store to use single mutex lock and a separate condition variables for each page ids. free pages being stored in a heap data structure ordered by their page ids. i.e. allocating lowest page id first and allowing memory store to grow and shrink on demand.
