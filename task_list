@@ -10,8 +10,6 @@
     int is_root;
  };
 
- * add next_page_id pointer to the next sibling page, this will be used to identify the last page in any of the interior level of the bplus_tree
-
  * implement will_split_on_insert and can_merge functions
  * create complete declarations for split and merge page functions
  * implement split_insert_*_page and merge_*_pages for leaf and interior page
