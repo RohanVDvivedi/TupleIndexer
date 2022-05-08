@@ -1,5 +1,9 @@
  * implement get_largest_insertable_record_size function
 
+ * provide a NULL_PAGE a pointer to which NULL_PAGES will point to
+ * make this an attribute of data_access_methods
+ * use only bplus_tree_tuple_defs->page_size for all the functions inside the bplus_tree
+
  * implement 
   * const void* split_insert_*_page(locked_page_info* page_info, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p /*only required for leaf pages*/);
   * returns pointer to the tuple that needs to be inserted in the parent page
