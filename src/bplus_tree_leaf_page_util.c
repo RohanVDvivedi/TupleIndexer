@@ -73,16 +73,58 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(locked_page_info
 		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples(page_info->page, bpttds->page_size, bpttds->record_def);
 
 		// this is the result number of tuple that should stay on this page
-		uint32_t result;
+		uint32_t result = 0;
 
-		// if it is the last leaf page
+		// if it is the last leaf page => split it such that it is almost full
 		if(get_next_page_id_of_bplus_tree_leaf_page(page_info->page, bpttds) == 0)
 		{
+			uint32_t limit = space_allotted_to_tuples;
 
+			// perform a binary search to find the cumulative size just above the limit
+			// cumulative_tuple_sizes has indices from 0 to total_tuple_count both inclusive
+			uint32_t l = 0;
+			uint32_t h = total_tuple_count;
+			while(l <= h)
+			{
+				uint32_t m = l + (h - l) / 2;
+				if(cumulative_tuple_sizes[m] < limit)
+				{
+					result = m;
+					l = m + 1;
+				}
+				else if(cumulative_tuple_sizes[m] > limit)
+					h = m - 1;
+				else
+				{
+					result = m;
+					break;
+				}
+			}
 		}
-		else // else
+		else // else => result is the number of tuples that will take the page occupancy just above or equal to 50%
 		{
+			uint32_t limit = space_allotted_to_tuples / 2;
 
+			// perform a binary search to find the cumulative size just above the limit
+			// cumulative_tuple_sizes has indices from 0 to total_tuple_count both inclusive
+			uint32_t l = 0;
+			uint32_t h = total_tuple_count;
+			while(l <= h)
+			{
+				uint32_t m = l + (h - l) / 2;
+				if(cumulative_tuple_sizes[m] < limit)
+					l = m + 1;
+				else if(cumulative_tuple_sizes[m] > limit)
+				{
+					result = m;
+					h = m - 1;
+				}
+				else
+				{
+					result = m;
+					break;
+				}
+			}
 		}
 
 		// free cumulative tuple sizes
