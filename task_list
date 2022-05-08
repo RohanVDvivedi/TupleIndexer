@@ -1,7 +1,5 @@
  * implement get_largest_insertable_record_size function
 
- * implement bplus_tree_page_lock_stack using array list
-
  * implement will_split_on_insert and can_merge functions
  * create complete declarations for split and merge page functions
  * implement split_insert_*_page and merge_*_pages for leaf and interior page
