@@ -5,13 +5,12 @@
  * use only bplus_tree_tuple_defs->page_size for all the functions inside the bplus_tree
 
  * implement 
-  * const void* split_insert_*_page(locked_page_info* page_info, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p /*only required for leaf pages*/);
+  * const void* split_insert_*_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p /*only required for leaf pages*/);
   * returns pointer to the tuple that needs to be inserted in the parent page
 
  * implement
-  * always check that page_info1 and page_info2 are adjacent pages
-  * and that they can merge
-  * int merge_*_pages(locked_page_info* page_info1, locked_page_info* page_info2, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p /*only required for leaf pages*/);
+  * merge the pages page1 and its immediate next
+  * int merge_*_pages(void* page1, uint64_t page1_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p /*only required for leaf pages*/);
 
  * implement redistribute keys functions
 
