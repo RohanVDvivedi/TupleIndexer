@@ -87,6 +87,40 @@ const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const
 	// initialize page2 (as a leaf page)
 	init_page(page2, bpttds->page_size, sizeof_LEAF_PAGE_HEADER(bpttds), bpttds->record_def);
 
+	// id of the page that is next to page1 (calling this page3)
+	uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(page_info->page, bpttds);
+
+	// perform pointer manipulations for the linkedlist of leaf pages
+	if(page3_id != 0)
+	{
+		// acquire lock on the next page of the page1 (this page will be called page3)
+		void* page3 = dam_p->acquire_page_with_writer_lock(dam_p->context, page3_id);
+
+		// return with a split failure if the lock on page3 could not be acquired
+		if(page3 == NULL)
+		{
+			// make sure you free the page that you acquired
+			dam_p->release_writer_lock_and_free_page(dam_p->context, page2);
+			return NULL;
+		}
+
+		// perform pointer manipulations to insert page2 between page1 and page3
+		set_next_page_id_of_bplus_tree_leaf_page(page_info->page, page2_id, bpttds);
+		set_prev_page_id_of_bplus_tree_leaf_page(page3, page2_id, bpttds);
+		set_prev_page_id_of_bplus_tree_leaf_page(page2, page_info->page_id, bpttds);
+		set_next_page_id_of_bplus_tree_leaf_page(page2, page3_id, bpttds);
+
+		// release writer lock on page3
+		dam_p->release_writer_lock_on_page(dam_p->context, page3);
+	}
+	else
+	{
+		// perform pointer manipulations to put page2 at the end of this linkedlist after page1
+		set_next_page_id_of_bplus_tree_leaf_page(page_info->page, page2_id, bpttds);
+		set_prev_page_id_of_bplus_tree_leaf_page(page2, page_info->page_id, bpttds);
+		set_next_page_id_of_bplus_tree_leaf_page(page2, 0, bpttds);
+	}
+
 	// copy all required tuples from the page1 to page2
 	insert_all_from_sorted_packed_page(
 									page2, page_info->page, bpttds->page_size,
