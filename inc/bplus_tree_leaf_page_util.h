@@ -4,6 +4,7 @@
 #include<stdint.h>
 
 #include<bplus_tree_interior_page_header.h>
+#include<bplus_tree_locked_pages_stack.h>
 
 // when you want tuples in descending order from the key
 uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p);
@@ -14,7 +15,7 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const
 // it performs a split insert to the leaf page provided
 // and returns the tuple that needs to be inserted to the parent page
 // it returns NULL, on failure if the tuple was not inserted, and the split was not performed
-// This function MUST be called only if the direct insert to this page fails
+// This function MUST be called only if the direct insert to this page fails, (else it will fail the split regardless)
 // the failure results from following reason:
 // failure to allocate a new page OR failure to get reference to the next page of the page_info
 const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);

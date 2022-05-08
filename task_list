@@ -18,7 +18,7 @@ newIndex = 2
 newTuple = 2
 
 totalTuples = oldPageSize + 1
-tuplesWantedInOldPage = 5
+tuplesWantedInOldPage = 3
 tuplesWantedInNewPage = totalTuples - tuplesWantedInOldPage
 
 newTupleInNewPage = not (newIndex < tuplesWantedInOldPage)
@@ -32,18 +32,14 @@ tuplesLeaving = oldPageSize - tuplesStaying
 
 newPage = []
 
+moveFrom = tuplesStaying
+for i in range(moveFrom, oldPageSize) :
+    newPage.append(oldPage[i])
+    oldPage[i] = -1
+
 if(newTupleInNewPage):
-    moveFrom = oldPageSize - tuplesLeaving
-    for i in range(moveFrom, oldPageSize) :
-        if(i == newIndex):
-            newPage.append(newTuple)
-        newPage.append(oldPage[i])
-        oldPage[i] = -1
+    newPage.insert(newIndex - tuplesStaying, newTuple)
 else:
-    moveFrom = oldPageSize - tuplesLeaving
-    for i in range(moveFrom, oldPageSize) :
-        newPage.append(oldPage[i])
-        oldPage[i] = -1
     oldPage.insert(newIndex, newTuple)
         
 print(oldPage)
