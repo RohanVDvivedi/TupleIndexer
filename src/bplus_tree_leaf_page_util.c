@@ -160,7 +160,37 @@ const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const
 	void* parent_insert = malloc(sizeof(char) * (size_of_first_tuple_page2 + bpttds->page_id_width));
 
 	// insert key attributes from first_tuple_page2 to parent_insert
-	// TODO
+	for(uint32_t i = 0; i < bpttds->key_element_count; i++)
+		set_element_in_tuple_from_tuple(bpttds->index_def, i, parent_insert, bpttds->record_def, bpttds->key_element_ids[i], first_tuple_page2);
+
+	// now insert the pointer to the page2 in this parent tuple
+	switch(bpttds->page_id_width)
+	{
+		case 1:
+		{
+			uint8_t p2id = page2_id;
+			set_element_in_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_insert, &p2id, 1);
+			break;
+		}
+		case 2:
+		{
+			uint16_t p2id = page2_id;
+			set_element_in_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_insert, &p2id, 2);
+			break;
+		}
+		case 4:
+		{
+			uint32_t p2id = page2_id;
+			set_element_in_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_insert, &p2id, 4);
+			break;
+		}
+		case 8:
+		{
+			uint64_t p2id = page2_id;
+			set_element_in_tuple(bpttds->index_def, bpttds->index_def->element_count - 1, parent_insert, &p2id, 8);
+			break;
+		}
+	}
 
 	// release lock on the page2
 	dam_p->release_writer_lock_on_page(dam_p->context, page2);
