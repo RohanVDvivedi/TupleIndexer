@@ -54,22 +54,29 @@ int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_
 	return return_val;
 }
 
-void push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, locked_page_info* lpi_p)
+int push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, locked_page_info* lpi_p)
 {
-
+	return push_back_to_arraylist(btlps_p, lpi_p);
 }
 
 locked_page_info* pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p)
 {
-
+	locked_page_info* to_pop = (locked_page_info*)get_back_of_arraylist(btlps_p);
+	pop_back_from_arraylist(btlps_p);
+	return to_pop;
 }
 
 locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p)
 {
-
+	return (locked_page_info*)get_back_of_arraylist(btlps_p);
 }
 
 void fifo_unlock_all_bplus_tree_locked_pages_stack(arraylist* btlps_p, data_access_methods* dam_p)
 {
-
+	while(!is_empty_arraylist(btlps_p))
+	{
+		locked_page_info* to_unlock = (locked_page_info*)get_front_of_arraylist(btlps_p);
+		pop_front_from_arraylist(btlps_p);
+		unlock_page_and_delete_locked_page_info(to_unlock, 0, dam_p);
+	}
 }
