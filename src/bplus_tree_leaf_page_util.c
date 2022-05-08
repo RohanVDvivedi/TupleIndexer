@@ -296,7 +296,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 	return parent_insert;
 }
 
-int merge_bplus_tree_leaf_pages(locked_page_info* page_info1, locked_page_info* page_info2, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
+int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
 {
 
 }
