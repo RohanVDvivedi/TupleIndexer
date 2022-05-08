@@ -27,14 +27,14 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const
 }
 
 // this will the tuples that will remain in the page_info after after the complete split operation
-static uint32_t calculate_final_tuple_count_of_page_to_be_split(locked_page_info* page_info, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds)
+static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds)
 {
-	uint32_t tuple_count = get_tuple_count(page_info->page, bpttds->page_size, bpttds->record_def);
+	uint32_t tuple_count = get_tuple_count(page1, bpttds->page_size, bpttds->record_def);
 
 	if(is_fixed_sized_tuple_def(bpttds->record_def))
 	{
 		// if it is the last leaf page
-		if(get_next_page_id_of_bplus_tree_leaf_page(page_info->page, bpttds) == 0)
+		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds) == 0)
 			return tuple_count;	// i.e. only 1 tuple goes to the new page
 		else // else
 			return (tuple_count + 1) / 2;	// equal split
@@ -46,8 +46,8 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(locked_page_info
 
 		// space required in addition to its size on the page
 		// this is assumed to be fixed
-		const void* first_tuple = get_nth_tuple(page_info->page, bpttds->page_size, bpttds->record_def, 0);
-		uint32_t per_tuple_over_head = get_space_occupied_by_tuples(page_info->page, bpttds->page_size, bpttds->record_def, 0, 0) - get_tuple_size(bpttds->record_def, first_tuple);
+		const void* first_tuple = get_nth_tuple(page1, bpttds->page_size, bpttds->record_def, 0);
+		uint32_t per_tuple_over_head = get_space_occupied_by_tuples(page1, bpttds->page_size, bpttds->record_def, 0, 0) - get_tuple_size(bpttds->record_def, first_tuple);
 
 		cumulative_tuple_sizes[0] = 0;
 		for(uint32_t i = 0, k = 1; i < tuple_count; i++)
@@ -61,7 +61,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(locked_page_info
 			}
 
 			// process the ith tuple
-			uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples(page_info->page, bpttds->page_size, bpttds->record_def, i, i);
+			uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples(page1, bpttds->page_size, bpttds->record_def, i, i);
 			cumulative_tuple_sizes[k] = space_occupied_by_ith_tuple + cumulative_tuple_sizes[k-1];
 			k++;
 		}
@@ -70,13 +70,13 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(locked_page_info
 		// i.e. the first n tuples will occupy cumulative_tuple_sizes[n] amount of space
 
 		// this is the total space available to you to store the tuples
-		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples(page_info->page, bpttds->page_size, bpttds->record_def);
+		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples(page1, bpttds->page_size, bpttds->record_def);
 
 		// this is the result number of tuple that should stay on this page
 		uint32_t result = 0;
 
 		// if it is the last leaf page => split it such that it is almost full
-		if(get_next_page_id_of_bplus_tree_leaf_page(page_info->page, bpttds) == 0)
+		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds) == 0)
 		{
 			uint32_t limit = space_allotted_to_tuples;
 
@@ -134,22 +134,22 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(locked_page_info
 	}
 }
 
-const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
+const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
 {
 	// do not perform a split if the page can accomodate the new tuple
-	if(can_insert_tuple(page_info->page, bpttds->page_size, bpttds->record_def, tuple_to_insert))
+	if(can_insert_tuple(page1, bpttds->page_size, bpttds->record_def, tuple_to_insert))
 		return NULL;
 
 	// if the index of the new tuple was not provided then calculate it
 	if(tuple_to_insert_at == NO_TUPLE_FOUND)
 		tuple_to_insert_at = find_insertion_point_in_sorted_packed_page(
-									page_info->page, bpttds->page_size, 
+									page1, bpttds->page_size, 
 									bpttds->record_def, bpttds->key_element_ids, bpttds->key_element_count,
 									tuple_to_insert
 								);
 
 	// current tuple count of the page to be split
-	uint32_t page1_tuple_count = get_tuple_count(page_info->page, bpttds->page_size, bpttds->record_def);
+	uint32_t page1_tuple_count = get_tuple_count(page1, bpttds->page_size, bpttds->record_def);
 
 	// total number of tuples we would be dealing with
 	//uint32_t total_tuple_count = page1_tuple_count + 1;
@@ -157,7 +157,7 @@ const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const
 	// lingo for variables page1 => page to be split, page2 => page that will be allocated to handle the split
 
 	// final tuple count of the page that will be split
-	uint32_t final_tuple_count_page1 = calculate_final_tuple_count_of_page_to_be_split(page_info, tuple_to_insert, tuple_to_insert_at, bpttds);
+	uint32_t final_tuple_count_page1 = calculate_final_tuple_count_of_page_to_be_split(page1, tuple_to_insert, tuple_to_insert_at, bpttds);
 
 	// final tuple count of the page that will be newly allocated
 	//uint32_t final_tuple_count_page2 = total_tuple_count - final_tuple_count_page1;
@@ -185,7 +185,7 @@ const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const
 	init_page(page2, bpttds->page_size, sizeof_LEAF_PAGE_HEADER(bpttds), bpttds->record_def);
 
 	// id of the page that is next to page1 (calling this page3)
-	uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(page_info->page, bpttds);
+	uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds);
 
 	// perform pointer manipulations for the linkedlist of leaf pages
 	if(page3_id != 0)
@@ -202,9 +202,9 @@ const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const
 		}
 
 		// perform pointer manipulations to insert page2 between page1 and page3
-		set_next_page_id_of_bplus_tree_leaf_page(page_info->page, page2_id, bpttds);
+		set_next_page_id_of_bplus_tree_leaf_page(page1, page2_id, bpttds);
 		set_prev_page_id_of_bplus_tree_leaf_page(page3, page2_id, bpttds);
-		set_prev_page_id_of_bplus_tree_leaf_page(page2, page_info->page_id, bpttds);
+		set_prev_page_id_of_bplus_tree_leaf_page(page2, page1_id, bpttds);
 		set_next_page_id_of_bplus_tree_leaf_page(page2, page3_id, bpttds);
 
 		// release writer lock on page3
@@ -213,21 +213,21 @@ const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const
 	else
 	{
 		// perform pointer manipulations to put page2 at the end of this linkedlist after page1
-		set_next_page_id_of_bplus_tree_leaf_page(page_info->page, page2_id, bpttds);
-		set_prev_page_id_of_bplus_tree_leaf_page(page2, page_info->page_id, bpttds);
+		set_next_page_id_of_bplus_tree_leaf_page(page1, page2_id, bpttds);
+		set_prev_page_id_of_bplus_tree_leaf_page(page2, page1_id, bpttds);
 		set_next_page_id_of_bplus_tree_leaf_page(page2, 0, bpttds);
 	}
 
 	// copy all required tuples from the page1 to page2
 	insert_all_from_sorted_packed_page(
-									page2, page_info->page, bpttds->page_size,
+									page2, page1, bpttds->page_size,
 									bpttds->record_def, bpttds->key_element_ids, bpttds->key_element_count,
 									tuples_stay_in_page1, page1_tuple_count - 1
 								);
 
 	// delete the corresponding (copied) tuples in the page1
 	delete_all_in_sorted_packed_page(
-									page_info->page, bpttds->page_size,
+									page1, bpttds->page_size,
 									bpttds->record_def,
 									tuples_stay_in_page1, page1_tuple_count - 1
 								);
@@ -244,7 +244,7 @@ const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const
 	else
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page1
 		insert_at_in_sorted_packed_page(
-									page_info->page, bpttds->page_size,
+									page1, bpttds->page_size,
 									bpttds->record_def, bpttds->key_element_ids, bpttds->key_element_count,
 									tuple_to_insert, 
 									tuple_to_insert_at

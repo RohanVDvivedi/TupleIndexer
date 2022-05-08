@@ -18,7 +18,7 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const
 // This function MUST be called only if the direct insert to this page fails, (else it will fail the split regardless)
 // the failure results from following reason:
 // failure to allocate a new page OR failure to get reference to the next page of the page_info
-const void* split_insert_bplus_tree_leaf_page(locked_page_info* page_info, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
+const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
 
 // it performs merge of the 2 leaf pages
 // the page_info1 and page_info2 MUST be adjacent pages sharing a parent node
