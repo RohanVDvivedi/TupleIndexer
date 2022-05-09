@@ -1,8 +1,6 @@
  * implement get_largest_insertable_record_size function
  * use get_space_allotted_to_all_tuples v2 api
 
- * use only bplus_tree_tuple_defs->page_size for all the functions inside the bplus_tree
-
  * implement 
   * const void* split_insert_*_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p /*only required for leaf pages*/);
   * returns pointer to the tuple that needs to be inserted in the parent page
