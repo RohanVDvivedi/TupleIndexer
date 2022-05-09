@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, int page_id_width)
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, int page_id_width, uint64_t NULL_PAGE_ID)
 {
 	// basic parameter check
 	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || record_def->element_count == 0)
@@ -14,6 +14,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 		return 0;
 
 	// initialize struct attributes
+	bpttd_p->NULL_PAGE_ID = NULL_PAGE_ID;
 	bpttd_p->page_id_width = page_id_width;
 	bpttd_p->page_size = page_size;
 	bpttd_p->key_element_count = key_element_count;
@@ -102,6 +103,7 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	if(bpttd_p->key_def)
 		free(bpttd_p->key_def);
 
+	bpttd_p->NULL_PAGE_ID = 0;
 	bpttd_p->page_id_width = 0;
 	bpttd_p->page_size = 0;
 	bpttd_p->key_element_count = 0;

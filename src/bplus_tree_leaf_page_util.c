@@ -34,7 +34,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	if(is_fixed_sized_tuple_def(bpttds->record_def))
 	{
 		// if it is the last leaf page
-		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds) == 0)
+		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds) == bpttds->NULL_PAGE_ID)
 			return tuple_count;	// i.e. only 1 tuple goes to the new page
 		else // else
 			return (tuple_count + 1) / 2;	// equal split
@@ -44,18 +44,13 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 		uint32_t total_tuple_count = tuple_count + 1;
 		uint32_t* cumulative_tuple_sizes = malloc(sizeof(uint32_t) * (total_tuple_count + 1));
 
-		// space required in addition to its size on the page
-		// this is assumed to be fixed
-		const void* first_tuple = get_nth_tuple(page1, bpttds->page_size, bpttds->record_def, 0);
-		uint32_t per_tuple_over_head = get_space_occupied_by_tuples(page1, bpttds->page_size, bpttds->record_def, 0, 0) - get_tuple_size(bpttds->record_def, first_tuple);
-
 		cumulative_tuple_sizes[0] = 0;
 		for(uint32_t i = 0, k = 1; i < tuple_count; i++)
 		{
 			// if the new tuple is suppossed to be inserted at i then process it first
 			if(i == tuple_to_insert_at)
 			{
-				uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttds->record_def, tuple_to_insert) + per_tuple_over_head;
+				uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttds->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple(bpttds->page_size, bpttds->record_def);
 				cumulative_tuple_sizes[k] = space_occupied_by_new_tuple + cumulative_tuple_sizes[k-1];
 				k++;
 			}
@@ -76,7 +71,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 		uint32_t result = 0;
 
 		// if it is the last leaf page => split it such that it is almost full
-		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds) == 0)
+		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds) == bpttds->NULL_PAGE_ID)
 		{
 			uint32_t limit = space_allotted_to_tuples;
 
@@ -188,7 +183,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 	uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds);
 
 	// perform pointer manipulations for the linkedlist of leaf pages
-	if(page3_id != 0)
+	if(page3_id != bpttds->NULL_PAGE_ID)
 	{
 		// acquire lock on the next page of the page1 (this page will be called page3)
 		void* page3 = dam_p->acquire_page_with_writer_lock(dam_p->context, page3_id);
@@ -215,7 +210,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 		// perform pointer manipulations to put page2 at the end of this linkedlist after page1
 		set_next_page_id_of_bplus_tree_leaf_page(page1, page2_id, bpttds);
 		set_prev_page_id_of_bplus_tree_leaf_page(page2, page1_id, bpttds);
-		set_next_page_id_of_bplus_tree_leaf_page(page2, 0, bpttds);
+		set_next_page_id_of_bplus_tree_leaf_page(page2, bpttds->NULL_PAGE_ID, bpttds);
 	}
 
 	// copy all required tuples from the page1 to page2
