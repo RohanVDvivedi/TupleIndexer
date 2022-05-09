@@ -58,7 +58,11 @@ struct data_access_methods
 	// this can be 1, 2, 4, or 8
 	int page_id_width;
 
-	// context to pass on every page access
+	// a page with this page_id number should/would never be allocated or used by the system
+	// this page_id implies something similar to a NULL pointer
+	uint64_t NULL_PAGE_ID;
+
+	// context to be passed on every page access
 	void* context;
 };
 
