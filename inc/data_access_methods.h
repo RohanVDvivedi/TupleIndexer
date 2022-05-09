@@ -60,6 +60,7 @@ struct data_access_methods
 
 	// a page with this page_id number should/would never be allocated or used by the system
 	// this page_id implies something similar to a NULL pointer
+	// NULL_PAGE_ID < (1 << (page_id_width * 8))
 	uint64_t NULL_PAGE_ID;
 
 	// context to be passed on every page access

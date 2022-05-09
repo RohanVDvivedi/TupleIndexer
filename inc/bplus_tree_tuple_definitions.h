@@ -13,6 +13,7 @@ struct bplus_tree_tuple_defs
 	uint32_t page_size;
 
 	// this is what is considered as a NULL pointer in the bplus_tree
+	// NULL_PAGE_ID < (1 << (page_id_width * 8))
 	uint64_t NULL_PAGE_ID;
 
 	// number of elements considered as keys
