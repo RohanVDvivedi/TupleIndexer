@@ -13,6 +13,10 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 	if(!(page_id_width == 1 || page_id_width == 2 || page_id_width == 4 || page_id_width == 8))
 		return 0;
 
+	// NULL_PAGE_ID must fit in page_id_width number of bytes
+	if(page_id_width < 8 && NULL_PAGE_ID >= ( ((uint64_t)(1)) << (page_id_width * 8) ) )
+		return 0;
+
 	// initialize struct attributes
 	bpttd_p->NULL_PAGE_ID = NULL_PAGE_ID;
 	bpttd_p->page_id_width = page_id_width;
