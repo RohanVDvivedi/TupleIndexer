@@ -18,13 +18,15 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const
 // This function MUST be called only if the direct insert to this page fails, (else it will fail the split regardless)
 // the failure results from following reason:
 // failure to allocate a new page OR failure to get reference to the next page of the page_info
+// lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
 
 // it performs merge of the 2 leaf pages (page1 and the one next to it)
-// the page_info1 and page_info2 MUST be adjacent pages sharing a parent node
-// this function will perform page compaction on the page_info1 if required
-// it fails with a 0 if the pages can not be merged (this may be due to their used spaces greater than the allotted size on the page_info1)
-// you may call this function regardless of you knowing that the pages may be merged
+// the page1 must have an adjacent page and both of them must have a single parent node
+// this function will perform page compaction on the page1 if required
+// it fails with a 0 if the pages can not be merged (this may be due to their used spaces greater than the allotted size on the page1)
+// lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
+// if this function returns a 1, then it is left on to the calling function to delete the corresponding parent entry of the page that is next to page1
 int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
 
 #endif
