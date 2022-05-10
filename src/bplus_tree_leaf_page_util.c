@@ -321,11 +321,11 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple
 		return 0;
 
 	// check if a merge can be performed
-	uint32_t space_available_page1 = get_space_allotted_to_all_tuples(page1, bpttds->page_size, bpttds->record_def);
+	uint32_t total_space_page1 = get_space_allotted_to_all_tuples(page1, bpttds->page_size, bpttds->record_def);
 	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples(page1, bpttds->page_size, bpttds->record_def);
 	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples(page2, bpttds->page_size, bpttds->record_def);
 
-	if(space_available_page1 < space_in_use_page1 + space_in_use_page2)
+	if(total_space_page1 < space_in_use_page1 + space_in_use_page2)
 	{
 		dam_p->release_writer_lock_on_page(dam_p->context, page2);
 		return 0;
