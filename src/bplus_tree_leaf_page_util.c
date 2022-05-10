@@ -135,6 +135,15 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 	if(can_insert_tuple(page1, bpttds->page_size, bpttds->record_def, tuple_to_insert))
 		return NULL;
 
+	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
+	// if it does then you should not be calling this function
+	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttds->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple(bpttds->page_size, bpttds->record_def);
+	uint32_t space_available_page1 = get_space_allotted_to_all_tuples(page1, bpttds->page_size, bpttds->record_def) - get_space_occupied_by_all_tuples(page1, bpttds->page_size, bpttds->record_def);
+
+	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
+	if(space_available_page1 >= space_occupied_by_new_tuple)
+		return NULL;
+
 	// if the index of the new tuple was not provided then calculate it
 	if(tuple_to_insert_at == NO_TUPLE_FOUND)
 		tuple_to_insert_at = find_insertion_point_in_sorted_packed_page(
@@ -214,6 +223,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 	}
 
 	// while moving tuples, we assume that there will be atleast 1 tuple that will get moved from page1 to page2
+	// we made this sure by all the above conditions
 	// hence no need to check bounds of start_index and last_index
 
 	// copy all required tuples from the page1 to page2
