@@ -97,6 +97,12 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 	// end step
 	finalize_tuple_def(bpttd_p->key_def, page_size);
 
+	if(get_maximum_insertable_record_size(bpttd_p) < get_minimum_tuple_size(bpttd_p->record_def))
+	{
+		deinit_bplus_tree_tuple_definitions(bpttd_p);
+		return 0;
+	}
+
 	return 1;
 }
 
