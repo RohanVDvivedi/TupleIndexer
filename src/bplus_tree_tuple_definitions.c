@@ -116,3 +116,25 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	bpttd_p->index_def = NULL;
 	bpttd_p->key_def = NULL;
 }
+
+#include<bplus_tree_leaf_page_header.h>
+#include<bplus_tree_interior_page_header.h>
+
+#include<page_layout.h>
+
+uint32_t get_maximum_insertable_record_size(bplus_tree_tuple_defs* bpttd_p)
+{
+	uint32_t min_record_tuple_count = 2;
+	uint32_t total_available_space_in_leaf_page = get_space_to_be_allotted_to_all_tuples(sizeof_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->page_size, bpttd_p->record_def);
+	uint32_t total_available_space_in_leaf_page_per_min_tuple_count = total_available_space_in_leaf_page / min_record_tuple_count;
+	uint32_t max_record_size_per_leaf_page = total_available_space_in_leaf_page_per_min_tuple_count - get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->record_def);
+
+	uint32_t min_index_record_tuple_count = 2;
+	uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, bpttd_p->index_def);
+	uint32_t total_available_space_in_interior_page_per_min_tuple_count = total_available_space_in_interior_page / min_index_record_tuple_count;
+	uint32_t max_key_size_per_interior_page = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->index_def) - bpttd_p->page_id_width - 1; 
+	// this 1 at the end is important believe me, it represents a spill over bit from storing the is_null bit for the child page pointer
+
+	#define min(a,b) (((a)<(b))?(a):(b))
+	return  min(max_record_size_per_leaf_page, max_key_size_per_interior_page);
+}

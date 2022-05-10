@@ -41,6 +41,10 @@ struct bplus_tree_tuple_defs
 // page_id_with is bytes required for storing page_id, it can be 1,2,4 or 8
 int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, int page_id_width, uint64_t NULL_PAGE_ID);
 
+// get maximum size of the record that can be inserted in this bplus_tree
+// there must be atleast 2 data records per leaf page and 2 index records per interior page of any bplus_tree
+uint32_t get_maximum_insertable_record_size(bplus_tree_tuple_defs* bpttd_p);
+
 // it deallocates the index_def and
 // then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
