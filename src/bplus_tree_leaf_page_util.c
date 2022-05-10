@@ -213,6 +213,9 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 		set_next_page_id_of_bplus_tree_leaf_page(page2, bpttds->NULL_PAGE_ID, bpttds);
 	}
 
+	// while moving tuples, we assume that there will be atleast 1 tuple that will get moved from page1 to page2
+	// hence no need to check bounds of start_index and last_index
+
 	// copy all required tuples from the page1 to page2
 	insert_all_from_sorted_packed_page(
 									page2, page1, bpttds->page_size,
@@ -293,5 +296,89 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 
 int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
 {
+	// get the next adjacent page of tis page
+	uint64_t page2_id = get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds);
 
+	// if it does not exist, return 0 (failure)
+	if(page2_id == bpttds->NULL_PAGE_ID)
+		return 0;
+
+	// acquire lock on the next page, i.e. page2
+	void* page2 = dam_p->acquire_page_with_writer_lock(dam_p->context, page2_id);
+
+	// failed acquiring lock on this page, return 0 (failure)
+	if(page2 == NULL)
+		return 0;
+
+	// check if a merge can be performed
+	uint32_t space_available_page1 = get_space_allotted_to_all_tuples(page1, bpttds->page_size, bpttds->record_def);
+	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples(page1, bpttds->page_size, bpttds->record_def);
+	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples(page2, bpttds->page_size, bpttds->record_def);
+
+	if(space_available_page1 < space_in_use_page1 + space_in_use_page2)
+	{
+		dam_p->release_writer_lock_on_page(dam_p->context, page2);
+		return 0;
+	}
+
+	// now we can be sure that a merge can be performed on page1 and page2
+
+	// we start by perfoming the pointer manipulation
+	// but we need lock on the next page of the page2 to change its previous page pointer
+	// we are calling the page next to page2 as page 3
+
+	uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(page2, bpttds);
+
+	// page3 does exist and page2 is not the last page
+	if(page3_id != bpttds->NULL_PAGE_ID)
+	{
+		// acquire lock on the page3
+		void* page3 = dam_p->acquire_page_with_writer_lock(dam_p->context, page3_id);
+
+		// could not acquire lock on page3, so can not perform a merge
+		if(page3 == NULL)
+		{
+			dam_p->release_writer_lock_on_page(dam_p->context, page2);
+			return 0;
+		}
+
+		// perform pointer manipulations to remove page2 from the between of page1 and page3
+		set_next_page_id_of_bplus_tree_leaf_page(page1, page3_id, bpttds);
+		set_prev_page_id_of_bplus_tree_leaf_page(page3, page1_id, bpttds);
+
+		// release lock on page3
+		dam_p->release_writer_lock_on_page(dam_p->context, page3);
+	}
+	else // page2 is indeed the last page
+	{
+		// perform pointer manipulations to make page1 as the last page
+		set_next_page_id_of_bplus_tree_leaf_page(page1, bpttds->NULL_PAGE_ID, bpttds);
+	}
+
+	// since page2 has been removed from the linkedlist of leaf pages
+	// modify page2 pointers (next and prev) to point NULL_PAGE_ID
+	// this step is not needed
+	set_prev_page_id_of_bplus_tree_leaf_page(page2, bpttds->NULL_PAGE_ID, bpttds);
+	set_next_page_id_of_bplus_tree_leaf_page(page2, bpttds->NULL_PAGE_ID, bpttds);
+
+	// now, we can safely transfer all tuples from page2 to page1
+
+	// only if there are any tuples to move
+	uint32_t tuple_count_page2 = get_tuple_count(page2, bpttds->page_size, bpttds->record_def);
+	if(tuple_count_page2 > 0)
+	{
+		uint32_t free_space_page1 = get_free_space(page1, bpttds->page_size, bpttds->record_def);
+
+		// if free space is not enough perform a compaction in advance
+		if(free_space_page1 < space_in_use_page2)
+			run_page_compaction(page1, bpttds->page_size, bpttds->record_def, 0, 1);
+
+		// only if there are any tuples to move
+		insert_tuples_from_page(page1, bpttds->page_size, bpttds->record_def, page2, 0, tuple_count_page2 - 1);
+	}
+
+	// free page2 and release its lock
+	dam_p->release_writer_lock_and_free_page(dam_p->context, page2);
+
+	return 1;
 }
