@@ -1,4 +1,3 @@
- * add init_bplus_tree_leaf_page and init_bplus_tree_interior_page, and use them in split insert functions
 
  * implement
   * merge the pages page1 and its immediate next
