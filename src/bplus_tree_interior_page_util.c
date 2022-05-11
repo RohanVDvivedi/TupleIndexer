@@ -327,7 +327,7 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 	void* parent_insert = malloc(sizeof(char) * size_of_first_tuple_page2);
 
 	// copy all the contents of the first_tuple_page2 to parent_insert
-	memmove(parent_insert, first_tuple_page2, size_of_first_tuple_page2);
+	memmove(parent_insert, first_tuple_page2, sizeof(char) * size_of_first_tuple_page2);
 
 	// now insert the pointer to the page2 in this parent tuple
 	switch(bpttds->page_id_width)
