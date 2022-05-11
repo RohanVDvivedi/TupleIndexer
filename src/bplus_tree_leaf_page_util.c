@@ -211,8 +211,8 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 		set_prev_page_id_of_bplus_tree_leaf_page(page2, page1_id, bpttds);
 		set_next_page_id_of_bplus_tree_leaf_page(page2, page3_id, bpttds);
 
-		// release writer lock on page3
-		dam_p->release_writer_lock_on_page(dam_p->context, page3);
+		// release writer lock on page3, mark it as modified
+		dam_p->release_writer_lock_on_page(dam_p->context, page3, 1);
 	}
 	else
 	{
@@ -297,8 +297,8 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 		}
 	}
 
-	// release lock on the page2
-	dam_p->release_writer_lock_on_page(dam_p->context, page2);
+	// release lock on the page2, and mark it as modified
+	dam_p->release_writer_lock_on_page(dam_p->context, page2, 1);
 
 	// return parent_insert
 	return parent_insert;
@@ -327,7 +327,8 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple
 
 	if(total_space_page1 < space_in_use_page1 + space_in_use_page2)
 	{
-		dam_p->release_writer_lock_on_page(dam_p->context, page2);
+		// release writer lock on the page, and we did not modify it
+		dam_p->release_writer_lock_on_page(dam_p->context, page2, 0);
 		return 0;
 	}
 
@@ -348,7 +349,8 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple
 		// could not acquire lock on page3, so can not perform a merge
 		if(page3 == NULL)
 		{
-			dam_p->release_writer_lock_on_page(dam_p->context, page2);
+			// on error, we release writer lock on page2, suggesting it was not modified
+			dam_p->release_writer_lock_on_page(dam_p->context, page2, 0);
 			return 0;
 		}
 
@@ -356,8 +358,8 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple
 		set_next_page_id_of_bplus_tree_leaf_page(page1, page3_id, bpttds);
 		set_prev_page_id_of_bplus_tree_leaf_page(page3, page1_id, bpttds);
 
-		// release lock on page3
-		dam_p->release_writer_lock_on_page(dam_p->context, page3);
+		// release lock on page3, marking it as modified
+		dam_p->release_writer_lock_on_page(dam_p->context, page3, 1);
 	}
 	else // page2 is indeed the last page
 	{
