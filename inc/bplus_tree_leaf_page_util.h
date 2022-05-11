@@ -17,7 +17,7 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const
 // you may call this function only if you are sure that the new_tuple will not fit on the page even after a compaction
 // it returns NULL, on failure if the tuple was not inserted, and the split was not performed
 // This function MUST be called only if the direct insert (OR a compaction + insert) to this page fails, (else it will fail the split regardless)
-// the failure may alos results from following reason:
+// the failure may also result from following reason:
 // failure to allocate a new page OR failure to get reference to the next page of the page1
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
