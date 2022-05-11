@@ -64,3 +64,8 @@ uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, con
 
 	return child_page_id;
 }
+
+const void* split_insert_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
+{
+	
+}
