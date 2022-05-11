@@ -5,6 +5,8 @@
 
 #include<bplus_tree_interior_page_header.h>
 
+#include<data_access_methods.h>
+
 /*
 *	child index start from (-1) and end at (tuple_count - 1)
 *	child page_id at index = (-1) => is same as the "least_keys_page_id" as given in the bplus_tree_interior_page_header
