@@ -8,6 +8,18 @@
 
 #include<stdlib.h>
 
+int init_bplus_tree_leaf_page(void* page, const bplus_tree_tuple_defs* bpttd_p)
+{
+	int inited = init_page(page, bpttd_p->page_size, sizeof_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->record_def);
+	if(!inited)
+		return 0;
+	set_type_of_page(page, bpttd_p->page_size, BPLUS_TREE_PAGE);
+	set_level_of_bplus_tree_page(page, bpttd_p->page_size, 0);
+	set_prev_page_id_of_bplus_tree_leaf_page(page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+	set_next_page_id_of_bplus_tree_leaf_page(page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+	return 1;
+}
+
 uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p)
 {
 	return find_succeeding_equals_in_sorted_packed_page(
