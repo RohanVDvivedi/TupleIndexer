@@ -240,7 +240,8 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 		return NULL;
 
 	// initialize page2 (as an interior page)
-	init_page(page2, bpttds->page_size, sizeof_INTERIOR_PAGE_HEADER(bpttds), bpttds->index_def);
+	uint32_t level = get_level_of_bplus_tree_page(page1, bpttds->page_size);	// get the level of bplus_tree we are dealing with
+	init_bplus_tree_interior_page(page2, level, bpttds);
 
 	// id of the page that is next to page1 (calling this page3)
 	// page3_id == bpttds->NULL_PAGE_ID if page1 is the last page of the list

@@ -198,7 +198,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 		return NULL;
 
 	// initialize page2 (as a leaf page)
-	init_page(page2, bpttds->page_size, sizeof_LEAF_PAGE_HEADER(bpttds), bpttds->record_def);
+	init_bplus_tree_leaf_page(page2, bpttds);
 
 	// id of the page that is next to page1 (calling this page3)
 	uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(page1, bpttds);
