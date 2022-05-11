@@ -221,11 +221,11 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 	//uint32_t final_tuple_count_page2 = total_tuple_count - final_tuple_count_page1;
 
 	// figure out if the new tuple (tuple_to_insert) will go to new page OR should be inserted to the existing page
-	int new_tuple_in_new_page = !(tuple_to_insert_at < final_tuple_count_page1);
+	int new_tuple_goes_to_page1 = (tuple_to_insert_at < final_tuple_count_page1);
 
 	// number of the tuples of the page1 that will stay in the same page
 	uint32_t tuples_stay_in_page1 = final_tuple_count_page1;
-	if(!new_tuple_in_new_page)
+	if(new_tuple_goes_to_page1)
 		tuples_stay_in_page1--;
 
 	// number of tuples of the page1 that will leave page1 and be moved to page2
@@ -269,22 +269,22 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 									tuples_stay_in_page1, page1_tuple_count - 1
 								);
 
-	// insert the new tuple (tuple_to_insert) to page1 or page2 based on "new_tuple_in_new_page", as calculated earlier
-	if(new_tuple_in_new_page)
-		// insert the tuple_to_insert (the new tuple) at the desired index in the page2
-		insert_at_in_sorted_packed_page(
-									page2, bpttd_p->page_size,
-									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
-									tuple_to_insert,
-									tuple_to_insert_at - tuples_stay_in_page1
-								);
-	else
+	// insert the new tuple (tuple_to_insert) to page1 or page2 based on "new_tuple_goes_to_page1", as calculated earlier
+	if(new_tuple_goes_to_page1)
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page1
 		insert_at_in_sorted_packed_page(
 									page1, bpttd_p->page_size,
 									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
 									tuple_to_insert,
 									tuple_to_insert_at
+								);
+	else
+		// insert the tuple_to_insert (the new tuple) at the desired index in the page2
+		insert_at_in_sorted_packed_page(
+									page2, bpttd_p->page_size,
+									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+									tuple_to_insert,
+									tuple_to_insert_at - tuples_stay_in_page1
 								);
 
 	// now the page2 contains all the other tuples discarded from the page1, (due to the split)
