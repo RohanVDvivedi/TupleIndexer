@@ -28,6 +28,6 @@ uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, con
 // it returns NULL, on failure if the tuple was not inserted, and the split was not performed
 // This function MUST be called only if the direct insert (OR a compaction + insert) to this page fails, (else it will fail the split regardless)
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
-const void* split_insert_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
+const void* split_insert_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p);
 
 #endif
