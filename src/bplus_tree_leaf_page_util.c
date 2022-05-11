@@ -61,7 +61,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 			k++;
 		}
 
-		// now we have the cumulative space requirement of all the tupl
+		// now we have the cumulative space requirement of all the tuples
 		// i.e. the first n tuples will occupy cumulative_tuple_sizes[n] amount of space
 
 		// this is the total space available to you to store the tuples

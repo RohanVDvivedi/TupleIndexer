@@ -70,7 +70,104 @@ uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, con
 
 static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds)
 {
-	
+	uint32_t tuple_count = get_tuple_count(page1, bpttds->page_size, bpttds->index_def);
+
+	if(is_fixed_sized_tuple_def(bpttds->index_def))
+	{
+		// if it is the last interior page
+		if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttds) == bpttds->NULL_PAGE_ID)
+			return tuple_count;	// i.e. only 1 tuple goes to the new page
+		else // else
+			return (tuple_count + 1) / 2;	// equal split
+	}
+	else
+	{
+		uint32_t total_tuple_count = tuple_count + 1;
+		uint32_t* cumulative_tuple_sizes = malloc(sizeof(uint32_t) * (total_tuple_count + 1));
+
+		cumulative_tuple_sizes[0] = 0;
+		for(uint32_t i = 0, k = 1; i < tuple_count; i++)
+		{
+			// if the new tuple is suppossed to be inserted at i then process it first
+			if(i == tuple_to_insert_at)
+			{
+				uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttds->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple(bpttds->page_size, bpttds->index_def);
+				cumulative_tuple_sizes[k] = space_occupied_by_new_tuple + cumulative_tuple_sizes[k-1];
+				k++;
+			}
+
+			// process the ith tuple
+			uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples(page1, bpttds->page_size, bpttds->index_def, i, i);
+			cumulative_tuple_sizes[k] = space_occupied_by_ith_tuple + cumulative_tuple_sizes[k-1];
+			k++;
+		}
+
+		// now we have the cumulative space requirement of all the tuples
+		// i.e. the first n tuples will occupy cumulative_tuple_sizes[n] amount of space
+
+		// this is the total space available to you to store the tuples
+		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples(page1, bpttds->page_size, bpttds->index_def);
+
+		// this is the result number of tuple that should stay on this page
+		uint32_t result = 0;
+
+		// if it is the last interior page => split it such that it is almost full
+		if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttds) == bpttds->NULL_PAGE_ID)
+		{
+			uint32_t limit = space_allotted_to_tuples;
+
+			// perform a binary search to find the cumulative size just above the limit
+			// cumulative_tuple_sizes has indices from 0 to total_tuple_count both inclusive
+			uint32_t l = 0;
+			uint32_t h = total_tuple_count;
+			while(l <= h)
+			{
+				uint32_t m = l + (h - l) / 2;
+				if(cumulative_tuple_sizes[m] < limit)
+				{
+					result = m;
+					l = m + 1;
+				}
+				else if(cumulative_tuple_sizes[m] > limit)
+					h = m - 1;
+				else
+				{
+					result = m;
+					break;
+				}
+			}
+		}
+		else // else => result is the number of tuples that will take the page occupancy just above or equal to 50%
+		{
+			uint32_t limit = space_allotted_to_tuples / 2;
+
+			// perform a binary search to find the cumulative size just above the limit
+			// cumulative_tuple_sizes has indices from 0 to total_tuple_count both inclusive
+			uint32_t l = 0;
+			uint32_t h = total_tuple_count;
+			while(l <= h)
+			{
+				uint32_t m = l + (h - l) / 2;
+				if(cumulative_tuple_sizes[m] < limit)
+					l = m + 1;
+				else if(cumulative_tuple_sizes[m] > limit)
+				{
+					result = m;
+					h = m - 1;
+				}
+				else
+				{
+					result = m;
+					break;
+				}
+			}
+		}
+
+		// free cumulative tuple sizes
+		free(cumulative_tuple_sizes);
+
+		return result;
+	}
 }
 
 const void* split_insert_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
