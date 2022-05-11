@@ -11,6 +11,9 @@
 
  * implement redistribute keys functions
 
+ * reimplement in_memory_data_store
+  * use a single lock and  embedd a reader writer lock inside of it, each page uses a single global mutex for the complete locking mechanism this will keep things simple
+
  ***** python pseudo code to inplace split operation (start)
 oldPage = [0, 1, 3, 4, 5]
 oldPageSize = len(oldPage)
@@ -47,6 +50,4 @@ print(newPage)
   ***** python pseudo code to inplace split operation (complete)
 
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
-   * implement insert search and delete functionality
-
- * update implementation of in_memory_data_store to use single mutex lock and a separate condition variables for each page ids. free pages being stored in a heap data structure ordered by their page ids. i.e. allocating lowest page id first and allowing memory store to grow and shrink on demand.
+   * implement insert, search and delete functionality
