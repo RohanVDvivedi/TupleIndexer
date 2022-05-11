@@ -1,3 +1,5 @@
+ * add init_bplus_tree_leaf_page and init_bplus_tree_interior_page, and use them in split insert functions
+
  * implement
   * merge the pages page1 and its immediate next
   * int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
