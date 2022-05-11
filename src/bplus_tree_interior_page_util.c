@@ -8,6 +8,18 @@
 #include<string.h>
 #include<stdlib.h>
 
+int init_bplus_tree_interior_page(void* page, uint32_t level, const bplus_tree_tuple_defs* bpttd_p)
+{
+	int inited = init_page(page, bpttd_p->page_size, sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->index_def);
+	if(!inited)
+		return 0;
+	set_type_of_page(page, bpttd_p->page_size, BPLUS_TREE_PAGE);
+	set_level_of_bplus_tree_page(page, bpttd_p->page_size, level);
+	set_least_keys_page_id_of_bplus_tree_interior_page(page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+	set_next_page_id_of_bplus_tree_interior_page(page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+	return 1;
+}
+
 uint32_t find_child_index_for_key(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// find preceding equals in the interior pages, by comparing against all index entries

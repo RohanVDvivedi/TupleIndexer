@@ -13,6 +13,8 @@
 *	all other child page_id are stored as the last attributes of the corresponding tuples
 */
 
+int init_bplus_tree_interior_page(void* page, uint32_t level, const bplus_tree_tuple_defs* bpttd_p);
+
 // this the index of the tuple in the interior page that you should follow
 // you may cache this, it may help in case of a split
 uint32_t find_child_index_for_key(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p);
