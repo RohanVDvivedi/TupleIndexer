@@ -232,7 +232,7 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 		return 0;
 }
 
-static int release_writer_lock_on_page(void* context, void* pg_ptr)
+static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified)
 {
 	memory_store_context* cntxt = context;
 

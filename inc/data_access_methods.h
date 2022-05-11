@@ -30,7 +30,10 @@ struct data_access_methods
 
 	// releases lock on the page, accordingly
 	int (*release_reader_lock_on_page)(void* context, void* pg_ptr);
-	int (*release_writer_lock_on_page)(void* context, void* pg_ptr);
+	int (*release_writer_lock_on_page)(void* context, void* pg_ptr, int was_modified);
+
+	// the was_modified parameter suggests that the page that we had a writer lock on was modified,
+	// and any disk based system is suppossed to mark this page dirty now and possibly persist this new version of page to disk, whenever it deems necessary
 
 	// releases writer lock and mark the page as free
 	int (*release_writer_lock_and_free_page)(void* context, void* pg_ptr);
