@@ -6,7 +6,8 @@
 typedef enum page_type page_type;
 enum page_type
 {
-	BPLUS_TREE_PAGE,
+	BPLUS_TREE_LEAF_PAGE,
+	BPLUS_TREE_INTERIOR_PAGE,
 };
 
 typedef struct page_header page_header;
