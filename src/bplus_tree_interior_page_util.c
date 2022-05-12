@@ -425,7 +425,7 @@ int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_p
 		}
 	}
 
-	if(separator_parent_tuple_child_page_id == page2_id)
+	if(separator_parent_tuple_child_page_id != page2_id)
 		return 0;
 
 	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
@@ -443,9 +443,9 @@ int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_p
 	// now we can be sure that a merge can be performed on page1 and page2
 
 	// perform pointer manipulations
-	// page3_id is bpttd_p->NULL_PAGE_ID, if page2 is the last one that that level
+	// page3_id is bpttd_p->NULL_PAGE_ID, if page2 is the last one on that level
 	uint64_t page3_id = get_next_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
-	// perform pointer manipulations to remove page2 from the sinlgy linkedlist of interior pages of that level
+	// perform pointer manipulations to remove page2 from the singly linkedlist of interior pages of that level
 	set_next_page_id_of_bplus_tree_interior_page(page1, page3_id, bpttd_p);
 	// the step below is not needed, but it is performed to keep things clean
 	set_next_page_id_of_bplus_tree_interior_page(page2, bpttd_p->NULL_PAGE_ID, bpttd_p);
