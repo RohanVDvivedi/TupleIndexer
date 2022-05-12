@@ -8,3 +8,5 @@
 
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
    * implement insert, search and delete functionality
+
+ * provide a way to allow additional default header in the implementation
