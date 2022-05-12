@@ -387,5 +387,89 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 
 int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p)
 {
+	// page1 and page2 are not adjacent pages on the level
+	if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) != page2_id)
+		return 0;
 
+	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
+
+	// check if a merge can be performed
+	uint32_t total_space_page1 = get_space_allotted_to_all_tuples(page1, bpttd_p->page_size, bpttd_p->index_def);
+	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples(page1, bpttd_p->page_size, bpttd_p->index_def);
+	uint32_t space_to_be_occupied_by_separator_tuple = separator_tuple_size + get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->index_def);
+	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples(page2, bpttd_p->page_size, bpttd_p->index_def);
+
+	// the page1 must be able to accomodate all its current tuples, the separator tuple and the tuples of page2
+	if(total_space_page1 < space_in_use_page1 + space_to_be_occupied_by_separator_tuple + space_in_use_page2)
+		return 0;
+
+	// now we can be sure that a merge can be performed on page1 and page2
+
+	// perform pointer manipulations
+	// page3_id is bpttd_p->NULL_PAGE_ID, if page2 is the last one that that level
+	uint64_t page3_id = get_next_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
+	// perform pointer manipulations to remove page2 from the sinlgy linkedlist of interior pages of that level
+	set_next_page_id_of_bplus_tree_interior_page(page1, page3_id, bpttd_p);
+	// the step below is not needed, but it is performed to keep things clean
+	set_next_page_id_of_bplus_tree_interior_page(page2, bpttd_p->NULL_PAGE_ID, bpttd_p);
+
+	// make sure that there is enough free space on page1 else defragment the page first
+	uint32_t free_space_page1 = get_free_space(page1, bpttd_p->page_size, bpttd_p->index_def);
+	if(free_space_page1 < space_to_be_occupied_by_separator_tuple + space_in_use_page2)
+		run_page_compaction(page1, bpttd_p->page_size, bpttd_p->index_def, 0, 1);
+
+	// now we construct a separator tuple and insert it into the page 1
+	void* separator_tuple = malloc(sizeof(char) * separator_tuple_size);
+	memmove(separator_tuple, separator_parent_tuple, sizeof(char) * separator_tuple_size);
+
+	// update child_page_id of separator_tuple with the value from least_keys_page_id
+	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
+	switch(bpttd_p->page_id_width)
+	{
+		case 1 :
+		{
+			uint8_t stcpi = separator_tuple_child_page_id;
+			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_tuple, &stcpi, 1);
+			break;
+		}
+		case 2 :
+		{
+			uint16_t stcpi = separator_tuple_child_page_id;
+			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_tuple, &stcpi, 2);
+			break;
+		}
+		case 4 :
+		{
+			uint32_t stcpi = separator_tuple_child_page_id;
+			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_tuple, &stcpi, 4);
+			break;
+		}
+		case 8 :
+		{
+			uint64_t stcpi = separator_tuple_child_page_id;
+			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_tuple, &stcpi, 8);
+			break;
+		}
+	}
+
+	// insert separator tuple in the page1, at the end
+	insert_at_in_sorted_packed_page(
+									page1, bpttd_p->page_size, 
+									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+									separator_tuple, 
+									get_tuple_count(page1, bpttd_p->page_size, bpttd_p->index_def)
+								);
+
+	// free memory allocated for separator_tuple
+	free(separator_tuple);
+
+	// now, we can safely transfer all tuples from page2 to page1
+
+	// only if there are any tuples to move from page2
+	uint32_t tuple_count_page2 = get_tuple_count(page2, bpttd_p->page_size, bpttd_p->index_def);
+	if(tuple_count_page2 > 0)
+		// only if there are any tuples to move
+		insert_tuples_from_page(page1, bpttd_p->page_size, bpttd_p->index_def, page2, 0, tuple_count_page2 - 1);
+
+	return 1;
 }
