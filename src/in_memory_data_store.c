@@ -68,18 +68,12 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id)
 
 void delete_page_descriptor(page_descriptor* page_desc)
 {
-	page_desc->is_free = 1;
-	page_desc->is_marked_for_freeing = 0;
-	page_desc->page_memory = NULL;
-	page_desc->reading_threads = 0;
-	page_desc->writing_threads = 0;
-	page_desc->readers_waiting = 0;
-	page_desc->writers_waiting = 0;
 	pthread_cond_destroy(&(page_desc->reader_wait));
 	pthread_cond_destroy(&(page_desc->writer_wait));
+	free(page_desc);
 }
 
-int compare_by_page_ids(const void* page_desc1, const void* page_desc2)
+static int compare_by_page_ids(const void* page_desc1, const void* page_desc2)
 {
 	if(((const page_descriptor*)(page_desc1))->page_id == ((const page_descriptor*)(page_desc1))->page_id)
 		return 0;
@@ -89,14 +83,25 @@ int compare_by_page_ids(const void* page_desc1, const void* page_desc2)
 		return -1;
 }
 
-unsigned int hash_on_page_id(const void* page_desc1)
+static unsigned int hash_on_page_id(const void* page_desc1)
 {
 	return (unsigned int)(((const page_descriptor*)(page_desc1))->page_id);
 }
 
-unsigned int hash_on_page_memory(const void* page_desc1)
+static unsigned int hash_on_page_memory(const void* page_desc1)
 {
 	return (unsigned int)(((const page_descriptor*)(page_desc1))->page_memory);
+}
+
+static void* allocate_page(uint32_t page_size)
+{
+	return malloc(page_size);
+}
+
+static int deallocate_page(void* page)
+{
+	free(page);
+	return 1;
 }
 
 typedef struct memory_store_context memory_store_context;
@@ -221,16 +226,25 @@ uint64_t get_page_id_for_page(void* context, void* pg_ptr)
 
 static int force_write_to_disk(void* context, uint64_t page_id){ /* NOOP */ return 1;}
 
+static void delete_page_descriptor_hashmap_operation(const void* data, const void* additional_params)
+{
+	if(((page_descriptor*)(data))->page_memory != NULL)
+		deallocate_page(((page_descriptor*)(data))->page_memory);
+	delete_page_descriptor(((page_descriptor*)(data)));
+}
+
 static int close_data_file(void* context)
 {
 	memory_store_context* cntxt = context;
 
+	for_each_in_hashmap(&(cntxt->page_id_map), delete_page_descriptor_hashmap_operation, NULL);
+
+	deinitialize_hashmap(&(cntxt->page_id_map));
+	deinitialize_hashmap(&(cntxt->page_memory_map));
 	pthread_mutex_destroy(&(cntxt->global_lock));
 	cntxt->max_un_seen_page_id = 0;
 	cntxt->free_pages_count = 0;
 	cntxt->total_pages_count = 0;
-	deinitialize_hashmap(&(cntxt->page_id_map));
-	deinitialize_hashmap(&(cntxt->page_memory_map));
 
 	return 1;
 }
