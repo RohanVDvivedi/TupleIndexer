@@ -469,7 +469,11 @@ int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_p
 	uint32_t tuple_count_page2 = get_tuple_count(page2, bpttd_p->page_size, bpttd_p->index_def);
 	if(tuple_count_page2 > 0)
 		// only if there are any tuples to move
-		insert_tuples_from_page(page1, bpttd_p->page_size, bpttd_p->index_def, page2, 0, tuple_count_page2 - 1);
+		insert_all_from_sorted_packed_page(
+									page1, page2, bpttd_p->page_size, 
+									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+									0, tuple_count_page2 - 1
+								);
 
 	return 1;
 }

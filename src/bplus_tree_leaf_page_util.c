@@ -398,7 +398,11 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple
 			run_page_compaction(page1, bpttd_p->page_size, bpttd_p->record_def, 0, 1);
 
 		// only if there are any tuples to move
-		insert_tuples_from_page(page1, bpttd_p->page_size, bpttd_p->record_def, page2, 0, tuple_count_page2 - 1);
+		insert_all_from_sorted_packed_page(
+									page1, page2, bpttd_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									0, tuple_count_page2 - 1
+								);
 	}
 
 	// free page2 and release its lock
