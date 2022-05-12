@@ -30,4 +30,15 @@ uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, con
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 const void* split_insert_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p);
 
+// it performs merge of the 2 leaf pages (page1 and page2 the one next to it)
+// the page1 must have an adjacent page and both of them must have a single parent node
+// separator_tuple is the tuple at the child_index corresponding to page2 in the parent page
+// this function will perform page compaction on the page1 if required
+// it fails with a 0 if the pages can not be merged (this may be due to their used spaces greater than the allotted size on the page1)
+// OR if the parameters passed are deemed invalid (like if the page1->next != page2_id and page_pointer of separator_tuple is not page2_id)
+// lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
+// page2 is not freed by the function, you MUST free this page if this function returns a 1 (stating a successful merge)
+// if this function returns a 1, then separator_tuple must be deleted from the parent page
+int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
+
 #endif
