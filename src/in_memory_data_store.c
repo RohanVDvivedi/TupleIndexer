@@ -22,19 +22,13 @@ struct page_descriptor
 	// this will be NULL for a free page_desc
 	void* page_memory;
 
-	// below are the main attributes that enable locking
+	// below are the main attributes that enable locking for reads and writes
 
 	uint32_t reading_threads;
 
 	uint32_t writing_threads;
 
-	uint32_t readers_waiting;
-
-	uint32_t writers_waiting;
-
-	pthread_cond_t reader_wait;
-
-	pthread_cond_t writer_wait;
+	pthread_cond_t block_wait;
 
 	// below are the 2 embedded nodes used by page_id_map and page_memory_map
 
@@ -56,10 +50,7 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id)
 	page_desc->page_memory = NULL;
 	page_desc->reading_threads = 0;
 	page_desc->writing_threads = 0;
-	page_desc->readers_waiting = 0;
-	page_desc->writers_waiting = 0;
-	pthread_cond_init(&(page_desc->reader_wait), NULL);
-	pthread_cond_init(&(page_desc->writer_wait), NULL);
+	pthread_cond_init(&(page_desc->block_wait), NULL);
 	initialize_llnode(&(page_desc->page_id_map_node));
 	initialize_llnode(&(page_desc->page_memory_map_node));
 	initialize_bstnode(&(page_desc->free_page_descs_node));
@@ -68,8 +59,7 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id)
 
 void delete_page_descriptor(page_descriptor* page_desc)
 {
-	pthread_cond_destroy(&(page_desc->reader_wait));
-	pthread_cond_destroy(&(page_desc->writer_wait));
+	pthread_cond_destroy(&(page_desc->block_wait));
 	free(page_desc);
 }
 
@@ -91,6 +81,55 @@ static unsigned int hash_on_page_id(const void* page_desc1)
 static unsigned int hash_on_page_memory(const void* page_desc1)
 {
 	return (unsigned int)(((const page_descriptor*)(page_desc1))->page_memory);
+}
+
+// blocking, unsafe function, must be called within lock on global_lock
+static void acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
+{
+	// wait until there are writers on this page
+	while(page_desc->writing_threads > 0)
+		pthread_cond_wait(&(page_desc->block_wait), global_lock);
+
+	// increment reader thread count
+	page_desc->reading_threads++;
+
+	// if you are the first reader thread then wake all the threads
+	// some of them might be writers aswell
+	if(page_desc->reading_threads == 1)
+		pthread_cond_broadcast(&(page_desc->block_wait));
+}
+
+// blocking, unsafe function, must be called within lock on global_lock
+static void acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
+{
+	// wait until there are readers and writers on this page
+	while(page_desc->writing_threads > 0 || page_desc->reading_threads > 0)
+		pthread_cond_wait(&(page_desc->block_wait), global_lock);
+
+	// increment writer thread count
+	page_desc->writing_threads++;
+}
+
+// unsafe function, must be called within lock on global_lock
+static void release_read_lock_on_page_memory_unsafe(page_descriptor* page_desc)
+{
+	// grab your reader lock and exit
+	page_desc->reading_threads--;
+
+	// wake 1 next thread, if you are the last reader, this may be a reader or a writer
+	if(page_desc->reading_threads == 0)
+		pthread_cond_signal(&(page_desc->block_wait));
+}
+
+// unsafe function, must be called within lock on global_lock
+static void release_write_lock_on_page_memory_unsafe(page_descriptor* page_desc)
+{
+	// grab your writer lock and exit
+	page_desc->writing_threads--;
+
+	// wake 1 next thread, this may be a reader or a writer
+	// page_desc->writing_threads must be 0 here
+	pthread_cond_signal(&(page_desc->block_wait));
 }
 
 static void* allocate_page(uint32_t page_size)
