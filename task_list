@@ -1,7 +1,6 @@
 
  * static analysis of merge interior pages
  * implement get_child_page_id_from_index_tuple and set_child_page_id_in_index_tuple
- * make page_id_width a uint8_t value
 
  * implement redistribute keys functions
 
