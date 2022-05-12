@@ -11,6 +11,7 @@
 typedef struct page_descriptor page_descriptor;
 struct page_descriptor
 {
+	// remains constant through out the lifetime of the page_descriptor
 	uint64_t page_id;
 
 	// if free then the page is only present in 
@@ -31,9 +32,9 @@ struct page_descriptor
 
 	uint32_t writers_waiting;
 
-	pthread_cond_t reader_waiting;
+	pthread_cond_t reader_wait;
 
-	pthread_cond_t writer_waiting;
+	pthread_cond_t writer_wait;
 
 	// below are the 2 embedded nodes used by page_id_map and page_memory_map
 
@@ -45,6 +46,38 @@ struct page_descriptor
 
 	bstnode free_page_descs_node;
 };
+
+page_descriptor* get_new_page_descriptor(uint64_t page_id)
+{
+	page_descriptor* page_desc = malloc(sizeof(page_descriptor));
+	page_desc->page_id = page_id;
+	page_desc->is_free = 1;
+	page_desc->is_marked_for_freeing = 0;
+	page_desc->page_memory = NULL;
+	page_desc->reading_threads = 0;
+	page_desc->writing_threads = 0;
+	page_desc->readers_waiting = 0;
+	page_desc->writers_waiting = 0;
+	pthread_cond_init(&(page_desc->reader_wait), NULL);
+	pthread_cond_init(&(page_desc->writer_wait), NULL);
+	initialize_llnode(&(page_desc->page_id_map_node));
+	initialize_llnode(&(page_desc->page_memory_map_node));
+	initialize_bstnode(&(page_desc->free_page_descs_node));
+	return page_desc;
+}
+
+void delete_page_descriptor(page_descriptor* page_desc)
+{
+	page_desc->is_free = 1;
+	page_desc->is_marked_for_freeing = 0;
+	page_desc->page_memory = NULL;
+	page_desc->reading_threads = 0;
+	page_desc->writing_threads = 0;
+	page_desc->readers_waiting = 0;
+	page_desc->writers_waiting = 0;
+	pthread_cond_destroy(&(page_desc->reader_wait));
+	pthread_cond_destroy(&(page_desc->writer_wait));
+}
 
 int compare_by_page_ids(const void* page_desc1, const void* page_desc2)
 {
