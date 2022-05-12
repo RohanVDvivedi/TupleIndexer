@@ -1,9 +1,7 @@
 
- * implement
-  * merge the pages page1 and its immediate next
-  * int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
-  * separator_parent_tuple is the tuple that separates pointers to page1 and page2 in the parent page
-  * returns 1 if the merge was performed, else 0 for a failure
+ * static analysis of merge interior pages
+ * implement get_child_page_id_from_index_tuple and set_child_page_id_in_index_tuple
+ * make page_id_width a uint8_t value
 
  * implement redistribute keys functions
 
