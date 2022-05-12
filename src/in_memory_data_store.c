@@ -8,53 +8,74 @@
 #include<stdlib.h>
 #include<sys/mman.h>
 
-#define IS_FREE_FLAG 0x00000001
+#include<hashmap.h>
+#include<bst.h>
 
-typedef struct page_state page_state;
-struct page_state
+typedef struct page_discriptor page_discriptor;
+struct page_discriptor
 {
-	int flags;
+	uint64_t page_id;
 
-	rwlock reader_writer_page_lock;
+	// if free then the page is only present in 
+	int is_free;
+
+	int is_marked_for_freeing;
+
+	// this will be NULL for a free page_desc
+	void* page_memory;
+
+	// below are the main attributes that enable locking
+
+	uint32_t reading_threads;
+
+	uint32_t writing_threads;
+
+	uint32_t readers_waiting;
+
+	uint32_t writers_waiting;
+
+	pthread_cond_t reader_waiting;
+
+	pthread_cond_t writer_waiting;
+
+	// below are the 2 embedded nodes used by page_id_map and page_memory_map
+
+	llnode page_id_map_node;
+
+	llnode page_memory_map_node;
 };
 
 typedef struct memory_store_context memory_store_context;
 struct memory_store_context
 {
+	pthread_mutex_t global_lock;
+
 	// constant
 	uint32_t page_size;
 
-	// constant
-	uint64_t pages_count;
+	// max page_id that this system has not yet seen
+	// page_descriptor for any page with page_id greater than this is not in the system
+	uint64_t max_un_seen_page_id;
 
-	// count
-	void* memory;	// points to mmap-ed memory of size (page_size * page_count)
+	// bst of free_pages, ordered by their page_ids
+	// this pages are are free (they dont have their page_memory populated)
+	// we always allocate new page from the least page_id from free_page_descs
+	// and release memory of greatest page_descs to OS, if it is equal to the max_un_seen_page_id - 1
+	bst free_page_descs;
 
-	// this lock protects free_pages_list and the flags inside each of the page_state
-	pthread_mutex_t free_pages_lock;
+	// there are 2 maps that store pages that are not free
+	// this allows us to get pages both using page_id (to acquire locks) and page_memory (to free locks)
 
-	linkedlist free_pages;
+	// page_id -> page_desc
+	hashmap page_id_map;
 
-	page_state page_states[];
+	// page_memeory -> page_desc
+	hashmap page_memory_map;
 };
-
-#define size_of_memory_store_context(pages_count) (sizeof(memory_store_context) + (pages_count * sizeof(page_state)))
 
 static int open_data_file(void* context)
 {
 	memory_store_context* cntxt = context;
-
-	pthread_mutex_init(&(cntxt->free_pages_lock), NULL);
-	initialize_linkedlist(&(cntxt->free_pages), 0);
-	cntxt->memory = mmap(NULL, cntxt->page_size * cntxt->pages_count, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE, -1, 0);
-	for(uint64_t i = 0; i < cntxt->pages_count; i++)
-	{
-		void* mem = cntxt->memory + (cntxt->page_size * i);
-		initialize_llnode(mem);
-		insert_tail_in_linkedlist(&(cntxt->free_pages), mem);
-		cntxt->page_states[i].flags |= IS_FREE_FLAG;
-		initialize_rwlock(&(cntxt->page_states[i].reader_writer_page_lock));
-	}
 
 	return 1;
 }
@@ -63,270 +84,63 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 {
 	memory_store_context* cntxt = context;
 
-	// we have to find this free page and return it
-	void* free_page_p = NULL;
-	uint64_t free_page_id = 0;
-
-	pthread_mutex_lock(&(cntxt->free_pages_lock));
-
-		// if the free_pages list is not empty, then get a free_page from it
-		if(!is_empty_linkedlist(&(cntxt->free_pages)))
-		{
-			// get a free page from the head of the free_pages list, and remove it
-			free_page_p = (void*) get_head_of_linkedlist(&(cntxt->free_pages));
-			remove_head_from_linkedlist(&(cntxt->free_pages));
-			
-			// calculate its index
-			free_page_id = ((uintptr_t)(free_page_p - cntxt->memory)) / cntxt->page_size;
-
-			// clear the free flag bit
-			cntxt->page_states[free_page_id].flags &= (~IS_FREE_FLAG);
-		}
-
-	pthread_mutex_unlock(&(cntxt->free_pages_lock));
-
-	// attempt to acquire a write lock and return free_page_id, if free_page_p is found
-	if(free_page_p != NULL)
-	{
-		(*page_id_returned) = free_page_id;
-
-		write_lock(&(cntxt->page_states[free_page_id].reader_writer_page_lock));
-	}
-
-	return free_page_p;
+	return NULL;
 }
 
 static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 {
 	memory_store_context* cntxt = context;
 
-	// page_id is out of bounds
-	if(page_id >= cntxt->pages_count)
-		return NULL;
-
-	// to check if the page that you requested is not free
-	// i.e. you can not directly acquire a lock to the free page (use the methof above)
-	int is_free_page = 0;
-
-	// calculate the page pointer, that you might have to return
-	void* page = cntxt->memory + (page_id * cntxt->page_size);
-
-	pthread_mutex_lock(&(cntxt->free_pages_lock));
-
-		// check if the page is free
-		is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
-
-	pthread_mutex_unlock(&(cntxt->free_pages_lock));
-
-	// you may acquire the lock only if it is not free
-	if(!is_free_page)
-	{
-		read_lock(&(cntxt->page_states[page_id].reader_writer_page_lock));
-
-		return page;
-	}
-	else
-		return NULL;
+	return NULL;
 }
 
 static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 {
 	memory_store_context* cntxt = context;
 
-	// page_id is out of bounds
-	if(page_id >= cntxt->pages_count)
-		return NULL;
-
-	// to check if the page that you requested is not free
-	// i.e. you can not directly acquire a lock to the free page (use the method above)
-	int is_free_page = 0;
-
-	// calculate the page pointer, that you might have to return
-	void* page = cntxt->memory + (page_id * cntxt->page_size);
-
-	pthread_mutex_lock(&(cntxt->free_pages_lock));
-
-		// check if the page is free
-		is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
-
-	pthread_mutex_unlock(&(cntxt->free_pages_lock));
-
-	// you may acquire the lock only if it is not free
-	if(!is_free_page)
-	{
-		write_lock(&(cntxt->page_states[page_id].reader_writer_page_lock));
-
-		return page;
-	}
-	else
-		return NULL;
+	return NULL;
 }
 
 static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
-	// invalid page pointer
-	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
-		return 0;
-
-	// calculate the page_id for the pg_ptr
-	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
-
-	// page_id is out of bounds
-	if(page_id >= cntxt->pages_count)
-		return 0;
-
-	// to check if the page that you requested is not free
-	// i.e. you can not have directly downgrade a lock to the free page
-	int is_free_page = 0;
-
-	pthread_mutex_lock(&(cntxt->free_pages_lock));
-
-		// check if the page is free
-		is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
-
-	pthread_mutex_unlock(&(cntxt->free_pages_lock));
-
-	if(!is_free_page)
-	{
-		downgrade_writer_to_reader_lock(&(cntxt->page_states[page_id].reader_writer_page_lock));
-		return 1;
-	}
-	else
-		return 0;
+	return 0;
 }
 
 static int release_reader_lock_on_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
-	// invalid page pointer
-	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
-		return 0;
-
-	// calculate the page_id for the pg_ptr
-	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
-
-	// page_id is out of bounds
-	if(page_id >= cntxt->pages_count)
-		return 0;
-
-	// to check if the page that you requested is not free
-	// i.e. you can not have directly acquired a lock to the free page (use the method above)
-	int is_free_page = 0;
-
-	pthread_mutex_lock(&(cntxt->free_pages_lock));
-
-		// check if the page is free
-		is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
-
-	pthread_mutex_unlock(&(cntxt->free_pages_lock));
-
-	if(!is_free_page)
-	{
-		read_unlock(&(cntxt->page_states[page_id].reader_writer_page_lock));
-		return 1;
-	}
-	else
-		return 0;
+	return 0;
 }
 
 static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified)
 {
 	memory_store_context* cntxt = context;
 
-	// invalid page pointer
-	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
-		return 0;
-
-	// calculate the page_id for the pg_ptr
-	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
-
-	// page_id is out of bounds
-	if(page_id >= cntxt->pages_count)
-		return 0;
-
-	// to check if the page that you requested is not free
-	// i.e. you can not have directly acquired a lock to the free page (use the method above)
-	int is_free_page = 0;
-
-	pthread_mutex_lock(&(cntxt->free_pages_lock));
-
-		// check if the page is free
-		is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
-
-	pthread_mutex_unlock(&(cntxt->free_pages_lock));
-
-	if(!is_free_page)
-	{
-		write_unlock(&(cntxt->page_states[page_id].reader_writer_page_lock));
-		return 1;
-	}
-	else
-		return 0;
+	return 0;
 }
 
 static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
-	// invalid page pointer
-	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
-		return 0;
+	return 0;
+}
 
-	// calculate the page_id for the pg_ptr
-	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
+static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
+{
+	memory_store_context* cntxt = context;
 
-	// page_id is out of bounds
-	if(page_id >= cntxt->pages_count)
-		return 0;
-
-	// to check if the page that you requested was freed ( after pthread_mutex_unlock(&(cntxt->free_pages_lock)) call )
-	// i.e. you can not free an already freed page
-	int was_page_freed = 0;
-
-	pthread_mutex_lock(&(cntxt->free_pages_lock));
-
-		// check if the page is free
-		int is_free_page = (cntxt->page_states[page_id].flags & IS_FREE_FLAG);
-
-		// if the page is not free, free it
-		if(!is_free_page)
-		{
-			// insert the page to the head of the free_pages list
-			insert_head_in_linkedlist(&(cntxt->free_pages), pg_ptr);
-
-			// set the free flag bit
-			cntxt->page_states[page_id].flags |= IS_FREE_FLAG;
-
-			was_page_freed = 1;
-		}
-
-	pthread_mutex_unlock(&(cntxt->free_pages_lock));
-
-	// if the page was freed, then release its lock
-	if(was_page_freed)
-	{
-		write_unlock(&(cntxt->page_states[page_id].reader_writer_page_lock));
-		return 1;
-	}
-	else
-		return 0;
+	return 0;
 }
 
 uint64_t get_page_id_for_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
-	// invalid page pointer
-	if( (((uintptr_t)(pg_ptr - cntxt->memory)) % cntxt->page_size) != 0 )
-		return 0;
-
-	// calculate the page_id for the pg_ptr
-	uint64_t page_id = ((uintptr_t)(pg_ptr - cntxt->memory)) / cntxt->page_size;
-
-	return page_id;
+	return 0;
 }
 
 static int force_write_to_disk(void* context, uint64_t page_id){ /* NOOP */ return 1;}
@@ -335,14 +149,10 @@ static int close_data_file(void* context)
 {
 	memory_store_context* cntxt = context;
 
-	pthread_mutex_destroy(&(cntxt->free_pages_lock));
-	munmap(cntxt->memory, cntxt->page_size * cntxt->pages_count);
-	for(uint64_t i = 0; i < cntxt->pages_count; i++)
-		deinitialize_rwlock(&(cntxt->page_states[i].reader_writer_page_lock));
 	return 1;
 }
 
-data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint64_t pages_count)
+data_access_methods* get_new_in_memory_data_store(uint32_t page_size)
 {
 	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
 	dam_p->open_data_file = open_data_file;
@@ -353,15 +163,16 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint64_t p
 	dam_p->release_reader_lock_on_page = release_reader_lock_on_page;
 	dam_p->release_writer_lock_on_page = release_writer_lock_on_page;
 	dam_p->release_writer_lock_and_free_page = release_writer_lock_and_free_page;
+	dam_p->release_reader_lock_and_free_page = release_reader_lock_and_free_page;
 	dam_p->get_page_id_for_page = get_page_id_for_page;
 	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
 	dam_p->page_size = page_size;
 	dam_p->page_id_width = 64;
-	dam_p->context = malloc(size_of_memory_store_context(pages_count));
+	dam_p->NULL_PAGE_ID = (((uint64_t)(0))-1);	// NULL_PAGE_ID is all 1s
+	dam_p->context = malloc(sizeof(memory_store_context));
 	
 	((memory_store_context*)(dam_p->context))->page_size = page_size;
-	((memory_store_context*)(dam_p->context))->pages_count = pages_count;
 
 	// on success return the data access methods
 	if(dam_p->open_data_file(dam_p->context))
