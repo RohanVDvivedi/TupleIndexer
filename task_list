@@ -1,5 +1,5 @@
 
- * implement get_child_page_id_from_index_tuple and set_child_page_id_in_index_tuple
+ * use get_child_page_id_from_index_tuple and set_child_page_id_in_index_tuple in leaf and interior page util functions
 
  * implement redistribute keys functions
 
