@@ -1,18 +1,15 @@
 #include<in_memory_data_store.h>
 
-#include<rwlock.h>
-
-#include<hashmap.h>
-#include<linkedlist.h>
-
-#include<stdlib.h>
-#include<sys/mman.h>
-
 #include<hashmap.h>
 #include<bst.h>
+#include<linkedlist.h>
 
-typedef struct page_discriptor page_discriptor;
-struct page_discriptor
+#include<stddef.h>
+#include<stdlib.h>
+#include<pthread.h>
+
+typedef struct page_descriptor page_descriptor;
+struct page_descriptor
 {
 	uint64_t page_id;
 
@@ -43,7 +40,31 @@ struct page_discriptor
 	llnode page_id_map_node;
 
 	llnode page_memory_map_node;
+
+	// embedded node for free_page_descs
+
+	bstnode free_page_descs_node;
 };
+
+int compare_by_page_ids(const void* page_desc1, const void* page_desc2)
+{
+	if(((const page_descriptor*)(page_desc1))->page_id == ((const page_descriptor*)(page_desc1))->page_id)
+		return 0;
+	else if(((const page_descriptor*)(page_desc1))->page_id > ((const page_descriptor*)(page_desc1))->page_id)
+		return 1;
+	else
+		return -1;
+}
+
+unsigned int hash_on_page_id(const void* page_desc1)
+{
+	return (unsigned int)(((const page_descriptor*)(page_desc1))->page_id);
+}
+
+unsigned int hash_on_page_memory(const void* page_desc1)
+{
+	return (unsigned int)(((const page_descriptor*)(page_desc1))->page_memory);
+}
 
 typedef struct memory_store_context memory_store_context;
 struct memory_store_context
@@ -54,6 +75,7 @@ struct memory_store_context
 	uint32_t page_size;
 
 	// MAX_PAGE_ID, no page_id will be allotted to any page above this number
+	// constant
 	uint64_t MAX_PAGE_ID;
 
 	// max page_id that this system has not yet seen
@@ -70,10 +92,10 @@ struct memory_store_context
 	uint64_t free_pages_count;
 
 	// total number of pages in the system
-	// the number of pages in page_id_map = total_pages - free_pages_count
+	// the number of pages in page_id_map = total_pages
 	uint64_t total_pages_count;
 
-	// there are 2 maps that store pages that are not free
+	// there are 2 maps that store page_desc
 	// this allows us to get pages both using page_id (to acquire locks) and page_memory (to free locks)
 
 	// page_id -> page_desc
@@ -83,9 +105,19 @@ struct memory_store_context
 	hashmap page_memory_map;
 };
 
+#define MIN_BUCKET_COUNT 128
+
 static int open_data_file(void* context)
 {
 	memory_store_context* cntxt = context;
+
+	pthread_mutex_init(&(cntxt->global_lock), NULL);
+	cntxt->max_un_seen_page_id = 0;
+	cntxt->free_pages_count = 0;
+	cntxt->total_pages_count = 0;
+	initialize_bst(&(cntxt->free_page_descs), RED_BLACK_TREE, compare_by_page_ids, offsetof(page_descriptor, free_page_descs_node));
+	initialize_hashmap(&(cntxt->page_id_map), ELEMENTS_AS_LINKEDLIST, MIN_BUCKET_COUNT, hash_on_page_id, compare_by_page_ids, offsetof(page_descriptor, page_id_map_node));
+	initialize_hashmap(&(cntxt->page_memory_map), ELEMENTS_AS_LINKEDLIST, MIN_BUCKET_COUNT, hash_on_page_memory, compare_by_page_ids, offsetof(page_descriptor, page_memory_map_node));
 
 	return 1;
 }
@@ -158,6 +190,13 @@ static int force_write_to_disk(void* context, uint64_t page_id){ /* NOOP */ retu
 static int close_data_file(void* context)
 {
 	memory_store_context* cntxt = context;
+
+	pthread_mutex_destroy(&(cntxt->global_lock));
+	cntxt->max_un_seen_page_id = 0;
+	cntxt->free_pages_count = 0;
+	cntxt->total_pages_count = 0;
+	deinitialize_hashmap(&(cntxt->page_id_map));
+	deinitialize_hashmap(&(cntxt->page_memory_map));
 
 	return 1;
 }
