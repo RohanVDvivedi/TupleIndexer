@@ -384,3 +384,8 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 	// return parent_insert
 	return parent_insert;
 }
+
+int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
+{
+	
+}
