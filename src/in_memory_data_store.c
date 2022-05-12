@@ -111,25 +111,37 @@ static void acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc,
 }
 
 // unsafe function, must be called within lock on global_lock
-static void release_read_lock_on_page_memory_unsafe(page_descriptor* page_desc)
+static int release_read_lock_on_page_memory_unsafe(page_descriptor* page_desc)
 {
+	// if the page was not locked for read, then return with a failure
+	if(page_desc->reading_threads == 0)
+		return 0;
+
 	// grab your reader lock and exit
 	page_desc->reading_threads--;
 
 	// wake 1 next thread, if you are the last reader, this may be a reader or a writer
 	if(page_desc->reading_threads == 0)
 		pthread_cond_signal(&(page_desc->block_wait));
+
+	return 1;
 }
 
 // unsafe function, must be called within lock on global_lock
-static void release_write_lock_on_page_memory_unsafe(page_descriptor* page_desc)
+static int release_write_lock_on_page_memory_unsafe(page_descriptor* page_desc)
 {
+	// if the page was not locked for write, then return with a failure
+	if(page_desc->writing_threads == 0)
+		return 0;
+
 	// grab your writer lock and exit
 	page_desc->writing_threads--;
 
 	// wake 1 next thread, this may be a reader or a writer
 	// page_desc->writing_threads must be 0 here
 	pthread_cond_signal(&(page_desc->block_wait));
+
+	return 1;
 }
 
 static void* allocate_page(uint32_t page_size)
