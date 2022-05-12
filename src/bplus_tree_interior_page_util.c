@@ -1,6 +1,8 @@
 #include<bplus_tree_interior_page_util.h>
 
 #include<sorted_packed_page_util.h>
+#include<bplus_tree_interior_page_header.h>
+#include<bplus_tree_index_tuple_functions_util.h>
 
 #include<page_layout.h>
 #include<tuple.h>
@@ -38,44 +40,11 @@ uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, con
 	if(index == -1)
 		return get_least_keys_page_id_of_bplus_tree_interior_page(page, bpttd_p);
 
-	// result child_page_id
-	uint64_t child_page_id = 0;
-
 	// tuple of the interior page that is at index
 	const void* index_tuple = get_nth_tuple(page, bpttd_p->page_size, bpttd_p->index_def, index);
 
-	// populate child_id using the appropriate element at the end of the tuple
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-		{
-			uint8_t cpid;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_tuple, &cpid);
-			child_page_id = cpid;
-			break;
-		}
-		case 2:
-		{
-			uint16_t cpid;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_tuple, &cpid);
-			child_page_id = cpid;
-			break;
-		}
-		case 4:
-		{
-			uint32_t cpid;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_tuple, &cpid);
-			child_page_id = cpid;
-			break;
-		}
-		case 8:
-		{
-			uint64_t cpid;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_tuple, &cpid);
-			child_page_id = cpid;
-			break;
-		}
-	}
+	// get child_page_id of the index tuple
+	uint64_t child_page_id = get_child_page_id_from_index_tuple(index_tuple, bpttd_p);
 
 	return child_page_id;
 }
@@ -299,40 +268,8 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 	const void* first_tuple_page2 = get_nth_tuple(page2, bpttd_p->page_size, bpttd_p->index_def, 0);
 	uint32_t size_of_first_tuple_page2 = get_tuple_size(bpttd_p->index_def, first_tuple_page2);
 
-	uint64_t page2_least_keys_page_id = bpttd_p->NULL_PAGE_ID;
-
 	// get least_keys_page_id for page2 from its first tuple
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-		{
-			uint8_t p2lkpid;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, first_tuple_page2, &p2lkpid);
-			page2_least_keys_page_id = p2lkpid;
-			break;
-		}
-		case 2:
-		{
-			uint16_t p2lkpid;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, first_tuple_page2, &p2lkpid);
-			page2_least_keys_page_id = p2lkpid;
-			break;
-		}
-		case 4:
-		{
-			uint32_t p2lkpid;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, first_tuple_page2, &p2lkpid);
-			page2_least_keys_page_id = p2lkpid;
-			break;
-		}
-		case 8:
-		{
-			uint64_t p2lkpid;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, first_tuple_page2, &p2lkpid);
-			page2_least_keys_page_id = p2lkpid;
-			break;
-		}
-	}
+	uint64_t page2_least_keys_page_id = get_child_page_id_from_index_tuple(first_tuple_page2, bpttd_p);
 
 	// set the least_keys_page_id for page2
 	set_least_keys_page_id_of_bplus_tree_interior_page(page2, page2_least_keys_page_id, bpttd_p);
@@ -343,33 +280,7 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 	memmove(parent_insert, first_tuple_page2, sizeof(char) * size_of_first_tuple_page2);
 
 	// now insert the pointer to the page2 in this parent tuple
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-		{
-			uint8_t p2id = page2_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, parent_insert, &p2id, 1);
-			break;
-		}
-		case 2:
-		{
-			uint16_t p2id = page2_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, parent_insert, &p2id, 2);
-			break;
-		}
-		case 4:
-		{
-			uint32_t p2id = page2_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, parent_insert, &p2id, 4);
-			break;
-		}
-		case 8:
-		{
-			uint64_t p2id = page2_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, parent_insert, &p2id, 8);
-			break;
-		}
-	}
+	set_child_page_id_in_index_tuple(parent_insert, page2_id, bpttd_p);
 
 	// now you may, delete the first tuple of page2
 	delete_in_sorted_packed_page(
@@ -392,40 +303,7 @@ int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_p
 		return 0;
 
 	// ensure that the separator_parent_tuple child_page_id is equal to the page2_id
-	uint64_t separator_parent_tuple_child_page_id = bpttd_p->NULL_PAGE_ID;
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-		{
-			uint8_t sptcpi;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_parent_tuple, &sptcpi);
-			separator_parent_tuple_child_page_id = sptcpi;
-			break;
-		}
-		case 2:
-		{
-			uint16_t sptcpi;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_parent_tuple, &sptcpi);
-			separator_parent_tuple_child_page_id = sptcpi;
-			break;
-		}
-		case 4:
-		{
-			uint32_t sptcpi;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_parent_tuple, &sptcpi);
-			separator_parent_tuple_child_page_id = sptcpi;
-			break;
-		}
-		case 8:
-		{
-			uint64_t sptcpi;
-			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_parent_tuple, &sptcpi);
-			separator_parent_tuple_child_page_id = sptcpi;
-			break;
-		}
-	}
-
-	if(separator_parent_tuple_child_page_id != page2_id)
+	if(get_child_page_id_from_index_tuple(separator_parent_tuple, bpttd_p) != page2_id)
 		return 0;
 
 	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
@@ -461,33 +339,7 @@ int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_p
 
 	// update child_page_id of separator_tuple with the value from least_keys_page_id
 	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
-	switch(bpttd_p->page_id_width)
-	{
-		case 1 :
-		{
-			uint8_t stcpi = separator_tuple_child_page_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_tuple, &stcpi, 1);
-			break;
-		}
-		case 2 :
-		{
-			uint16_t stcpi = separator_tuple_child_page_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_tuple, &stcpi, 2);
-			break;
-		}
-		case 4 :
-		{
-			uint32_t stcpi = separator_tuple_child_page_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_tuple, &stcpi, 4);
-			break;
-		}
-		case 8 :
-		{
-			uint64_t stcpi = separator_tuple_child_page_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_tuple, &stcpi, 8);
-			break;
-		}
-	}
+	set_child_page_id_in_index_tuple(separator_tuple, separator_tuple_child_page_id, bpttd_p);
 
 	// insert separator tuple in the page1, at the end
 	insert_at_in_sorted_packed_page(

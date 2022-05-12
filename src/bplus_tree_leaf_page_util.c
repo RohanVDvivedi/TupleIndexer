@@ -2,6 +2,7 @@
 
 #include<sorted_packed_page_util.h>
 #include<bplus_tree_leaf_page_header.h>
+#include<bplus_tree_index_tuple_functions_util.h>
 
 #include<page_layout.h>
 #include<tuple.h>
@@ -281,33 +282,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, parent_insert, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 	// now insert the pointer to the page2 in this parent tuple
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-		{
-			uint8_t p2id = page2_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, parent_insert, &p2id, 1);
-			break;
-		}
-		case 2:
-		{
-			uint16_t p2id = page2_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, parent_insert, &p2id, 2);
-			break;
-		}
-		case 4:
-		{
-			uint32_t p2id = page2_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, parent_insert, &p2id, 4);
-			break;
-		}
-		case 8:
-		{
-			uint64_t p2id = page2_id;
-			set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, parent_insert, &p2id, 8);
-			break;
-		}
-	}
+	set_child_page_id_in_index_tuple(parent_insert, page2_id, bpttd_p);
 
 	// release lock on the page2, and mark it as modified
 	dam_p->release_writer_lock_on_page(dam_p->context, page2, 1);
