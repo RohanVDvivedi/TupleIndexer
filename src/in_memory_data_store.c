@@ -93,6 +93,7 @@ struct memory_store_context
 
 	// total number of pages in the system
 	// the number of pages in page_id_map = total_pages
+	// the number of pages in page_memory_map = total_pages - free_pages_count
 	uint64_t total_pages_count;
 
 	// there are 2 maps that store page_desc
@@ -101,7 +102,7 @@ struct memory_store_context
 	// page_id -> page_desc
 	hashmap page_id_map;
 
-	// page_memeory -> page_desc
+	// page_memory -> page_desc
 	hashmap page_memory_map;
 };
 
