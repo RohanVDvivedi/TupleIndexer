@@ -53,6 +53,9 @@ struct memory_store_context
 	// constant
 	uint32_t page_size;
 
+	// MAX_PAGE_ID, no page_id will be allotted to any page above this number
+	uint64_t MAX_PAGE_ID;
+
 	// max page_id that this system has not yet seen
 	// page_descriptor for any page with page_id greater than this is not in the system
 	uint64_t max_un_seen_page_id;
@@ -62,6 +65,13 @@ struct memory_store_context
 	// we always allocate new page from the least page_id from free_page_descs
 	// and release memory of greatest page_descs to OS, if it is equal to the max_un_seen_page_id - 1
 	bst free_page_descs;
+
+	// total number of pages in free_pages_desc
+	uint64_t free_pages_count;
+
+	// total number of pages in the system
+	// the number of pages in page_id_map = total_pages - free_pages_count
+	uint64_t total_pages_count;
 
 	// there are 2 maps that store pages that are not free
 	// this allows us to get pages both using page_id (to acquire locks) and page_memory (to free locks)
@@ -152,8 +162,12 @@ static int close_data_file(void* context)
 	return 1;
 }
 
-data_access_methods* get_new_in_memory_data_store(uint32_t page_size)
+data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t page_id_width)
 {
+	// check for invalud page_width
+	if(!(page_id_width == 1 || page_id_width == 2 || page_id_width == 4 || page_id_width == 8))
+		return NULL;
+
 	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
 	dam_p->open_data_file = open_data_file;
 	dam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
@@ -167,12 +181,37 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size)
 	dam_p->get_page_id_for_page = get_page_id_for_page;
 	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
+
 	dam_p->page_size = page_size;
-	dam_p->page_id_width = 64;
-	dam_p->NULL_PAGE_ID = (((uint64_t)(0))-1);	// NULL_PAGE_ID is all 1s
+	dam_p->page_id_width = page_id_width;
+	switch(page_id_width)
+	{
+		case 1:
+		{
+			dam_p->NULL_PAGE_ID = ((uint8_t)(-1));	// NULL_PAGE_ID is 0xff
+			break;
+		}
+		case 2:
+		{
+			dam_p->NULL_PAGE_ID = ((uint16_t)(-1));	// NULL_PAGE_ID is 0xffff
+			break;
+		}
+		case 4:
+		{
+			dam_p->NULL_PAGE_ID = ((uint32_t)(-1));	// NULL_PAGE_ID is 0xffffffff 
+			break;
+		}
+		case 8:
+		default:
+		{
+			dam_p->NULL_PAGE_ID = ((uint64_t)(-1));	// NULL_PAGE_ID is 0xffffffffffffffff
+			break;
+		}
+	}
 	dam_p->context = malloc(sizeof(memory_store_context));
 	
 	((memory_store_context*)(dam_p->context))->page_size = page_size;
+	((memory_store_context*)(dam_p->context))->MAX_PAGE_ID = dam_p->NULL_PAGE_ID;
 
 	// on success return the data access methods
 	if(dam_p->open_data_file(dam_p->context))
