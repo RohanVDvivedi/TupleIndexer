@@ -391,6 +391,43 @@ int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_p
 	if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) != page2_id)
 		return 0;
 
+	// ensure that the separator_parent_tuple child_page_id is equal to the page2_id
+	uint64_t separator_parent_tuple_child_page_id = bpttd_p->NULL_PAGE_ID;
+	switch(bpttd_p->page_id_width)
+	{
+		case 1:
+		{
+			uint8_t sptcpi;
+			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_parent_tuple, &sptcpi);
+			separator_parent_tuple_child_page_id = sptcpi;
+			break;
+		}
+		case 2:
+		{
+			uint16_t sptcpi;
+			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_parent_tuple, &sptcpi);
+			separator_parent_tuple_child_page_id = sptcpi;
+			break;
+		}
+		case 4:
+		{
+			uint32_t sptcpi;
+			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_parent_tuple, &sptcpi);
+			separator_parent_tuple_child_page_id = sptcpi;
+			break;
+		}
+		case 8:
+		{
+			uint64_t sptcpi;
+			copy_element_from_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, separator_parent_tuple, &sptcpi);
+			separator_parent_tuple_child_page_id = sptcpi;
+			break;
+		}
+	}
+
+	if(separator_parent_tuple_child_page_id == page2_id)
+		return 0;
+
 	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
 
 	// check if a merge can be performed
