@@ -1,12 +1,9 @@
-
- * use get_child_page_id_from_index_tuple and set_child_page_id_in_index_tuple in leaf and interior page util functions
-
- * implement redistribute keys functions
-
  * reimplement in_memory_data_store
   * use a single lock and  embedd a reader writer lock inside of it, each page uses a single global mutex for the complete locking mechanism this will keep things simple
 
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
    * implement insert, search and delete functionality
+
+ * implement redistribute keys functions
 
  * provide a way to allow additional default header in the implementation
