@@ -59,7 +59,7 @@ struct data_access_methods
 
 	// number of bytes in the page id
 	// this can be 1, 2, 4, or 8
-	int page_id_width;
+	uint8_t page_id_width;
 
 	// a page with this page_id number should/would never be allocated or used by the system
 	// this page_id implies something similar to a NULL pointer

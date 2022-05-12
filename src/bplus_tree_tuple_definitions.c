@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, int page_id_width, uint64_t NULL_PAGE_ID)
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID)
 {
 	// basic parameter check
 	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || record_def->element_count == 0)
