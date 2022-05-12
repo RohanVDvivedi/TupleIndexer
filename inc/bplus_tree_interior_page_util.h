@@ -39,6 +39,6 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 // page2 is not freed by the function, you MUST free this page if this function returns a 1 (stating a successful merge)
 // if this function returns a 1, then separator_tuple must be deleted from the parent page
-int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p);
+int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p);
 
 #endif
