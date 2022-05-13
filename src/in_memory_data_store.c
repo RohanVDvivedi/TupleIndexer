@@ -14,7 +14,8 @@ struct page_descriptor
 	// remains constant through out the lifetime of the page_descriptor
 	uint64_t page_id;
 
-	// if free then the page is only present in 
+	// if free then the page is present in free_page_descs
+	// and page_memory = NULL
 	int is_free;
 
 	int is_marked_for_freeing;
@@ -45,7 +46,7 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id)
 {
 	page_descriptor* page_desc = malloc(sizeof(page_descriptor));
 	page_desc->page_id = page_id;
-	page_desc->is_free = 1;
+	page_desc->is_free = 1;	// because initially page_memory = NULL
 	page_desc->is_marked_for_freeing = 0;
 	page_desc->page_memory = NULL;
 	page_desc->reading_threads = 0;
@@ -254,11 +255,55 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 {
 	memory_store_context* cntxt = context;
 
+	void* page_ptr = NULL;
+
 	pthread_mutex_lock(&(cntxt->global_lock));
+
+		// get page_descriptor from free_page_descs, with the lowest page_id
+		page_descriptor* page_desc = (page_descriptor*)find_smallest_in_bst(&(cntxt->free_page_descs));
+
+		if(page_desc != NULL)
+		{
+			*page_id_returned = page_desc->page_id;
+
+			// if a page_desc is found, then then remove it from the free_page_descs
+			remove_from_bst(&(cntxt->free_page_descs), page_desc);
+		}
+		else
+		{
+			if(cntxt->max_un_seen_page_id < cntxt->MAX_PAGE_ID)
+			{
+				*page_id_returned = cntxt->max_un_seen_page_id++;
+
+				// create a new page_descriptor for the new unseen page
+				page_desc = get_new_page_descriptor(*page_id_returned);
+
+				// insert this new page descriptor in the page_id_map
+				insert_in_hashmap(&(cntxt->page_id_map), page_desc);
+			}
+		}
+
+		// we have a valid BUT free page descriptor
+		if(page_desc != NULL)
+		{
+			// allocate page memory for this free page descriptor
+			page_desc->page_memory = allocate_page(context->page_size);
+			page_ptr = page_desc->page_memory;
+
+			// this page_descriptor has page_memory associated with it, hopefully if the call to malloc doesn't fail
+			page_desc->is_free = 0;
+			page_desc->is_marked_for_freeing = 0;
+
+			// insert this page in the page_memory_map
+			insert_in_hashmap(&(cntxt->page_memory_map), page_desc);
+
+			// get write lock on this page, this call will not fail here at all
+			acquire_write_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
+		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
-	return NULL;
+	return page_ptr;
 }
 
 static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
