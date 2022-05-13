@@ -251,6 +251,30 @@ static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 		if(page_desc != NULL && (!page_desc->is_free))
 		{
 			int lock_acquired = acquire_read_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
+
+			if(lock_acquired)
+				page_ptr = page_desc->page_memory;
+		}
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
+
+	return page_ptr;
+}
+
+static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
+{
+	memory_store_context* cntxt = context;
+
+	void* page_ptr = NULL;
+
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
+
+		// attempt to acquire a lock if such a page_descriptor exists and is not free
+		if(page_desc != NULL && (!page_desc->is_free))
+		{
+			int lock_acquired = acquire_write_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
 			
 			if(lock_acquired)
 				page_ptr = page_desc->page_memory;
@@ -258,18 +282,7 @@ static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
-	return NULL;
-}
-
-static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
-{
-	memory_store_context* cntxt = context;
-
-	pthread_mutex_lock(&(cntxt->global_lock));
-
-	pthread_mutex_unlock(&(cntxt->global_lock));
-
-	return NULL;
+	return page_ptr;
 }
 
 static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr)
