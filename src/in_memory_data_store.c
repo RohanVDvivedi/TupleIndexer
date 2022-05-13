@@ -97,8 +97,13 @@ static unsigned int hash_on_page_memory(const void* page_desc1)
 static int acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
 {
 	// wait until there are writers on this page
-	while(page_desc->writing_threads > 0)
+	// quit this loop if the page is freed or is marked to be freed
+	while(page_desc->writing_threads > 0 && !page_desc->is_free && !page_desc->is_marked_for_freeing)
 		pthread_cond_wait(&(page_desc->block_wait), global_lock);
+
+	// fail to acquire the lock if the page is freed in the mean while OR is marked to be freed, while we may have waited on the condition variable
+	if(page_desc->is_free || page_desc->is_marked_for_freeing)
+		return 0;
 
 	// increment reader thread count
 	page_desc->reading_threads++;
@@ -115,8 +120,12 @@ static int acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, p
 static int acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
 {
 	// wait until there are readers and writers on this page
-	while(page_desc->writing_threads > 0 || page_desc->reading_threads > 0)
+	while((page_desc->writing_threads > 0 || page_desc->reading_threads > 0) && !page_desc->is_free && !page_desc->is_marked_for_freeing)
 		pthread_cond_wait(&(page_desc->block_wait), global_lock);
+
+	// fail to acquire the lock if the page is freed in the meanwhile OR is marked to be freed, while we may have waited on the condition variable
+	if(page_desc->is_free || page_desc->is_marked_for_freeing)
+		return 0;
 
 	// increment writer thread count
 	page_desc->writing_threads++;
