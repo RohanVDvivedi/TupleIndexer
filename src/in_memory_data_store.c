@@ -289,7 +289,7 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 		if(page_desc != NULL)
 		{
 			// allocate page memory for this free page descriptor
-			page_desc->page_memory = allocate_page(context->page_size);
+			page_desc->page_memory = allocate_page(cntxt->page_size);
 			page_ptr = page_desc->page_memory;
 
 			// this page_descriptor has page_memory associated with it, hopefully if the call to malloc doesn't fail
