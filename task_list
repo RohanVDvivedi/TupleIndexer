@@ -1,5 +1,4 @@
- * reimplement in_memory_data_store
-  * use a single lock and  embedd a reader writer lock inside of it, each page uses a single global mutex for the complete locking mechanism this will keep things simple
+ * static analysis in_memory_data_store
 
  * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
    * implement insert, search and delete functionality
