@@ -470,14 +470,14 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 
 				// wake up all the threads who are blocked and are waiting
 				if(page_desc->waiting_threads > 0)
-					pthread_cond_broadcast(&(cntxt->block_wait));
+					pthread_cond_broadcast(&(page_desc->block_wait));
 
 				// wait until there are no threads waiting for lock
 				while(page_desc->waiting_threads > 0)
 					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
 
 				// make sure that no one else freed the page_desc while we waited
-				if(page_desc->is_free == 0 && page_desc->is_marked_for_freeing = 1) // this condition must be true here, because no one else can hold either of read lock or write lock
+				if(page_desc->is_free == 0 && page_desc->is_marked_for_freeing == 1) // this condition must be true here, because no one else can hold either of read lock or write lock
 				{
 					// free, only if there are no threads holding locks on this page
 					if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition must be true here, because no one else can hold either of read lock or write lock
@@ -493,6 +493,28 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 
 						// insert page_desc in free_page_descs
 						insert_in_bst(&(cntxt->free_page_descs), page_desc);
+
+						// loop to delete trailing page_descriptors
+						while(1)
+						{
+							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
+
+							// check if this page_descriptor is a trailing (the last of free page_descriptor)
+							if(trailing->page_id + 1 == cntxt->max_un_seen_page_id)
+							{
+								// remove the trailing page_descriptor
+								remove_from_bst(&(cntxt->free_page_descs), trailing);
+								remove_from_hashmap(&(cntxt->page_id_map), trailing);
+
+								// update the max_un_seen_page_id
+								cntxt->max_un_seen_page_id = trailing->page_id;
+
+								// now we can safely delete the page_descriptor
+								delete_page_descriptor(trailing);
+							}
+							else
+								break;
+						}
 					}
 				}
 			}
@@ -525,14 +547,14 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 
 				// wake up all the threads who are blocked and are waiting
 				if(page_desc->waiting_threads > 0)
-					pthread_cond_broadcast(&(cntxt->block_wait));
+					pthread_cond_broadcast(&(page_desc->block_wait));
 
 				// wait until there are no threads waiting for lock
 				while(page_desc->waiting_threads > 0)
 					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
 
 				// make sure that no one else freed the page_desc while we waited
-				if(page_desc->is_free == 0 && page_desc->is_marked_for_freeing = 1) // this condition may be true here, if no other reader came to unlock while we waited
+				if(page_desc->is_free == 0 && page_desc->is_marked_for_freeing == 1) // this condition may be true here, if no other reader came to unlock while we waited
 				{
 					// free, only if there are no threads holding locks on this page
 					if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition may not be true here, there are readers on this page
@@ -548,6 +570,28 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 
 						// insert page_desc in free_page_descs
 						insert_in_bst(&(cntxt->free_page_descs), page_desc);
+
+						// loop to delete trailing page_descriptors
+						while(1)
+						{
+							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
+
+							// check if this page_descriptor is a trailing (the last of free page_descriptor)
+							if(trailing->page_id + 1 == cntxt->max_un_seen_page_id)
+							{
+								// remove the trailing page_descriptor
+								remove_from_bst(&(cntxt->free_page_descs), trailing);
+								remove_from_hashmap(&(cntxt->page_id_map), trailing);
+
+								// update the max_un_seen_page_id
+								cntxt->max_un_seen_page_id = trailing->page_id;
+
+								// now we can safely delete the page_descriptor
+								delete_page_descriptor(trailing);
+							}
+							else
+								break;
+						}
 					}
 				}
 			}
