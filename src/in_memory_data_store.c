@@ -237,7 +237,18 @@ static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 {
 	memory_store_context* cntxt = context;
 
+	void* page_ptr = NULL;
+
 	pthread_mutex_lock(&(cntxt->global_lock));
+
+		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
+
+		// attempt to acquire a lock if such a page_descriptor exists and is not free
+		if(page_desc != NULL && (!page_desc->is_free))
+		{
+			acquire_read_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
+			page_ptr = page_desc->page_memory;
+		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
@@ -318,10 +329,10 @@ uint64_t get_page_id_for_page(void* context, void* pg_ptr)
 
 	pthread_mutex_lock(&(cntxt->global_lock));
 
-	const page_descriptor* page_desc = find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
+		const page_descriptor* page_desc = find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
 
-	if(page_desc)
-		page_id = page_desc->page_id;
+		if(page_desc)
+			page_id = page_desc->page_id;
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
