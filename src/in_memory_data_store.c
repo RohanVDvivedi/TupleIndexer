@@ -369,7 +369,7 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
-	return 0;
+	return lock_downgraded;
 }
 
 static int release_reader_lock_on_page(void* context, void* pg_ptr)
@@ -387,7 +387,7 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
-	return 0;
+	return lock_released;
 }
 
 static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified)
@@ -405,7 +405,7 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
-	return 0;
+	return lock_released;
 }
 
 static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
