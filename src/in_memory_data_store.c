@@ -468,6 +468,10 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 				// mark page for freeing
 				page_desc->is_marked_for_freeing = 1;
 
+				// wake up all the threads who are blocked and are waiting
+				if(page_desc->waiting_threads > 0)
+					pthread_cond_broadcast(&(cntxt->block_wait));
+
 				// wait until there are no threads waiting for lock
 				while(page_desc->waiting_threads > 0)
 					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
@@ -514,6 +518,10 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 			{
 				// mark page for freeing
 				page_desc->is_marked_for_freeing = 1;
+
+				// wake up all the threads who are blocked and are waiting
+				if(page_desc->waiting_threads > 0)
+					pthread_cond_broadcast(&(cntxt->block_wait));
 
 				// wait until there are no threads waiting for lock
 				while(page_desc->waiting_threads > 0)
