@@ -412,24 +412,6 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 	return lock_downgraded;
 }
 
-static int release_reader_lock_on_page(void* context, void* pg_ptr)
-{
-	memory_store_context* cntxt = context;
-
-	int lock_released = 0;
-
-	pthread_mutex_lock(&(cntxt->global_lock));
-
-		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
-
-		if(page_desc)
-			lock_released = release_read_lock_on_page_memory_unsafe(page_desc);
-
-	pthread_mutex_unlock(&(cntxt->global_lock));
-
-	return lock_released;
-}
-
 static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified)
 {
 	memory_store_context* cntxt = context;
@@ -442,6 +424,72 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 
 		if(page_desc)
 			lock_released = release_write_lock_on_page_memory_unsafe(page_desc);
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
+
+	return lock_released;
+}
+
+static int release_reader_lock_on_page(void* context, void* pg_ptr)
+{
+	memory_store_context* cntxt = context;
+
+	int lock_released = 0;
+
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
+
+		if(page_desc)
+		{
+			lock_released = release_read_lock_on_page_memory_unsafe(page_desc);
+
+			// if lock was released
+			if(lock_released)
+			{
+				// we need to check if the page_desc, needs to be freed
+				if(page_desc->is_marked_for_freeing == 1) // this condition may be true here, if the page was marked to be freed by another reader
+				{
+					// free, only if there are no threads holding locks on this page, AND no thread is waiting to release locks on this page
+					if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0 && page_desc->waiting_threads == 0)
+					{
+						// remove page_desc from page_memory_map
+						remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+
+						// deallocate page and mark page for freeing
+						deallocate_page(page_desc->page_memory);
+						page_desc->page_memory = NULL;
+						page_desc->is_free = 1;
+						page_desc->is_marked_for_freeing = 0;
+
+						// insert page_desc in free_page_descs
+						insert_in_bst(&(cntxt->free_page_descs), page_desc);
+
+						// loop to delete trailing page_descriptors
+						while(1)
+						{
+							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
+
+							// check if this page_descriptor is a trailing (the last of free page_descriptor)
+							if(trailing->page_id + 1 == cntxt->max_un_seen_page_id)
+							{
+								// remove the trailing page_descriptor
+								remove_from_bst(&(cntxt->free_page_descs), trailing);
+								remove_from_hashmap(&(cntxt->page_id_map), trailing);
+
+								// update the max_un_seen_page_id
+								cntxt->max_un_seen_page_id = trailing->page_id;
+
+								// now we can safely delete the page_descriptor
+								delete_page_descriptor(trailing);
+							}
+							else
+								break;
+						}
+					}
+				}
+			}
+		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
