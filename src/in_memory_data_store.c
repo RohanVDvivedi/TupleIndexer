@@ -147,6 +147,8 @@ static int downgrade_writer_lock_to_reader_lock_on_page_memory_unsafe(page_descr
 	// the number of reading threads are suppossed to be 0 at this point here
 	// but there can be other reader threads that are waiting, we wake all the threads up, since we are the first reader
 	pthread_cond_broadcast(&(page_desc->block_wait));
+
+	return 1;
 }
 
 // unsafe function, must be called within lock on global_lock
@@ -401,7 +403,7 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
 
 		if(page_desc)
-			lock_released = release_read_lock_on_page_memory_unsafe(page_desc);
+			lock_released = release_write_lock_on_page_memory_unsafe(page_desc);
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
