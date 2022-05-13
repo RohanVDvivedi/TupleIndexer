@@ -63,11 +63,21 @@ void delete_page_descriptor(page_descriptor* page_desc)
 	free(page_desc);
 }
 
-static int compare_by_page_ids(const void* page_desc1, const void* page_desc2)
+static int compare_page_descs_by_page_ids(const void* page_desc1, const void* page_desc2)
 {
 	if(((const page_descriptor*)(page_desc1))->page_id == ((const page_descriptor*)(page_desc1))->page_id)
 		return 0;
 	else if(((const page_descriptor*)(page_desc1))->page_id > ((const page_descriptor*)(page_desc1))->page_id)
+		return 1;
+	else
+		return -1;
+}
+
+static int compare_page_descs_by_page_memories(const void* page_desc1, const void* page_desc2)
+{
+	if(((const page_descriptor*)(page_desc1))->page_memory == ((const page_descriptor*)(page_desc1))->page_memory)
+		return 0;
+	else if(((const page_descriptor*)(page_desc1))->page_memory > ((const page_descriptor*)(page_desc1))->page_memory)
 		return 1;
 	else
 		return -1;
@@ -205,9 +215,9 @@ static int open_data_file(void* context)
 	cntxt->max_un_seen_page_id = 0;
 	cntxt->free_pages_count = 0;
 	cntxt->total_pages_count = 0;
-	initialize_bst(&(cntxt->free_page_descs), RED_BLACK_TREE, compare_by_page_ids, offsetof(page_descriptor, free_page_descs_node));
-	initialize_hashmap(&(cntxt->page_id_map), ELEMENTS_AS_LINKEDLIST, MIN_BUCKET_COUNT, hash_on_page_id, compare_by_page_ids, offsetof(page_descriptor, page_id_map_node));
-	initialize_hashmap(&(cntxt->page_memory_map), ELEMENTS_AS_LINKEDLIST, MIN_BUCKET_COUNT, hash_on_page_memory, compare_by_page_ids, offsetof(page_descriptor, page_memory_map_node));
+	initialize_bst(&(cntxt->free_page_descs), RED_BLACK_TREE, compare_page_descs_by_page_ids, offsetof(page_descriptor, free_page_descs_node));
+	initialize_hashmap(&(cntxt->page_id_map), ELEMENTS_AS_LINKEDLIST, MIN_BUCKET_COUNT, hash_on_page_id, compare_page_descs_by_page_ids, offsetof(page_descriptor, page_id_map_node));
+	initialize_hashmap(&(cntxt->page_memory_map), ELEMENTS_AS_LINKEDLIST, MIN_BUCKET_COUNT, hash_on_page_memory, compare_page_descs_by_page_memories, offsetof(page_descriptor, page_memory_map_node));
 
 	return 1;
 }
@@ -308,7 +318,7 @@ uint64_t get_page_id_for_page(void* context, void* pg_ptr)
 
 	pthread_mutex_lock(&(cntxt->global_lock));
 
-	page_descriptor* page_desc = find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_desc)({.page_memory = pg_ptr})));
+	const page_descriptor* page_desc = find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
 
 	if(page_desc)
 		page_id = page_desc->page_id;
