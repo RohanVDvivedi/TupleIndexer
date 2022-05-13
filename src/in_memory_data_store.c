@@ -300,7 +300,14 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
+	int lock_released = 0;
+
 	pthread_mutex_lock(&(cntxt->global_lock));
+
+		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
+
+		if(page_desc)
+			lock_released = release_read_lock_on_page_memory_unsafe(page_desc);
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
@@ -311,7 +318,14 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 {
 	memory_store_context* cntxt = context;
 
+	int lock_released = 0;
+
 	pthread_mutex_lock(&(cntxt->global_lock));
+
+		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
+
+		if(page_desc)
+			lock_released = release_read_lock_on_page_memory_unsafe(page_desc);
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
