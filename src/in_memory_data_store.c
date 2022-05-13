@@ -25,9 +25,14 @@ struct page_descriptor
 
 	// below are the main attributes that enable locking for reads and writes
 
+	// number of threads holding read lock
 	uint32_t reading_threads;
 
+	// number of threads holding write lock
 	uint32_t writing_threads;
+
+	// number of threads waiting to acquire lock
+	uint32_t waiting_threads;
 
 	pthread_cond_t block_wait;
 
@@ -100,7 +105,11 @@ static int acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, p
 	// wait until there are writers on this page
 	// quit this loop if the page is freed or is marked to be freed
 	while(page_desc->writing_threads > 0 && !page_desc->is_free && !page_desc->is_marked_for_freeing)
+	{
+		page_desc->waiting_threads++;
 		pthread_cond_wait(&(page_desc->block_wait), global_lock);
+		page_desc->waiting_threads--;
+	}
 
 	// fail to acquire the lock if the page is freed in the mean while OR is marked to be freed, while we may have waited on the condition variable
 	if(page_desc->is_free || page_desc->is_marked_for_freeing)
@@ -122,7 +131,11 @@ static int acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc, 
 {
 	// wait until there are readers and writers on this page
 	while((page_desc->writing_threads > 0 || page_desc->reading_threads > 0) && !page_desc->is_free && !page_desc->is_marked_for_freeing)
+	{
+		page_desc->waiting_threads++;
 		pthread_cond_wait(&(page_desc->block_wait), global_lock);
+		page_desc->waiting_threads--;
+	}
 
 	// fail to acquire the lock if the page is freed in the meanwhile OR is marked to be freed, while we may have waited on the condition variable
 	if(page_desc->is_free || page_desc->is_marked_for_freeing)
