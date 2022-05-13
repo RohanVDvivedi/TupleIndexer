@@ -476,20 +476,24 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 				while(page_desc->waiting_threads > 0)
 					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
 
-				// free, only if there are no threads holding locks on this page
-				if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition must be true here
+				// make sure that no one else freed the page_desc while we waited
+				if(page_desc->is_free == 0 && page_desc->is_marked_for_freeing = 1) // this condition must be true here, because no one else can hold either of read lock or write lock
 				{
-					// remove page_desc from page_memory_map
-					remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+					// free, only if there are no threads holding locks on this page
+					if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition must be true here, because no one else can hold either of read lock or write lock
+					{
+						// remove page_desc from page_memory_map
+						remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
 
-					// deallocate page and mark page for freeing
-					deallocate_page(page_desc->page_memory);
-					page_desc->page_memory = NULL;
-					page_desc->is_free = 1;
-					page_desc->is_marked_for_freeing = 0;
+						// deallocate page and mark page for freeing
+						deallocate_page(page_desc->page_memory);
+						page_desc->page_memory = NULL;
+						page_desc->is_free = 1;
+						page_desc->is_marked_for_freeing = 0;
 
-					// insert page_desc in free_page_descs
-					insert_in_bst(&(cntxt->free_page_descs), page_desc);
+						// insert page_desc in free_page_descs
+						insert_in_bst(&(cntxt->free_page_descs), page_desc);
+					}
 				}
 			}
 		}
@@ -527,20 +531,24 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 				while(page_desc->waiting_threads > 0)
 					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
 
-				// free, only if there are no threads holding locks on this page
-				if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition may not be true here
+				// make sure that no one else freed the page_desc while we waited
+				if(page_desc->is_free == 0 && page_desc->is_marked_for_freeing = 1) // this condition may be true here, if no other reader came to unlock while we waited
 				{
-					// remove page_desc from page_memory_map
-					remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+					// free, only if there are no threads holding locks on this page
+					if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition may not be true here, there are readers on this page
+					{
+						// remove page_desc from page_memory_map
+						remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
 
-					// deallocate page and mark page for freeing
-					deallocate_page(page_desc->page_memory);
-					page_desc->page_memory = NULL;
-					page_desc->is_free = 1;
-					page_desc->is_marked_for_freeing = 0;
+						// deallocate page and mark page for freeing
+						deallocate_page(page_desc->page_memory);
+						page_desc->page_memory = NULL;
+						page_desc->is_free = 1;
+						page_desc->is_marked_for_freeing = 0;
 
-					// insert page_desc in free_page_descs
-					insert_in_bst(&(cntxt->free_page_descs), page_desc);
+						// insert page_desc in free_page_descs
+						insert_in_bst(&(cntxt->free_page_descs), page_desc);
+					}
 				}
 			}
 		}
