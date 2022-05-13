@@ -94,7 +94,7 @@ static unsigned int hash_on_page_memory(const void* page_desc1)
 }
 
 // blocking, unsafe function, must be called within lock on global_lock
-static void acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
+static int acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
 {
 	// wait until there are writers on this page
 	while(page_desc->writing_threads > 0)
@@ -107,10 +107,12 @@ static void acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, 
 	// some of them might be writers aswell
 	if(page_desc->reading_threads == 1)
 		pthread_cond_broadcast(&(page_desc->block_wait));
+
+	return 1;
 }
 
 // blocking, unsafe function, must be called within lock on global_lock
-static void acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
+static int acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
 {
 	// wait until there are readers and writers on this page
 	while(page_desc->writing_threads > 0 || page_desc->reading_threads > 0)
@@ -118,6 +120,8 @@ static void acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc,
 
 	// increment writer thread count
 	page_desc->writing_threads++;
+
+	return 1;
 }
 
 // unsafe function, must be called within lock on global_lock
@@ -246,8 +250,10 @@ static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 		// attempt to acquire a lock if such a page_descriptor exists and is not free
 		if(page_desc != NULL && (!page_desc->is_free))
 		{
-			acquire_read_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
-			page_ptr = page_desc->page_memory;
+			int lock_acquired = acquire_read_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
+			
+			if(lock_acquired)
+				page_ptr = page_desc->page_memory;
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
