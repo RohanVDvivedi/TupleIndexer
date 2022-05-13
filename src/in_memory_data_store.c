@@ -460,29 +460,33 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 
 		if(page_desc != NULL)
 		{
-			// mark page for freeing
-			page_desc->is_marked_for_freeing = 1;
-
-			// wait until there are no threads waiting for lock
-			while(page_desc->waiting_threads > 0)
-				pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
-
 			lock_released_and_will_be_freed = release_write_lock_on_page_memory_unsafe(page_desc);
 
-			// free, only if there are no threads holding locks on this page
-			if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition must be true here
+			// only if page lock was released, then we move further to free the page or mark it free
+			if(lock_released_and_will_be_freed)
 			{
-				// remove page_desc from page_memory_map
-				remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+				// mark page for freeing
+				page_desc->is_marked_for_freeing = 1;
 
-				// deallocate page and mark page for freeing
-				deallocate_page(page_desc->page_memory);
-				page_desc->page_memory = NULL;
-				page_desc->is_free = 1;
-				page_desc->is_marked_for_freeing = 0;
+				// wait until there are no threads waiting for lock
+				while(page_desc->waiting_threads > 0)
+					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
 
-				// insert page_desc in free_page_descs
-				insert_in_bst(&(cntxt->free_page_descs), page_desc);
+				// free, only if there are no threads holding locks on this page
+				if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition must be true here
+				{
+					// remove page_desc from page_memory_map
+					remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+
+					// deallocate page and mark page for freeing
+					deallocate_page(page_desc->page_memory);
+					page_desc->page_memory = NULL;
+					page_desc->is_free = 1;
+					page_desc->is_marked_for_freeing = 0;
+
+					// insert page_desc in free_page_descs
+					insert_in_bst(&(cntxt->free_page_descs), page_desc);
+				}
 			}
 		}
 
@@ -503,29 +507,33 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 
 		if(page_desc != NULL)
 		{
-			// mark page for freeing
-			page_desc->is_marked_for_freeing = 1;
-
-			// wait until there are no threads waiting for lock
-			while(page_desc->waiting_threads > 0)
-				pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
-
 			lock_released_and_will_be_freed = release_read_lock_on_page_memory_unsafe(page_desc);
 
-			// free, only if there are no threads holding locks on this page
-			if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition must be true here
+			// only if page lock was released, then we move further to free the page or mark it free
+			if(lock_released_and_will_be_freed)
 			{
-				// remove page_desc from page_memory_map
-				remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+				// mark page for freeing
+				page_desc->is_marked_for_freeing = 1;
 
-				// deallocate page and mark page for freeing
-				deallocate_page(page_desc->page_memory);
-				page_desc->page_memory = NULL;
-				page_desc->is_free = 1;
-				page_desc->is_marked_for_freeing = 0;
+				// wait until there are no threads waiting for lock
+				while(page_desc->waiting_threads > 0)
+					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
 
-				// insert page_desc in free_page_descs
-				insert_in_bst(&(cntxt->free_page_descs), page_desc);
+				// free, only if there are no threads holding locks on this page
+				if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition may not be true here
+				{
+					// remove page_desc from page_memory_map
+					remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+
+					// deallocate page and mark page for freeing
+					deallocate_page(page_desc->page_memory);
+					page_desc->page_memory = NULL;
+					page_desc->is_free = 1;
+					page_desc->is_marked_for_freeing = 0;
+
+					// insert page_desc in free_page_descs
+					insert_in_bst(&(cntxt->free_page_descs), page_desc);
+				}
 			}
 		}
 
