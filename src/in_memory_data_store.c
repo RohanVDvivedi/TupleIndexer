@@ -495,11 +495,43 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
+	int lock_released_and_will_be_freed = 0;
+
 	pthread_mutex_lock(&(cntxt->global_lock));
+
+		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
+
+		if(page_desc != NULL)
+		{
+			// mark page for freeing
+			page_desc->is_marked_for_freeing = 1;
+
+			// wait until there are no threads waiting for lock
+			while(page_desc->waiting_threads > 0)
+				pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
+
+			lock_released_and_will_be_freed = release_read_lock_on_page_memory_unsafe(page_desc);
+
+			// free, only if there are no threads holding locks on this page
+			if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0) // this condition must be true here
+			{
+				// remove page_desc from page_memory_map
+				remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+
+				// deallocate page and mark page for freeing
+				deallocate_page(page_desc->page_memory);
+				page_desc->page_memory = NULL;
+				page_desc->is_free = 1;
+				page_desc->is_marked_for_freeing = 0;
+
+				// insert page_desc in free_page_descs
+				insert_in_bst(&(cntxt->free_page_descs), page_desc);
+			}
+		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
-	return 0;
+	return lock_released_and_will_be_freed;
 }
 
 uint64_t get_page_id_for_page(void* context, void* pg_ptr)
