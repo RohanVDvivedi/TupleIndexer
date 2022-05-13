@@ -216,12 +216,20 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 {
 	memory_store_context* cntxt = context;
 
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
+
 	return NULL;
 }
 
 static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 {
 	memory_store_context* cntxt = context;
+
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	return NULL;
 }
@@ -230,12 +238,20 @@ static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 {
 	memory_store_context* cntxt = context;
 
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
+
 	return NULL;
 }
 
 static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
+
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	return 0;
 }
@@ -244,12 +260,20 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
+
 	return 0;
 }
 
 static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified)
 {
 	memory_store_context* cntxt = context;
+
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	return 0;
 }
@@ -258,12 +282,20 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
+
 	return 0;
 }
 
 static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
+
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	return 0;
 }
@@ -272,7 +304,18 @@ uint64_t get_page_id_for_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
-	return 0;
+	uint64_t page_id = cntxt->MAX_PAGE_ID;
+
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+	page_descriptor* page_desc = find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_desc)({.page_memory = pg_ptr})));
+
+	if(page_desc)
+		page_id = page_desc->page_id;
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
+
+	return page_id;
 }
 
 static int force_write_to_disk(void* context, uint64_t page_id){ /* NOOP */ return 1;}

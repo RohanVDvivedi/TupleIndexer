@@ -46,6 +46,7 @@ struct data_access_methods
 	int (*release_reader_lock_and_free_page)(void* context, void* pg_ptr);
 
 	// get page id corresponding to a pg_ptr
+	// you may call this function only while holding read or write lock on this page
 	uint64_t (*get_page_id_for_page)(void* context, void* pg_ptr);
 
 	// equivalent to msync
