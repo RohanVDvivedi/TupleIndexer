@@ -62,6 +62,7 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id)
 	page_desc->reading_threads = 0;
 	page_desc->writing_threads = 0;
 	pthread_cond_init(&(page_desc->block_wait), NULL);
+	pthread_cond_init(&(page_desc->free_wait), NULL);
 	initialize_llnode(&(page_desc->page_id_map_node));
 	initialize_llnode(&(page_desc->page_memory_map_node));
 	initialize_bstnode(&(page_desc->free_page_descs_node));
@@ -71,6 +72,7 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id)
 void delete_page_descriptor(page_descriptor* page_desc)
 {
 	pthread_cond_destroy(&(page_desc->block_wait));
+	pthread_cond_destroy(&(page_desc->free_wait));
 	free(page_desc);
 }
 
@@ -357,7 +359,7 @@ static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
 
 		// attempt to acquire a lock if such a page_descriptor exists and is not free
-		if(page_desc != NULL && (!page_desc->is_free))
+		if(page_desc != NULL && (!page_desc->is_free) && (!page_desc->is_marked_for_freeing))
 		{
 			int lock_acquired = acquire_read_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
 
@@ -381,7 +383,7 @@ static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
 
 		// attempt to acquire a lock if such a page_descriptor exists and is not free
-		if(page_desc != NULL && (!page_desc->is_free))
+		if(page_desc != NULL && (!page_desc->is_free) && (!page_desc->is_marked_for_freeing))
 		{
 			int lock_acquired = acquire_write_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
 			
@@ -511,7 +513,7 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 			lock_released_and_will_be_freed = release_write_lock_on_page_memory_unsafe(page_desc);
 
 			// only if page lock was released, then we move further to free the page or mark it free
-			if(lock_released_and_will_be_freed)
+			if(lock_released_and_will_be_freed && !page_desc->is_marked_for_freeing) // the second condition is not required because no one can call free on a write locked page, except the guy holding write lock on it
 			{
 				// mark page for freeing
 				page_desc->is_marked_for_freeing = 1;
@@ -588,7 +590,7 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 			lock_released_and_will_be_freed = release_read_lock_on_page_memory_unsafe(page_desc);
 
 			// only if page lock was released, then we move further to free the page or mark it free
-			if(lock_released_and_will_be_freed)
+			if(lock_released_and_will_be_freed && !page_desc->is_marked_for_freeing)// the second condition is to handle case when 2 reader threads call free on the same page at once OR back to back, before the page being freed
 			{
 				// mark page for freeing
 				page_desc->is_marked_for_freeing = 1;
