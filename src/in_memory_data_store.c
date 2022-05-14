@@ -246,26 +246,23 @@ struct memory_store_context
 	// constant
 	uint32_t page_size;
 
-	// MAX_PAGE_ID, no page_id will be allotted to any page above this number
+	// maximum number of pages this system is allowed to have
 	// constant
-	uint64_t MAX_PAGE_ID;
-
-	// max page_id that this system has not yet seen
-	uint64_t max_un_seen_page_id;
-
-	// bst of free_pages, ordered by their page_ids
-	// this pages are free (they dont have their page_memory populated)
-	// we always allocate new page from the least page_id from free_page_descs
-	// and release memory of greatest page_descs to OS, if it is equal to the max_un_seen_page_id - 1
-	bst free_page_descs;
-
-	// total number of pages in free_pages_desc
-	uint64_t free_pages_count;
+	uint64_t MAX_PAGE_COUNT;
 
 	// total number of pages in the system
 	// the number of pages in page_id_map = total_pages
 	// the number of pages in page_memory_map = total_pages - free_pages_count
 	uint64_t total_pages_count;
+
+	// bst of free_pages, ordered by their page_ids
+	// this pages are free (they dont have their page_memory populated)
+	// we always allocate new page from the least page_id from free_page_descs
+	// and release memory of greatest page_descs to OS, if it is equal to the total_pages_count - 1
+	bst free_page_descs;
+
+	// total number of pages in free_pages_desc
+	uint64_t free_pages_count;
 
 	// there are 2 maps that store page_desc
 	// this allows us to get pages both using page_id (to acquire locks) and page_memory (to free locks)
@@ -284,7 +281,6 @@ static int open_data_file(void* context)
 	memory_store_context* cntxt = context;
 
 	pthread_mutex_init(&(cntxt->global_lock), NULL);
-	cntxt->max_un_seen_page_id = 0;
 	cntxt->free_pages_count = 0;
 	cntxt->total_pages_count = 0;
 	initialize_bst(&(cntxt->free_page_descs), RED_BLACK_TREE, compare_page_descs_by_page_ids, offsetof(page_descriptor, free_page_descs_node));
@@ -314,9 +310,9 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 		}
 		else
 		{
-			if(cntxt->max_un_seen_page_id < cntxt->MAX_PAGE_ID)
+			if(cntxt->total_pages_count < cntxt->MAX_PAGE_COUNT)
 			{
-				*page_id_returned = cntxt->max_un_seen_page_id++;
+				*page_id_returned = cntxt->total_pages_count++;
 
 				// create a new page_descriptor for the new unseen page
 				page_desc = get_new_page_descriptor(*page_id_returned);
@@ -473,18 +469,18 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 						{
 							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
 
-							// check if this page_descriptor is a trailing (the last of free page_descriptor)
-							if(trailing->page_id + 1 == cntxt->max_un_seen_page_id)
+							// check if this page_descriptor is a trailing (the last of page_descriptors)
+							if(trailing->page_id + 1 == cntxt->total_pages_count)
 							{
 								// remove the trailing page_descriptor
 								remove_from_bst(&(cntxt->free_page_descs), trailing);
 								remove_from_hashmap(&(cntxt->page_id_map), trailing);
 
-								// update the max_un_seen_page_id
-								cntxt->max_un_seen_page_id = trailing->page_id;
-
 								// now we can safely delete the page_descriptor
 								delete_page_descriptor(trailing);
+
+								// decrement the total pages count
+								cntxt->total_pages_count--;
 							}
 							else
 								break;
@@ -550,18 +546,18 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 						{
 							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
 
-							// check if this page_descriptor is a trailing (the last of free page_descriptor)
-							if(trailing->page_id + 1 == cntxt->max_un_seen_page_id)
+							// check if this page_descriptor is a trailing (the last of page_descriptors)
+							if(trailing->page_id + 1 == cntxt->total_pages_count)
 							{
 								// remove the trailing page_descriptor
 								remove_from_bst(&(cntxt->free_page_descs), trailing);
 								remove_from_hashmap(&(cntxt->page_id_map), trailing);
 
-								// update the max_un_seen_page_id
-								cntxt->max_un_seen_page_id = trailing->page_id;
-
 								// now we can safely delete the page_descriptor
 								delete_page_descriptor(trailing);
+
+								// decrement the total pages count
+								cntxt->total_pages_count--;
 							}
 							else
 								break;
@@ -627,18 +623,18 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 						{
 							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
 
-							// check if this page_descriptor is a trailing (the last of free page_descriptor)
-							if(trailing->page_id + 1 == cntxt->max_un_seen_page_id)
+							// check if this page_descriptor is a trailing (the last of page_descriptors)
+							if(trailing->page_id + 1 == cntxt->total_pages_count)
 							{
 								// remove the trailing page_descriptor
 								remove_from_bst(&(cntxt->free_page_descs), trailing);
 								remove_from_hashmap(&(cntxt->page_id_map), trailing);
 
-								// update the max_un_seen_page_id
-								cntxt->max_un_seen_page_id = trailing->page_id;
-
 								// now we can safely delete the page_descriptor
 								delete_page_descriptor(trailing);
+
+								// decrement the total pages count
+								cntxt->total_pages_count--;
 							}
 							else
 								break;
@@ -657,7 +653,7 @@ uint64_t get_page_id_for_page(void* context, void* pg_ptr)
 {
 	memory_store_context* cntxt = context;
 
-	uint64_t page_id = cntxt->MAX_PAGE_ID;
+	uint64_t page_id = cntxt->MAX_PAGE_COUNT;
 
 	pthread_mutex_lock(&(cntxt->global_lock));
 
@@ -689,7 +685,7 @@ static int close_data_file(void* context)
 	deinitialize_hashmap(&(cntxt->page_id_map));
 	deinitialize_hashmap(&(cntxt->page_memory_map));
 	pthread_mutex_destroy(&(cntxt->global_lock));
-	cntxt->max_un_seen_page_id = 0;
+
 	cntxt->free_pages_count = 0;
 	cntxt->total_pages_count = 0;
 
@@ -745,7 +741,7 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t pa
 	dam_p->context = malloc(sizeof(memory_store_context));
 	
 	((memory_store_context*)(dam_p->context))->page_size = page_size;
-	((memory_store_context*)(dam_p->context))->MAX_PAGE_ID = dam_p->NULL_PAGE_ID;
+	((memory_store_context*)(dam_p->context))->MAX_PAGE_COUNT = dam_p->NULL_PAGE_ID;
 
 	// on success return the data access methods
 	if(dam_p->open_data_file(dam_p->context))
