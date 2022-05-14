@@ -182,12 +182,12 @@ static int downgrade_writer_lock_to_reader_lock_on_page_memory_unsafe(page_descr
 	if(page_desc->writing_threads == 0)
 		return 0;
 
-	// onverting from writer to a reader
+	// converting from writer to a reader
 	page_desc->writing_threads--;
 	page_desc->reading_threads++;
 
 	// the number of reading threads are suppossed to be 0 at this point here
-	// but there can be other reader threads that are waiting, we wake all the threads up, since we are the first reader
+	// but there can be other reader threads that are waiting, we wake all the threads up, since we are the first reader now
 	pthread_cond_broadcast(&(page_desc->block_wait));
 
 	return 1;
@@ -251,11 +251,10 @@ struct memory_store_context
 	uint64_t MAX_PAGE_ID;
 
 	// max page_id that this system has not yet seen
-	// page_descriptor for any page with page_id greater than this is not in the system
 	uint64_t max_un_seen_page_id;
 
 	// bst of free_pages, ordered by their page_ids
-	// this pages are are free (they dont have their page_memory populated)
+	// this pages are free (they dont have their page_memory populated)
 	// we always allocate new page from the least page_id from free_page_descs
 	// and release memory of greatest page_descs to OS, if it is equal to the max_un_seen_page_id - 1
 	bst free_page_descs;
