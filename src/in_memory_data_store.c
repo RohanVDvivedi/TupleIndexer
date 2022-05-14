@@ -109,25 +109,26 @@ static unsigned int hash_on_page_memory(const void* page_desc1)
 // blocking, unsafe function, must be called within lock on global_lock
 static int acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
 {
-	// variable to check if this thread had to ever wait for the lock
-	int ever_waited_for_lock = 0;
+	// we can never lock a free page or a page that is marked to be freed in future
+	if(page_desc->is_free || page_desc->is_marked_for_freeing)
+		return 0;
 
 	// wait until there are writers on this page
 	// quit this loop if the page is freed or is marked to be freed
 	while(page_desc->writing_threads > 0 && !page_desc->is_free && !page_desc->is_marked_for_freeing)
 	{
 		page_desc->waiting_threads++;
-		ever_waited_for_lock = 1;
 		pthread_cond_wait(&(page_desc->block_wait), global_lock);
 		page_desc->waiting_threads--;
 	}
 
-	// fail to acquire the lock if the page is freed in the mean while OR is marked to be freed, while we may have waited on the condition variable
+	// fail to acquire the lock if the page is freed OR is marked to be freed,
+	// while we may have waited on the condition variable
 	if(page_desc->is_free || page_desc->is_marked_for_freeing)
 	{
-		// if the block is marked for freeing and we were the last waiting_thread then
-		// we signal the thread that is waiting for blocked threads to leave
-		if(page_desc->is_marked_for_freeing && page_desc->waiting_threads == 0 && ever_waited_for_lock)
+		// if the page is marked for freeing and we were the last waiting_thread then
+		// we signal the thread that is waiting for blocked threads to leave, that it can now proceed
+		if(page_desc->is_marked_for_freeing && page_desc->waiting_threads == 0)
 			pthread_cond_signal(&(page_desc->free_wait));
 		return 0;
 	}
@@ -146,24 +147,25 @@ static int acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, p
 // blocking, unsafe function, must be called within lock on global_lock
 static int acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
 {
-	// variable to check if this thread had to ever wait for the lock
-	int ever_waited_for_lock = 0;
+	// we can never lock a free page or a page that is marked to be freed in future
+	if(page_desc->is_free || page_desc->is_marked_for_freeing)
+		return 0;
 
 	// wait until there are readers and writers on this page
 	while((page_desc->writing_threads > 0 || page_desc->reading_threads > 0) && !page_desc->is_free && !page_desc->is_marked_for_freeing)
 	{
 		page_desc->waiting_threads++;
-		ever_waited_for_lock = 1;
 		pthread_cond_wait(&(page_desc->block_wait), global_lock);
 		page_desc->waiting_threads--;
 	}
 
-	// fail to acquire the lock if the page is freed in the meanwhile OR is marked to be freed, while we may have waited on the condition variable
+	// fail to acquire the lock if the page is freed OR is marked to be freed,
+	// while we may have waited on the condition variable
 	if(page_desc->is_free || page_desc->is_marked_for_freeing)
 	{
-		// if the block is marked for freeing and we were the last waiting_thread then
-		// we signal the thread that is waiting for blocked threads to leave
-		if(page_desc->is_marked_for_freeing && page_desc->waiting_threads == 0 && ever_waited_for_lock)
+		// if the page is marked for freeing and we were the last waiting_thread then
+		// we signal the thread that is waiting for blocked threads to leave, that it can now proceed
+		if(page_desc->is_marked_for_freeing && page_desc->waiting_threads == 0)
 			pthread_cond_signal(&(page_desc->free_wait));
 		return 0;
 	}
