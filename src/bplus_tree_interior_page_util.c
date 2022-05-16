@@ -34,6 +34,18 @@ uint32_t find_child_index_for_key(const void* page, const void* key, const bplus
 	return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
 }
 
+uint32_t find_child_index_for_record(const void* page, const void* record, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// find preceding equals in the interior pages, by comparing against all index entries
+	uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
+									page, bpttd_p->page_size, 
+									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+									record, bpttd_p->record_def, bpttd_p->key_element_ids
+								);
+
+	return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+}
+
 uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// if the index is -1, return the page_id stored in the header
