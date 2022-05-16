@@ -1,6 +1,7 @@
 #include<storage_capacity_page_util.h>
 
 #include<page_layout.h>
+#include<tuple.h>
 
 int is_page_lesser_than_half_full(const void* page, uint32_t page_size, const tuple_def* def)
 {
@@ -28,6 +29,19 @@ int is_page_more_than_half_full(const void* page, uint32_t page_size, const tupl
 	uint32_t allotted_space = get_space_allotted_to_all_tuples(page, page_size, def);
 	uint32_t used_space = get_space_occupied_by_all_tuples(page, page_size, def);
 	return used_space > (allotted_space / 2);
+}
+
+int can_insert_this_tuple_without_split_for_bplus_tree(const void* page, uint32_t page_size, const tuple_def* def, const void* tuple)
+{
+	uint32_t allotted_space = get_space_allotted_to_all_tuples(page, page_size, def);
+	uint32_t used_space = get_space_occupied_by_all_tuples(page, page_size, def);
+
+	uint32_t space_required_by_tuple = get_tuple_size(def, tuple) + get_additional_space_overhead_per_tuple(page_size, def);
+
+	if(allotted_space < used_space + space_required_by_tuple)
+		return 1;
+
+	return 0;
 }
 
 int may_require_split_for_insert_for_bplus_tree(const void* page, uint32_t page_size, const tuple_def* def)
