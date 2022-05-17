@@ -14,7 +14,21 @@
 
 #include<stdlib.h>
 
-uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+{
+	uint64_t root_page_id;
+	void* root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &root_page_id);
+
+	// if init_page fails
+	if(!init_bplus_tree_leaf_page(root_page, bpttd_p))
+	{
+		dam_p->release_writer_lock_and_free_page(dam_p->context, root_page);
+		return bpttd_p->NULL_PAGE_ID;
+	}
+
+	dam_p->release_writer_lock_on_page(dam_p->context, root_page, 1);
+	return root_page_id;
+}
 
 bplus_tree_cursor* find_in_bplus_tree(uint64_t root_page_id, const void* key, int scan_dir, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
