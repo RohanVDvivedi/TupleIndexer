@@ -276,14 +276,45 @@ void print_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_
 		// print current page as a leaf page
 		if(curr_locked_page->level == 0)
 		{
+			// print this page and its page_id
+			printf("page_id : %llu\n\n", (unsigned long long int)curr_locked_page->page_id);
+			print_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p);
+			printf("xxxxxxxxxxxxx\n");
 
+			// pop it from the stack and unlock it
+			pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+			unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 0, dam_p);
 		}
 		// print current page as an interior page
 		else
 		{
+			// get tuple_count of the page
+			uint32_t tuple_count = get_tuple_count(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
+
 			// if child index is -1 or lesser than tuple_count
-			// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
-			// if the child index is equal to the tuple_count then print that page itself
+			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
+			{
+				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
+				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, curr_locked_page->child_index, bpttd_p);
+				locked_page_info* locked_child_page_info = lock_page_and_get_new_locked_page_info(child_page_id, 1, 0, bpttd_p, dam_p);
+				locked_child_page_info->child_index = -1;
+				curr_locked_page->child_index++;
+
+				push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, locked_child_page_info);
+			}
+			else // we have printed all its children, now we print this page
+			{
+				// here the child_index of the page is tuple_count
+
+				// print this page and its page_id
+				printf("page_id : %llu\n\n", (unsigned long long int)curr_locked_page->page_id);
+				print_bplus_tree_interior_page(curr_locked_page->page, bpttd_p);
+				printf("xxxxxxxxxxxxx\n");
+
+				// pop it from the stack and unlock it
+				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 0, dam_p);
+			}
 		}
 	}
 
