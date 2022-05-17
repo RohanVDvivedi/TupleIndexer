@@ -1,4 +1,3 @@
- * implement get_new_bplus_tree
  * implement recursive print
 
  * start with implementing sequential insert test cases using sorted and random ordered csv files
