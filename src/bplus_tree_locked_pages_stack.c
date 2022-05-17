@@ -30,6 +30,21 @@ locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int g
 	return lpi_p;
 }
 
+locked_page_info* get_new_locked_page_info(void* page, uint64_t page_id, int write_locked, int is_root, const bplus_tree_tuple_defs* bpttds)
+{
+	locked_page_info* lpi_p = malloc(sizeof(locked_page_info));
+	lpi_p->page_id = page_id;
+	lpi_p->page = page;
+	lpi_p->level = get_level_of_bplus_tree_page(page, bpttds->page_size);
+	lpi_p->is_write_locked = write_locked;
+	lpi_p->is_root = is_root;
+
+	// this field can not be initialized with the minimal information that we have
+	lpi_p->child_index = -1;
+
+	return lpi_p;
+}
+
 int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_free_this_page, int was_modified_if_write_lock, const data_access_methods* dam_p)
 {
 	int return_val = 0;

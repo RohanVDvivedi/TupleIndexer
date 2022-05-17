@@ -97,6 +97,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 								set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page->page, root_least_keys_child_id, bpttd_p);
 
 								// create new locked_page_info for the root_least_keys_child and push it onto the stack
+								locked_page_info* root_least_keys_child_info = get_new_locked_page_info(root_least_keys_child, root_least_keys_child_id, 1, 0, bpttd_p);
+								root_least_keys_child_info->child_index = curr_locked_page->child_index;
+								curr_locked_page->child_index = -1; // the root page only has a single child at the moment
+								push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, root_least_keys_child_info);
 
 								// get new top of the stack
 								curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
@@ -107,6 +111,8 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 							// if split insert was successfull
 							if(parent_insert != NULL)
 								inserted = 1;
+							else // THIS IS AN ERROR WE CANT RECOVER FROM
+								break;
 						}
 					}
 				}
@@ -181,6 +187,8 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 					
 					if(new_parent_insert != NULL)
 						parent_tuple_inserted = 1;
+					else // THIS IS AN ERROR WE CANT RECOVER FROM
+						break;
 				}
 			}
 
