@@ -10,6 +10,8 @@
 
 #include<arraylist.h>
 
+#include<stdlib.h>
+
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 bplus_tree_cursor* find_in_bplus_tree(uint64_t root_page_id, const void* key, int scan_dir, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
@@ -124,6 +126,59 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		else // parent_insert needs to be inserted in to this page and we need to pop curr_locked_page
 		{
 			// here (curr_locked_page->level > 0) is a MUST condition
+
+			int parent_tuple_inserted = 0;
+
+			// this will be set to an appropriate index tuple that we need to insert to a parent page
+			const void* new_parent_insert = NULL;
+
+			uint32_t insertion_point;
+			parent_tuple_inserted = insert_to_sorted_packed_page(
+									curr_locked_page->page, bpttd_p->page_size, 
+									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+									parent_insert, 
+									&insertion_point
+								);
+
+			if(!parent_tuple_inserted)
+			{
+				// check if the insert can succeed on compaction
+				if(can_insert_this_tuple_without_split_for_bplus_tree(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, parent_insert))
+				{
+					run_page_compaction(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, 0, 1);
+
+					parent_tuple_inserted = insert_at_in_sorted_packed_page(
+											curr_locked_page->page, bpttd_p->page_size, 
+											bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+											parent_insert, 
+											insertion_point
+										);
+				}
+
+				// if it still fails then call the split insert
+				if(!inserted)
+				{
+					new_parent_insert = split_insert_bplus_tree_interior_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p);
+					parent_tuple_inserted = 1;
+				}
+			}
+
+			// delete the old parent insert and update it
+			free((void*)parent_insert);
+			parent_insert = new_parent_insert;
+
+			// if parent tuple was inserted without a split
+			if(parent_insert == NULL)
+			{
+				// the insert operation is completed
+				fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
+			}
+			else // the split needs to be propogated to the parent pages
+			{
+				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+
+				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
+			}
 		}
 	}
 
