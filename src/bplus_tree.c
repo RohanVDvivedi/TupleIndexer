@@ -87,10 +87,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				// figure out which child page to go to next
 				curr_locked_page->child_index = find_child_index_for_record(curr_locked_page->page, record, bpttd_p);
 
-				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, child_index, bpttd_p);
+				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, curr_locked_page->child_index, bpttd_p);
 
 				// get lock on the next child page (this page is surely not the root page)
-				locked_page_info* child_locked_page = lock_page_and_get_new_locked_page_info(child_page_id, 1, 0, bpttds, dam_p);
+				locked_page_info* child_locked_page = lock_page_and_get_new_locked_page_info(child_page_id, 1, 0, bpttd_p, dam_p);
 
 				// if it will not require a split, then release locks on all the parent pages
 				if( (child_locked_page->level == 0 && !may_require_split_for_insert_for_bplus_tree(child_locked_page->page, bpttd_p->page_size, bpttd_p->record_def))
