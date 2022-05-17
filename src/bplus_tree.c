@@ -6,6 +6,8 @@
 #include<bplus_tree_interior_page_util.h>
 #include<sorted_packed_page_util.h>
 
+#include<page_layout.h>
+
 #include<arraylist.h>
 
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
@@ -63,9 +65,25 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 					// if the insertion fails
 					if(!inserted)
 					{
-						// then compact the page and then try to insert it
+						// check if the insert can succeed on compaction
+						if(can_insert_this_tuple_without_split_for_bplus_tree(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def, record))
+						{
+							run_page_compaction(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def, 0, 1);
+
+							inserted = insert_at_in_sorted_packed_page(
+									curr_locked_page->page, bpttd_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									record, 
+									insertion_point
+								);
+						}
 
 						// if it still fails then call the split insert
+						if(!inserted)
+						{
+							parent_insert = split_insert_bplus_tree_leaf_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p);
+							inserted = 1;
+						}
 					}
 				}
 
