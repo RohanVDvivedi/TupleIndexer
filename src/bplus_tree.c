@@ -15,7 +15,7 @@ bplus_tree_cursor* find_in_bplus_tree(uint64_t root_page_id, const void* key, in
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// get lock on the root page of the bplus_tree
-	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 1, 1, bpttds, dam_p);
+	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 1, 1, bpttd_p, dam_p);
 
 	// create a stack of capacity = levels + 3 
 	arraylist locked_pages_stack;

@@ -4,7 +4,7 @@
 
 #include<bplus_tree_page.h>
 
-locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, int is_root, bplus_tree_tuple_defs* bpttds, data_access_methods* dam_p)
+locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, int is_root, const bplus_tree_tuple_defs* bpttds, const data_access_methods* dam_p)
 {
 	void* page = NULL;
 
@@ -30,7 +30,7 @@ locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int g
 	return lpi_p;
 }
 
-int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_free_this_page, int was_modified_if_write_lock, data_access_methods* dam_p)
+int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_free_this_page, int was_modified_if_write_lock, const data_access_methods* dam_p)
 {
 	int return_val = 0;
 
@@ -66,12 +66,12 @@ locked_page_info* pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p)
 	return to_pop;
 }
 
-locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p)
+locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const arraylist* btlps_p)
 {
 	return (locked_page_info*)get_back_of_arraylist(btlps_p);
 }
 
-void fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(arraylist* btlps_p, data_access_methods* dam_p)
+void fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(arraylist* btlps_p, const data_access_methods* dam_p)
 {
 	while(!is_empty_arraylist(btlps_p))
 	{
