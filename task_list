@@ -1,25 +1,20 @@
- 
- * implement insert
-   * handle root split
-   * static analysis
+ * implement get_new_bplus_tree
+ * implement recursive print
+
+ * start with implementing sequential insert test cases using sorted and random ordered csv files
 
  * implement delete
-   * * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
-
- * implement get_new_bplus_tree
-   * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
 
  * implement bplus_tree_cursor
-
- * implement recursive print and delete function
-
  * implement find
 
- * implement bplus_tree_cursor and its functions
+ * implement delete bplus_tree function
 
  * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
 
- * write single threaded test cases to insert a large csv in to b+tree
+ * write single threaded test cases to insert a large csv in to b+tree, remove some, insert some elements
+
+ * go through the project and implemnt better error handling for failures of malloc and data_access_methods
 
  * write multi threaded test cases to catch concurrency bugs in_memory_data_store, like it is done for bufferpool
 
