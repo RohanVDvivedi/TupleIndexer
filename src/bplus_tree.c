@@ -4,6 +4,8 @@
 #include<storage_capacity_page_util.h>
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
+#include<bplus_tree_leaf_page_header.h>
+#include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
 
 #include<page_layout.h>
@@ -71,16 +73,35 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 							run_page_compaction(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def, 0, 1);
 
 							inserted = insert_at_in_sorted_packed_page(
-										curr_locked_page->page, bpttd_p->page_size, 
-										bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
-										record, 
-										insertion_point
-									);
+																	curr_locked_page->page, bpttd_p->page_size, 
+																	bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+																	record, 
+																	insertion_point
+																);
 						}
 
 						// if it still fails then call the split insert
 						if(!inserted)
 						{
+							if(curr_locked_page->is_root)
+							{
+								// get a new page to insert between the root and its children
+								uint64_t root_least_keys_child_id;
+								void* root_least_keys_child = dam_p->get_new_page_with_write_lock(dam_p->context, &root_least_keys_child_id);
+
+								// clone root page contents into the new root_least_keys_child
+								clone_page(root_least_keys_child, bpttd_p->page_size, bpttd_p->record_def, 1, curr_locked_page->page);
+
+								// re intialize root page as an interior page
+								init_bplus_tree_interior_page(curr_locked_page->page, ++curr_locked_page->level, bpttd_p);
+								set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page->page, root_least_keys_child_id, bpttd_p);
+
+								// create new locked_page_info for the root_least_keys_child and push it onto the stack
+
+								// get new top of the stack
+								curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+							}
+
 							parent_insert = split_insert_bplus_tree_leaf_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p);
 							
 							// if split insert was successfull
@@ -91,17 +112,14 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				}
 
 				// found or the record was inserted without requiring a split
-				if(found || (inserted && parent_insert == NULL))
-				{
-					// the insert operation is completed
-					fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
-				}
-				else // the split needs to be propogated to the parent pages
+				if(parent_insert != NULL) // the split needs to be propogated to the parent pages
 				{
 					pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
 					unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 				}
+				else
+					break;
 			}
 			else // is an interior page, grab its child and push it into the stack
 			{
@@ -170,20 +188,20 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			free((void*)parent_insert);
 			parent_insert = new_parent_insert;
 
-			// if parent tuple was inserted without a split
-			if(parent_insert == NULL)
-			{
-				// the insert operation is completed
-				fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
-			}
-			else // the split needs to be propogated to the parent pages
+			// if parent_tuple was inserted with a split
+			if(parent_insert != NULL) // the split needs to be propogated to the parent pages
 			{
 				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
 				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 			}
+			else
+				break;
 		}
 	}
+
+	// release locks on all the pages, we had locks on until now
+	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
 
 	deinitialize_arraylist(&locked_pages_stack);
 
