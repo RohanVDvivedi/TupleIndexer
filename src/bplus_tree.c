@@ -257,4 +257,38 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 int destroy_bplus_tree_recursively(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
-void print_bplus_tree_recursively(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+void print_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+{
+	// get lock on the root page of the bplus_tree
+	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 1, 1, bpttd_p, dam_p);
+
+	// create a stack of capacity = levels
+	arraylist locked_pages_stack;
+	initialize_arraylist(&locked_pages_stack, curr_locked_page->level + 1);
+
+	// push the root page onto the stack
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
+
+	while(is_empty_arraylist(&locked_pages_stack))
+	{
+		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+
+		// print current page as a leaf page
+		if(curr_locked_page->level == 0)
+		{
+
+		}
+		// print current page as an interior page
+		else
+		{
+			// if child index is -1 or lesser than tuple_count
+			// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
+			// if the child index is equal to the tuple_count then print that page itself
+		}
+	}
+
+	// release locks on all the pages, we had locks on until now
+	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
+
+	deinitialize_arraylist(&locked_pages_stack);
+}
