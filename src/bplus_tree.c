@@ -157,12 +157,12 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// this will be set to an appropriate index tuple that we need to insert to a parent page
 			const void* new_parent_insert = NULL;
 
-			uint32_t insertion_point;
-			parent_tuple_inserted = insert_to_sorted_packed_page(
+			uint32_t insertion_point = curr_locked_page->child_index + 1;
+			parent_tuple_inserted = insert_at_in_sorted_packed_page(
 									curr_locked_page->page, bpttd_p->page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
 									parent_insert, 
-									&insertion_point
+									insertion_point
 								);
 
 			if(!parent_tuple_inserted)
