@@ -10,6 +10,11 @@ enum page_type
 	BPLUS_TREE_INTERIOR_PAGE,
 };
 
+const char* page_type_string[] = {
+	"BPLUS_TREE_LEAF_PAGE",
+	"BPLUS_TREE_INTERIOR_PAGE",
+};
+
 typedef struct page_header page_header;
 struct page_header
 {
@@ -20,5 +25,7 @@ struct page_header
 // getter and setter for page type of the page
 page_type get_type_of_page(const void* page, uint32_t page_size);
 void set_type_of_page(void* page, uint32_t page_size, page_type type);
+
+void print_common_page_header(const void* page, uint32_t page_size);
 
 #endif
