@@ -260,7 +260,7 @@ int destroy_bplus_tree_recursively(uint64_t root_page_id, const bplus_tree_tuple
 void print_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// get lock on the root page of the bplus_tree
-	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 1, 1, bpttd_p, dam_p);
+	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 0, 1, bpttd_p, dam_p);
 
 	// create a stack of capacity = levels
 	arraylist locked_pages_stack;
@@ -296,7 +296,7 @@ void print_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_
 			{
 				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
 				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, curr_locked_page->child_index, bpttd_p);
-				locked_page_info* locked_child_page_info = lock_page_and_get_new_locked_page_info(child_page_id, 1, 0, bpttd_p, dam_p);
+				locked_page_info* locked_child_page_info = lock_page_and_get_new_locked_page_info(child_page_id, 0, 0, bpttd_p, dam_p);
 				locked_child_page_info->child_index = -1;
 				curr_locked_page->child_index++;
 
