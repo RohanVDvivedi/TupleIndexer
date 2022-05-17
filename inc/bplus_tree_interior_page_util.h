@@ -14,6 +14,9 @@
 
 int init_bplus_tree_interior_page(void* page, uint32_t level, const bplus_tree_tuple_defs* bpttd_p);
 
+// prints of bplus_tree interior page
+void print_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+
 // this the index of the tuple in the interior page that you should follow
 // you may cache this, it may help in case of a split
 uint32_t find_child_index_for_key(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p);

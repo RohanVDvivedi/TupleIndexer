@@ -22,6 +22,12 @@ int init_bplus_tree_interior_page(void* page, uint32_t level, const bplus_tree_t
 	return 1;
 }
 
+void print_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+{
+	print_bplus_tree_interior_page_header(page, bpttd_p);
+	print_page(page, bpttd_p->page_size, bpttd_p->index_def);
+}
+
 uint32_t find_child_index_for_key(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// find preceding equals in the interior pages, by comparing against all index entries

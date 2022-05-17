@@ -21,6 +21,12 @@ int init_bplus_tree_leaf_page(void* page, const bplus_tree_tuple_defs* bpttd_p)
 	return 1;
 }
 
+void print_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+{
+	print_bplus_tree_leaf_page_header(page, bpttd_p);
+	print_page(page, bpttd_p->page_size, bpttd_p->record_def);
+}
+
 uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p)
 {
 	return find_succeeding_equals_in_sorted_packed_page(

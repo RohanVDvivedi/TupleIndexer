@@ -8,6 +8,9 @@
 
 int init_bplus_tree_leaf_page(void* page, const bplus_tree_tuple_defs* bpttd_p);
 
+// prints bplus_tree leaf page
+void print_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+
 // when you want tuples in descending order from the key
 uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p);
 

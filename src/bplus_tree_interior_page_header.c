@@ -135,3 +135,12 @@ void set_next_page_id_of_bplus_tree_interior_page(void* page, uint64_t page_id, 
 		}
 	}
 }
+
+#include<stdio.h>
+
+void print_bplus_tree_interior_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+{
+	print_bplus_tree_page_header(page, bpttd_p);
+	printf("next_page_id : %llu\n", (unsigned long long int)get_next_page_id_of_bplus_tree_interior_page(page, bpttd_p));
+	printf("least_keys_page_id : %llu\n", (unsigned long long int)get_least_keys_page_id_of_bplus_tree_interior_page(page, bpttd_p));
+}
