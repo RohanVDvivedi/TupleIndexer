@@ -28,8 +28,6 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	// push the root page onto the stack
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
 
-	// found will be set if a record with the key is found in the bplus_tree
-	int found = 0;
 	// inserted will be set if the record, was inserted
 	int inserted = 0;
 
@@ -41,28 +39,28 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	{
 		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
-		if(!inserted && !found) // go deeper towards the leaf of the tree, pushing curr_locked_page's child on the stack
+		if(!inserted) // go deeper towards the leaf of the tree, pushing curr_locked_page's child on the stack
 		{
 			if(curr_locked_page->level == 0) // is a leaf page, insert / split_insert to the leaf page
 			{
 				// check if the record already exists in this leaf page
-				found = (NO_TUPLE_FOUND != find_first_in_sorted_packed_page(
-									curr_locked_page->page, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
-									record, bpttd_p->record_def, bpttd_p->key_element_ids
-								));
+				int found = (NO_TUPLE_FOUND != find_first_in_sorted_packed_page(
+													curr_locked_page->page, bpttd_p->page_size, 
+													bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+													record, bpttd_p->record_def, bpttd_p->key_element_ids
+												));
 
-				// if it does not exist then try to insert it
+				// if it does not already exist then try to insert it
 				if(!found)
 				{
 					uint32_t insertion_point;
 
 					inserted = insert_to_sorted_packed_page(
-									curr_locked_page->page, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
-									record, 
-									&insertion_point
-								);
+											curr_locked_page->page, bpttd_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+											record, 
+											&insertion_point
+										);
 
 					// if the insertion fails
 					if(!inserted)
@@ -73,18 +71,21 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 							run_page_compaction(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def, 0, 1);
 
 							inserted = insert_at_in_sorted_packed_page(
-									curr_locked_page->page, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
-									record, 
-									insertion_point
-								);
+										curr_locked_page->page, bpttd_p->page_size, 
+										bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+										record, 
+										insertion_point
+									);
 						}
 
 						// if it still fails then call the split insert
 						if(!inserted)
 						{
 							parent_insert = split_insert_bplus_tree_leaf_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p);
-							inserted = 1;
+							
+							// if split insert was successfull
+							if(parent_insert != NULL)
+								inserted = 1;
 						}
 					}
 				}
@@ -102,7 +103,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 					unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 				}
 			}
-			else // is an interior page, grab its child and push it to the tree
+			else // is an interior page, grab its child and push it into the stack
 			{
 				// figure out which child page to go to next
 				curr_locked_page->child_index = find_child_index_for_record(curr_locked_page->page, record, bpttd_p);
@@ -159,7 +160,9 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				if(!inserted)
 				{
 					new_parent_insert = split_insert_bplus_tree_interior_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p);
-					parent_tuple_inserted = 1;
+					
+					if(new_parent_insert != NULL)
+						parent_tuple_inserted = 1;
 				}
 			}
 
