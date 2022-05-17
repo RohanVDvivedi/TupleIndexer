@@ -22,7 +22,7 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const
 // the failure may also result from following reason:
 // failure to allocate a new page OR failure to get reference to the next page of the page1
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
-const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p);
+const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 // it performs merge of the 2 leaf pages (page1 and the one next to it)
 // the page1 must have an adjacent page and both of them must have a single parent node
@@ -31,6 +31,6 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 // if this function returns a 1, then it is left on to the calling function to delete the corresponding parent entry of the page that is next to page1
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
-int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p);
+int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 #endif

@@ -142,7 +142,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	}
 }
 
-const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p)
+const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// do not perform a split if the page can accomodate the new tuple
 	if(can_insert_tuple(page1, bpttd_p->page_size, bpttd_p->record_def, tuple_to_insert))
@@ -291,7 +291,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 	return parent_insert;
 }
 
-int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p)
+int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// get the next adjacent page of tis page
 	uint64_t page2_id = get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p);

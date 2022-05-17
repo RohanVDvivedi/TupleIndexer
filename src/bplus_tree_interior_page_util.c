@@ -163,7 +163,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	}
 }
 
-const void* split_insert_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p)
+const void* split_insert_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// do not perform a split if the page can accomodate the new tuple
 	if(can_insert_tuple(page1, bpttd_p->page_size, bpttd_p->index_def, tuple_to_insert))
@@ -308,7 +308,7 @@ const void* split_insert_interior_page(void* page1, uint64_t page1_id, const voi
 	return parent_insert;
 }
 
-int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, bplus_tree_tuple_defs* bpttd_p, data_access_methods* dam_p)
+int merge_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// page1 and page2 are not adjacent pages on the level
 	if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) != page2_id)
