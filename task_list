@@ -1,6 +1,19 @@
  
- ** bplus tree always has a page even if empty and root page's id never changes like that of MySQL
- ** implement insert, search and delete functionality
+ * implement insert
+   * handle root split
+   * static analysis
+
+ * implement delete
+   * * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
+
+ * implement get_new_bplus_tree
+   * bplus tree always has a page even if empty and root page's id never changes like that of MySQL
+
+ * implement bplus_tree_cursor
+
+ * implement recursive print and delete function
+
+ * implement find
 
  * implement bplus_tree_cursor and its functions
 
