@@ -45,6 +45,10 @@ struct data_access_methods
 	// multiple calls to this function by all the readers holding lock on this page must be allowed
 	int (*release_reader_lock_and_free_page)(void* context, void* pg_ptr);
 
+	// make a page free, you may call this function, even if you don't have lock on the page
+	// fails if the page is already free
+	int (*free_page)(void* context, uint64_t page_id);
+
 	// get page id corresponding to a pg_ptr
 	// you may call this function only while holding read or write lock on this page
 	uint64_t (*get_page_id_for_page)(void* context, void* pg_ptr);
