@@ -103,7 +103,7 @@ static unsigned int hash_on_page_id(const void* page_desc1)
 
 static unsigned int hash_on_page_memory(const void* page_desc1)
 {
-	return (unsigned int)(((const page_descriptor*)(page_desc1))->page_memory);
+	return (unsigned int)((uintptr_t)(((const page_descriptor*)(page_desc1))->page_memory));
 }
 
 // blocking, unsafe function, must be called within lock on global_lock
