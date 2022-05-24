@@ -570,10 +570,20 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 			lock_released_and_will_be_freed = release_write_lock_on_page_memory_unsafe(page_desc);
 
 			// only if page lock was released, then we move further to free the page or mark it free
-			if(lock_released_and_will_be_freed && !page_desc->is_marked_for_freeing)
+			if(lock_released_and_will_be_freed)
 			{
-				// mark page for freeing
-				page_desc->is_marked_for_freeing = 1;
+				// if the page is not marked for freeing, then mark it for freeing
+				if(!page_desc->is_marked_for_freeing)
+				{
+					// mark page for freeing
+					page_desc->is_marked_for_freeing = 1;
+
+					// wake up all the waiting threads, if there are any
+					if(page_desc->waiting_threads > 0)
+						pthread_cond_broadcast(&(page_desc->block_wait));
+				}
+
+				// here, we are sure that the page, has been marked for freeing
 
 				// go ahead with freeing the page only if, there are no other readers or writers to this page
 				if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0)
@@ -607,10 +617,20 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 			lock_released_and_will_be_freed = release_read_lock_on_page_memory_unsafe(page_desc);
 
 			// only if page lock was released, then we move further to free the page or mark it free
-			if(lock_released_and_will_be_freed && !page_desc->is_marked_for_freeing)
+			if(lock_released_and_will_be_freed)
 			{
-				// mark page for freeing
-				page_desc->is_marked_for_freeing = 1;
+				// if the page is not marked for freeing, then mark it for freeing
+				if(!page_desc->is_marked_for_freeing)
+				{
+					// mark page for freeing
+					page_desc->is_marked_for_freeing = 1;
+
+					// wake up all the waiting threads, if there are any
+					if(page_desc->waiting_threads > 0)
+						pthread_cond_broadcast(&(page_desc->block_wait));
+				}
+
+				// here, we are sure that the page, has been marked for freeing
 
 				// go ahead with freeing the page only if, there are no other readers or writers to this page
 				if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0)
