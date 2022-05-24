@@ -446,14 +446,14 @@ static int wait_until_waiting_threads_leave_if_marked_for_free_unsafe(memory_sto
 	if(page_desc->is_free || !page_desc->is_marked_for_freeing)
 		return 0;
 
-	// wake up all the threads who are blocked and are waiting
-	if(page_desc->waiting_threads > 0)
+	// wait loop until there are no threads waiting for lock
+	while(page_desc->waiting_threads > 0)
 	{
+		// wake up all the waiting threads
 		pthread_cond_broadcast(&(page_desc->block_wait));
 
-		// wait until there are no threads waiting for lock
-		while(page_desc->waiting_threads > 0)
-			pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
+		// wait until the last one leaves
+		pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
 	}
 
 	return 1;
