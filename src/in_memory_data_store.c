@@ -657,6 +657,37 @@ int free_page(void* context, uint64_t page_id)
 
 	pthread_mutex_lock(&(cntxt->global_lock));
 
+		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
+
+		// if the page_desc exists and is not free
+		if(page_desc != NULL && !page_desc->is_free)
+		{
+			// if the page is not marked for freeing, then mark it for freeing
+			if(!page_desc->is_marked_for_freeing)
+			{
+				// mark page for freeing
+				page_desc->is_marked_for_freeing = 1;
+
+				// wake up all the waiting threads, if there are any
+				if(page_desc->waiting_threads > 0)
+					pthread_cond_broadcast(&(page_desc->block_wait));
+			}
+
+			// here, we are sure that the page, has been marked for freeing
+
+			// go ahead with freeing the page only if, there are no other readers or writers to this page
+			if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0)
+			{
+				// wait until there are no threads waiting for lock
+				wait_until_waiting_threads_leave_if_marked_for_free_unsafe(cntxt, page_desc);
+
+				// free the page, if the page was not freed while we waited on condition variable
+				free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+			}
+
+			will_be_freed = 1;
+		}
+
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	return will_be_freed;
