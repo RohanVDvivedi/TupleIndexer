@@ -78,9 +78,9 @@ void delete_page_descriptor(page_descriptor* page_desc)
 
 static int compare_page_descs_by_page_ids(const void* page_desc1, const void* page_desc2)
 {
-	if(((const page_descriptor*)(page_desc1))->page_id == ((const page_descriptor*)(page_desc1))->page_id)
+	if(((const page_descriptor*)(page_desc1))->page_id == ((const page_descriptor*)(page_desc2))->page_id)
 		return 0;
-	else if(((const page_descriptor*)(page_desc1))->page_id > ((const page_descriptor*)(page_desc1))->page_id)
+	else if(((const page_descriptor*)(page_desc1))->page_id > ((const page_descriptor*)(page_desc2))->page_id)
 		return 1;
 	else
 		return -1;
@@ -88,22 +88,22 @@ static int compare_page_descs_by_page_ids(const void* page_desc1, const void* pa
 
 static int compare_page_descs_by_page_memories(const void* page_desc1, const void* page_desc2)
 {
-	if(((const page_descriptor*)(page_desc1))->page_memory == ((const page_descriptor*)(page_desc1))->page_memory)
+	if(((const page_descriptor*)(page_desc1))->page_memory == ((const page_descriptor*)(page_desc2))->page_memory)
 		return 0;
-	else if(((const page_descriptor*)(page_desc1))->page_memory > ((const page_descriptor*)(page_desc1))->page_memory)
+	else if(((const page_descriptor*)(page_desc1))->page_memory > ((const page_descriptor*)(page_desc2))->page_memory)
 		return 1;
 	else
 		return -1;
 }
 
-static unsigned int hash_on_page_id(const void* page_desc1)
+static unsigned int hash_on_page_id(const void* page_desc)
 {
-	return (unsigned int)(((const page_descriptor*)(page_desc1))->page_id);
+	return (unsigned int)(((const page_descriptor*)(page_desc))->page_id);
 }
 
-static unsigned int hash_on_page_memory(const void* page_desc1)
+static unsigned int hash_on_page_memory(const void* page_desc)
 {
-	return (unsigned int)((uintptr_t)(((const page_descriptor*)(page_desc1))->page_memory));
+	return (unsigned int)((uintptr_t)(((const page_descriptor*)(page_desc))->page_memory));
 }
 
 // blocking, unsafe function, must be called within lock on global_lock
