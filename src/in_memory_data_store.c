@@ -440,6 +440,25 @@ static int delete_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 	return page_count_shrunk;
 }
 
+// returns 1, if this call ensures you that the waiting threads are now 0
+static int wait_until_waiting_threads_leave_if_marked_for_free_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
+{
+	if(page_desc->is_free || !page_desc->is_marked_for_freeing)
+		return 0;
+
+	// wake up all the threads who are blocked and are waiting
+	if(page_desc->waiting_threads > 0)
+	{
+		pthread_cond_broadcast(&(page_desc->block_wait));
+
+		// wait until there are no threads waiting for lock
+		while(page_desc->waiting_threads > 0)
+			pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
+	}
+
+	return 1;
+}
+
 static int free_page_if_marked_for_free_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
 {
 	// if the page_desc is already free OR is not marked for freeing then return with a failure
@@ -484,11 +503,17 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 		{
 			lock_released = release_write_lock_on_page_memory_unsafe(page_desc);
 
-			// if lock was released
-			if(lock_released)
+			// if lock was released and the page was marked for freeing and there are no threads who currently hold any locks
+			// then attempt freeing the page
+			if(lock_released && page_desc->is_marked_for_freeing)
 			{
-				// free the page, if it was amrked to be free while we held the lock
-				free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+				if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0)
+				{
+					wait_until_waiting_threads_leave_if_marked_for_free_unsafe(cntxt, page_desc);
+
+					// free the page, if it was amrked to be free while we held the lock
+					free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+				}
 			}
 		}
 
@@ -511,11 +536,17 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 		{
 			lock_released = release_read_lock_on_page_memory_unsafe(page_desc);
 
-			// if lock was released
-			if(lock_released)
+			// if lock was released and the page was marked for freeing and there are no threads who currently hold any locks
+			// then attempt freeing the page
+			if(lock_released && page_desc->is_marked_for_freeing)
 			{
-				// free the page, if it was amrked to be free while we held the lock
-				free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+				if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0)
+				{
+					wait_until_waiting_threads_leave_if_marked_for_free_unsafe(cntxt, page_desc);
+
+					// free the page, if it was amrked to be free while we held the lock
+					free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+				}
 			}
 		}
 
@@ -544,16 +575,15 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 				// mark page for freeing
 				page_desc->is_marked_for_freeing = 1;
 
-				// wake up all the threads who are blocked and are waiting
-				if(page_desc->waiting_threads > 0)
-					pthread_cond_broadcast(&(page_desc->block_wait));
+				// go ahead with freeing the page only if, there are no other readers or writers to this page
+				if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0)
+				{
+					// wait until there are no threads waiting for lock
+					wait_until_waiting_threads_leave_if_marked_for_free_unsafe(cntxt, page_desc);
 
-				// wait until there are no threads waiting for lock
-				while(page_desc->waiting_threads > 0)
-					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
-
-				// free the page, if the page was not freed while we waited on condition variable
-				free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+					// free the page, if the page was not freed while we waited on condition variable
+					free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+				}
 			}
 		}
 
@@ -582,16 +612,15 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 				// mark page for freeing
 				page_desc->is_marked_for_freeing = 1;
 
-				// wake up all the threads who are blocked and are waiting
-				if(page_desc->waiting_threads > 0)
-					pthread_cond_broadcast(&(page_desc->block_wait));
+				// go ahead with freeing the page only if, there are no other readers or writers to this page
+				if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0)
+				{
+					// wait until there are no threads waiting for lock
+					wait_until_waiting_threads_leave_if_marked_for_free_unsafe(cntxt, page_desc);
 
-				// wait until there are no threads waiting for lock
-				while(page_desc->waiting_threads > 0)
-					pthread_cond_wait(&(page_desc->free_wait), &(cntxt->global_lock));
-
-				// free the page, if the page was not freed while we waited on condition variable
-				free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+					// free the page, if the page was not freed while we waited on condition variable
+					free_page_if_marked_for_free_unsafe(cntxt, page_desc);
+				}
 			}
 		}
 
