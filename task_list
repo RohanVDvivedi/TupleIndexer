@@ -1,11 +1,10 @@
-
- * start with implementing sequential insert test cases using sorted and random ordered csv files
-
- * add data_access_methods api function to free a page even while we are not holding a lock on it,
+  * add data_access_methods api function to free a page even while we are not holding a lock on it,
    on the lines of
    free_page(const void* context, uint64_t page_id)
 
  * implement delete
+ 
+ * start with implementing sequential insert test cases using sorted and random ordered csv files
 
  * implement bplus_tree_cursor
  * implement find
