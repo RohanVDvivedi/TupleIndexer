@@ -1,6 +1,4 @@
-  * add data_access_methods api function to free a page even while we are not holding a lock on it,
-   on the lines of
-   free_page(const void* context, uint64_t page_id)
+ * static analysis for in memory data access methods
 
  * implement delete
  
