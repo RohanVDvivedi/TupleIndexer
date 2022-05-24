@@ -411,6 +411,35 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 	return lock_downgraded;
 }
 
+static int delete_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
+{
+	int page_count_shrunk = 0;
+
+	// loop to delete trailing page_descriptors
+	while(1)
+	{
+		page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
+
+		// check if this page_descriptor is a trailing (the last of page_descriptors)
+		if(trailing->page_id + 1 == cntxt->total_pages_count)
+		{
+			// remove the trailing page_descriptor
+			remove_from_bst(&(cntxt->free_page_descs), trailing);
+			remove_from_hashmap(&(cntxt->page_id_map), trailing);
+
+			// now we can safely delete the page_descriptor
+			delete_page_descriptor(trailing);
+
+			// decrement the total pages count
+			cntxt->total_pages_count--;
+		}
+		else
+			break;
+	}
+
+	return page_count_shrunk;
+}
+
 static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified)
 {
 	memory_store_context* cntxt = context;
@@ -464,27 +493,8 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr)
 						// insert page_desc in free_page_descs
 						insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
-						// loop to delete trailing page_descriptors
-						while(1)
-						{
-							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
-
-							// check if this page_descriptor is a trailing (the last of page_descriptors)
-							if(trailing->page_id + 1 == cntxt->total_pages_count)
-							{
-								// remove the trailing page_descriptor
-								remove_from_bst(&(cntxt->free_page_descs), trailing);
-								remove_from_hashmap(&(cntxt->page_id_map), trailing);
-
-								// now we can safely delete the page_descriptor
-								delete_page_descriptor(trailing);
-
-								// decrement the total pages count
-								cntxt->total_pages_count--;
-							}
-							else
-								break;
-						}
+						// delete trailing page_descriptors
+						delete_trailing_free_page_descs_unsafe(cntxt);
 					}
 				}
 			}
@@ -541,27 +551,8 @@ static int release_writer_lock_and_free_page(void* context, void* pg_ptr)
 						// insert page_desc in free_page_descs
 						insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
-						// loop to delete trailing page_descriptors
-						while(1)
-						{
-							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
-
-							// check if this page_descriptor is a trailing (the last of page_descriptors)
-							if(trailing->page_id + 1 == cntxt->total_pages_count)
-							{
-								// remove the trailing page_descriptor
-								remove_from_bst(&(cntxt->free_page_descs), trailing);
-								remove_from_hashmap(&(cntxt->page_id_map), trailing);
-
-								// now we can safely delete the page_descriptor
-								delete_page_descriptor(trailing);
-
-								// decrement the total pages count
-								cntxt->total_pages_count--;
-							}
-							else
-								break;
-						}
+						// delete trailing page_descriptors
+						delete_trailing_free_page_descs_unsafe(cntxt);
 					}
 				}
 			}
@@ -618,27 +609,8 @@ static int release_reader_lock_and_free_page(void* context, void* pg_ptr)
 						// insert page_desc in free_page_descs
 						insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
-						// loop to delete trailing page_descriptors
-						while(1)
-						{
-							page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
-
-							// check if this page_descriptor is a trailing (the last of page_descriptors)
-							if(trailing->page_id + 1 == cntxt->total_pages_count)
-							{
-								// remove the trailing page_descriptor
-								remove_from_bst(&(cntxt->free_page_descs), trailing);
-								remove_from_hashmap(&(cntxt->page_id_map), trailing);
-
-								// now we can safely delete the page_descriptor
-								delete_page_descriptor(trailing);
-
-								// decrement the total pages count
-								cntxt->total_pages_count--;
-							}
-							else
-								break;
-						}
+						// delete trailing page_descriptors
+						delete_trailing_free_page_descs_unsafe(cntxt);
 					}
 				}
 			}
