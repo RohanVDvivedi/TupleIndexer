@@ -666,11 +666,11 @@ int free_page(void* context, uint64_t page_id)
 
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
 
-		// if the page_desc exists and is not free
-		if(page_desc != NULL && !page_desc->is_free)
+		// if the page_desc exists and is not free and is not marked for freeing
+		if(page_desc != NULL && !page_desc->is_free && !page_desc->is_marked_for_freeing)
 		{
 			// if the page is not marked for freeing, then mark it for freeing
-			if(!page_desc->is_marked_for_freeing)
+			if(!page_desc->is_marked_for_freeing) // this condition is redundant
 			{
 				// mark page for freeing
 				page_desc->is_marked_for_freeing = 1;
