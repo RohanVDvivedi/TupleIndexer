@@ -24,10 +24,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 // delete a record given by key
 int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
-// frees all the pages occupied by the bplus_tree recursively
-int destroy_bplus_tree_recursively(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+// frees all the pages occupied by the bplus_tree
+int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
-// prints all the pages in the bplus_tree recursively
+// prints all the pages in the bplus_tree
 void print_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 #endif
