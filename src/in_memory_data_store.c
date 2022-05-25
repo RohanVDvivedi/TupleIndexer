@@ -514,7 +514,7 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 			// then attempt freeing the page
 			if(lock_released && page_desc->is_marked_for_freeing)
 			{
-				if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0)
+				if(page_desc->writing_threads == 0 && page_desc->reading_threads == 0) // this condition must be true, due to exclusive nature of write lock
 				{
 					wait_until_waiting_threads_leave_if_marked_for_free_unsafe(cntxt, page_desc);
 
