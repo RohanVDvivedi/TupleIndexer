@@ -37,8 +37,9 @@ struct page_descriptor
 	// threads block here on this condition variable, until they can acquire the lock
 	pthread_cond_t block_wait;
 
-	// the thread that wants to free this block (after marking it for freeing) may block here, 
+	// the thread that wants to free this page_desc (after marking it for freeing) may block here, 
 	// until there is atleast 1 waiting_threads
+	// only 1 thread may wait on this condition variable, and only if there are waiting threads and after marking the page_desc for freeing
 	pthread_cond_t free_wait;
 
 	// below are the 2 embedded nodes used by page_id_map and page_memory_map
@@ -128,6 +129,7 @@ static int acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, p
 	{
 		// if the page is marked for freeing and we were the last waiting_thread then
 		// we signal the thread that is waiting for blocked threads to leave, that it can now proceed
+		// note that only 1 thread must wait for the waiting threads to leave while the page_descriptor is marked for freeing
 		if(page_desc->is_marked_for_freeing && page_desc->waiting_threads == 0)
 			pthread_cond_signal(&(page_desc->free_wait));
 		return 0;
@@ -165,6 +167,7 @@ static int acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc, 
 	{
 		// if the page is marked for freeing and we were the last waiting_thread then
 		// we signal the thread that is waiting for blocked threads to leave, that it can now proceed
+		// note that only 1 thread must wait for the waiting threads to leave while the page_descriptor is marked for freeing
 		if(page_desc->is_marked_for_freeing && page_desc->waiting_threads == 0)
 			pthread_cond_signal(&(page_desc->free_wait));
 		return 0;
