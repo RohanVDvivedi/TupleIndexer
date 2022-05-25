@@ -1,5 +1,3 @@
- * implement delete bplus_tree function
-
  * start with implementing sequential insert test cases using sorted and random ordered csv files
  
  * implement delete
