@@ -429,9 +429,13 @@ static int delete_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 
 			// now we can safely delete the page_descriptor
 			delete_page_descriptor(trailing);
+			trailing = NULL; // discarding dangling local pointer
 
 			// decrement the total pages count
 			cntxt->total_pages_count--;
+
+			// mark true that the total_pages_count was shrunk
+			page_count_shrunk = 1;
 		}
 		else
 			break;
