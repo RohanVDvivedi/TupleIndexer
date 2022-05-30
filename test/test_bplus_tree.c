@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdint.h>
+#include<string.h>
 
 #include<tuple.h>
 #include<tuple_def.h>
@@ -24,9 +25,13 @@ struct row
 	uint8_t score;
 };
 
-void read_from_file(row* r, int fd);
+void read_row_from_file(row* r, int fd);
 
-void print_row(row* r);
+void print_row(row* r)
+{
+	printf("row (index = %u, name = %s, age = %u, sex = %s, email = %s, phone = %s, score = %u)\n",
+		r->index, r->name, r->age, r->sex, r->email, r->phone, r->score);
+}
 
 void init_tuple_definition(tuple_def* def)
 {
@@ -81,7 +86,7 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 
 void read_row_from_tuple(row* r, const void* tuple)
 {
-	
+
 }
 
 int main()
