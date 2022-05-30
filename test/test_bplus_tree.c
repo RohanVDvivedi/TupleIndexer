@@ -25,7 +25,10 @@ struct row
 	uint8_t score;
 };
 
-void read_row_from_file(row* r, int fd);
+void read_row_from_file(row* r, File* f)
+{
+	fscanf(f,"%u,%[^,],%hhu,%[^,],%[^,],%[^,],%hhu\n", &(r->index), r->name, &(r->age), r->sex, r->email, r->phone, &(r->score));
+}
 
 void print_row(row* r)
 {
@@ -91,5 +94,8 @@ void read_row_from_tuple(row* r, const void* tuple)
 
 int main()
 {
+	File* f = fopen("./testdata.csv","r");
+
+	fclose(f);
 	return 0;
 }
