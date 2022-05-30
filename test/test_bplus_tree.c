@@ -25,7 +25,7 @@ struct row
 	uint8_t score;
 };
 
-void read_row_from_file(row* r, File* f)
+void read_row_from_file(row* r, FILE* f)
 {
 	fscanf(f,"%u,%[^,],%hhu,%[^,],%[^,],%[^,],%hhu\n", &(r->index), r->name, &(r->age), r->sex, r->email, r->phone, &(r->score));
 }
@@ -39,21 +39,15 @@ void print_row(row* r)
 void init_tuple_definition(tuple_def* def)
 {
 	// initialize tuple definition and insert element definitions
-	int res = init_tuple_def(def, "students");
+	init_tuple_def(def, "students");
 
-	res = insert_element_def(def, "index", INT, 4);
-
-	res = insert_element_def(def, "name", VAR_STRING, 1);
-
-	res = insert_element_def(def, "age", UINT, 1);
-
-	res = insert_element_def(def, "sex", UINT, 1);
-
-	res = insert_element_def(def, "email", VAR_STRING, 1);
-
-	res = insert_element_def(def, "phone", STRING, 14);
-
-	res = insert_element_def(def, "score", UINT, 1);
+	insert_element_def(def, "index", INT, 4);
+	insert_element_def(def, "name", VAR_STRING, 1);
+	insert_element_def(def, "age", UINT, 1);
+	insert_element_def(def, "sex", UINT, 1);
+	insert_element_def(def, "email", VAR_STRING, 1);
+	insert_element_def(def, "phone", STRING, 14);
+	insert_element_def(def, "score", UINT, 1);
 
 	finalize_tuple_def(def, PAGE_SIZE);
 
@@ -87,14 +81,24 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 	printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(def, tuple), print_buffer);
 }
 
-void read_row_from_tuple(row* r, const void* tuple)
+void read_row_from_tuple(row* r, const void* tupl, const tuple_def* tpl_d)
 {
-
+	copy_element_from_tuple(tpl_d, 0, tupl, &(r->index));
+	copy_element_from_tuple(tpl_d, 1, tupl, r->name);
+	copy_element_from_tuple(tpl_d, 2, tupl, &(r->age));
+	uint8_t sex = 0;
+	strcpy(r->sex, "Female");
+	copy_element_from_tuple(tpl_d, 3, tupl, &(sex));
+	if(sex)
+		strcpy(r->sex, "Male");
+	copy_element_from_tuple(tpl_d, 4, tupl, r->email);
+	copy_element_from_tuple(tpl_d, 5, tupl, r->phone);
+	copy_element_from_tuple(tpl_d, 6, tupl, &(r->score));
 }
 
 int main()
 {
-	File* f = fopen("./testdata.csv","r");
+	FILE* f = fopen("./testdata.csv","r");
 
 	fclose(f);
 	return 0;
