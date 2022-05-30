@@ -26,10 +26,6 @@ struct row
 
 void read_from_file(row* r, int fd);
 
-void write_row_to_tuple(void* tuple, const row* r);
-
-void read_row_from_tuple(row* r, const void* tuple);
-
 void print_row(row* r);
 
 void init_tuple_definition(tuple_def* def)
@@ -81,6 +77,11 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 
 	sprint_tuple(print_buffer, tuple, def);
 	printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(def, tuple), print_buffer);
+}
+
+void read_row_from_tuple(row* r, const void* tuple)
+{
+	
 }
 
 int main()
