@@ -1,17 +1,23 @@
- * run insert test cases with different key types
-
- * test inserting records with already existing keys
  
  * implement delete
 
- * implement delete test cases to randomly delete values from the same test cases
+ * generate random and sorted deletion test keys file
+  * for each deletion keys file
+    * segregate only keys data from file, in the order as the order of the keys in the bplus tree
+    * sort them in the same order as the keys
+    * make 3 sets as first 32, last 32 and the rest 192 sorted
+    * randomize rest 192 and place somewhere in between first 32 and last 32
 
- * test deletion of non existing keys
+ * implement delete test cases to randomly delete values from the same test cases
 
  * implement bplus_tree_cursor
  * implement find
 
  * implement find test cases to find range of values, add this tests between insert and delete test cases
+
+ * test deletion of non existing keys
+ * test inserting records with already existing keys
+ * interleave insertions and deletion test cases
 
  * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
 
