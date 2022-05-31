@@ -1,13 +1,19 @@
- * debug insert test cases
+ * run insert test cases with different key types
+
+ * test inserting records with already existing keys
  
  * implement delete
+
+ * implement delete test cases to randomly delete values from the same test cases
+
+ * test deletion of non existing keys
 
  * implement bplus_tree_cursor
  * implement find
 
- * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
+ * implement find test cases to find range of values, add this tests between insert and delete test cases
 
- * write single threaded test cases to insert a large csv in to b+tree, remove some, insert some elements
+ * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
 
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
 
