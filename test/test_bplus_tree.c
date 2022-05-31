@@ -141,6 +141,12 @@ int main()
 		char tuple_csh[PAGE_SIZE];
 		build_tuple_from_row_struct(record_def, tuple_csh, &r);
 
+		// insert the tuple_csh in the bplus_tree rooted as root_page_id
+		insert_in_bplus_tree(root_page_id, tuple_csh, &bpttd, dam_p);
+
+		// print bplus tree
+		print_bplus_tree(root_page_id, &bpttd, dam_p);
+
 		// increment the tuples_processed count
 		tuples_processed++;
 	}
