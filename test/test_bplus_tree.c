@@ -117,6 +117,9 @@ int main()
 	// print the generated bplus tree tuple defs
 	print_bplus_tree_tuple_definitions(&bpttd);
 
+	// create a bplus tree and get its root
+	uint64_t root_page_id = get_new_bplus_tree(&bpttd, dam_p);
+
 	// stores the count of tuples processed
 	uint32_t tuples_processed = 0;
 
@@ -141,6 +144,14 @@ int main()
 		// increment the tuples_processed count
 		tuples_processed++;
 	}
+
+	printf("insertions to bplus tree completed\n");
+
+	// print bplus tree
+	print_bplus_tree(root_page_id, &bpttd, dam_p);
+
+	// destroy bplus tree
+	destroy_bplus_tree(root_page_id, &bpttd, dam_p);
 
 	// close the in-memory data store
 	close_and_destroy_in_memory_data_store(dam_p);
