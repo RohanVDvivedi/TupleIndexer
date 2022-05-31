@@ -38,7 +38,7 @@ int can_insert_this_tuple_without_split_for_bplus_tree(const void* page, uint32_
 
 	uint32_t space_required_by_tuple = get_tuple_size(def, tuple) + get_additional_space_overhead_per_tuple(page_size, def);
 
-	if(allotted_space < used_space + space_required_by_tuple)
+	if(allotted_space >= used_space + space_required_by_tuple)
 		return 1;
 
 	return 0;
