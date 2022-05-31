@@ -12,9 +12,9 @@
 #include<in_memory_data_store.h>
 
 // un comment based on the keys that you want to test with
-//#define KEY_NAME_EMAIL
+#define KEY_NAME_EMAIL
 //#define KEY_INDEX_PHONE
-#define KEY_PHONE_SCORE
+//#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
 
 #if defined KEY_NAME_EMAIL
