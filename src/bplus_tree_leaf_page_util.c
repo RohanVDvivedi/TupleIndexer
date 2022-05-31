@@ -283,6 +283,9 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 
 	void* parent_insert = malloc(sizeof(char) * (size_of_first_tuple_page2 + bpttd_p->page_id_width));
 
+	// intialize parent insert tuple
+	init_tuple(bpttd_p->index_def, parent_insert);
+
 	// insert key attributes from first_tuple_page2 to parent_insert
 	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
 		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, parent_insert, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
