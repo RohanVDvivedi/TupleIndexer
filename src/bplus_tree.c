@@ -340,6 +340,9 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 
 void print_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
+	// print the root page id of the bplsu tree
+	printf("\n\nBplus_tree @ root_page_id = %lu\n\n", root_page_id);
+
 	// get lock on the root page of the bplus_tree
 	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 0, 1, bpttd_p, dam_p);
 
@@ -360,7 +363,7 @@ void print_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_
 			// print this page and its page_id
 			printf("page_id : %llu\n\n", (unsigned long long int)curr_locked_page->page_id);
 			print_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p);
-			printf("xxxxxxxxxxxxx\n");
+			printf("xxxxxxxxxxxxx\n\n");
 
 			// pop it from the stack and unlock it
 			pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
