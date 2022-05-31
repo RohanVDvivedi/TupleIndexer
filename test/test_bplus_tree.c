@@ -98,7 +98,38 @@ void read_row_from_tuple(row* r, const void* tupl, const tuple_def* tpl_d)
 
 int main()
 {
+	// open test data file
 	FILE* f = fopen("./testdata.csv","r");
+
+	// allocate record tuple definition and initialize it
+	tuple_def* record_def = alloca(size_of_tuple_def(7));
+	init_tuple_definition(record_def);
+
+	// stores the count of tuples processed
+	uint32_t tuples_processed = 0;
+
+	uint32_t tuples_processed_limit = 20;
+
+	while(!feof(f))
+	{
+		if(tuples_processed == tuples_processed_limit)
+			break;
+	
+		row r;
+
+		// read a row record from the file
+		read_row_from_file(&r, f);
+
+		// print the row we read
+		print_row(&r);
+
+		char tuple_csh[PAGE_SIZE];
+
+		// construct tuple from this row
+		build_tuple_from_row_struct(record_def, tuple_csh, &r);
+
+		tuples_processed++;
+	}
 
 	fclose(f);
 	return 0;
