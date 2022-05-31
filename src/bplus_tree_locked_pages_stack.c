@@ -44,12 +44,12 @@ locked_page_info* get_new_locked_page_info(void* page, uint64_t page_id, int wri
 
 	return lpi_p;
 }
-
+#include<stdio.h>
 int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_free_this_page, int was_modified_if_write_lock, const data_access_methods* dam_p)
 {
 	int return_val = 0;
 
-	if(should_free_this_page)
+	if(!should_free_this_page)
 	{
 		if(lpi_p->is_write_locked)
 			return_val = dam_p->release_writer_lock_on_page(dam_p->context, lpi_p->page, was_modified_if_write_lock);
