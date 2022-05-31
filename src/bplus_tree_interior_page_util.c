@@ -73,8 +73,8 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 
 	if(is_fixed_sized_tuple_def(bpttd_p->index_def))
 	{
-		// if it is the last interior page
-		if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID)
+		// if the new index tuple is to be inserted after the last tuple in the last interior page of that level
+		if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == tuple_count)
 			return tuple_count;	// i.e. only 1 tuple goes to the new page
 		else // else
 			return (tuple_count + 1) / 2;	// equal split
@@ -84,13 +84,15 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 		uint32_t total_tuple_count = tuple_count + 1;
 		uint32_t* cumulative_tuple_sizes = malloc(sizeof(uint32_t) * (total_tuple_count + 1));
 
+		// pre calculate the space that will be occupied by the new tuple
+		uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->index_def);
+
 		cumulative_tuple_sizes[0] = 0;
 		for(uint32_t i = 0, k = 1; i < tuple_count; i++)
 		{
 			// if the new tuple is suppossed to be inserted at i then process it first
 			if(i == tuple_to_insert_at)
 			{
-				uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->index_def);
 				cumulative_tuple_sizes[k] = space_occupied_by_new_tuple + cumulative_tuple_sizes[k-1];
 				k++;
 			}
@@ -101,6 +103,10 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 			k++;
 		}
 
+		// if the new tuple is suppossed to be inserted at the end then append its occupied size to the end
+		if(tuple_count == tuple_to_insert_at)
+			cumulative_tuple_sizes[total_tuple_count] = space_occupied_by_new_tuple + cumulative_tuple_sizes[total_tuple_count-1];
+
 		// now we have the cumulative space requirement of all the tuples
 		// i.e. the first n tuples will occupy cumulative_tuple_sizes[n] amount of space
 
@@ -110,8 +116,8 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 		// this is the result number of tuple that should stay on this page
 		uint32_t result = 0;
 
-		// if it is the last interior page => split it such that it is almost full
-		if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID)
+		// if the new index tuple is to be inserted after the last tuple in the last interior page of that level
+		if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == tuple_count)
 		{
 			uint32_t limit = space_allotted_to_tuples;
 
