@@ -123,7 +123,7 @@ int main()
 	// stores the count of tuples processed
 	uint32_t tuples_processed = 0;
 
-	uint32_t tuples_processed_limit = 7;
+	uint32_t tuples_processed_limit = 256;
 
 	while(!feof(f))
 	{
