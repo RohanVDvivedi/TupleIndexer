@@ -13,6 +13,8 @@
 
 #define PAGE_SIZE 256
 
+#define PAGE_ID_WIDTH 1
+
 typedef struct row row;
 struct row
 {
@@ -105,6 +107,13 @@ int main()
 	tuple_def* record_def = alloca(size_of_tuple_def(7));
 	init_tuple_definition(record_def);
 
+	// construct an in-memory data store
+	data_access_methods* dam_p = get_new_in_memory_data_store(PAGE_SIZE, PAGE_ID_WIDTH);
+
+	// construct tuple definitions for bplus_tree
+	bplus_tree_tuple_defs bpttd;
+	init_bplus_tree_tuple_definitions(&bpttd, record_def, (uint32_t []){1,4}, 2, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
+
 	// stores the count of tuples processed
 	uint32_t tuples_processed = 0;
 
@@ -114,23 +123,30 @@ int main()
 	{
 		if(tuples_processed == tuples_processed_limit)
 			break;
-	
-		row r;
 
 		// read a row record from the file
+		row r;
 		read_row_from_file(&r, f);
 
 		// print the row we read
 		print_row(&r);
 
-		char tuple_csh[PAGE_SIZE];
-
 		// construct tuple from this row
+		char tuple_csh[PAGE_SIZE];
 		build_tuple_from_row_struct(record_def, tuple_csh, &r);
 
+		// increment the tuples_processed count
 		tuples_processed++;
 	}
 
+	// close the in-memory data store
+	close_and_destroy_in_memory_data_store(dam_p);
+
+	// destroy bplus_tree_tuple_definitions
+	deinit_bplus_tree_tuple_definitions(&bpttd);
+
+	// close the file
 	fclose(f);
+
 	return 0;
 }
