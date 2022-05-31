@@ -15,8 +15,8 @@
 
 #define PAGE_ID_WIDTH 1
 
-typedef struct row row;
-struct row
+typedef struct record record;
+struct record
 {
 	uint32_t index;
 	char name[64];
@@ -27,14 +27,14 @@ struct row
 	uint8_t score;
 };
 
-void read_row_from_file(row* r, FILE* f)
+void read_record_from_file(record* r, FILE* f)
 {
 	fscanf(f,"%u,%[^,],%hhu,%[^,],%[^,],%[^,],%hhu\n", &(r->index), r->name, &(r->age), r->sex, r->email, r->phone, &(r->score));
 }
 
-void print_row(row* r)
+void print_record(record* r)
 {
-	printf("row (index = %u, name = %s, age = %u, sex = %s, email = %s, phone = %s, score = %u)\n",
+	printf("record (index = %u, name = %s, age = %u, sex = %s, email = %s, phone = %s, score = %u)\n",
 		r->index, r->name, r->age, r->sex, r->email, r->phone, r->score);
 }
 
@@ -63,7 +63,7 @@ void init_tuple_definition(tuple_def* def)
 	printf("\n\n");
 }
 
-void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r)
+void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const record* r)
 {
 	init_tuple(def, tuple);
 
@@ -83,7 +83,7 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 	printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(def, tuple), print_buffer);
 }
 
-void read_row_from_tuple(row* r, const void* tupl, const tuple_def* tpl_d)
+void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
 	copy_element_from_tuple(tpl_d, 0, tupl, &(r->index));
 	copy_element_from_tuple(tpl_d, 1, tupl, r->name);
@@ -130,19 +130,19 @@ int main()
 		if(tuples_processed == tuples_processed_limit)
 			break;
 
-		// read a row record from the file
-		row r;
-		read_row_from_file(&r, f);
+		// read a record from the file
+		record r;
+		read_record_from_file(&r, f);
 
-		// print the row we read
-		print_row(&r);
+		// print the record we read
+		print_record(&r);
 
-		// construct tuple from this row
-		char tuple_csh[PAGE_SIZE];
-		build_tuple_from_row_struct(record_def, tuple_csh, &r);
+		// construct tuple from this record
+		char record_tuple[PAGE_SIZE];
+		build_tuple_from_record_struct(record_def, record_tuple, &r);
 
-		// insert the tuple_csh in the bplus_tree rooted as root_page_id
-		insert_in_bplus_tree(root_page_id, tuple_csh, &bpttd, dam_p);
+		// insert the record_tuple in the bplus_tree rooted as root_page_id
+		insert_in_bplus_tree(root_page_id, record_tuple, &bpttd, dam_p);
 
 		// print bplus tree
 		printf("---------------------------------------------------------------------------------------------------------\n");
