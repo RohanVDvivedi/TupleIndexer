@@ -205,7 +205,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 						void* root_least_keys_child = dam_p->get_new_page_with_write_lock(dam_p->context, &root_least_keys_child_id);
 
 						// clone root page contents into the new root_least_keys_child
-						clone_page(root_least_keys_child, bpttd_p->page_size, bpttd_p->record_def, 1, curr_locked_page->page);
+						clone_page(root_least_keys_child, bpttd_p->page_size, bpttd_p->index_def, 1, curr_locked_page->page);
 
 						// re intialize root page as an interior page
 						init_bplus_tree_interior_page(curr_locked_page->page, ++curr_locked_page->level, bpttd_p);
