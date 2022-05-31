@@ -114,6 +114,9 @@ int main()
 	bplus_tree_tuple_defs bpttd;
 	init_bplus_tree_tuple_definitions(&bpttd, record_def, (uint32_t []){1,4}, 2, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
 
+	// print the generated bplus tree tuple defs
+	print_bplus_tree_tuple_definitions(&bpttd);
+
 	// stores the count of tuples processed
 	uint32_t tuples_processed = 0;
 
