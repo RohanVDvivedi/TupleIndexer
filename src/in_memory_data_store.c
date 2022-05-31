@@ -62,6 +62,7 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id)
 	page_desc->page_memory = NULL;
 	page_desc->reading_threads = 0;
 	page_desc->writing_threads = 0;
+	page_desc->waiting_threads = 0;
 	pthread_cond_init(&(page_desc->block_wait), NULL);
 	pthread_cond_init(&(page_desc->free_wait), NULL);
 	initialize_llnode(&(page_desc->page_id_map_node));
