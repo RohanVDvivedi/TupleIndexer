@@ -13,7 +13,9 @@
 
 // un comment based on the keys that you want to test with
 //#define KEY_NAME_EMAIL
-#define KEY_INDEX_PHONE
+//#define KEY_INDEX_PHONE
+#define KEY_PHONE_SCORE
+//#define KEY_EMAIL_AGE_SEX
 
 #if defined KEY_NAME_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
@@ -21,6 +23,12 @@
 #elif defined KEY_INDEX_PHONE
 	#define KEY_ELEMENTS_COUNT			2
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){0,5}
+#elif defined KEY_PHONE_SCORE
+	#define KEY_ELEMENTS_COUNT			2
+	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){5,6}
+#elif defined KEY_EMAIL_AGE_SEX
+	#define KEY_ELEMENTS_COUNT			3
+	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){4,2,3}
 #endif
 
 #define PAGE_SIZE 256
@@ -30,13 +38,13 @@
 typedef struct record record;
 struct record
 {
-	uint32_t index;
-	char name[64];
-	uint8_t age;
-	char sex[8]; // Female = 0 or Male = 1
-	char email[64];
-	char phone[64];
-	uint8_t score;
+	uint32_t index; // 0
+	char name[64];  // 1
+	uint8_t age;    // 2
+	char sex[8];    // 3 -> Female = 0 or Male = 1
+	char email[64]; // 4
+	char phone[64]; // 5
+	uint8_t score;  // 6
 };
 
 void read_record_from_file(record* r, FILE* f)
