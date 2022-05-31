@@ -49,4 +49,7 @@ uint32_t get_maximum_insertable_record_size(bplus_tree_tuple_defs* bpttd_p);
 // then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
 
+// print bplus_tree_tuple_definitions
+void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
+
 #endif

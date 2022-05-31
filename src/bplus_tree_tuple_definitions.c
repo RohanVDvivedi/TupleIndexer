@@ -144,3 +144,47 @@ uint32_t get_maximum_insertable_record_size(bplus_tree_tuple_defs* bpttd_p)
 	#define min(a,b) (((a)<(b))?(a):(b))
 	return  min(max_record_size_per_leaf_page, max_key_size_per_interior_page);
 }
+
+#include<stdio.h>
+
+void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
+{
+	printf("Bplus_tree tuple defs:\n");
+
+	printf("page_id_width = %hhu\n", bpttd_p->page_id_width);
+
+	printf("page_size = %u\n", bpttd_p->page_size);
+
+	printf("NULL_PAGE_ID = %lu\n", bpttd_p->NULL_PAGE_ID);
+
+	printf("key_element_count = %u\n", bpttd_p->key_element_count);
+
+	printf("key_element_ids = ");
+	if(bpttd_p->key_element_ids)
+	{
+		printf("{ ");
+		for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
+			printf("%u, ", bpttd_p->key_element_ids[i]);
+		printf(" }\n");
+	}
+	else
+		printf("NULL\n");
+
+	printf("record_def = ");
+	if(bpttd_p->record_def)
+		print_tuple_def(bpttd_p->record_def);
+	else
+		printf("NULL\n");
+
+	printf("index_def = ");
+	if(bpttd_p->index_def)
+		print_tuple_def(bpttd_p->index_def);
+	else
+		printf("NULL\n");
+
+	printf("key_def = ");
+	if(bpttd_p->key_def)
+		print_tuple_def(bpttd_p->key_def);
+	else
+		printf("NULL\n");
+}
