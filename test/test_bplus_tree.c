@@ -11,8 +11,9 @@
 #include<data_access_methods.h>
 #include<in_memory_data_store.h>
 
-#define KEY_NAME_EMAIL
-//#define KEY_INDEX_PHONE
+// un comment based on the keys that you want to test with
+//#define KEY_NAME_EMAIL
+#define KEY_INDEX_PHONE
 
 #if defined KEY_NAME_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
