@@ -181,6 +181,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(!parent_tuple_inserted)
 			{
+
 				// check if the insert can succeed on compaction
 				if(can_insert_this_tuple_without_split_for_bplus_tree(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, parent_insert))
 				{
@@ -195,7 +196,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				}
 
 				// if it still fails then call the split insert
-				if(!inserted)
+				if(!parent_tuple_inserted)
 				{
 					if(curr_locked_page->is_root)
 					{
@@ -220,7 +221,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 						curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 					}
 
-					new_parent_insert = split_insert_bplus_tree_interior_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p);
+					new_parent_insert = split_insert_bplus_tree_interior_page(curr_locked_page->page, curr_locked_page->page_id, parent_insert, insertion_point, bpttd_p, dam_p);
 					
 					if(new_parent_insert != NULL)
 						parent_tuple_inserted = 1;
