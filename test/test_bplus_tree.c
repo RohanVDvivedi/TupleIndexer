@@ -147,7 +147,7 @@ int main()
 		// print bplus tree
 		printf("---------------------------------------------------------------------------------------------------------\n");
 		printf("---------------------------------------------------------------------------------------------------------\n");
-		print_bplus_tree(root_page_id, &bpttd, dam_p);
+		print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
 		printf("---------------------------------------------------------------------------------------------------------\n");
 		printf("---------------------------------------------------------------------------------------------------------\n");
 
@@ -158,7 +158,7 @@ int main()
 	printf("insertions to bplus tree completed\n");
 
 	// print bplus tree
-	print_bplus_tree(root_page_id, &bpttd, dam_p);
+	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
 
 	// destroy bplus tree
 	destroy_bplus_tree(root_page_id, &bpttd, dam_p);
