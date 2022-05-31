@@ -258,6 +258,11 @@ const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id
 
 	// insert the new tuple (tuple_to_insert) to page1 or page2 based on "new_tuple_goes_to_page1", as calculated earlier
 	if(new_tuple_goes_to_page1)
+	{
+		// if can not insert then compact the page first
+		if(!can_insert_tuple(page1, bpttd_p->page_size, bpttd_p->index_def, tuple_to_insert))
+			run_page_compaction(page1, bpttd_p->page_size, bpttd_p->index_def, 0, 1);
+
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page1
 		insert_at_in_sorted_packed_page(
 									page1, bpttd_p->page_size,
@@ -265,7 +270,13 @@ const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id
 									tuple_to_insert,
 									tuple_to_insert_at
 								);
+	}
 	else
+	{
+		// if can not insert then compact the page first
+		if(!can_insert_tuple(page2, bpttd_p->page_size, bpttd_p->index_def, tuple_to_insert))
+			run_page_compaction(page2, bpttd_p->page_size, bpttd_p->index_def, 0, 1);
+
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page2
 		insert_at_in_sorted_packed_page(
 									page2, bpttd_p->page_size,
@@ -273,6 +284,7 @@ const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id
 									tuple_to_insert,
 									tuple_to_insert_at - tuples_stay_in_page1
 								);
+	}
 
 	// now the page2 contains all the other tuples discarded from the page1, (due to the split)
 	// The first tuple of the page2 has to be disintegrated as follows
