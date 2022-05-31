@@ -11,6 +11,17 @@
 #include<data_access_methods.h>
 #include<in_memory_data_store.h>
 
+#define KEY_NAME_EMAIL
+//#define KEY_INDEX_PHONE
+
+#if defined KEY_NAME_EMAIL
+	#define KEY_ELEMENTS_COUNT			2
+	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){1,4}
+#elif defined KEY_INDEX_PHONE
+	#define KEY_ELEMENTS_COUNT			2
+	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){0,5}
+#endif
+
 #define PAGE_SIZE 256
 
 #define PAGE_ID_WIDTH 1
@@ -112,7 +123,7 @@ int main()
 
 	// construct tuple definitions for bplus_tree
 	bplus_tree_tuple_defs bpttd;
-	init_bplus_tree_tuple_definitions(&bpttd, record_def, (uint32_t []){1,4}, 2, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
+	init_bplus_tree_tuple_definitions(&bpttd, record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_COUNT, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
 
 	// print the generated bplus tree tuple defs
 	print_bplus_tree_tuple_definitions(&bpttd);
