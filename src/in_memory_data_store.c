@@ -425,7 +425,7 @@ static int delete_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 		page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
 
 		// check if this page_descriptor is a trailing (the last of page_descriptors)
-		if(trailing->page_id + 1 == cntxt->total_pages_count)
+		if(trailing != NULL && trailing->page_id + 1 == cntxt->total_pages_count)
 		{
 			// remove the trailing page_descriptor
 			remove_from_bst(&(cntxt->free_page_descs), trailing);
