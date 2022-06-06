@@ -277,6 +277,81 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		{
 			if(curr_locked_page->level == 0) // is a leaf page, perform delete in the leaf page
 			{
+				// find first index of first record that has the given key
+				uint32_t found_index = find_first_in_sorted_packed_page(
+													curr_locked_page->page, bpttd_p->page_size,
+													bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+													key, bpttd_p->key_def, NULL
+												);
+
+				// if no such record can be found, we break and exit
+				if(NO_TUPLE_FOUND == found_index)
+					break;
+
+				// perform a delete operation on the found index in this page
+				deleted = delete_in_sorted_packed_page(
+									curr_locked_page->page, bpttd_p->page_size,
+									bpttd_p->record_def,
+									found_index
+								);
+
+				if(deleted)
+				{
+					// go ahead with merging only if the page is lesser than half full
+					if(!is_page_lesser_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def))
+						break;
+
+					int merged = 0;
+
+					// pop the curr_locked_page, this is the page we would be merging
+					pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+
+					locked_page_info* parent_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+					uint32_t parent_tuple_count = get_tuple_count(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
+
+					// attempt a merge with next page of curr_locked_page, if it has a next page with same parent
+					if(!merged && parent_locked_page->child_index + 1 < parent_tuple_count)
+					{
+						merged = merge_bplus_tree_leaf_pages(curr_locked_page->page, curr_locked_page->page_id, bpttd_p, dam_p);
+
+						// if merged delete entry at child_index+1 in the parent page
+						if(merged)
+							delete_in_sorted_packed_page(
+									parent_locked_page->page, bpttd_p->page_size, 
+									bpttd_p->index_def, 
+									parent_locked_page->child_index + 1
+								);
+					}
+
+					// attempt a merge with prev page of curr_locked_page, if it has a prev page with same parent
+					if(!merged && parent_locked_page->child_index < parent_tuple_count)
+					{
+						// release lock on the curr_locked_page
+						unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
+
+						// make the previous of curr_locked_page as the curr_locked_page
+						uint32_t prev_child_page_id = find_child_page_id_by_child_index(parent_locked_page->page, parent_locked_page->child_index - 1, bpttd_p);
+						curr_locked_page = lock_page_and_get_new_locked_page_info(prev_child_page_id, 1, 0, bpttd_p, dam_p);
+
+						merged = merge_bplus_tree_leaf_pages(curr_locked_page->page, curr_locked_page->page_id, bpttd_p, dam_p);
+
+						if(merged)
+							// if merged delete entry at child_index+1 in the parent page
+							delete_in_sorted_packed_page(
+									parent_locked_page->page, bpttd_p->page_size, 
+									bpttd_p->index_def, 
+									parent_locked_page->child_index
+								);
+					}
+
+					// release lock on the curr_locked_page
+					unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
+
+					if(!merged)
+						break;
+				}
+				else // this case should never occur
+					break;
 			}
 			else
 			{
