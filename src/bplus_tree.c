@@ -266,14 +266,50 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	// push the root page onto the stack
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
 
-	// deleted will be set if the record, was inserted
+	// deleted will be set if the record, was deleted
 	int deleted = 0;
 
 	while(!is_empty_arraylist(&locked_pages_stack))
 	{
 		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
-		
+		if(!deleted) // go deeper towards the leaf of the tree, pushing curr_locked_page's child on the stack
+		{
+			if(curr_locked_page->level == 0) // is a leaf page, perform delete in the leaf page
+			{
+			}
+			else
+			{
+				// figure out which child page to go to next
+				curr_locked_page->child_index = find_child_index_for_key(curr_locked_page->page, key, bpttd_p);
+
+				// check if a merge happens at child_index of this curr_locked_page, will this page be required to be merged aswell
+				if( may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )
+				{
+					// release locks on all the pages in stack except the curr_locked_page
+
+					// pop the curr_locked_page
+					pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+
+					// unloc all its parent pages
+					fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
+
+					// push the curr_locked_page back in the stack
+					push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
+				}
+
+				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, curr_locked_page->child_index, bpttd_p);
+
+				// get lock on the next child page (this page is surely not the root page)
+				locked_page_info* child_locked_page = lock_page_and_get_new_locked_page_info(child_page_id, 1, 0, bpttd_p, dam_p);
+
+				// push this child page onto the stack
+				push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, child_locked_page);
+			}
+		}
+		else // check if the curr_locked_page needs to be merged, if yes then merge it with either previous or next page
+		{
+		}
 	}
 
 	// release locks on all the pages, we had locks on until now
