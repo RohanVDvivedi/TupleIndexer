@@ -24,6 +24,8 @@ int may_require_split_for_insert_for_bplus_tree(const void* page, uint32_t page_
 // returns 1 -> MAY require merge or redistribution
 // returns 0 -> will SURELY not require any merge or redistribution
 // it may give false positive for merging or redistribution
-int may_require_merge_or_redistribution_for_delete_for_bplus_tree(const void* page, uint32_t page_size, const tuple_def* def, uint32_t deletion_index);
+// child_index is the index in the page, that we would be following
+// child_index = -1 when you are following the least_keys_page_id
+int may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(const void* page, uint32_t page_size, const tuple_def* index_def, uint32_t child_index);
 
 #endif
