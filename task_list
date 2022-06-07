@@ -1,8 +1,4 @@
 
- * implement tests utility functions for reading a key, and creating a key tuple using key_def
- * implement macros to pick test keys file for deletion based on the keys for the testdata
- * run a loop, and test all deletions for all key cases
-
  * implement bplus_tree_cursor
  * implement find
 
