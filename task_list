@@ -10,9 +10,9 @@
 
  * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
 
+ * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
-
- * write multi threaded test cases to catch concurrency bugs in_memory_data_store, like it is done for bufferpool
+ * implement throwing errors appropriately, upon failures from dam_p
 
  * write multi threaded test cases to insert a large csv in to b+tree, measure performance difference
 
