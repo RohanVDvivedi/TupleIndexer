@@ -17,10 +17,8 @@
 //#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
 
-#define TEMP ""/*"_temp"*/
-
-#define TEST_DATA_FILE         "./testdata" TEMP ".csv"
-#define TEST_DATA_RANDOM_FILE  "./testdata_random" TEMP ".csv"
+#define TEST_DATA_FILE         "./testdata.csv"
+#define TEST_DATA_RANDOM_FILE  "./testdata_random.csv"
 
 #if defined KEY_NAME_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
