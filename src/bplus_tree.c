@@ -131,14 +131,15 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 					}
 				}
 
-				// found or the record was inserted without requiring a split
-				if(parent_insert != NULL) // the split needs to be propogated to the parent pages
+				// if an insertion was done on this page then lock on this page should be released with modification
+				if(inserted)
 				{
 					pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
-
 					unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 				}
-				else
+
+				// found or the record was inserted without requiring a split, then no need to iterate further in the loop
+				if(parent_insert == NULL)
 					break;
 			}
 			else // is an interior page, grab its child and push it into the stack
@@ -234,14 +235,15 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			free((void*)parent_insert);
 			parent_insert = new_parent_insert;
 
-			// if parent_tuple was inserted with a split
-			if(parent_insert != NULL) // the split needs to be propogated to the parent pages
+			// if an insertion was done on this page then lock on this page should be released with modification
+			if(parent_tuple_inserted) // if this condition fails then there is HUGE INTERNAL FAILURE
 			{
 				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
-
 				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 			}
-			else
+
+			// if parent_tuple was inserted without a split, then no need to iterate further in the loop
+			if(parent_insert == NULL)
 				break;
 		}
 	}
