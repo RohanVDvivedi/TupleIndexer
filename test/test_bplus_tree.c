@@ -118,6 +118,7 @@ void build_key_tuple_from_record_struct(const tuple_def* key_def, void* key_tupl
 	#elif defined KEY_EMAIL_AGE_SEX
 		set_element_in_tuple(key_def, 0, key_tuple,  (r->email), -1);
 		set_element_in_tuple(key_def, 1, key_tuple, &(r->age),    1);
+		uint8_t sex = (strcmp(r->sex, "Male") == 0) ? 1 : 0;
 		set_element_in_tuple(key_def, 2, key_tuple, &(sex),       1);
 	#endif
 }
