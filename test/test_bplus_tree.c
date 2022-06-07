@@ -146,8 +146,7 @@ void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 
 int main()
 {
-	// open test data file
-	FILE* f = fopen("./testdata.csv","r");
+	/* SETUP STARTED */
 
 	// allocate record tuple definition and initialize it
 	tuple_def* record_def = alloca(size_of_tuple_def(7));
@@ -165,6 +164,15 @@ int main()
 
 	// create a bplus tree and get its root
 	uint64_t root_page_id = get_new_bplus_tree(&bpttd, dam_p);
+
+	/* SETUP COMPLETED */
+
+
+
+	/* INSERTIONS SARTED */
+
+	// open test data file
+	FILE* f = fopen("./testdata.csv","r");
 
 	// stores the count of tuples processed
 	uint32_t tuples_processed = 0;
@@ -187,8 +195,60 @@ int main()
 		char record_tuple[PAGE_SIZE];
 		build_tuple_from_record_struct(record_def, record_tuple, &r);
 
-		// insert the record_tuple in the bplus_tree rooted as root_page_id
+		// insert the record_tuple in the bplus_tree rooted at root_page_id
 		insert_in_bplus_tree(root_page_id, record_tuple, &bpttd, dam_p);
+
+		// print bplus tree
+		//printf("---------------------------------------------------------------------------------------------------------\n");
+		//printf("---------------------------------------------------------------------------------------------------------\n");
+		//print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
+		//printf("---------------------------------------------------------------------------------------------------------\n");
+		//printf("---------------------------------------------------------------------------------------------------------\n");
+
+		// increment the tuples_processed count
+		tuples_processed++;
+	}
+
+	// print bplus tree
+	print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
+
+	// close the file
+	fclose(f);
+
+	printf("insertions to bplus tree completed\n");
+
+	/* INSERTIONS COMPLETED */
+
+
+
+	/* DELETIONS STARTED */
+
+	// open test data file
+	f = fopen("./testdata_random.csv","r");
+
+	// stores the count of tuples processed
+	tuples_processed = 0;
+
+	tuples_processed_limit = 256;
+
+	while(!feof(f))
+	{
+		if(tuples_processed == tuples_processed_limit)
+			break;
+
+		// read a record from the file
+		record r;
+		read_record_from_file(&r, f);
+
+		// print the record we read
+		print_record(&r);
+
+		// construct key tuple from this record
+		char key_tuple[PAGE_SIZE];
+		build_key_tuple_from_record_struct(bpttd.key_def, key_tuple, &r);
+
+		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
+		delete_from_bplus_tree(root_page_id, key_tuple, &bpttd, dam_p);
 
 		// print bplus tree
 		printf("---------------------------------------------------------------------------------------------------------\n");
@@ -201,10 +261,15 @@ int main()
 		tuples_processed++;
 	}
 
-	printf("insertions to bplus tree completed\n");
-
 	// print bplus tree
-	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
+	//print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
+
+	// close the file
+	fclose(f);
+
+	printf("deletions to bplus tree completed\n");
+
+	/* DELETIONS COMPLETED */
 
 
 
@@ -218,9 +283,6 @@ int main()
 
 	// destroy bplus_tree_tuple_definitions
 	deinit_bplus_tree_tuple_definitions(&bpttd);
-
-	// close the file
-	fclose(f);
 
 	return 0;
 }
