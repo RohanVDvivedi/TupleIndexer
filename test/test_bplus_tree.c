@@ -17,7 +17,7 @@
 //#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
 
-#define TEMP "_temp"
+#define TEMP ""/*"_temp"*/
 
 #define TEST_DATA_FILE         "./testdata" TEMP ".csv"
 #define TEST_DATA_RANDOM_FILE  "./testdata_random" TEMP ".csv"
