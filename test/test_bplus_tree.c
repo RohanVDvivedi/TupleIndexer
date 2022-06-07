@@ -190,8 +190,8 @@ int main()
 
 		// printing built tuple
 		//char print_buffer[PAGE_SIZE];
-		//sprint_tuple(print_buffer, tuple, def);
-		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(def, tuple), print_buffer);
+		//sprint_tuple(print_buffer, record_tuple, record_def);
+		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
 		insert_in_bplus_tree(root_page_id, record_tuple, &bpttd, dam_p);
@@ -247,8 +247,8 @@ int main()
 
 		// printing built key_tuple
 		char print_buffer[PAGE_SIZE];
-		sprint_tuple(print_buffer, key_tuple, key_def);
-		printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(key_def, key_tuple), print_buffer);
+		sprint_tuple(print_buffer, key_tuple, bpttd.key_def);
+		printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
 
 		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
 		delete_from_bplus_tree(root_page_id, key_tuple, &bpttd, dam_p);
