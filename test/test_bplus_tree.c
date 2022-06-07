@@ -100,12 +100,6 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 	set_element_in_tuple(def, 4, tuple,  (r->email), -1);
 	set_element_in_tuple(def, 5, tuple,  (r->phone), -1);
 	set_element_in_tuple(def, 6, tuple, &(r->score),  1);
-
-	// output print string
-	char print_buffer[PAGE_SIZE];
-
-	sprint_tuple(print_buffer, tuple, def);
-	printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(def, tuple), print_buffer);
 }
 
 void build_key_tuple_from_record_struct(const tuple_def* key_def, void* key_tuple, const record* r)
@@ -126,12 +120,6 @@ void build_key_tuple_from_record_struct(const tuple_def* key_def, void* key_tupl
 		set_element_in_tuple(key_def, 1, key_tuple, &(r->age),    1);
 		set_element_in_tuple(key_def, 2, key_tuple, &(sex),       1);
 	#endif
-
-	// output print string
-	char print_buffer[PAGE_SIZE];
-
-	sprint_tuple(print_buffer, key_tuple, key_def);
-	printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(key_def, key_tuple), print_buffer);
 }
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
@@ -194,11 +182,16 @@ int main()
 		read_record_from_file(&r, f);
 
 		// print the record we read
-		print_record(&r);
+		//print_record(&r);
 
 		// construct tuple from this record
 		char record_tuple[PAGE_SIZE];
 		build_tuple_from_record_struct(record_def, record_tuple, &r);
+
+		// printing built tuple
+		//char print_buffer[PAGE_SIZE];
+		//sprint_tuple(print_buffer, tuple, def);
+		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(def, tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
 		insert_in_bplus_tree(root_page_id, record_tuple, &bpttd, dam_p);
@@ -251,6 +244,11 @@ int main()
 		// construct key tuple from this record
 		char key_tuple[PAGE_SIZE];
 		build_key_tuple_from_record_struct(bpttd.key_def, key_tuple, &r);
+
+		// printing built key_tuple
+		char print_buffer[PAGE_SIZE];
+		sprint_tuple(print_buffer, key_tuple, key_def);
+		printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(key_def, key_tuple), print_buffer);
 
 		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
 		delete_from_bplus_tree(root_page_id, key_tuple, &bpttd, dam_p);
