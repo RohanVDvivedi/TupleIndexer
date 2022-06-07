@@ -227,7 +227,7 @@ int main()
 	// stores the count of tuples processed
 	tuples_processed = 0;
 
-	tuples_processed_limit = 8;
+	tuples_processed_limit = 256;
 
 	while(!feof(f))
 	{
