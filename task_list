@@ -1,12 +1,7 @@
 
- * generate random and sorted deletion test keys file && debug delete
-  * for each deletion keys file
-    * segregate only keys data from file, in the order as the order of the keys in the bplus tree
-    * sort them in the same order as the keys
-    * make 3 sets as first 32, last 32 and the rest 192 sorted
-    * randomize rest 192 and place somewhere in between first 32 and last 32
-
- * implement delete test cases to randomly delete values from the same test cases
+ * implement tests utility functions for reading a key, and creating a key tuple using key_def
+ * implement macros to pick test keys file for deletion based on the keys for the testdata
+ * run a loop, and test all deletions for all key cases
 
  * implement bplus_tree_cursor
  * implement find
