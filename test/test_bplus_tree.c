@@ -103,6 +103,32 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 	printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(def, tuple), print_buffer);
 }
 
+void build_key_tuple_from_record_struct(const tuple_def* key_def, void* key_tuple, const record* r)
+{
+	init_tuple(key_def, key_tuple);
+
+	#if defined KEY_NAME_EMAIL
+		set_element_in_tuple(key_def, 0, key_tuple,  (r->name),  -1);
+		set_element_in_tuple(key_def, 1, key_tuple,  (r->email), -1);
+	#elif defined KEY_INDEX_PHONE
+		set_element_in_tuple(key_def, 0, key_tuple, &(r->index),  4);
+		set_element_in_tuple(key_def, 1, key_tuple,  (r->phone), -1);
+	#elif defined KEY_PHONE_SCORE
+		set_element_in_tuple(key_def, 0, key_tuple,  (r->phone), -1);
+		set_element_in_tuple(key_def, 1, key_tuple, &(r->score),  1);
+	#elif defined KEY_EMAIL_AGE_SEX
+		set_element_in_tuple(key_def, 0, key_tuple,  (r->email), -1);
+		set_element_in_tuple(key_def, 1, key_tuple, &(r->age),    1);
+		set_element_in_tuple(key_def, 2, key_tuple, &(sex),       1);
+	#endif
+
+	// output print string
+	char print_buffer[PAGE_SIZE];
+
+	sprint_tuple(print_buffer, key_tuple, key_def);
+	printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(key_def, key_tuple), print_buffer);
+}
+
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
 	copy_element_from_tuple(tpl_d, 0, tupl, &(r->index));
@@ -179,6 +205,10 @@ int main()
 
 	// print bplus tree
 	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
+
+
+
+	/* CLEANUP */
 
 	// destroy bplus tree
 	destroy_bplus_tree(root_page_id, &bpttd, dam_p);
