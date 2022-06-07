@@ -238,33 +238,33 @@ int main()
 		read_record_from_file(&r, f);
 
 		// print the record we read
-		print_record(&r);
+		//print_record(&r);
 
 		// construct key tuple from this record
 		char key_tuple[PAGE_SIZE];
 		build_key_tuple_from_record_struct(bpttd.key_def, key_tuple, &r);
 
 		// printing built key_tuple
-		char print_buffer[PAGE_SIZE];
-		sprint_tuple(print_buffer, key_tuple, bpttd.key_def);
-		printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
+		//char print_buffer[PAGE_SIZE];
+		//sprint_tuple(print_buffer, key_tuple, bpttd.key_def);
+		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
 
 		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
 		delete_from_bplus_tree(root_page_id, key_tuple, &bpttd, dam_p);
 
 		// print bplus tree
-		printf("---------------------------------------------------------------------------------------------------------\n");
-		printf("---------------------------------------------------------------------------------------------------------\n");
-		print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
-		printf("---------------------------------------------------------------------------------------------------------\n");
-		printf("---------------------------------------------------------------------------------------------------------\n");
+		//printf("---------------------------------------------------------------------------------------------------------\n");
+		//printf("---------------------------------------------------------------------------------------------------------\n");
+		//print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
+		//printf("---------------------------------------------------------------------------------------------------------\n");
+		//printf("---------------------------------------------------------------------------------------------------------\n");
 
 		// increment the tuples_processed count
 		tuples_processed++;
 	}
 
 	// print bplus tree
-	//print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
+	print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
 
 	// close the file
 	fclose(f);
