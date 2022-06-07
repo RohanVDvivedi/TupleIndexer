@@ -17,8 +17,10 @@
 //#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
 
-#define TEST_DATA_FILE         "./testdata.csv"
-#define TEST_DATA_RANDOM_FILE  "./testdata_random.csv"
+#define TEMP "_temp"
+
+#define TEST_DATA_FILE         "./testdata" TEMP ".csv"
+#define TEST_DATA_RANDOM_FILE  "./testdata_random" TEMP ".csv"
 
 #if defined KEY_NAME_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
@@ -232,7 +234,7 @@ int main()
 	// stores the count of tuples processed
 	tuples_processed = 0;
 
-	tuples_processed_limit = 256;
+	tuples_processed_limit = 8;
 
 	while(!feof(f))
 	{
