@@ -406,6 +406,8 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				uint64_t page2_id = find_child_page_id_by_child_index(parent_locked_page->page, parent_locked_page->child_index + 1, bpttd_p);
 				locked_page_info* child_page2 = lock_page_and_get_new_locked_page_info(page2_id, 1, 0, bpttd_p, dam_p);
 
+				const void* separator_parent_tuple = get_nth_tuple(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, parent_locked_page->child_index + 1);
+
 				merged = merge_bplus_tree_interior_pages(child_page1->page, child_page1->page_id, separator_parent_tuple, child_page2->page, child_page2->page_id, bpttd_p, dam_p);
 
 				// if merged delete entry at child_index+1 in the parent page, and free child_page2
@@ -432,6 +434,8 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 				uint64_t page1_id = find_child_page_id_by_child_index(parent_locked_page->page, parent_locked_page->child_index - 1, bpttd_p);
 				locked_page_info* child_page1 = lock_page_and_get_new_locked_page_info(page1_id, 1, 0, bpttd_p, dam_p);
+
+				const void* separator_parent_tuple = get_nth_tuple(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, parent_locked_page->child_index);
 
 				merged = merge_bplus_tree_interior_pages(child_page1->page, child_page1->page_id, separator_parent_tuple, child_page2->page, child_page2->page_id, bpttd_p, dam_p);
 
