@@ -17,6 +17,9 @@
 //#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
 
+#define TEST_DATA_FILE         "./testdata.csv"
+#define TEST_DATA_RANDOM_FILE  "./testdata_random.csv"
+
 #if defined KEY_NAME_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){1,4}
@@ -172,7 +175,7 @@ int main()
 	/* INSERTIONS SARTED */
 
 	// open test data file
-	FILE* f = fopen("./testdata.csv","r");
+	FILE* f = fopen(TEST_DATA_FILE, "r");
 
 	// stores the count of tuples processed
 	uint32_t tuples_processed = 0;
@@ -224,7 +227,7 @@ int main()
 	/* DELETIONS STARTED */
 
 	// open test data file
-	f = fopen("./testdata_random.csv","r");
+	f = fopen(TEST_DATA_RANDOM_FILE, "r");
 
 	// stores the count of tuples processed
 	tuples_processed = 0;
