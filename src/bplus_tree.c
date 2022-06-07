@@ -370,7 +370,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				curr_locked_page->child_index = find_child_index_for_key(curr_locked_page->page, key, bpttd_p);
 
 				// check if a merge happens at child_index of this curr_locked_page, will this page be required to be merged aswell
-				if( may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )
+				if( !may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )
 				{
 					// release locks on all the pages in stack except the curr_locked_page
 
