@@ -357,6 +357,29 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 						}
 					}
 
+					// after merging is completed curr_locked_page points to an existing page
+
+					// if merge was successfull, then update the parent_tuple_count
+					if(merged)
+						parent_tuple_count = get_tuple_count(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
+
+					// need to handle empty root parent page 
+					if(merged && parent_locked_page->is_root && parent_tuple_count == 0)
+					{
+						// clone the curr_locked_page in to the parent_locked_page
+						clone_page(parent_locked_page->page, bpttd_p->page_size, bpttd_p->record_def, 1, curr_locked_page->page);
+
+						// free and unlock curr_locked_page
+						unlock_page_and_delete_locked_page_info(curr_locked_page, 1, 1, dam_p);
+
+						// pop parent_locked_page
+						pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+
+						// make parent locked page as the current page
+						curr_locked_page = parent_locked_page;
+						parent_locked_page = NULL;
+					}
+
 					// release lock on the curr_locked_page
 					if(curr_locked_page != NULL)
 						unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
@@ -470,6 +493,29 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				}
 				else // release lock on the page that is not curr_locked_page
 					unlock_page_and_delete_locked_page_info(child_page1, 0, 0, dam_p);
+			}
+
+			// after merging is completed curr_locked_page points to an existing page
+
+			// if merge was successfull, then update the parent_tuple_count
+			if(merged)
+				parent_tuple_count = get_tuple_count(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
+
+			// need to handle empty root parent page 
+			if(merged && parent_locked_page->is_root && parent_tuple_count == 0)
+			{
+				// clone the curr_locked_page in to the parent_locked_page
+				clone_page(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, 1, curr_locked_page->page);
+
+				// free and unlock curr_locked_page
+				unlock_page_and_delete_locked_page_info(curr_locked_page, 1, 1, dam_p);
+
+				// pop parent_locked_page
+				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+
+				// make parent locked page as the current page
+				curr_locked_page = parent_locked_page;
+				parent_locked_page = NULL;
 			}
 
 			// release lock on the curr_locked_page
