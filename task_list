@@ -21,7 +21,7 @@
 * AVOID subsequent dispersed malloc calls, while the crucial parts of bplus_tree are running
  * modify insert_bplus_tree call to malloc parent_insert and new_parent_insert in the beginning of the function
  * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
- * modify "calculate tuples in page1" function to perform in-place calculations instead of a prefix_sum + binary search calculation ** this thing is debatable, perform a performance analysis to check how this two solutions fare against each other
+ * modify "calculate tuples in page1" function to perform in-place calculations instead of a prefix_sum + binary search calculation
 
  * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
