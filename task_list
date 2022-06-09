@@ -10,6 +10,19 @@
 
  * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
 
+ * check tuple size before an insert
+
+* REFACTOR all functions
+ * refactor almost all the bplus_tree functions to perform a downward pass to the leaf in a loop first and then another loop in reverse, to perform splits and merges
+
+* OPTIMIZING INTERIOR PAGE HEADER
+ * modify interior page headers to store only a byte to represent if it is the last page in the level
+
+* AVOID subsequent dispersed malloc calls, while the crucial parts of bplus_tree are running
+ * modify insert_bplus_tree call to malloc parent_insert and new_parent_insert in the beginning of the function
+ * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
+ * modify "calculate tuples in page1" function to perform in-place calculations instead of a prefix_sum + binary search calculation ** this thing is debatable, perform a performance analysis to check how this two solutions fare against each other
+
  * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
  * implement throwing errors appropriately, upon failures from dam_p
