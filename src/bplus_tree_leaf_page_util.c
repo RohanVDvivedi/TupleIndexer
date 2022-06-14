@@ -154,11 +154,11 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	}
 }
 
-const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert)
 {
 	// do not perform a split if the page can accomodate the new tuple
 	if(can_insert_tuple(page1, bpttd_p->page_size, bpttd_p->record_def, tuple_to_insert))
-		return NULL;
+		return 0;
 
 	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
 	// if it does then you should not be calling this function
@@ -167,7 +167,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 
 	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
 	if(space_available_page1 >= space_occupied_by_new_tuple)
-		return NULL;
+		return 0;
 
 	// if the index of the new tuple was not provided then calculate it
 	if(tuple_to_insert_at == NO_TUPLE_FOUND)
@@ -208,7 +208,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 
 	// return with a split failure if the page2 could not be allocated
 	if(page2 == NULL)
-		return NULL;
+		return 0;
 
 	// initialize page2 (as a leaf page)
 	init_bplus_tree_leaf_page(page2, bpttd_p);
@@ -227,7 +227,7 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 		{
 			// make sure you free the page that you acquired
 			dam_p->release_writer_lock_and_free_page(dam_p->context, page2);
-			return NULL;
+			return 0;
 		}
 
 		// perform pointer manipulations to insert page2 between page1 and page3
@@ -297,25 +297,22 @@ const void* split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, co
 
 	// create tuple to be returned, this tuple needs to be inserted into the parent page, after the child_index
 	const void* first_tuple_page2 = get_nth_tuple(page2, bpttd_p->page_size, bpttd_p->record_def, 0);
-	uint32_t size_of_first_tuple_page2 = get_tuple_size(bpttd_p->record_def, first_tuple_page2);
-
-	void* parent_insert = malloc(sizeof(char) * (size_of_first_tuple_page2 + bpttd_p->page_id_width));
 
 	// intialize parent insert tuple
-	init_tuple(bpttd_p->index_def, parent_insert);
+	init_tuple(bpttd_p->index_def, output_parent_insert);
 
-	// insert key attributes from first_tuple_page2 to parent_insert
+	// insert key attributes from first_tuple_page2 to output_parent_insert
 	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
-		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, parent_insert, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, output_parent_insert, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 	// now insert the pointer to the page2 in this parent tuple
-	set_child_page_id_in_index_tuple(parent_insert, page2_id, bpttd_p);
+	set_child_page_id_in_index_tuple(output_parent_insert, page2_id, bpttd_p);
 
 	// release lock on the page2, and mark it as modified
 	dam_p->release_writer_lock_on_page(dam_p->context, page2, 1);
 
-	// return parent_insert
-	return parent_insert;
+	// return success
+	return 1;
 }
 
 int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)

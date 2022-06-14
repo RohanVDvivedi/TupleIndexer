@@ -175,11 +175,11 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	}
 }
 
-const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert)
 {
 	// do not perform a split if the page can accomodate the new tuple
 	if(can_insert_tuple(page1, bpttd_p->page_size, bpttd_p->index_def, tuple_to_insert))
-		return NULL;
+		return 0;
 
 	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
 	// if it does then you should not be calling this function
@@ -188,7 +188,7 @@ const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id
 
 	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
 	if(space_available_page1 >= space_occupied_by_new_tuple)
-		return NULL;
+		return 0;
 
 	// if the index of the new tuple was not provided then calculate it
 	if(tuple_to_insert_at == NO_TUPLE_FOUND)
@@ -230,7 +230,7 @@ const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id
 
 	// return with a split failure if the page2 could not be allocated
 	if(page2 == NULL)
-		return NULL;
+		return 0;
 
 	// initialize page2 (as an interior page)
 	uint32_t level = get_level_of_bplus_tree_page(page1, bpttd_p->page_size);	// get the level of bplus_tree we are dealing with
@@ -296,11 +296,10 @@ const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id
 	// The first tuple of the page2 has to be disintegrated as follows
 	// first_tuple_page2 =>> key : page_id
 	// this page_id of the first tuple needs to become the least_keys_page_id of page2
-	// and we then create a parent_insert tuple as =>> key : page2_id
+	// and we then create a output_parent_insert tuple as =>> key : page2_id
 	// we then can delete the first tuple of this page2
-	// and then finally we return the parent_insert tuple that can be inserted into parent page
+	// and then finally we return the output_parent_insert tuple that can be inserted into parent page
 
-	// create tuple to be returned, this tuple needs to be inserted into the parent page, after the child_index
 	const void* first_tuple_page2 = get_nth_tuple(page2, bpttd_p->page_size, bpttd_p->index_def, 0);
 	uint32_t size_of_first_tuple_page2 = get_tuple_size(bpttd_p->index_def, first_tuple_page2);
 
@@ -310,13 +309,11 @@ const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id
 	// set the least_keys_page_id for page2
 	set_least_keys_page_id_of_bplus_tree_interior_page(page2, page2_least_keys_page_id, bpttd_p);
 
-	void* parent_insert = malloc(sizeof(char) * size_of_first_tuple_page2);
-
-	// copy all the contents of the first_tuple_page2 to parent_insert
-	memmove(parent_insert, first_tuple_page2, sizeof(char) * size_of_first_tuple_page2);
+	// copy all the contents of the first_tuple_page2 to output_parent_insert
+	memmove(output_parent_insert, first_tuple_page2, sizeof(char) * size_of_first_tuple_page2);
 
 	// now insert the pointer to the page2 in this parent tuple
-	set_child_page_id_in_index_tuple(parent_insert, page2_id, bpttd_p);
+	set_child_page_id_in_index_tuple(output_parent_insert, page2_id, bpttd_p);
 
 	// now you may, delete the first tuple of page2
 	delete_in_sorted_packed_page(
@@ -328,8 +325,8 @@ const void* split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id
 	// release lock on the page2, and mark it as modified
 	dam_p->release_writer_lock_on_page(dam_p->context, page2, 1);
 
-	// return parent_insert
-	return parent_insert;
+	// return success
+	return 1;
 }
 
 int merge_bplus_tree_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)

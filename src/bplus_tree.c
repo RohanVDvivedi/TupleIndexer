@@ -78,7 +78,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 	// a tuple that needs to be inserted in to the parent page
 	// this happens upon a split
-	const void* parent_insert = NULL;
+	void* parent_insert = NULL;
 
 	while(!is_empty_arraylist(&locked_pages_stack))
 	{
@@ -160,13 +160,9 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				curr_locked_page = root_least_keys_child_info;
 			}
 
-			parent_insert = split_insert_bplus_tree_leaf_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p);
-			
-			// if split insert was successfull
-			if(parent_insert != NULL)
-				inserted = 1;
-			else // THIS IS AN ERROR WE CANT RECOVER FROM
-				break;
+			parent_insert = malloc(bpttd_p->page_size / 2);
+
+			inserted = split_insert_bplus_tree_leaf_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p, parent_insert);
 
 			// if an insertion was done on this page then lock on this page should be released with modification
 			if(inserted)
@@ -178,14 +174,9 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			if(parent_insert == NULL)
 				break;
 		}
-		else // parent_insert needs to be inserted in to this page and we need to pop curr_locked_page
+		else
 		{
-			// here (curr_locked_page->level > 0) is a MUST condition
-
 			int parent_tuple_inserted = 0;
-
-			// this will be set to an appropriate index tuple that we need to insert to a parent page
-			const void* new_parent_insert = NULL;
 
 			uint32_t insertion_point = curr_locked_page->child_index + 1;
 			parent_tuple_inserted = insert_at_in_sorted_packed_page(
@@ -246,16 +237,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				curr_locked_page = root_least_keys_child_info;
 			}
 
-			new_parent_insert = split_insert_bplus_tree_interior_page(curr_locked_page->page, curr_locked_page->page_id, parent_insert, insertion_point, bpttd_p, dam_p);
-			
-			if(new_parent_insert != NULL)
-				parent_tuple_inserted = 1;
-			else // THIS IS AN ERROR WE CANT RECOVER FROM
-				break;
-
-			// delete the old parent insert and update it
-			free((void*)parent_insert);
-			parent_insert = new_parent_insert;
+			parent_tuple_inserted = split_insert_bplus_tree_interior_page(curr_locked_page->page, curr_locked_page->page_id, parent_insert, insertion_point, bpttd_p, dam_p, parent_insert);
 
 			// if an insertion was done on this page then lock on this page should be released with modification
 			if(parent_tuple_inserted)
@@ -310,7 +292,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				// pop the curr_locked_page
 				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
-				// unloc all its parent pages
+				// unlock all its parent pages
 				fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
 
 				// push the curr_locked_page back in the stack
