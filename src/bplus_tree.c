@@ -383,13 +383,9 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			{
 				merged = merge_bplus_tree_leaf_pages(curr_locked_page->page, curr_locked_page->page_id, bpttd_p, dam_p);
 
-				// if merged delete entry at child_index+1 in the parent page
+				// if merged we need to delete entry at child_index in the parent page
 				if(merged)
-					delete_in_sorted_packed_page(
-							parent_locked_page->page, bpttd_p->page_size, 
-							bpttd_p->index_def, 
-							parent_locked_page->child_index + 1
-						);
+					parent_locked_page->child_index += 1;
 			}
 
 			// attempt a merge with prev page of curr_locked_page, if it has a prev page with same parent
@@ -404,43 +400,13 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 				merged = merge_bplus_tree_leaf_pages(curr_locked_page->page, curr_locked_page->page_id, bpttd_p, dam_p);
 
-				// if merged delete entry at child_index+1 in the parent page
-				if(merged)
-				{
-					delete_in_sorted_packed_page(
-							parent_locked_page->page, bpttd_p->page_size, 
-							bpttd_p->index_def, 
-							parent_locked_page->child_index
-						);
-				}
-				else
+				// if merged we need to delete entry at child_index in the parent page
+
+				if(!merged)
 				{
 					unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 0, dam_p);
 					curr_locked_page = NULL;
 				}
-			}
-
-			// after merging is completed curr_locked_page points to an existing page
-
-			// if merge was successfull, then update the parent_tuple_count
-			if(merged)
-				parent_tuple_count = get_tuple_count(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
-
-			// need to handle empty root parent page 
-			if(merged && parent_locked_page->is_root && parent_tuple_count == 0)
-			{
-				// clone the curr_locked_page in to the parent_locked_page
-				clone_page(parent_locked_page->page, bpttd_p->page_size, bpttd_p->record_def, 1, curr_locked_page->page);
-
-				// free and unlock curr_locked_page
-				unlock_page_and_delete_locked_page_info(curr_locked_page, 1, 1, dam_p);
-
-				// pop parent_locked_page
-				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
-
-				// make parent locked page as the current page
-				curr_locked_page = parent_locked_page;
-				parent_locked_page = NULL;
 			}
 
 			// release lock on the curr_locked_page
@@ -452,6 +418,40 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		}
 		else // check if the curr_locked_page needs to be merged, if yes then merge it with either previous or next page
 		{
+			// perform a delete operation on the found index in this page
+			deleted = delete_in_sorted_packed_page(
+								curr_locked_page->page, bpttd_p->page_size,
+								bpttd_p->index_def,
+								curr_locked_page->child_index
+							);
+
+			if(!deleted) // THIS IS AN ERR, WE CANT RECOVER FROM
+			{
+				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 0, dam_p);
+				break;
+			}
+
+			if(curr_locked_page->is_root)
+			{
+				uint32_t curr_tuple_count = get_tuple_count(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
+
+				// need to handle empty root parent page 
+				if(curr_locked_page->is_root && curr_tuple_count == 0)
+				{
+					uint64_t only_child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, -1, bpttd_p);
+					locked_page_info* only_child_page = lock_page_and_get_new_locked_page_info(only_child_page_id, 0, 0, bpttd_p, dam_p);
+
+					// clone the only_child_page in to the curr_locked_page
+					if(only_child_page->level == 0)
+						clone_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def, 1, only_child_page->page);
+					else
+						clone_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, 1, only_child_page->page);
+
+					// free and unlock only_child_page
+					unlock_page_and_delete_locked_page_info(only_child_page, 1, 0, dam_p);
+				}
+			}
+
 			// go ahead with merging only if the page is lesser than half full AND is not root
 			if(curr_locked_page->is_root || !is_page_lesser_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def))
 			{
@@ -477,18 +477,12 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 				merged = merge_bplus_tree_interior_pages(child_page1->page, child_page1->page_id, separator_parent_tuple, child_page2->page, child_page2->page_id, bpttd_p, dam_p);
 
-				// if merged delete entry at child_index+1 in the parent page, and free child_page2
+				// if merged we need to delete entry at child_index in the parent page, and free child_page2
 				if(merged)
 				{
-					delete_in_sorted_packed_page(
-							parent_locked_page->page, bpttd_p->page_size, 
-							bpttd_p->index_def, 
-							parent_locked_page->child_index + 1
-						);
+					parent_locked_page->child_index += 1;
 
 					unlock_page_and_delete_locked_page_info(child_page2, 1, 0, dam_p);
-
-					curr_locked_page = child_page1;
 				}
 				else // release lock on the page that is not curr_locked_page
 					unlock_page_and_delete_locked_page_info(child_page2, 0, 0, dam_p);
@@ -506,44 +500,15 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 				merged = merge_bplus_tree_interior_pages(child_page1->page, child_page1->page_id, separator_parent_tuple, child_page2->page, child_page2->page_id, bpttd_p, dam_p);
 
-				// if merged delete entry at child_index+1 in the parent page, and free child_page2
+				// if merged we need to delete entry at child_index in the parent page, and free child_page2
 				if(merged)
 				{
-					delete_in_sorted_packed_page(
-							parent_locked_page->page, bpttd_p->page_size, 
-							bpttd_p->index_def, 
-							parent_locked_page->child_index
-						);
-
 					unlock_page_and_delete_locked_page_info(child_page2, 1, 0, dam_p);
 
 					curr_locked_page = child_page1;
 				}
 				else // release lock on the page that is not curr_locked_page
 					unlock_page_and_delete_locked_page_info(child_page1, 0, 0, dam_p);
-			}
-
-			// after merging is completed curr_locked_page points to an existing page
-
-			// if merge was successfull, then update the parent_tuple_count
-			if(merged)
-				parent_tuple_count = get_tuple_count(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
-
-			// need to handle empty root parent page 
-			if(merged && parent_locked_page->is_root && parent_tuple_count == 0)
-			{
-				// clone the curr_locked_page in to the parent_locked_page
-				clone_page(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, 1, curr_locked_page->page);
-
-				// free and unlock curr_locked_page
-				unlock_page_and_delete_locked_page_info(curr_locked_page, 1, 1, dam_p);
-
-				// pop parent_locked_page
-				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
-
-				// make parent locked page as the current page
-				curr_locked_page = parent_locked_page;
-				parent_locked_page = NULL;
 			}
 
 			// release lock on the curr_locked_page
