@@ -291,7 +291,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
 
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
-	while(!is_empty_arraylist(&locked_pages_stack))
+	while(1)
 	{
 		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
