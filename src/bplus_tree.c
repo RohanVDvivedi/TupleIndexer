@@ -44,7 +44,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	// push the root page onto the stack
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
 
-	// perform a downward pass until you reach the leaf, unlocking all the unsafe (split requiring) pages in the interim
+	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
 	while(1)
 	{
 		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
