@@ -1,4 +1,3 @@
- * use single malloc call for parent_tuple_insert, that is about half the size of the PAGE_SIZE
  * modify "calculate tuples in page1" function to perform in-place calculations instead of a prefix_sum + binary search calculation
 
  * discard level from the locked_page_info and use the function to get the level of the page
