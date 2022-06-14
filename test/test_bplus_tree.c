@@ -207,7 +207,7 @@ int main()
 	}
 
 	// print bplus tree
-	print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
+	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
 
 	// close the file
 	fclose(f);
@@ -264,7 +264,7 @@ int main()
 	}
 
 	// print bplus tree
-	print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
+	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
 
 	// close the file
 	fclose(f);
