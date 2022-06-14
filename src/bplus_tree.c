@@ -151,14 +151,13 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				init_bplus_tree_interior_page(curr_locked_page->page, ++curr_locked_page->level, bpttd_p);
 				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page->page, root_least_keys_child_id, bpttd_p);
 
-				// create new locked_page_info for the root_least_keys_child and push it onto the stack
+				// create new locked_page_info for the root_least_keys_child
 				locked_page_info* root_least_keys_child_info = get_new_locked_page_info(root_least_keys_child, root_least_keys_child_id, 1, 0, bpttd_p);
 				root_least_keys_child_info->child_index = curr_locked_page->child_index;
 				curr_locked_page->child_index = -1; // the root page only has a single child at the moment
-				push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, root_least_keys_child_info);
 
-				// get new top of the stack
-				curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+				push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
+				curr_locked_page = root_least_keys_child_info;
 			}
 
 			parent_insert = split_insert_bplus_tree_leaf_page(curr_locked_page->page, curr_locked_page->page_id, record, insertion_point, bpttd_p, dam_p);
@@ -237,14 +236,14 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				init_bplus_tree_interior_page(curr_locked_page->page, ++curr_locked_page->level, bpttd_p);
 				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page->page, root_least_keys_child_id, bpttd_p);
 
-				// create new locked_page_info for the root_least_keys_child and push it onto the stack
+				// create new locked_page_info for the root_least_keys_child
 				locked_page_info* root_least_keys_child_info = get_new_locked_page_info(root_least_keys_child, root_least_keys_child_id, 1, 0, bpttd_p);
 				root_least_keys_child_info->child_index = curr_locked_page->child_index;
 				curr_locked_page->child_index = -1; // the root page only has a single child at the moment
-				push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, root_least_keys_child_info);
 
 				// get new top of the stack
-				curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+				push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
+				curr_locked_page = root_least_keys_child_info;
 			}
 
 			new_parent_insert = split_insert_bplus_tree_interior_page(curr_locked_page->page, curr_locked_page->page_id, parent_insert, insertion_point, bpttd_p, dam_p);
