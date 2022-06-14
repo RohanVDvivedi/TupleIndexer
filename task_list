@@ -1,4 +1,3 @@
- * perform delete from parent page only when the parent page is curr_locked_page
  * use single malloc call for parent_tuple_insert, that is about half the size of the PAGE_SIZE
  * modify "calculate tuples in page1" function to perform in-place calculations instead of a prefix_sum + binary search calculation
 
