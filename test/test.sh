@@ -1,1 +1,1 @@
-gcc -Wall ./test_$1.c -o test_$1.out -ltupleindexer -ltuplestore -lrwlock -lcutlery && valgrind -v --track-origins=yes ./test_$1.out
+gcc -Wall ./test_$1.c -o test_$1.out -ltupleindexer -ltuplestore -lrwlock -lcutlery && sudo valgrind -v --track-origins=yes ./test_$1.out && sudo time -v ./test_$1.out
