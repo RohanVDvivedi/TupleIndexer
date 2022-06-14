@@ -269,6 +269,9 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		}
 	}
 
+	if(parent_insert != NULL)
+		free(parent_insert);
+
 	// release locks on all the pages, we had locks on until now
 	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
 
