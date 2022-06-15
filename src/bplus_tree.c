@@ -349,7 +349,8 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			}
 
 			// go ahead with merging only if the page is lesser than half full AND is not root
-			if(curr_locked_page->is_root || !is_page_lesser_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def))
+			// i.e. we can not merge a page which is root OR is more than half full
+			if(curr_locked_page->is_root || is_page_more_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def))
 			{
 				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 				break;
@@ -438,7 +439,8 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			}
 
 			// go ahead with merging only if the page is lesser than half full AND is not root
-			if(curr_locked_page->is_root || !is_page_lesser_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def))
+			// i.e. we can not merge a page which is root OR is more than half full
+			if(curr_locked_page->is_root || is_page_more_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def))
 			{
 				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 				break;
