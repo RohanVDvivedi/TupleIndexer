@@ -35,22 +35,22 @@ bplus_tree_cursor* find_in_bplus_tree(uint64_t root_page_id, const void* key, in
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// get lock on the root page of the bplus_tree
-	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 1, dam_p);
+	locked_page_info* root_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 1, dam_p);
 
 	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(curr_locked_page->page, bpttd_p->page_size);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(root_locked_page->page, bpttd_p->page_size);
 
 	// create a stack of capacity = levels + 3 
 	arraylist locked_pages_stack;
 	initialize_arraylist(&locked_pages_stack, root_page_level + 4);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, root_locked_page);
 
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
 	while(1)
 	{
-		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+		locked_page_info* curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
 		if(!is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size))
 		{
@@ -85,7 +85,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 	while(!is_empty_arraylist(&locked_pages_stack))
 	{
-		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+		locked_page_info* curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 		pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
 		if(is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size)) // is a leaf page, insert / split_insert record to the leaf page
@@ -268,22 +268,22 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// get lock on the root page of the bplus_tree
-	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 1, dam_p);
+	locked_page_info* root_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 1, dam_p);
 
 	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(curr_locked_page->page, bpttd_p->page_size);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(root_locked_page->page, bpttd_p->page_size);
 
 	// create a stack of capacity = levels + 3 
 	arraylist locked_pages_stack;
 	initialize_arraylist(&locked_pages_stack, root_page_level + 4);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, root_locked_page);
 
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
 	while(1)
 	{
-		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+		locked_page_info* curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
 		if(!is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size)) // is not a leaf page
 		{
@@ -322,7 +322,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 	while(!is_empty_arraylist(&locked_pages_stack))
 	{
-		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+		locked_page_info* curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 		pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
 		if(is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size)) // is a leaf page, perform delete in the leaf page
@@ -526,15 +526,15 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// get lock on the root page of the bplus_tree
-	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 0, dam_p);
+	locked_page_info* root_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 0, dam_p);
 
 	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(curr_locked_page->page, bpttd_p->page_size);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(root_locked_page->page, bpttd_p->page_size);
 
 	// edge case : if the root itself is a leaf page then free it, no locked_pages_stack required
-	if(is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size))
+	if(is_bplus_tree_leaf_page(root_locked_page->page, bpttd_p->page_size))
 	{
-		unlock_page_and_delete_locked_page_info(curr_locked_page, 1, 0, dam_p);
+		unlock_page_and_delete_locked_page_info(root_locked_page, 1, 0, dam_p);
 		return 1;
 	}
 
@@ -543,11 +543,11 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	initialize_arraylist(&locked_pages_stack, root_page_level + 1);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, root_locked_page);
 
 	while(!is_empty_arraylist(&locked_pages_stack))
 	{
-		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+		locked_page_info* curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
 		// if this is an interior page whose all child pages are leaf pages, i.e. level = 1
 		if(get_level_of_bplus_tree_page(curr_locked_page->page, bpttd_p->page_size) == 1)
@@ -615,21 +615,21 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	printf("\n\nBplus_tree @ root_page_id = %lu\n\n", root_page_id);
 
 	// get lock on the root page of the bplus_tree
-	locked_page_info* curr_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 0, dam_p);
+	locked_page_info* root_locked_page = lock_page_and_get_new_locked_page_info(root_page_id, 0, dam_p);
 
 	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(curr_locked_page->page, bpttd_p->page_size);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(root_locked_page->page, bpttd_p->page_size);
 
 	// create a stack of capacity = levels
 	arraylist locked_pages_stack;
 	initialize_arraylist(&locked_pages_stack, root_page_level + 1);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, curr_locked_page);
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, root_locked_page);
 
 	while(!is_empty_arraylist(&locked_pages_stack))
 	{
-		curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
+		locked_page_info* curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
 		// print current page as a leaf page
 		if(is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size))
