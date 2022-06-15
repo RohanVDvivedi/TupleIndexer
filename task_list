@@ -1,5 +1,4 @@
 
- * discard level from the locked_page_info and use the function to get the level of the page, create and use IS_LEAF_NODE and IS_INTERIOR_PAGE_NODE macros as required
  * discard is_root from locked_page_info, cache root_page_level when you lock a root page, and check root_page_level to check if you are splitting or merging the root page
  * make curr_locked_page an on-stack-value variable instead of a pointer
  * remove all calls to unlock_page_and_delete_locked_page_info, and calls to fifo_unlock all pages function, to appropriate function calls, discarding is_write_locked and constructors and destructors of locked_page_info
