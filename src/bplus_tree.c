@@ -141,7 +141,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// if it still fails then call the split insert
 
 			// but before calling split insert we make sure that the page to be split is not a root page
-			if(curr_locked_page->is_root)
+			if(curr_locked_page->page_id == root_page_id)
 			{
 				// get a new page to insert between the root and its children
 				uint64_t root_least_keys_child_id;
@@ -217,7 +217,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// if it still fails then call the split insert
 
 			// but before calling split insert we make sure that the page to be split is not a root page
-			if(curr_locked_page->is_root)
+			if(curr_locked_page->page_id == root_page_id)
 			{
 				// get a new page to insert between the root and its children
 				uint64_t root_least_keys_child_id;
@@ -291,7 +291,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			curr_locked_page->child_index = find_child_index_for_key(curr_locked_page->page, key, bpttd_p);
 
 			// check if a merge happens at child_index of this curr_locked_page, will this page be required to be merged aswell
-			if(!curr_locked_page->is_root && !may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )
+			if(curr_locked_page->page_id != root_page_id && !may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )
 			{
 				// release locks on all the pages in stack except the curr_locked_page
 
@@ -356,7 +356,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			// go ahead with merging only if the page is lesser than half full AND is not root
 			// i.e. we can not merge a page which is root OR is more than half full
-			if(curr_locked_page->is_root || is_page_more_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def))
+			if(curr_locked_page->page_id == root_page_id || is_page_more_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->record_def))
 			{
 				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 				break;
@@ -423,7 +423,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				break;
 			}
 
-			if(curr_locked_page->is_root)
+			if(curr_locked_page->page_id == root_page_id)
 			{
 				uint32_t curr_tuple_count = get_tuple_count(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
 
@@ -449,7 +449,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			// go ahead with merging only if the page is lesser than half full AND is not root
 			// i.e. we can not merge a page which is root OR is more than half full
-			if(curr_locked_page->is_root || is_page_more_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def))
+			if(curr_locked_page->page_id == root_page_id || is_page_more_than_half_full(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def))
 			{
 				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 1, dam_p);
 				break;
