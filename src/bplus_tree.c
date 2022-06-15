@@ -45,7 +45,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	initialize_arraylist(&locked_pages_stack, root_page_level + 4);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, get_new_locked_page_info(root_page, root_page_id, 1));
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 1));
 
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
 	while(1)
@@ -278,7 +278,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	initialize_arraylist(&locked_pages_stack, root_page_level + 4);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, get_new_locked_page_info(root_page, root_page_id, 1));
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 1));
 
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
 	while(1)
@@ -543,7 +543,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	initialize_arraylist(&locked_pages_stack, root_page_level + 1);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, get_new_locked_page_info(root_page, root_page_id, 0));
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 0));
 
 	while(!is_empty_arraylist(&locked_pages_stack))
 	{
@@ -625,7 +625,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	initialize_arraylist(&locked_pages_stack, root_page_level + 1);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, get_new_locked_page_info(root_page, root_page_id, 0));
+	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 0));
 
 	while(!is_empty_arraylist(&locked_pages_stack))
 	{
