@@ -63,7 +63,7 @@ int may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(
 	uint32_t used_space = get_space_occupied_by_all_tuples(page, page_size, index_def);
 
 	// if the page is already lesser than half full, then it may require merging or redistribution
-	if(used_space < (allotted_space / 2))
+	if(used_space <= (allotted_space / 2))
 		return 1;
 
 	uint32_t tuple_count = get_tuple_count(page, page_size, index_def);
@@ -76,7 +76,7 @@ int may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(
 		uint32_t new_used_space = used_space - get_space_occupied_by_tuples(page, page_size, index_def, child_index, child_index);
 
 		// if the new used space is lesser than half full then it may required merging/redistribution
-		if(new_used_space < (allotted_space / 2))
+		if(new_used_space <= (allotted_space / 2))
 			return 1;
 	}
 
@@ -88,7 +88,7 @@ int may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(
 		uint32_t new_used_space = used_space - get_space_occupied_by_tuples(page, page_size, index_def, child_index + 1, child_index + 1);
 
 		// if the new used space is lesser than half full then it may required merging/redistribution
-		if(new_used_space < (allotted_space / 2))
+		if(new_used_space <= (allotted_space / 2))
 			return 1;
 	}
 
