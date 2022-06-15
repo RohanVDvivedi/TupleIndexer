@@ -28,7 +28,7 @@ struct locked_page_info
 #define INIT_LOCKED_PAGE_INFO(page_val, page_id_val, write_locked) ((locked_page_info){.page_id = page_id_val, .page = page_val, .is_write_locked = write_locked, .child_index = -1})
 
 // you can also request to make the page free, by passing should_free_this_page = 1
-int unlock_page_and_delete_locked_page_info(const locked_page_info* lpi_p, int should_free_this_page, int was_modified_if_write_lock, const data_access_methods* dam_p);
+int unlock_locked_page_info(const locked_page_info* lpi_p, int should_free_this_page, int was_modified_if_write_lock, const data_access_methods* dam_p);
 
 // pushes the locked page info of a locked page to the stack
 int push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, const locked_page_info* lpi_p);

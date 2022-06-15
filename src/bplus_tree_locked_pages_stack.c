@@ -49,7 +49,7 @@ void fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(arraylist* btlps_p
 	{
 		locked_page_info* to_unlock = (locked_page_info*)get_front_of_arraylist(btlps_p);
 		pop_front_from_arraylist(btlps_p);
-		unlock_page_and_delete_locked_page_info(to_unlock, 0, 0, dam_p);
+		unlock_locked_page_info(to_unlock, 0, 0, dam_p);
 		free(to_unlock);
 	}
 }
