@@ -60,34 +60,8 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	}
 	else
 	{
-		uint32_t total_tuple_count = tuple_count + 1;
-		uint32_t* cumulative_tuple_sizes = malloc(sizeof(uint32_t) * (total_tuple_count + 1));
-
 		// pre calculate the space that will be occupied by the new tuple
 		uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->record_def);
-
-		cumulative_tuple_sizes[0] = 0;
-		for(uint32_t i = 0, k = 1; i < tuple_count; i++)
-		{
-			// if the new tuple is suppossed to be inserted at i then process it first
-			if(i == tuple_to_insert_at)
-			{
-				cumulative_tuple_sizes[k] = space_occupied_by_new_tuple + cumulative_tuple_sizes[k-1];
-				k++;
-			}
-
-			// process the ith tuple
-			uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples(page1, bpttd_p->page_size, bpttd_p->record_def, i, i);
-			cumulative_tuple_sizes[k] = space_occupied_by_ith_tuple + cumulative_tuple_sizes[k-1];
-			k++;
-		}
-
-		// if the new tuple is suppossed to be inserted at the end then append its occupied size to the end
-		if(tuple_count == tuple_to_insert_at)
-			cumulative_tuple_sizes[total_tuple_count] = space_occupied_by_new_tuple + cumulative_tuple_sizes[total_tuple_count-1];
-
-		// now we have the cumulative space requirement of all the tuples
-		// i.e. the first n tuples will occupy cumulative_tuple_sizes[n] amount of space
 
 		// this is the total space available to you to store the tuples
 		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples(page1, bpttd_p->page_size, bpttd_p->record_def);
@@ -100,55 +74,69 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 		{
 			uint32_t limit = space_allotted_to_tuples;
 
-			// perform a binary search to find the cumulative size just above the limit
-			// cumulative_tuple_sizes has indices from 0 to total_tuple_count both inclusive
-			uint32_t l = 0;
-			uint32_t h = total_tuple_count;
-			while(l <= h)
+			uint32_t space_occupied_until = 0;
+
+			for(uint32_t i = 0; i < tuple_count; i++)
 			{
-				uint32_t m = l + (h - l) / 2;
-				if(cumulative_tuple_sizes[m] < limit)
+				// if the new tuple is suppossed to be inserted at i then process it first
+				if(i == tuple_to_insert_at)
 				{
-					result = m;
-					l = m + 1;
+					space_occupied_until = space_occupied_by_new_tuple + space_occupied_until;
+					if(space_occupied_until <= limit)
+						result++;
+					if(space_occupied_until >= limit)
+						break;
 				}
-				else if(cumulative_tuple_sizes[m] > limit)
-					h = m - 1;
-				else
-				{
-					result = m;
+
+				// process the ith tuple
+				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples(page1, bpttd_p->page_size, bpttd_p->record_def, i, i);
+				space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
+				if(space_occupied_until <= limit)
+					result++;
+				if(space_occupied_until >= limit)
 					break;
-				}
+			}
+
+			if(space_occupied_until < limit && tuple_count == tuple_to_insert_at && result == tuple_count)
+			{
+				// if the new tuple is suppossed to be inserted at the end then append its occupied size to the end
+				space_occupied_until = space_occupied_by_new_tuple + space_occupied_until;
+				if(space_occupied_until <= limit)
+					result++;
 			}
 		}
 		else // else => result is the number of tuples that will take the page occupancy just above or equal to 50%
 		{
 			uint32_t limit = space_allotted_to_tuples / 2;
 
-			// perform a binary search to find the cumulative size just above the limit
-			// cumulative_tuple_sizes has indices from 0 to total_tuple_count both inclusive
-			uint32_t l = 0;
-			uint32_t h = total_tuple_count;
-			while(l <= h)
+			uint32_t space_occupied_until = 0;
+
+			for(uint32_t i = 0; i < tuple_count; i++)
 			{
-				uint32_t m = l + (h - l) / 2;
-				if(cumulative_tuple_sizes[m] < limit)
-					l = m + 1;
-				else if(cumulative_tuple_sizes[m] > limit)
+				// if the new tuple is suppossed to be inserted at i then process it first
+				if(i == tuple_to_insert_at)
 				{
-					result = m;
-					h = m - 1;
+					space_occupied_until = space_occupied_by_new_tuple + space_occupied_until;
+					result++;
+					if(space_occupied_until > limit)
+						break;
 				}
-				else
-				{
-					result = m;
+
+				// process the ith tuple
+				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples(page1, bpttd_p->page_size, bpttd_p->record_def, i, i);
+				space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
+				result++;
+				if(space_occupied_until > limit)
 					break;
-				}
+			}
+
+			if(space_occupied_until <= limit && tuple_count == tuple_to_insert_at && result == tuple_count)
+			{
+				// if the new tuple is suppossed to be inserted at the end then append its occupied size to the end
+				space_occupied_until = space_occupied_by_new_tuple + space_occupied_until;
+				result++;
 			}
 		}
-
-		// free cumulative tuple sizes
-		free(cumulative_tuple_sizes);
 
 		return result;
 	}
