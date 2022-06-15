@@ -569,9 +569,9 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 				dam_p->free_page(dam_p->context, child_leaf_page_id);
 			}
 
-			// pop it from the stack and unlock it and free it aswell
+			// free it and pop it from the stack
+			unlock_locked_page_info(curr_locked_page, 1, 0, dam_p);
 			pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
-			unlock_page_and_delete_locked_page_info(curr_locked_page, 1, 0, dam_p);
 		}
 		// handle free-ing on pages at level >= 2
 		else
@@ -583,20 +583,16 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
 			{
 				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
-				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, curr_locked_page->child_index, bpttd_p);
-				locked_page_info* locked_child_page_info = lock_page_and_get_new_locked_page_info(child_page_id, 0, dam_p);
-				locked_child_page_info->child_index = -1;
-				curr_locked_page->child_index++;
+				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, curr_locked_page->child_index++, bpttd_p);
+				void* child_page = dam_p->acquire_page_with_reader_lock(dam_p->context, child_page_id);
 
-				push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, locked_child_page_info);
+				push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(child_page, child_page_id, 0));
 			}
 			else // we have free all its children, now we free this page
 			{
-				// here the child_index of the page is tuple_count
-
-				// pop it from the stack and unlock it and free it aswell
+				// free it and pop it from the stack
+				unlock_locked_page_info(curr_locked_page, 1, 0, dam_p);
 				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
-				unlock_page_and_delete_locked_page_info(curr_locked_page, 1, 0, dam_p);
 			}
 		}
 	}
@@ -640,7 +636,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 			printf("xxxxxxxxxxxxx\n\n");
 
 			// unlock it and pop it from the stack
-			unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 0, dam_p);
+			unlock_locked_page_info(curr_locked_page, 0, 0, dam_p);
 			pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 		}
 		// print current page as an interior page
@@ -671,7 +667,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 				}
 
 				// pop it from the stack and unlock it
-				unlock_page_and_delete_locked_page_info(curr_locked_page, 0, 0, dam_p);
+				unlock_locked_page_info(curr_locked_page, 0, 0, dam_p);
 				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 			}
 		}
