@@ -38,7 +38,7 @@ int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_
 int push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, locked_page_info* lpi_p);
 
 // pops the locked page info of a locked page from the stack
-locked_page_info* pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p);
+int pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p);
 
 // returns top of the locked page info of a locked page from the stack
 locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const arraylist* btlps_p);

@@ -70,11 +70,9 @@ int push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, locked_page_inf
 	return push_back_to_arraylist(btlps_p, lpi_p);
 }
 
-locked_page_info* pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p)
+int pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p)
 {
-	locked_page_info* to_pop = (locked_page_info*)get_back_of_arraylist(btlps_p);
-	pop_back_from_arraylist(btlps_p);
-	return to_pop;
+	return pop_back_from_arraylist(btlps_p);
 }
 
 locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const arraylist* btlps_p)
