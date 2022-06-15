@@ -19,9 +19,6 @@ struct locked_page_info
 	// 0 implies a read lock
 	int is_write_locked;
 
-	// 1 implies that the locked page is root of the bplus_tree
-	int is_root;
-
 	// only used if level > 0
 	// it signifies the direction that we took while traversing the bplus_tree through this interior node
 	uint32_t child_index;
@@ -29,10 +26,10 @@ struct locked_page_info
 
 // in case of an error to get read/write lock on the page, this function returns a NULL
 // the page is locked with a write lock if get_write_lock == 1, and with a read lock if it is 0
-locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, int is_root, const data_access_methods* dam_p);
+locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, const data_access_methods* dam_p);
 
 // returns a locked_page_info for an already locked page
-locked_page_info* get_new_locked_page_info(void* page, uint64_t page_id, int write_locked, int is_root);
+locked_page_info* get_new_locked_page_info(void* page, uint64_t page_id, int write_locked);
 
 // you can also request to make the page free, by passing should_free_this_page = 1
 int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_free_this_page, int was_modified_if_write_lock, const data_access_methods* dam_p);

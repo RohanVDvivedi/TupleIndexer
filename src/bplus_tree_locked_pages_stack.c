@@ -4,7 +4,7 @@
 
 #include<bplus_tree_page.h>
 
-locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, int is_root, const data_access_methods* dam_p)
+locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, const data_access_methods* dam_p)
 {
 	void* page = NULL;
 
@@ -21,7 +21,6 @@ locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int g
 	lpi_p->page_id = page_id;
 	lpi_p->page = page;
 	lpi_p->is_write_locked = get_write_lock;
-	lpi_p->is_root = is_root;
 
 	// this field can not be initialized with the minimal information that we have
 	lpi_p->child_index = -1;
@@ -29,13 +28,12 @@ locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int g
 	return lpi_p;
 }
 
-locked_page_info* get_new_locked_page_info(void* page, uint64_t page_id, int write_locked, int is_root)
+locked_page_info* get_new_locked_page_info(void* page, uint64_t page_id, int write_locked)
 {
 	locked_page_info* lpi_p = malloc(sizeof(locked_page_info));
 	lpi_p->page_id = page_id;
 	lpi_p->page = page;
 	lpi_p->is_write_locked = write_locked;
-	lpi_p->is_root = is_root;
 
 	// this field can not be initialized with the minimal information that we have
 	lpi_p->child_index = -1;
