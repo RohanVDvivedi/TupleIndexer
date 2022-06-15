@@ -1,8 +1,10 @@
 
  * discard level from the locked_page_info and use the function to get the level of the page
- * cache root_page_level when you lock a root page, and check root_pageto check if you are splitting or merging the root page
+ * cache root_page_level when you lock a root page, and check root_page_level to check if you are splitting or merging the root page
 
+ * make curr_locked_page a value instead of a pointer
  * remove all calls to unlock_page_and_delete_locked_page_info, and calls to fifo_unlock all pages function, to appropriate function calls
+ * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
 
  * implement bplus_tree_cursor
  * implement find
@@ -17,11 +19,7 @@
 
  * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
 
-* OPTIMIZING INTERIOR PAGE HEADER
  * modify interior page headers to store only a byte to represent if it is the last page in the level
-
-* AVOID subsequent dispersed malloc calls, while the crucial parts of bplus_tree are running
- * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
 
  * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
