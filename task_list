@@ -1,4 +1,3 @@
- * modify "calculate tuples in page1" function to perform in-place calculations instead of a prefix_sum + binary search calculation
 
  * discard level from the locked_page_info and use the function to get the level of the page
  * cache root_page_level when you lock a root page, and check root_pageto check if you are splitting or merging the root page
