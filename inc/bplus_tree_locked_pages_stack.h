@@ -24,18 +24,14 @@ struct locked_page_info
 	uint32_t child_index;
 };
 
-// in case of an error to get read/write lock on the page, this function returns a NULL
-// the page is locked with a write lock if get_write_lock == 1, and with a read lock if it is 0
-locked_page_info* lock_page_and_get_new_locked_page_info(uint64_t page_id, int get_write_lock, const data_access_methods* dam_p);
-
-// returns a locked_page_info for an already locked page
-locked_page_info* get_new_locked_page_info(void* page, uint64_t page_id, int write_locked);
+// macro to initialize locked_page_info struct on stack
+#define INIT_LOCKED_PAGE_INFO(page_val, page_id_val, write_locked) ((locked_page_info){.page_id = page_id_val, .page = page_val, .is_write_locked = write_locked, .child_index = -1})
 
 // you can also request to make the page free, by passing should_free_this_page = 1
 int unlock_page_and_delete_locked_page_info(locked_page_info* lpi_p, int should_free_this_page, int was_modified_if_write_lock, const data_access_methods* dam_p);
 
 // pushes the locked page info of a locked page to the stack
-int push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, locked_page_info* lpi_p);
+int push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, const locked_page_info* lpi_p);
 
 // pops the locked page info of a locked page from the stack
 int pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p);
