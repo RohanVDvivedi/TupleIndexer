@@ -1,5 +1,5 @@
 
- * remove all calls to unlock_locked_page_info from bplus_tree.c, and calls to fifo_unlock all pages function, to appropriate function calls, discarding is_write_locked
+ * remove all calls to fifo_unlock all pages function, discarding is_write_locked
  * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
 
  * loop while removing empty root in bplus_tree delete functionality
