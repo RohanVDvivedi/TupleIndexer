@@ -1,7 +1,8 @@
 
- * make curr_locked_page an on-stack-value variable instead of a pointer, discarding functions to lock and unlock in the same function
- * remove all calls to unlock_page_and_delete_locked_page_info, and calls to fifo_unlock all pages function, to appropriate function calls, discarding is_write_locked and constructors and destructors of locked_page_info
+ * remove all calls to unlock_locked_page_info from bplus_tree.c, and calls to fifo_unlock all pages function, to appropriate function calls, discarding is_write_locked
  * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
+
+ * loop while removing empty root in bplus_tree delete functionality
 
  * implement bplus_tree_cursor
  * implement find
