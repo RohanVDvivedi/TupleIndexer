@@ -98,7 +98,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(found)
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 0, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0);
 				break;
 			}
 
@@ -113,7 +113,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(inserted)
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 				break;
 			}
 
@@ -133,7 +133,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(inserted)
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 				break;
 			}
 
@@ -168,9 +168,9 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			// if an insertion was done on this page then lock on this page should be released with modification
 			if(inserted)
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 			else
-				unlock_locked_page_info(&curr_locked_page, 0, 0, dam_p); // THIS IS AN ERR, WE CANT RECOVER FROM
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0); // THIS IS AN ERR, WE CANT RECOVER FROM
 
 			// found or the record was inserted without requiring a split, then no need to iterate further in the loop
 			if(parent_insert == NULL)
@@ -190,7 +190,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(parent_tuple_inserted)
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 				break;
 			}
 
@@ -209,7 +209,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(parent_tuple_inserted)
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 				break;
 			}
 
@@ -243,9 +243,9 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			// if an insertion was done on this page then lock on this page should be released with modification
 			if(parent_tuple_inserted)
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 			else
-				unlock_locked_page_info(&curr_locked_page, 0, 0, dam_p); // THIS IS AN ERR, WE CANT RECOVER FROM
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0); // THIS IS AN ERR, WE CANT RECOVER FROM
 
 			// if parent_tuple was inserted without a split, then no need to iterate further in the loop
 			if(parent_insert == NULL)
@@ -341,7 +341,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// if no such record can be found, we break and exit
 			if(NO_TUPLE_FOUND == found_index)
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 0, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0);
 				break;
 			}
 
@@ -354,7 +354,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			if(!deleted) // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 0, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0);
 				break;
 			}
 
@@ -362,7 +362,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// i.e. we can not merge a page which is root OR is more than half full
 			if(curr_locked_page.page_id == root_page_id || is_page_more_than_half_full(curr_locked_page.page, bpttd_p->page_size, bpttd_p->record_def))
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 				break;
 			}
 
@@ -388,7 +388,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			if(!merged && parent_locked_page->child_index < parent_tuple_count)
 			{
 				// release lock on the curr_locked_page
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 
 				// make the previous of curr_locked_page as the curr_locked_page
 				uint32_t prev_child_page_id = find_child_page_id_by_child_index(parent_locked_page->page, parent_locked_page->child_index - 1, bpttd_p);
@@ -401,7 +401,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 				if(!merged)
 				{
-					unlock_locked_page_info(&curr_locked_page, 0, 0, dam_p);
+					dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0);
 
 					// mark curr_locked_page as empty / locks already released
 					curr_locked_page = INIT_LOCKED_PAGE_INFO(NULL, bpttd_p->NULL_PAGE_ID, 0);
@@ -410,7 +410,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			// release lock on the curr_locked_page, if not released yet
 			if(curr_locked_page.page_id != bpttd_p->NULL_PAGE_ID)
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 
 			if(!merged)
 				break;
@@ -426,7 +426,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			if(!deleted) // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 0, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0);
 				break;
 			}
 
@@ -458,7 +458,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// i.e. we can not merge a page which is root OR is more than half full
 			if(curr_locked_page.page_id == root_page_id || is_page_more_than_half_full(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def))
 			{
-				unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 				break;
 			}
 
@@ -486,10 +486,10 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				{
 					parent_locked_page->child_index += 1;
 
-					unlock_locked_page_info(&child_page2, 1, 0, dam_p);
+					dam_p->release_writer_lock_and_free_page(dam_p->context, child_page2.page);
 				}
 				else // release lock on the page that is not curr_locked_page
-					unlock_locked_page_info(&child_page2, 0, 0, dam_p);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, 0);
 			}
 
 			// attempt a merge with prev page of curr_locked_page, if it has a prev page with same parent
@@ -508,16 +508,16 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				// if merged we need to delete entry at child_index in the parent page, and free child_page2
 				if(merged)
 				{
-					unlock_locked_page_info(&child_page2, 1, 0, dam_p);
+					dam_p->release_writer_lock_and_free_page(dam_p->context, child_page2.page);
 
 					curr_locked_page = child_page1;
 				}
 				else // release lock on the page that is not curr_locked_page
-					unlock_locked_page_info(&child_page1, 0, 0, dam_p);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page1.page, 0);
 			}
 
 			// release lock on the curr_locked_page
-			unlock_locked_page_info(&curr_locked_page, 0, 1, dam_p);
+			dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 
 			if(!merged)
 				break;
@@ -579,7 +579,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			}
 
 			// free it and pop it from the stack
-			unlock_locked_page_info(curr_locked_page, 1, 0, dam_p);
+			dam_p->release_reader_lock_and_free_page(dam_p->context, curr_locked_page->page);
 			pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 		}
 		// handle free-ing on pages at level >= 2
@@ -600,7 +600,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			else // we have free all its children, now we free this page
 			{
 				// free it and pop it from the stack
-				unlock_locked_page_info(curr_locked_page, 1, 0, dam_p);
+				dam_p->release_reader_lock_and_free_page(dam_p->context, curr_locked_page->page);
 				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 			}
 		}
@@ -645,7 +645,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 			printf("xxxxxxxxxxxxx\n\n");
 
 			// unlock it and pop it from the stack
-			unlock_locked_page_info(curr_locked_page, 0, 0, dam_p);
+			dam_p->release_reader_lock_on_page(dam_p->context, curr_locked_page->page);
 			pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 		}
 		// print current page as an interior page
@@ -676,7 +676,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 				}
 
 				// pop it from the stack and unlock it
-				unlock_locked_page_info(curr_locked_page, 0, 0, dam_p);
+				dam_p->release_reader_lock_on_page(dam_p->context, curr_locked_page->page);
 				pop_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 			}
 		}
