@@ -3,6 +3,7 @@
  * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
 
  * loop while removing empty roots in bplus_tree delete functionality
+ * reduce parent_insert malloc size, to allotted_size / 2 OR index_def.size, if index def is fixed sized
 
  * implement bplus_tree_cursor
  * implement find
