@@ -3,7 +3,7 @@
  * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
 
  * loop while removing empty roots in bplus_tree delete functionality, loop while root is not a leaf (root_page_level > 0) OR tuple_count on root (index) page is 0, move curr_locked_page.page_id == root_page_id condition from below to the outside of this loop
- * remove if(parent_insert == NULL) break; check from insert functionality, and instead use a inserted flag to check. at that point if inserted is set then the page must be split, and if not then the page will not even be modified.
+ * remove if(parent_insert == NULL) break; check from insert functionality (parent insert will be non-null if the malloc call succeeded this does not imply a successfull split), and instead use a inserted flag to check. at that point if inserted is set then the page must be split, and if not then the page will not even be modified.
  * reduce parent_insert malloc size, to allotted_size / 2 OR index_def.size, if index def is fixed sized
  * insert and delete to only allow locked_pages_stack size to be at max root_page_level + 2 (insert) and root_page_level + 1 for delete operation, instead of root_page_level + 4.
 
