@@ -30,3 +30,6 @@
  * write multi threaded test cases to insert a large csv in to b+tree, measure performance difference
 
  * provide a way to allow additional default header in the implementation (*future)
+
+ * modify all page header functions to use memcpy when performing unaligned accesses
+   * arm processors do not support unaligned accesses
