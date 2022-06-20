@@ -33,3 +33,4 @@
 
  * modify all page header functions to use memcpy when performing unaligned accesses
    * arm processors do not support unaligned accesses
+ * allow any where from 1 to 8 bytes for page ids
