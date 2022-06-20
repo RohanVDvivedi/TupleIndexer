@@ -59,14 +59,14 @@ int pop_from_locked_pages_stack(locked_pages_stack* lps)
 	return 1;
 }
 
-locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const locked_pages_stack* lps)
+locked_page_info* get_top_of_locked_pages_stack(const locked_pages_stack* lps)
 {
 	if(lps->element_count == 0)
 		return NULL;
 	return (locked_page_info*)(lps->locked_page_infos + sum_circular(lps->start_index, lps->element_count - 1, lps->capacity));
 }
 
-locked_page_info* get_bottom_stack_bplus_tree_locked_pages_stack(const locked_pages_stack* lps)
+locked_page_info* get_bottom_of_locked_pages_stack(const locked_pages_stack* lps)
 {
 	if(lps->element_count == 0)
 		return NULL;
