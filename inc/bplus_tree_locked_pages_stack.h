@@ -42,10 +42,10 @@ void delete_locked_pages_stack(locked_pages_stack* lps);
 uint32_t get_element_count_locked_pages_stack(const locked_pages_stack* lps);
 
 // pushes the locked_page_info to the locked_pages_stack
-int push_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi_p);
+int push_to_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi_p);
 
 // pops the locked_page_info of a locked page from the locked_pages_stack
-int pop_locked_pages_stack(locked_pages_stack* lps);
+int pop_from_locked_pages_stack(locked_pages_stack* lps);
 
 // returns pointer to the top locked_page_info of the locked_pages_stack
 locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const locked_pages_stack* lps);
@@ -53,6 +53,6 @@ locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const locked_pages
 // returns pointer to the bottom locked_page_info of the locked_pages_stack
 locked_page_info* get_bottom_stack_bplus_tree_locked_pages_stack(const locked_pages_stack* lps);
 
-int pop_bottom_locked_pages_stack(locked_pages_stack* lps);
+int pop_bottom_from_locked_pages_stack(locked_pages_stack* lps);
 
 #endif

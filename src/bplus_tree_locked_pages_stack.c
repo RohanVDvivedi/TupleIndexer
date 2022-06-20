@@ -39,7 +39,7 @@ static inline uint32_t sub_circular(uint32_t x, uint32_t y, uint32_t max)
 		return x - y;
 }
 
-int push_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi_p)
+int push_to_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi_p)
 {
 	if(lps->element_count == lps->capacity)
 		return 0;
@@ -51,7 +51,7 @@ int push_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi
 	return 1;
 }
 
-int pop_locked_pages_stack(locked_pages_stack* lps)
+int pop_from_locked_pages_stack(locked_pages_stack* lps)
 {
 	if(lps->element_count == 0)
 		return 0;
@@ -73,7 +73,7 @@ locked_page_info* get_bottom_stack_bplus_tree_locked_pages_stack(const locked_pa
 	return (locked_page_info*)(lps->locked_page_infos + lps->start_index);
 }
 
-int pop_bottom_locked_pages_stack(locked_pages_stack* lps)
+int pop_bottom_from_locked_pages_stack(locked_pages_stack* lps)
 {
 	if(lps->element_count == 0)
 		return 0;
