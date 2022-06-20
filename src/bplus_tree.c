@@ -46,11 +46,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
 
 	// create a stack of capacity = levels + 1
-	arraylist locked_pages_stack;
-	initialize_arraylist(&locked_pages_stack, root_page_level + 2);
+	locked_pages_stack* locked_pages_stack_p = new_locked_pages_stack(root_page_level + 2);
 
 	// push the root page onto the stack
-	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 1));
+	push_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 1));
 
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
 	while(1)
@@ -272,7 +271,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	// release locks on all the pages, we had locks on until now
 	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
 
-	deinitialize_arraylist(&locked_pages_stack);
+	delete_locked_pages_stack(locked_pages_stack_p);
 
 	return inserted;
 }
@@ -286,8 +285,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
 
 	// create a stack of capacity = levels
-	arraylist locked_pages_stack;
-	initialize_arraylist(&locked_pages_stack, root_page_level + 1);
+	locked_pages_stack* locked_pages_stack_p = new_locked_pages_stack(root_page_level + 1);
 
 	// push the root page onto the stack
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 1));
@@ -543,7 +541,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	// release locks on all the pages, we had locks on until now
 	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
 
-	deinitialize_arraylist(&locked_pages_stack);
+	delete_locked_pages_stack(locked_pages_stack_p);
 
 	return deleted;
 }
@@ -564,8 +562,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	}
 
 	// create a stack of capacity = levels
-	arraylist locked_pages_stack;
-	initialize_arraylist(&locked_pages_stack, root_page_level + 1);
+	locked_pages_stack* locked_pages_stack_p = new_locked_pages_stack(root_page_level + 1);
 
 	// push the root page onto the stack
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 0));
@@ -625,7 +622,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	// release locks on all the pages, we had locks on until now
 	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
 
-	deinitialize_arraylist(&locked_pages_stack);
+	delete_locked_pages_stack(locked_pages_stack_p);
 
 	return 1;
 }
@@ -642,8 +639,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
 
 	// create a stack of capacity = levels
-	arraylist locked_pages_stack;
-	initialize_arraylist(&locked_pages_stack, root_page_level + 1);
+	locked_pages_stack* locked_pages_stack_p = new_locked_pages_stack(root_page_level + 1);
 
 	// push the root page onto the stack
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 0));
@@ -701,5 +697,5 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	// release locks on all the pages, we had locks on until now
 	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
 
-	deinitialize_arraylist(&locked_pages_stack);
+	delete_locked_pages_stack(locked_pages_stack_p);
 }
