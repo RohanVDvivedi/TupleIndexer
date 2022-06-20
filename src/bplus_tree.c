@@ -86,7 +86,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	// this happens upon a split
 	void* parent_insert = NULL;
 
-	while(!is_empty_arraylist(&locked_pages_stack))
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info curr_locked_page = *get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 		pop_from_locked_pages_stack(locked_pages_stack_p);
@@ -335,7 +335,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	// deleted will be set if the record, was deleted
 	int deleted = 0;
 
-	while(!is_empty_arraylist(&locked_pages_stack))
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info curr_locked_page = *get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 		pop_from_locked_pages_stack(locked_pages_stack_p);
@@ -567,7 +567,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	// push the root page onto the stack
 	push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id));
 
-	while(!is_empty_arraylist(&locked_pages_stack))
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
@@ -644,7 +644,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	// push the root page onto the stack
 	push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id));
 
-	while(!is_empty_arraylist(&locked_pages_stack))
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* curr_locked_page = get_top_stack_bplus_tree_locked_pages_stack(&locked_pages_stack);
 
