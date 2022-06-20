@@ -40,9 +40,9 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	// pre cache level of the root_page
 	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
 
-	// create a stack of capacity = levels + 3 
+	// create a stack of capacity = levels + 1
 	arraylist locked_pages_stack;
-	initialize_arraylist(&locked_pages_stack, root_page_level + 4);
+	initialize_arraylist(&locked_pages_stack, root_page_level + 2);
 
 	// push the root page onto the stack
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 1));
@@ -280,9 +280,9 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	// pre cache level of the root_page
 	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
 
-	// create a stack of capacity = levels + 3 
+	// create a stack of capacity = levels
 	arraylist locked_pages_stack;
-	initialize_arraylist(&locked_pages_stack, root_page_level + 4);
+	initialize_arraylist(&locked_pages_stack, root_page_level + 1);
 
 	// push the root page onto the stack
 	push_stack_bplus_tree_locked_pages_stack(&locked_pages_stack, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id, 1));
