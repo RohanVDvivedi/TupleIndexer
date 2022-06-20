@@ -445,10 +445,10 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			if(curr_locked_page.page_id == root_page_id)
 			{
-				uint32_t curr_tuple_count = get_tuple_count(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def);
-
-				// need to handle empty root parent page 
-				if(curr_tuple_count == 0)
+				// need to handle empty root parent page
+				// we clone the contents of the <only child of the root page> to the <root page>, to reduce the level of the page
+				// we can do this only if the root is an interior page i.e. root_page_level > 0
+				while(root_page_level > 0 && get_tuple_count(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def) == 0)
 				{
 					uint64_t only_child_page_id = find_child_page_id_by_child_index(curr_locked_page.page, -1, bpttd_p);
 					void* only_child_page = dam_p->acquire_page_with_reader_lock(dam_p->context, only_child_page_id);
@@ -462,14 +462,17 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 					// free and unlock only_child_page
 					dam_p->release_reader_lock_and_free_page(dam_p->context, only_child_page);
 
-					// root_page_level will not be what was the level of its child (root_page_level -= 1, should have sufficed here)
+					// root_page_level will now be what was the level of its child (root_page_level -= 1, should have sufficed here)
 					root_page_level = get_level_of_bplus_tree_page(curr_locked_page.page, bpttd_p->page_size);
 				}
+
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
+				break;
 			}
 
-			// go ahead with merging only if the page is lesser than half full AND is not root
-			// i.e. we can not merge a page which is root OR is more than half full
-			if(curr_locked_page.page_id == root_page_id || is_page_more_than_half_full(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def))
+			// go ahead with merging only if the page is lesser than half full
+			// i.e. we can not merge a page which is more than half full
+			if(is_page_more_than_half_full(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def))
 			{
 				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
 				break;
