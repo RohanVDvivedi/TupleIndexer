@@ -43,7 +43,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 
 // get maximum size of the record that can be inserted in this bplus_tree
 // there must be atleast 2 data records per leaf page and 2 index records per interior page of any bplus_tree
-uint32_t get_maximum_insertable_record_size(bplus_tree_tuple_defs* bpttd_p);
+uint32_t get_maximum_insertable_record_size(const bplus_tree_tuple_defs* bpttd_p);
 
 // it deallocates the index_def and
 // then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0

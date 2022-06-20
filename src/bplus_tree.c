@@ -9,6 +9,7 @@
 #include<sorted_packed_page_util.h>
 
 #include<page_layout.h>
+#include<tuple.h>
 
 #include<arraylist.h>
 
@@ -34,6 +35,10 @@ bplus_tree_cursor* find_in_bplus_tree(uint64_t root_page_id, const void* key, in
 
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
+	// the tuple to be inserted must not exceed a certain size
+	if(get_tuple_size(bpttd_p->record_def, record) > get_maximum_insertable_record_size(bpttd_p))
+		return 0;
+
 	// get lock on the root page of the bplus_tree
 	void* root_page = dam_p->acquire_page_with_writer_lock(dam_p->context, root_page_id);
 

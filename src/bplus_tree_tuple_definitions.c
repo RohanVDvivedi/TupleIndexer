@@ -106,7 +106,7 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 
 #include<page_layout.h>
 
-uint32_t get_maximum_insertable_record_size(bplus_tree_tuple_defs* bpttd_p)
+uint32_t get_maximum_insertable_record_size(const bplus_tree_tuple_defs* bpttd_p)
 {
 	uint32_t min_record_tuple_count = 2;
 	uint32_t total_available_space_in_leaf_page = get_space_to_be_allotted_to_all_tuples(sizeof_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->page_size, bpttd_p->record_def);
