@@ -40,29 +40,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 		res = insert_copy_of_element_def(bpttd_p->index_def, NULL, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
 	
 	// the unsigned int page id that the index entry will point to
-	switch(page_id_width)
-	{
-		case 1 :
-		{
-			res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, 1);
-			break;
-		}
-		case 2 :
-		{
-			res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, 2);
-			break;
-		}
-		case 4 :
-		{
-			res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, 4);
-			break;
-		}
-		case 8 :
-		{
-			res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, 8);
-			break;
-		}
-	}
+	res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, page_id_width);
 
 	// if any of the index element_definitions could not be inserted
 	if(!res)
