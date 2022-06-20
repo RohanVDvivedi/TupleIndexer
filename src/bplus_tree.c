@@ -69,7 +69,12 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			if( ( is_bplus_tree_leaf_page(child_page, bpttd_p->page_size) && !may_require_split_for_insert_for_bplus_tree(child_page, bpttd_p->page_size, bpttd_p->record_def))
 			||  (!is_bplus_tree_leaf_page(child_page, bpttd_p->page_size) && !may_require_split_for_insert_for_bplus_tree(child_page, bpttd_p->page_size, bpttd_p->index_def )) )
 			{
-				fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
+				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+				{
+					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+					dam_p->release_writer_lock_on_page(dam_p->context, bottom->page, 0);
+					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+				}
 			}
 
 			// push this child page onto the stack
@@ -269,7 +274,12 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		free(parent_insert);
 
 	// release locks on all the pages, we had locks on until now
-	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		dam_p->release_writer_lock_on_page(dam_p->context, bottom->page, 0);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
 
 	delete_locked_pages_stack(locked_pages_stack_p);
 
@@ -303,22 +313,13 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// check if a merge happens at child_index of this curr_locked_page, will this page be required to be merged aswell
 			if(curr_locked_page->page_id != root_page_id && !may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )
 			{
-				// release locks on all the pages in stack except the curr_locked_page
-
-				// cache value of curr_locked_page, while gets invalidated for while
-				locked_page_info temp = (*curr_locked_page);
-
-				// pop the curr_locked_page
-				pop_from_locked_pages_stack(locked_pages_stack_p);
-
-				// unlock all its parent pages
-				fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
-
-				// push the curr_locked_page back in the stack
-				push_to_locked_pages_stack(locked_pages_stack_p, &temp);
-
-				// make curr_locked_page valid again
-				curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+				// release locks on all the pages in stack except for the the curr_locked_page
+				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1)
+				{
+					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+					dam_p->release_writer_lock_on_page(dam_p->context, bottom->page, 0);
+					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+				}
 			}
 
 			// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
@@ -539,7 +540,12 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	}
 
 	// release locks on all the pages, we had locks on until now
-	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		dam_p->release_writer_lock_on_page(dam_p->context, bottom->page, 0);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
 
 	delete_locked_pages_stack(locked_pages_stack_p);
 
@@ -620,7 +626,12 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	}
 
 	// release locks on all the pages, we had locks on until now
-	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		dam_p->release_reader_lock_on_page(dam_p->context, bottom->page);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
 
 	delete_locked_pages_stack(locked_pages_stack_p);
 
@@ -695,7 +706,12 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	}
 
 	// release locks on all the pages, we had locks on until now
-	fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(&locked_pages_stack, dam_p);
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		dam_p->release_reader_lock_on_page(dam_p->context, bottom->page);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
 
 	delete_locked_pages_stack(locked_pages_stack_p);
 }
