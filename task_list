@@ -9,7 +9,6 @@
 
  * implement find test cases to find range of values, add this tests between insert and delete test cases
 
- * check tuple size before an insert
  * test insertion of tuple longer than max insertable record size
  * test deletion of non existing keys
  * test inserting records with already existing keys
