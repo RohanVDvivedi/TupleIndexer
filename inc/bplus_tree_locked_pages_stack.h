@@ -15,32 +15,44 @@ struct locked_page_info
 	// pointer to the page
 	void* page;
 
-	// 1 => we have a write lock on the page
-	// 0 implies a read lock
-	int is_write_locked;
-
 	// only used if level > 0
 	// it signifies the direction that we took while traversing the bplus_tree through this interior node
 	uint32_t child_index;
 };
 
 // macro to initialize locked_page_info struct on stack
-#define INIT_LOCKED_PAGE_INFO(page_val, page_id_val, write_locked) ((locked_page_info){.page_id = page_id_val, .page = page_val, .is_write_locked = write_locked, .child_index = -1})
+#define INIT_LOCKED_PAGE_INFO(page_val, page_id_val) ((locked_page_info){.page_id = page_id_val, .page = page_val, .child_index = -1})
 
-// pushes the locked page info of a locked page to the stack
-int push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, const locked_page_info* lpi_p);
+typedef struct locked_pages_stack locked_pages_stack;
+struct locked_pages_stack
+{
+	uint32_t capacity;
+	uint32_t start_index;
+	uint32_t element_count;
+	locked_page_info locked_page_infos[];
+};
 
-// pops the locked page info of a locked page from the stack
-int pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p);
+#define sizeof_locked_pages_stack(capacity) (sizeof(locked_pages_stack) + capacity * sizeof(locked_page_info))
 
-// returns top of the locked page info of a locked page from the stack
-locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const arraylist* btlps_p);
+locked_pages_stack* new_locked_pages_stack(uint32_t capacity);
 
-// unlocks all the pages in the same order as they were pushed (first in first out)
-// unlocks pages in direction from root to leaf (and may not include root and leaf pages themselves, only the pages whose info have been pushed)
-// it also frees up memory that is being used by all the lock_page_info structs
-// it only unlocks the pages, it does not free those pages, THIS IS EXPECTED BEHAVIOUR
-// all the pages were marked as was_modified == 0, if the lock was a write lock
-void fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(arraylist* btlps_p, const data_access_methods* dam_p);
+void delete_locked_pages_stack(locked_pages_stack* lps);
+
+// returns number of locked_page_info s inside the stack
+uint32_t get_element_count_locked_pages_stack(const locked_pages_stack* lps);
+
+// pushes the locked_page_info to the locked_pages_stack
+int push_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi_p);
+
+// pops the locked_page_info of a locked page from the locked_pages_stack
+int pop_locked_pages_stack(locked_pages_stack* lps);
+
+// returns pointer to the top locked_page_info of the locked_pages_stack
+locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const locked_pages_stack* lps);
+
+// returns pointer to the bottom locked_page_info of the locked_pages_stack
+locked_page_info* get_bottom_stack_bplus_tree_locked_pages_stack(const locked_pages_stack* lps);
+
+int pop_bottom_locked_pages_stack(locked_pages_stack* lps);
 
 #endif

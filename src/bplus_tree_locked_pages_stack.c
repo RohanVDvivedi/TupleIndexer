@@ -4,37 +4,80 @@
 
 #include<bplus_tree_page.h>
 
-int push_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p, const locked_page_info* lpi_p)
+locked_pages_stack* new_locked_pages_stack(uint32_t capacity)
 {
-	locked_page_info* to_push = malloc(sizeof(locked_page_info));
-	(*to_push) = (*lpi_p);
-	return push_back_to_arraylist(btlps_p, to_push);
+	locked_pages_stack* lps = malloc(sizeof_locked_pages_stack(capacity));
+	lps->capacity = capacity;
+	lps->start_index = 0;
+	lps->element_count = 0;
+	return lps;
 }
 
-int pop_stack_bplus_tree_locked_pages_stack(arraylist* btlps_p)
+void delete_locked_pages_stack(locked_pages_stack* lps)
 {
-	locked_page_info* to_pop = (locked_page_info*)get_back_of_arraylist(btlps_p);
-	int popped = pop_back_from_arraylist(btlps_p);
-	if(popped)
-		free(to_pop);
-	return popped;
+	free(lps);
 }
 
-locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const arraylist* btlps_p)
+uint32_t get_element_count_locked_pages_stack(const locked_pages_stack* lps)
 {
-	return (locked_page_info*)get_back_of_arraylist(btlps_p);
+	return lps->element_count;
 }
 
-void fifo_unlock_all_bplus_tree_unmodified_locked_pages_stack(arraylist* btlps_p, const data_access_methods* dam_p)
+static inline uint32_t sum_circular(uint32_t x, uint32_t y, uint32_t max)
 {
-	while(!is_empty_arraylist(btlps_p))
-	{
-		locked_page_info* to_unlock = (locked_page_info*)get_front_of_arraylist(btlps_p);
-		pop_front_from_arraylist(btlps_p);
-		if(to_unlock->is_write_locked)
-			dam_p->release_writer_lock_on_page(dam_p->context, to_unlock->page, 0);
-		else
-			dam_p->release_reader_lock_on_page(dam_p->context, to_unlock->page);
-		free(to_unlock);
-	}
+	if(x >= max - y)
+		return x - (max - y);
+	else
+		return x + y;
+}
+
+static inline uint32_t sub_circular(uint32_t x, uint32_t y, uint32_t max)
+{
+	if(x < y)
+		return max - (y - x);
+	else
+		return x - y;
+}
+
+int push_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi_p)
+{
+	if(lps->element_count == lps->capacity)
+		return 0;
+	if(lps->element_count == 0)
+		lps->start_index = 0;
+	uint32_t new_top_index = sum_circular(lps->start_index, lps->element_count, lps->capacity);
+	lps->element_count++;
+	lps->locked_page_infos[new_top_index] = *lpi_p;
+	return 1;
+}
+
+int pop_locked_pages_stack(locked_pages_stack* lps)
+{
+	if(lps->element_count == 0)
+		return 0;
+	lps->element_count--;
+	return 1;
+}
+
+locked_page_info* get_top_stack_bplus_tree_locked_pages_stack(const locked_pages_stack* lps)
+{
+	if(lps->element_count == 0)
+		return NULL;
+	return (locked_page_info*)(lps->locked_page_infos + sum_circular(lps->start_index, lps->element_count - 1, lps->capacity));
+}
+
+locked_page_info* get_bottom_stack_bplus_tree_locked_pages_stack(const locked_pages_stack* lps)
+{
+	if(lps->element_count == 0)
+		return NULL;
+	return (locked_page_info*)(lps->locked_page_infos + lps->start_index);
+}
+
+int pop_bottom_locked_pages_stack(locked_pages_stack* lps)
+{
+	if(lps->element_count == 0)
+		return 0;
+	lps->element_count--;
+	lps->start_index = sum_circular(lps->start_index, 1, lps->capacity);
+	return 1;
 }
