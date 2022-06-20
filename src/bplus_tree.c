@@ -166,15 +166,16 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			inserted = split_insert_bplus_tree_leaf_page(curr_locked_page.page, curr_locked_page.page_id, record, insertion_point, bpttd_p, dam_p, parent_insert);
 
-			// if an insertion was done on this page then lock on this page should be released with modification
+			// if an insertion was done (at this point a split was also performed), on this page
+			// then lock on this page should be released with modification
+			// and in the next loop we continue to insert parent_insert to parent page
 			if(inserted)
 				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
-			else
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0); // THIS IS AN ERR, WE CANT RECOVER FROM
-
-			// found or the record was inserted without requiring a split, then no need to iterate further in the loop
-			if(parent_insert == NULL)
+			else // THIS IS AN ERR, WE CANT RECOVER FROM
+			{
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0);
 				break;
+			}
 		}
 		else
 		{
@@ -241,15 +242,16 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			parent_tuple_inserted = split_insert_bplus_tree_interior_page(curr_locked_page.page, curr_locked_page.page_id, parent_insert, insertion_point, bpttd_p, dam_p, parent_insert);
 
-			// if an insertion was done on this page then lock on this page should be released with modification
+			// if an insertion was done (at this point a split was also performed), on this page
+			// then lock on this page should be released with modification
+			// and in the next loop we continue to insert parent_insert to parent page
 			if(parent_tuple_inserted)
 				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
-			else
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0); // THIS IS AN ERR, WE CANT RECOVER FROM
-
-			// if parent_tuple was inserted without a split, then no need to iterate further in the loop
-			if(parent_insert == NULL)
+			else // THIS IS AN ERR, WE CANT RECOVER FROM
+			{
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 0);
 				break;
+			}
 		}
 	}
 
