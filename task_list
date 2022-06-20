@@ -1,7 +1,4 @@
 
- * remove all calls to fifo_unlock all pages function, discarding is_write_locked
- * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
-
  * implement bplus_tree_cursor
  * implement find
 
