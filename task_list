@@ -2,8 +2,6 @@
  * remove all calls to fifo_unlock all pages function, discarding is_write_locked
  * modify bplus_tree locked pages stack to use an in-place memory holder stack, instead of an arraylist
 
- * loop while removing empty roots in bplus_tree delete functionality, loop while root is not a leaf (root_page_level > 0) OR tuple_count on root (index) page is 0, move curr_locked_page.page_id == root_page_id condition from below to the outside of this loop
-
  * implement bplus_tree_cursor
  * implement find
 
