@@ -1,3 +1,8 @@
+ * modify interior page headers to store only a byte to represent if it is the last page in the level
+ * modify bplus_tree_common_page_header to store level as uint16_t instead of a uint32_t, show in comments there that a uint16_t is more than enough to store timely friendship relation ships of all pairs of starts in the universe for 10^6 years, updateing every nano-second. hence more than enough for anything
+ * modify all page header functions to use tuple store read/write to page functionality
+ * allow any where from 1 to 8 bytes for page ids
+ * provide a way to allow additional default header in the implementation
 
  * implement bplus_tree_cursor
  * implement find
@@ -11,15 +16,8 @@
 
  * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
 
- * modify interior page headers to store only a byte to represent if it is the last page in the level
- * modify bplus_tree_common_page_header to store level as uint16_t instead of a uint32_t, show in comments there that a uint16_t is more than enough to store timely friendship relation ships of all pairs of starts in the universe for 10^6 years, updateing every nano-second. hence more than enough for anything
- * modify all page header functions to use tuple store read/write to page functionality
- * allow any where from 1 to 8 bytes for page ids
-
  * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
  * implement throwing errors appropriately, upon failures from dam_p
 
  * write multi threaded test cases to insert a large csv in to b+tree, measure performance difference
-
- * provide a way to allow additional default header in the implementation (*future)
