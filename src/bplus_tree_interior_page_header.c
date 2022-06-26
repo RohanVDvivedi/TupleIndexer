@@ -1,139 +1,43 @@
 #include<bplus_tree_interior_page_header.h>
 
 #include<page_layout.h>
-
-typedef struct bplus_tree_interior_page_header1 bplus_tree_interior_page_header1;
-struct bplus_tree_interior_page_header1
-{
-	uint8_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
-	uint8_t next_page_id;		// towards the next page on the same level, it will be used only to check that the given interior node is the last one on its level
-};
-
-typedef struct bplus_tree_interior_page_header2 bplus_tree_interior_page_header2;
-struct bplus_tree_interior_page_header2
-{
-	uint16_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
-	uint16_t next_page_id;		// towards the next page on the same level, it will be used only to check that the given interior node is the last one on its level
-};
-
-typedef struct bplus_tree_interior_page_header4 bplus_tree_interior_page_header4;
-struct bplus_tree_interior_page_header4
-{
-	uint32_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
-	uint32_t next_page_id;		// towards the next page on the same level, it will be used only to check that the given interior node is the last one on its level
-};
-
-typedef struct bplus_tree_interior_page_header8 bplus_tree_interior_page_header8;
-struct bplus_tree_interior_page_header8
-{
-	uint64_t least_keys_page_id;	// link to child page having keys lesser than the least key on this page
-	uint64_t next_page_id;		// towards the next page on the same level, it will be used only to check that the given interior node is the last one on its level
-};
+#include<int_accesses.h>
 
 uint32_t sizeof_INTERIOR_PAGE_HEADER(const bplus_tree_tuple_defs* bpttd_p)
 {
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-			return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + sizeof(bplus_tree_interior_page_header1);
-		case 2:
-			return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + sizeof(bplus_tree_interior_page_header2);
-		case 4:
-			return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + sizeof(bplus_tree_interior_page_header4);
-		case 8:
-			return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + sizeof(bplus_tree_interior_page_header8);
-	}
-	return 0;
+	return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + bpttd_p->page_id_width * 2;
 }
 
 uint64_t get_least_keys_page_id_of_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	const void* lph = get_page_header((void*)page, bpttd_p->page_size) + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-			return ((const bplus_tree_interior_page_header1*)lph)->least_keys_page_id;
-		case 2:
-			return ((const bplus_tree_interior_page_header2*)lph)->least_keys_page_id;
-		case 4:
-			return ((const bplus_tree_interior_page_header4*)lph)->least_keys_page_id;
-		case 8:
-			return ((const bplus_tree_interior_page_header8*)lph)->least_keys_page_id;
-	}
-	return 0;
+	const void* page_header = get_page_header((void*)page, bpttd_p->page_size);
+	const void* leaf_page_header = page_header + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
+	const void* least_keys_page_id = leaf_page_header + 0;
+	return read_uint64(least_keys_page_id, bpttd_p->page_id_width);
 }
 
 void set_least_keys_page_id_of_bplus_tree_interior_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p)
 {
-	void* lph = get_page_header(page, bpttd_p->page_size) + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-		{
-			((bplus_tree_interior_page_header1*)lph)->least_keys_page_id = page_id;
-			break;
-		}
-		case 2:
-		{
-			((bplus_tree_interior_page_header2*)lph)->least_keys_page_id = page_id;
-			break;
-		}
-		case 4:
-		{
-			((bplus_tree_interior_page_header4*)lph)->least_keys_page_id = page_id;
-			break;
-		}
-		case 8:
-		{
-			((bplus_tree_interior_page_header8*)lph)->least_keys_page_id = page_id;
-			break;
-		}
-	}
+	void* page_header = get_page_header((void*)page, bpttd_p->page_size);
+	void* leaf_page_header = page_header + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
+	void* least_keys_page_id = leaf_page_header + 0;
+	return write_uint64(least_keys_page_id, bpttd_p->page_id_width, page_id);
 }
 
 uint64_t get_next_page_id_of_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	const void* lph = get_page_header((void*)page, bpttd_p->page_size) + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-			return ((const bplus_tree_interior_page_header1*)lph)->next_page_id;
-		case 2:
-			return ((const bplus_tree_interior_page_header2*)lph)->next_page_id;
-		case 4:
-			return ((const bplus_tree_interior_page_header4*)lph)->next_page_id;
-		case 8:
-			return ((const bplus_tree_interior_page_header8*)lph)->next_page_id;
-	}
-	return 0;
+	const void* page_header = get_page_header((void*)page, bpttd_p->page_size);
+	const void* leaf_page_header = page_header + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
+	const void* next_page_id = leaf_page_header + bpttd_p->page_id_width;
+	return read_uint64(next_page_id, bpttd_p->page_id_width);
 }
 
 void set_next_page_id_of_bplus_tree_interior_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p)
 {
-	void* lph = get_page_header(page, bpttd_p->page_size) + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
-	switch(bpttd_p->page_id_width)
-	{
-		case 1:
-		{
-			((bplus_tree_interior_page_header1*)lph)->next_page_id = page_id;
-			break;
-		}
-		case 2:
-		{
-			((bplus_tree_interior_page_header2*)lph)->next_page_id = page_id;
-			break;
-		}
-		case 4:
-		{
-			((bplus_tree_interior_page_header4*)lph)->next_page_id = page_id;
-			break;
-		}
-		case 8:
-		{
-			((bplus_tree_interior_page_header8*)lph)->next_page_id = page_id;
-			break;
-		}
-	}
+	void* page_header = get_page_header((void*)page, bpttd_p->page_size);
+	void* leaf_page_header = page_header + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
+	void* next_page_id = leaf_page_header + bpttd_p->page_id_width;
+	return write_uint64(next_page_id, bpttd_p->page_id_width, page_id);
 }
 
 #include<stdio.h>

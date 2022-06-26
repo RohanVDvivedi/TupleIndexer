@@ -5,7 +5,7 @@
 
 uint32_t sizeof_LEAF_PAGE_HEADER(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + bpttd_p->page_id_width;
+	return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + bpttd_p->page_id_width * 2;
 }
 
 uint64_t get_next_page_id_of_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
