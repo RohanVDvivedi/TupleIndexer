@@ -19,15 +19,15 @@ uint32_t get_size_of_page_type_header()
 page_type get_type_of_page(const void* page, uint32_t page_size)
 {
 	const void* page_header = get_page_header((void*)page, page_size);
-	const void* page_type_pos = page_header + 0;
-	return (page_type)read_uint16(page_type_pos, BYTES_FOR_PAGE_TYPE);
+	const void* page_type_header = page_header + 0;
+	return (page_type)read_uint16(page_type_header, BYTES_FOR_PAGE_TYPE);
 }
 
 void set_type_of_page(void* page, uint32_t page_size, page_type type)
 {
 	void* page_header = get_page_header((void*)page, page_size);
-	void* page_type_pos = page_header + 0;
-	write_uint16(page_type_pos, BYTES_FOR_PAGE_TYPE, ((uint16_t)type));
+	void* page_type_header = page_header + 0;
+	write_uint16(page_type_header, BYTES_FOR_PAGE_TYPE, ((uint16_t)type));
 }
 
 void print_common_page_header(const void* page, uint32_t page_size)

@@ -35,20 +35,20 @@ uint32_t sizeof_INTERIOR_PAGE_HEADER(const bplus_tree_tuple_defs* bpttd_p)
 	switch(bpttd_p->page_id_width)
 	{
 		case 1:
-			return get_size_of_page_type_header() + sizeof(bplus_tree_page_header) + sizeof(bplus_tree_interior_page_header1);
+			return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + sizeof(bplus_tree_interior_page_header1);
 		case 2:
-			return get_size_of_page_type_header() + sizeof(bplus_tree_page_header) + sizeof(bplus_tree_interior_page_header2);
+			return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + sizeof(bplus_tree_interior_page_header2);
 		case 4:
-			return get_size_of_page_type_header() + sizeof(bplus_tree_page_header) + sizeof(bplus_tree_interior_page_header4);
+			return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + sizeof(bplus_tree_interior_page_header4);
 		case 8:
-			return get_size_of_page_type_header() + sizeof(bplus_tree_page_header) + sizeof(bplus_tree_interior_page_header8);
+			return get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header() + sizeof(bplus_tree_interior_page_header8);
 	}
 	return 0;
 }
 
 uint64_t get_least_keys_page_id_of_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	const void* lph = get_page_header((void*)page, bpttd_p->page_size) + get_size_of_page_type_header() + sizeof(bplus_tree_page_header);
+	const void* lph = get_page_header((void*)page, bpttd_p->page_size) + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
 	switch(bpttd_p->page_id_width)
 	{
 		case 1:
@@ -65,7 +65,7 @@ uint64_t get_least_keys_page_id_of_bplus_tree_interior_page(const void* page, co
 
 void set_least_keys_page_id_of_bplus_tree_interior_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p)
 {
-	void* lph = get_page_header(page, bpttd_p->page_size) + get_size_of_page_type_header() + sizeof(bplus_tree_page_header);
+	void* lph = get_page_header(page, bpttd_p->page_size) + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
 	switch(bpttd_p->page_id_width)
 	{
 		case 1:
@@ -93,7 +93,7 @@ void set_least_keys_page_id_of_bplus_tree_interior_page(void* page, uint64_t pag
 
 uint64_t get_next_page_id_of_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	const void* lph = get_page_header((void*)page, bpttd_p->page_size) + get_size_of_page_type_header() + sizeof(bplus_tree_page_header);
+	const void* lph = get_page_header((void*)page, bpttd_p->page_size) + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
 	switch(bpttd_p->page_id_width)
 	{
 		case 1:
@@ -110,7 +110,7 @@ uint64_t get_next_page_id_of_bplus_tree_interior_page(const void* page, const bp
 
 void set_next_page_id_of_bplus_tree_interior_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p)
 {
-	void* lph = get_page_header(page, bpttd_p->page_size) + get_size_of_page_type_header() + sizeof(bplus_tree_page_header);
+	void* lph = get_page_header(page, bpttd_p->page_size) + get_size_of_page_type_header() + get_size_of_bplus_tree_page_level_header();
 	switch(bpttd_p->page_id_width)
 	{
 		case 1:
