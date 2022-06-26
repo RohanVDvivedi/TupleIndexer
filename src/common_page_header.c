@@ -1,20 +1,33 @@
 #include<common_page_header.h>
 
 #include<page_layout.h>
+#include<int_accesses.h>
 
 const char* page_type_string[] = {
 	"BPLUS_TREE_LEAF_PAGE",
 	"BPLUS_TREE_INTERIOR_PAGE",
 };
 
+// allowed values for size for storing page_type = 1 or 2
+#define BYTES_FOR_PAGE_TYPE 2
+
+uint32_t get_size_of_page_type_header()
+{
+	return BYTES_FOR_PAGE_TYPE;
+}
+
 page_type get_type_of_page(const void* page, uint32_t page_size)
 {
-	return (page_type)(((const page_header*)get_page_header((void*)page, page_size))->type);
+	const void* page_header = get_page_header((void*)page, page_size);
+	const void* page_type_pos = page_header + 0;
+	return (page_type)read_uint16(page_type_pos, BYTES_FOR_PAGE_TYPE);
 }
 
 void set_type_of_page(void* page, uint32_t page_size, page_type type)
 {
-	((page_header*)get_page_header(page, page_size))->type = type;
+	void* page_header = get_page_header((void*)page, page_size);
+	void* page_type_pos = page_header + 0;
+	write_uint16(page_type_pos, BYTES_FOR_PAGE_TYPE, ((uint16_t)type));
 }
 
 void print_common_page_header(const void* page, uint32_t page_size)

@@ -10,12 +10,7 @@ enum page_type
 	BPLUS_TREE_INTERIOR_PAGE,
 };
 
-typedef struct page_header page_header;
-struct page_header
-{
-	// page type of the page
-	uint16_t type;
-};
+uint32_t get_size_of_page_type_header();
 
 // getter and setter for page type of the page
 page_type get_type_of_page(const void* page, uint32_t page_size);
