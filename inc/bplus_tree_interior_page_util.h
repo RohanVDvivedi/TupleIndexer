@@ -12,7 +12,7 @@
 *	all other child page_id are stored as the last attributes of the corresponding tuples
 */
 
-int init_bplus_tree_interior_page(void* page, uint32_t level, const bplus_tree_tuple_defs* bpttd_p);
+int init_bplus_tree_interior_page(void* page, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p);
 
 // prints of bplus_tree interior page
 void print_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);

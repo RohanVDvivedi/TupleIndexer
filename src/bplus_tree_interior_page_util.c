@@ -10,7 +10,7 @@
 #include<string.h>
 #include<stdlib.h>
 
-int init_bplus_tree_interior_page(void* page, uint32_t level, const bplus_tree_tuple_defs* bpttd_p)
+int init_bplus_tree_interior_page(void* page, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p)
 {
 	int inited = init_page(page, bpttd_p->page_size, sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->index_def);
 	if(!inited)
@@ -18,7 +18,7 @@ int init_bplus_tree_interior_page(void* page, uint32_t level, const bplus_tree_t
 	set_type_of_page(page, bpttd_p->page_size, BPLUS_TREE_INTERIOR_PAGE);
 	set_level_of_bplus_tree_page(page, bpttd_p->page_size, level);
 	set_least_keys_page_id_of_bplus_tree_interior_page(page, bpttd_p->NULL_PAGE_ID, bpttd_p);
-	set_next_page_id_of_bplus_tree_interior_page(page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+	set_is_last_page_of_level_of_bplus_tree_interior_page(page, is_last_page_of_level, bpttd_p);
 	return 1;
 }
 
