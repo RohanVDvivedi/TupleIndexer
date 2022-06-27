@@ -1,4 +1,3 @@
- * modify interior page headers to store only a byte to represent if it is the last page in the level
 
  * implement bplus_tree_cursor
  * implement find
