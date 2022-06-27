@@ -767,7 +767,12 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t pa
 
 	dam_p->page_size = page_size;
 	dam_p->page_id_width = page_id_width;
-	dam_p->NULL_PAGE_ID = (((uint64_t)1) << (dam_p->page_id_width * 8)) - 1;
+
+	uint8_t bits_wanted1 = dam_p->page_id_width * 8;
+	if(bits_wanted1 < 64)
+		dam_p->NULL_PAGE_ID = (((uint64_t)1) << bits_wanted1) - ((uint64_t)1);
+	else
+		dam_p->NULL_PAGE_ID = -1;
 	
 	dam_p->context = malloc(sizeof(memory_store_context));
 	
