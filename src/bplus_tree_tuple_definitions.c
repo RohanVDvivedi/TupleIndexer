@@ -10,7 +10,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 		return 0;
 
 	// bytes required to store page id
-	if(!(page_id_width == 1 || page_id_width == 2 || page_id_width == 4 || page_id_width == 8))
+	if(page_id_width == 0 || page_id_width > 8)
 		return 0;
 
 	// NULL_PAGE_ID must fit in page_id_width number of bytes

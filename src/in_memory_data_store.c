@@ -747,7 +747,7 @@ static int close_data_file(void* context)
 data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t page_id_width)
 {
 	// check for invalud page_width
-	if(!(page_id_width == 1 || page_id_width == 2 || page_id_width == 4 || page_id_width == 8))
+	if(page_id_width == 0 || page_id_width > 8)
 		return NULL;
 
 	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
@@ -767,30 +767,8 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t pa
 
 	dam_p->page_size = page_size;
 	dam_p->page_id_width = page_id_width;
-	switch(page_id_width)
-	{
-		case 1:
-		{
-			dam_p->NULL_PAGE_ID = ((uint8_t)(-1));	// NULL_PAGE_ID is 0xff
-			break;
-		}
-		case 2:
-		{
-			dam_p->NULL_PAGE_ID = ((uint16_t)(-1));	// NULL_PAGE_ID is 0xffff
-			break;
-		}
-		case 4:
-		{
-			dam_p->NULL_PAGE_ID = ((uint32_t)(-1));	// NULL_PAGE_ID is 0xffffffff 
-			break;
-		}
-		case 8:
-		default:
-		{
-			dam_p->NULL_PAGE_ID = ((uint64_t)(-1));	// NULL_PAGE_ID is 0xffffffffffffffff
-			break;
-		}
-	}
+	dam_p->NULL_PAGE_ID = (((uint64_t)1) << (dam_p->page_id_width * 8)) - 1;
+	
 	dam_p->context = malloc(sizeof(memory_store_context));
 	
 	((memory_store_context*)(dam_p->context))->page_size = page_size;
