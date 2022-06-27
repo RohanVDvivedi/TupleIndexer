@@ -159,7 +159,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				clone_page(root_least_keys_child, bpttd_p->page_size, bpttd_p->record_def, 1, curr_locked_page.page);
 
 				// re intialize root page as an interior page
-				init_bplus_tree_interior_page(curr_locked_page.page, ++root_page_level, bpttd_p);
+				init_bplus_tree_interior_page(curr_locked_page.page, ++root_page_level, 1, bpttd_p);
 				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page.page, root_least_keys_child_id, bpttd_p);
 
 				// create new locked_page_info for the root_least_keys_child
@@ -242,7 +242,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				clone_page(root_least_keys_child, bpttd_p->page_size, bpttd_p->index_def, 1, curr_locked_page.page);
 
 				// re intialize root page as an interior page
-				init_bplus_tree_interior_page(curr_locked_page.page, ++root_page_level, bpttd_p);
+				init_bplus_tree_interior_page(curr_locked_page.page, ++root_page_level, 1, bpttd_p);
 				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page.page, root_least_keys_child_id, bpttd_p);
 
 				// create new locked_page_info for the root_least_keys_child
