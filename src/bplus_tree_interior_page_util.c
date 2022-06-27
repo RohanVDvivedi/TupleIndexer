@@ -74,7 +74,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	if(is_fixed_sized_tuple_def(bpttd_p->index_def))
 	{
 		// if the new index tuple is to be inserted after the last tuple in the last interior page of that level
-		if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == tuple_count)
+		if(is_last_page_of_level_of_bplus_tree_interior_page(page1, bpttd_p) && tuple_to_insert_at == tuple_count)
 			return tuple_count;	// i.e. only 1 tuple goes to the new page
 		else // else
 			return (tuple_count + 1) / 2;	// equal split
@@ -91,7 +91,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 		uint32_t result = 0;
 
 		// if new tuple is to be inserted after the last tuple in the last interior page of the level => split it such that it is almost full
-		if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == tuple_count)
+		if(is_last_page_of_level_of_bplus_tree_interior_page(page1, bpttd_p) && tuple_to_insert_at == tuple_count)
 		{
 			uint32_t limit = space_allotted_to_tuples;
 
@@ -222,15 +222,16 @@ int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const 
 
 	// initialize page2 (as an interior page)
 	uint32_t level = get_level_of_bplus_tree_page(page1, bpttd_p->page_size);	// get the level of bplus_tree we are dealing with
-	init_bplus_tree_interior_page(page2, level, bpttd_p);
+	init_bplus_tree_interior_page(page2, level, 0, bpttd_p);
 
-	// id of the page that is next to page1 (calling this page3)
-	// page3_id == bpttd_p->NULL_PAGE_ID if page1 is the last page of the list
-	uint64_t page3_id = get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p);
+	// check if page1 is last page of the level
+	int page1_is_last_page_of_level = is_last_page_of_level_of_bplus_tree_interior_page(page1, bpttd_p);
 
-	// perform pointer manipulations for the singly linkedlist of interior pages of the same level
-	set_next_page_id_of_bplus_tree_interior_page(page1, page2_id, bpttd_p);
-	set_next_page_id_of_bplus_tree_interior_page(page2, page3_id, bpttd_p);
+	// page1 now can not be the last page of the level
+	// page2 will be the last page of the level if page1 was the last page of the level
+	set_is_last_page_of_level_of_bplus_tree_interior_page(page1, 0, bpttd_p);
+	set_is_last_page_of_level_of_bplus_tree_interior_page(page2, page1_is_last_page_of_level, bpttd_p);
+	page1_is_last_page_of_level = 0;
 
 	// while moving tuples, we assume that there will be atleast 1 tuple that will get moved from page1 to page2
 	// we made this sure by all the above conditions
