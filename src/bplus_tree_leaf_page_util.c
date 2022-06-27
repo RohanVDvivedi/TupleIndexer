@@ -305,7 +305,7 @@ int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void
 
 int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
-	// get the next adjacent page of tis page
+	// get the next adjacent page of this page
 	uint64_t page2_id = get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p);
 
 	// if it does not exist, return 0 (failure)

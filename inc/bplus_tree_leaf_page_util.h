@@ -33,7 +33,6 @@ int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void
 // it fails with a 0 if the pages can not be merged (this may be due to their used spaces greater than the allotted size on the page1)
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 // if this function returns a 1, then it is left on to the calling function to delete the corresponding parent entry of the page that is next to page1
-// lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 #endif

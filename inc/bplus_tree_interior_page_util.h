@@ -41,7 +41,7 @@ int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const 
 // separator_tuple is the tuple at the child_index corresponding to page2 in the parent page
 // this function will perform page compaction on the page1 if required
 // it fails with a 0 if the pages can not be merged (this may be due to their used spaces greater than the allotted size on the page1)
-// OR if the parameters passed are deemed invalid (like if the page1->next != page2_id and page_pointer of separator_tuple is not page2_id)
+// OR if the parameters passed are deemed invalid (like if page_pointer of separator_tuple is not page2_id)
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 // page2 is not freed by the function, you MUST free this page if this function returns a 1 (stating a successful merge)
 // if this function returns a 1, then separator_tuple must be deleted from the parent page

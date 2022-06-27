@@ -320,10 +320,6 @@ int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const 
 
 int merge_bplus_tree_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
-	// page1 and page2 are not adjacent pages on the level
-	if(get_next_page_id_of_bplus_tree_interior_page(page1, bpttd_p) != page2_id)
-		return 0;
-
 	// ensure that the separator_parent_tuple child_page_id is equal to the page2_id
 	if(get_child_page_id_from_index_tuple(separator_parent_tuple, bpttd_p) != page2_id)
 		return 0;
@@ -342,13 +338,13 @@ int merge_bplus_tree_interior_pages(void* page1, uint64_t page1_id, const void* 
 
 	// now we can be sure that a merge can be performed on page1 and page2
 
-	// perform pointer manipulations
-	// page3_id is bpttd_p->NULL_PAGE_ID, if page2 is the last one on that level
-	uint64_t page3_id = get_next_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
-	// perform pointer manipulations to remove page2 from the singly linkedlist of interior pages of that level
-	set_next_page_id_of_bplus_tree_interior_page(page1, page3_id, bpttd_p);
-	// the step below is not needed, but it is performed to keep things clean
-	set_next_page_id_of_bplus_tree_interior_page(page2, bpttd_p->NULL_PAGE_ID, bpttd_p);
+	// check if page2 was the last page of the level
+	int page2_is_last_page_of_level = is_last_page_of_level_of_bplus_tree_interior_page(page2, bpttd_p);
+	// if page2 was the last page of the level, then page1 will now inherit that
+	set_is_last_page_of_level_of_bplus_tree_interior_page(page1, page2_is_last_page_of_level, bpttd_p);
+	// the 2 steps below are not needed, but it is performed to keep things clean
+	page2_is_last_page_of_level = 0;
+	set_is_last_page_of_level_of_bplus_tree_interior_page(page2, page2_is_last_page_of_level, bpttd_p);
 
 	// make sure that there is enough free space on page1 else defragment the page first
 	uint32_t free_space_page1 = get_free_space(page1, bpttd_p->page_size, bpttd_p->index_def);
