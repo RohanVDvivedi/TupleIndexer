@@ -36,7 +36,7 @@
 
 #define PAGE_SIZE 256
 
-#define PAGE_ID_WIDTH 1
+#define PAGE_ID_WIDTH 3
 
 typedef struct record record;
 struct record
