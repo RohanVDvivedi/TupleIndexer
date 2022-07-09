@@ -41,7 +41,7 @@
 typedef struct record record;
 struct record
 {
-	uint32_t index; // 0
+	int32_t index;  // 0
 	char name[64];  // 1
 	uint8_t age;    // 2
 	char sex[8];    // 3 -> Female = 0 or Male = 1
@@ -90,14 +90,13 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 {
 	init_tuple(def, tuple);
 
-	set_element_in_tuple(def, 0, tuple, &(r->index),  4);
-	set_element_in_tuple(def, 1, tuple,  (r->name),  -1);
-	set_element_in_tuple(def, 2, tuple, &(r->age),    1);
-	uint8_t sex = (strcmp(r->sex, "Male") == 0) ? 1 : 0;
-	set_element_in_tuple(def, 3, tuple, &(sex),       1);
-	set_element_in_tuple(def, 4, tuple,  (r->email), -1);
-	set_element_in_tuple(def, 5, tuple,  (r->phone), -1);
-	set_element_in_tuple(def, 6, tuple, &(r->score),  1);
+	set_element_in_tuple(def, 0, tuple, &((user_value){.int_value = r->index}));
+	set_element_in_tuple(def, 1, tuple, &((user_value){.data = r->name, .data_size = strlen(r->name)}));
+	set_element_in_tuple(def, 2, tuple, &((user_value){.uint_value = r->age}));
+	set_element_in_tuple(def, 3, tuple, &((user_value){.uint_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}));
+	set_element_in_tuple(def, 4, tuple, &((user_value){.data = r->email, .data_size = strlen(r->email)}));
+	set_element_in_tuple(def, 5, tuple, &((user_value){.data = r->phone, .data_size = strlen(r->phone)}));
+	set_element_in_tuple(def, 6, tuple, &((user_value){.uint_value = r->score}));
 }
 
 void build_key_tuple_from_record_struct(const tuple_def* key_def, void* key_tuple, const record* r)
@@ -105,35 +104,37 @@ void build_key_tuple_from_record_struct(const tuple_def* key_def, void* key_tupl
 	init_tuple(key_def, key_tuple);
 
 	#if defined KEY_NAME_EMAIL
-		set_element_in_tuple(key_def, 0, key_tuple,  (r->name),  -1);
-		set_element_in_tuple(key_def, 1, key_tuple,  (r->email), -1);
+		set_element_in_tuple(key_def, 0, key_tuple, &((user_value){.data = r->name, .data_size = strlen(r->name)}));
+		set_element_in_tuple(key_def, 1, key_tuple, &((user_value){.data = r->email, .data_size = strlen(r->email)}));
 	#elif defined KEY_INDEX_PHONE
-		set_element_in_tuple(key_def, 0, key_tuple, &(r->index),  4);
-		set_element_in_tuple(key_def, 1, key_tuple,  (r->phone), -1);
+		set_element_in_tuple(key_def, 0, key_tuple, &((user_value){.int_value = r->index}));
+		set_element_in_tuple(key_def, 1, key_tuple, &((user_value){.data = r->phone, .data_size = strlen(r->phone)}));
 	#elif defined KEY_PHONE_SCORE
-		set_element_in_tuple(key_def, 0, key_tuple,  (r->phone), -1);
-		set_element_in_tuple(key_def, 1, key_tuple, &(r->score),  1);
+		set_element_in_tuple(key_def, 0, key_tuple, &((user_value){.data = r->phone, .data_size = strlen(r->phone)}));
+		set_element_in_tuple(key_def, 1, key_tuple, &((user_value){.uint_value = r->score}));
 	#elif defined KEY_EMAIL_AGE_SEX
-		set_element_in_tuple(key_def, 0, key_tuple,  (r->email), -1);
-		set_element_in_tuple(key_def, 1, key_tuple, &(r->age),    1);
-		uint8_t sex = (strcmp(r->sex, "Male") == 0) ? 1 : 0;
-		set_element_in_tuple(key_def, 2, key_tuple, &(sex),       1);
+		set_element_in_tuple(key_def, 0, key_tuple, &((user_value){.data = r->email, .data_size = strlen(r->email)}));
+		set_element_in_tuple(key_def, 1, key_tuple, &((user_value){.uint_value = r->age}));
+		set_element_in_tuple(key_def, 2, key_tuple, &((user_value){.uint_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}));
 	#endif
 }
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
-	copy_element_from_tuple(tpl_d, 0, tupl, &(r->index));
-	copy_element_from_tuple(tpl_d, 1, tupl, r->name);
-	copy_element_from_tuple(tpl_d, 2, tupl, &(r->age));
+	r->index = get_value_from_element_from_tuple(tpl_d, 0, tupl).int_value;
+	user_value name_data = get_value_from_element_from_tuple(tpl_d, 1, tupl);
+	strncpy(r->name, name_data.data, name_data.data_size);
+	r->age = get_value_from_element_from_tuple(tpl_d, 2, tupl).uint_value;
 	uint8_t sex = 0;
 	strcpy(r->sex, "Female");
-	copy_element_from_tuple(tpl_d, 3, tupl, &(sex));
+	sex = get_value_from_element_from_tuple(tpl_d, 3, tupl).uint_value;
 	if(sex)
 		strcpy(r->sex, "Male");
-	copy_element_from_tuple(tpl_d, 4, tupl, r->email);
-	copy_element_from_tuple(tpl_d, 5, tupl, r->phone);
-	copy_element_from_tuple(tpl_d, 6, tupl, &(r->score));
+	user_value email_data = get_value_from_element_from_tuple(tpl_d, 4, tupl);
+	strncpy(r->email, email_data.data, email_data.data_size);
+	user_value phone_data = get_value_from_element_from_tuple(tpl_d, 5, tupl);
+	strncpy(r->phone, phone_data.data, phone_data.data_size);
+	r->score = get_value_from_element_from_tuple(tpl_d, 6, tupl).uint_value;
 }
 
 int main()
