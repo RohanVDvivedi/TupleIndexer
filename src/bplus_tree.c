@@ -641,7 +641,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// print the root page id of the bplsu tree
-	printf("\n\nBplus_tree @ root_page_id = %lu\n\n", root_page_id);
+	printf("\n\nBplus_tree @ root_page_id = %"PRIu64"\n\n", root_page_id);
 
 	// get lock on the root page of the bplus_tree
 	void* root_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_page_id);
@@ -663,7 +663,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 		if(is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size))
 		{
 			// print this page and its page_id
-			printf("page_id : %llu\n\n", (unsigned long long int)curr_locked_page->page_id);
+			printf("page_id : %"PRIu64"\n\n", curr_locked_page->page_id);
 			print_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p);
 			printf("xxxxxxxxxxxxx\n\n");
 
@@ -693,7 +693,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 				if(!only_leaf_pages)
 				{
 					// print this page and its page_id
-					printf("page_id : %llu\n\n", (unsigned long long int)curr_locked_page->page_id);
+					printf("page_id : %"PRIu64"\n\n", curr_locked_page->page_id);
 					print_bplus_tree_interior_page(curr_locked_page->page, bpttd_p);
 					printf("xxxxxxxxxxxxx\n");
 				}

@@ -2,6 +2,7 @@
 #define BPLUS_TREE_TUPLE_DEFINITIONS_H
 
 #include<tuple_def.h>
+#include<inttypes.h>
 
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs

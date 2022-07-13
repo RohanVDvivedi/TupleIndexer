@@ -32,7 +32,7 @@ void set_level_of_bplus_tree_page(void* page, uint32_t page_size, uint32_t level
 void print_bplus_tree_page_header(const void* page, uint32_t page_size)
 {
 	print_common_page_header(page, page_size);
-	printf("level : %u\n", get_level_of_bplus_tree_page(page, page_size));
+	printf("level : %"PRIu32"\n", get_level_of_bplus_tree_page(page, page_size));
 }
 
 int is_bplus_tree_leaf_page(const void* page, uint32_t page_size)

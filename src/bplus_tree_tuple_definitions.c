@@ -129,13 +129,13 @@ void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 {
 	printf("Bplus_tree tuple defs:\n");
 
-	printf("page_id_width = %hhu\n", bpttd_p->page_id_width);
+	printf("page_id_width = %"PRIu8"\n", bpttd_p->page_id_width);
 
-	printf("page_size = %u\n", bpttd_p->page_size);
+	printf("page_size = %"PRIu32"\n", bpttd_p->page_size);
 
-	printf("NULL_PAGE_ID = %lu\n", bpttd_p->NULL_PAGE_ID);
+	printf("NULL_PAGE_ID = %"PRIu64"\n", bpttd_p->NULL_PAGE_ID);
 
-	printf("key_element_count = %u\n", bpttd_p->key_element_count);
+	printf("key_element_count = %"PRIu32"\n", bpttd_p->key_element_count);
 
 	printf("key_element_ids = ");
 	if(bpttd_p->key_element_ids)
