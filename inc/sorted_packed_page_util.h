@@ -1,6 +1,13 @@
 #ifndef SORTED_PACKED_PAGE_UTIL_H
 #define SORTED_PACKED_PAGE_UTIL_H
 
+// a sorted packed page
+/*
+*	1. will not have any tomb stones
+*	2. tuples are sorted in the increasing order given by their elements at element ids of "tuple_keys_to_compare" of the tuple in that order
+*	3. page may or may not be fragmented
+*/
+
 #include<tuple_def.h>
 
 // returns index at which a new tuple may be inserted

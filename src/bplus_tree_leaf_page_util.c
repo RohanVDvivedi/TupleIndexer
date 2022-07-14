@@ -323,8 +323,10 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree
 	uint32_t total_space_page1 = get_space_allotted_to_all_tuples(page1, bpttd_p->page_size, bpttd_p->record_def);
 	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples(page1, bpttd_p->page_size, bpttd_p->record_def);
 	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples(page2, bpttd_p->page_size, bpttd_p->record_def);
+	uint32_t space_in_tomb_stones_page2 = get_space_occupied_by_all_tomb_stones(page2, bpttd_p->page_size, bpttd_p->record_def);
 
-	if(total_space_page1 < space_in_use_page1 + space_in_use_page2)
+	// inserting tuples from one page to the another is done while discarding tomb_stones during the insertion
+	if(total_space_page1 < space_in_use_page1 + space_in_use_page2 - space_in_tomb_stones_page2)
 	{
 		// release writer lock on the page, and we did not modify it
 		dam_p->release_writer_lock_on_page(dam_p->context, page2, 0);

@@ -331,9 +331,11 @@ int merge_bplus_tree_interior_pages(void* page1, uint64_t page1_id, const void* 
 	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples(page1, bpttd_p->page_size, bpttd_p->index_def);
 	uint32_t space_to_be_occupied_by_separator_tuple = separator_tuple_size + get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->index_def);
 	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples(page2, bpttd_p->page_size, bpttd_p->index_def);
+	uint32_t space_in_tomb_stones_page2 = get_space_occupied_by_all_tomb_stones(page2, bpttd_p->page_size, bpttd_p->index_def);
 
 	// the page1 must be able to accomodate all its current tuples, the separator tuple and the tuples of page2
-	if(total_space_page1 < space_in_use_page1 + space_to_be_occupied_by_separator_tuple + space_in_use_page2)
+	// inserting tuples from one page to the another is done while discarding tomb_stones during the insertion
+	if(total_space_page1 < space_in_use_page1 + space_to_be_occupied_by_separator_tuple + space_in_use_page2 - space_in_tomb_stones_page2)
 		return 0;
 
 	// now we can be sure that a merge can be performed on page1 and page2
