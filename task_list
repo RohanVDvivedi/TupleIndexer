@@ -2,6 +2,10 @@
  * implement bplus_tree_cursor
  * implement find
 
+ * implement update which split or merges depending on the size of the node being updated,
+   it does nothing for a fixed length tuple updates
+   * you my want to segregate functionalities of insert and delete into different functions, to accomodate this
+
  * provide a way to allow additional default header in the implementation
 
  * implement find test cases to find range of values, add this tests between insert and delete test cases
