@@ -1,5 +1,6 @@
 
  * implement bplus_tree_cursor
+   * has_next and has_previous functions
    * next and previous functions
  * implement find
    * find min and find max values, use global char MAX_TUPLE and MIN_TUPLE pointers to global characters, these pointers imply finding MIN_TUPLE and MAX_TUPLE
