@@ -2,6 +2,7 @@
  * implement bplus_tree_cursor
    * next and previous functions
  * implement find
+   * find min and find max values, use global char MAX_TUPLE and MIN_TUPLE pointers to global characters, these pointers imply finding MIN_TUPLE and MAX_TUPLE
    * reach leaf, create a cursor and return
 
  * implement extrack key from record function in bplus_tree_tuple_definitions
@@ -10,7 +11,12 @@
    it does nothing for a fixed length tuple updates
    * you my want to segregate functionalities of insert and delete into different functions, to accomodate this
 
- * implement delete range
+ * implement delete range, deleting an entire sub tree if it falls into the range
+
+ * ponder on supporting duplicates, by assigning a number sequence to each duplicates, i.e.
+   * for 2 duplicates "key"->"value_A" and "key"->"value_B", we make them into "key",0->"value_A" and "key",1->"value_B"
+   * we increment the sequence for a key every time we find the last one
+   * for deletes they need to provide the 
 
  * provide a way to allow additional default header in the implementation
 
