@@ -66,13 +66,13 @@ void init_tuple_definition(tuple_def* def)
 	// initialize tuple definition and insert element definitions
 	init_tuple_def(def, "students");
 
-	insert_element_def(def, "index", INT, 4);
-	insert_element_def(def, "name", VAR_STRING, 1);
-	insert_element_def(def, "age", UINT, 1);
-	insert_element_def(def, "sex", UINT, 1);
-	insert_element_def(def, "email", VAR_STRING, 1);
-	insert_element_def(def, "phone", STRING, 14);
-	insert_element_def(def, "score", UINT, 1);
+	insert_element_def(def, "index", INT, 4, 0, &NULL_USER_VALUE);
+	insert_element_def(def, "name", VAR_STRING, 1, 0, &NULL_USER_VALUE);
+	insert_element_def(def, "age", UINT, 1, 0, &NULL_USER_VALUE);
+	insert_element_def(def, "sex", UINT, 1, 0, &NULL_USER_VALUE);
+	insert_element_def(def, "email", VAR_STRING, 1, 0, &NULL_USER_VALUE);
+	insert_element_def(def, "phone", STRING, 14, 0, &NULL_USER_VALUE);
+	insert_element_def(def, "score", UINT, 1, 0, &NULL_USER_VALUE);
 
 	finalize_tuple_def(def, PAGE_SIZE);
 
