@@ -18,11 +18,14 @@ void init_tuple_definition(tuple_def* def)
 	// initialize tuple definition and insert element definitions
 	int res = init_tuple_def(def, "my_table");
 
-	res = insert_element_def(def, "key_1", INT, 4);
+	res = res && insert_element_def(def, "key_1", INT, 4, 0, NULL);
 
-	res = insert_element_def(def, "key_2", VAR_STRING, 1);
+	res = res && insert_element_def(def, "key_2", VAR_STRING, 1, 0, NULL);
 
-	res = insert_element_def(def, "val", VAR_STRING, 1);
+	res = res && insert_element_def(def, "val", VAR_STRING, 1, 0, NULL);
+
+	if(!res)
+		exit(-1);
 
 	finalize_tuple_def(def, PAGE_SIZE);
 
@@ -51,15 +54,13 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 
 	int column_no = 0;
 
-	set_element_in_tuple(def, column_no++, tuple, &(r->key1), -1);
-	set_element_in_tuple(def, column_no++, tuple,  (r->key2), -1);
-	set_element_in_tuple(def, column_no++, tuple,  (r->val),  -1);
+	set_element_in_tuple(def, column_no++, tuple, &((user_value){.int_value = r->key1}));
+	set_element_in_tuple(def, column_no++, tuple, &((user_value){.data = r->key2, .data_size = strlen(r->key2)}));
+	set_element_in_tuple(def, column_no++, tuple, &((user_value){.data = r->val, .data_size = strlen(r->val)}));
 
-	// output print string
-	char print_buffer[PAGE_SIZE];
-
-	sprint_tuple(print_buffer, tuple, def);
-	printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(def, tuple), print_buffer);
+	printf("Built tuple : size(%u)\n\t", get_tuple_size(def, tuple));
+	print_tuple(tuple, def);
+	printf("\n\n");
 }
 
 int main()
@@ -368,7 +369,7 @@ int main()
 	// intialize single integer key definition
 	tuple_def* key_def = alloca(size_of_tuple_def(16));
 	init_tuple_def(key_def, "my_table");
-	res = insert_element_def(key_def, "key_1", INT, 4);
+	res = insert_element_def(key_def, "key_1", INT, 4, 0, &ZERO_USER_VALUE);
 	finalize_tuple_def(key_def, PAGE_SIZE);
 
 	for(int32_t i = 0; i <= 25; i++)
@@ -378,7 +379,7 @@ int main()
 		printf("finding %d -> \n\n", i);
 
 		init_tuple(key_def, tuple_cache);
-		set_element_in_tuple(key_def, 0, tuple_cache, &i, -1);
+		set_element_in_tuple(key_def, 0, tuple_cache, &((user_value){.int_value = i}));
 
 		uint32_t index;
 
