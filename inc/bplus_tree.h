@@ -9,14 +9,19 @@
 // returns pointer to the root page of the bplus_tree
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
-// returns a bplus_tree_cursor to read from key (key inclusive)
-// if record with given key is absent from the bplus_tree 
-// 	then if scan_dir == -1, then the cursor points to a record lesser than the key
-// 	then if scan_dir == +1, then the cursor points to a record greater than the key
-// if the key is NULL
-// 	then if the scan_dir == -1, then the cursor points to the greatest record in the bplus_tree
-// 	then if the scan_dir == +1, then the cursor points to the least record in the bplus_tree
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, int scan_dir, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+typedef enum find_position find_position;
+enum find_position
+{
+	LESSER_THAN,
+	LESSER_THAN_EQUALS,
+	GREATER_THAN_EQUALS,
+	GREATER_THAN,
+};
+
+// returns a bplus_tree_cursor to read from key
+// the key == NULL and find_pos == GREATER_THAN, then the iterator will point to the first tuple of the bplus_tree
+// the key == NULL and find_pos == LESSER_THAN, then the iterator will point to the last tuple of the bplus_tree
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 // insert record in bplus_tree
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);

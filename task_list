@@ -1,24 +1,18 @@
 new tasks:: (yet to be prioritized and ordered)
- * bplus_tree_cursor must be built as as bplus_tree iterator
- * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call
- and merge_if_possible
+ * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
  * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task
- * technically find and insert will support duplicate keys support out of the box, without any additional unique fields
  * build stacked iterator using bplus_tree_locked_pages_stack
- * make bplus_tree_locked_pages_stack into locked_pages_stack, since this stack can be used for any further data structure
- * bplus_tree_tuple_def functions required to build key from record tuple and index tuple, and to build index tuple from record tuple and key tuple and child_pade_id
+
  * (minisclue optimization) in may_require_split_for_insert calculate new_tuple_available_space = (allotted_space - used_space), and compare it with tuple->size (fixed length tuple) and (allotted_space / 2) (for varibale length tuple maximum size), to check if the page may split
 
- * implement bplus_tree_cursor
-   * has_next and has_previous functions
-   * next and previous functions
-   * is_valid, get_tuple fundtions
- * implement find
-   * find min and find max values, use global char MAX_TUPLE and MIN_TUPLE pointers to global characters, these pointers imply finding MIN_TUPLE and MAX_TUPLE
-   * GREATER, GREATER_EQUALS, LESSER, LESSER_EQUALS should help in figuring out where to point
-   * reach leaf, create a cursor and return
+ * make bplus_tree_locked_pages_stack into locked_pages_stack, since this stack can be used for any further data structure
 
- * implement extrack key from record function in bplus_tree_tuple_definitions
+ * implement bplus_tree_cursor
+ * implement find
+   * implement TOWARDS_FIRST_RECORD_WITH_KEY and TOWARDS_LAST_RECORD_WITH_KEY in interior page util functions
+
+ * implement extract key from record and index tuples in bplus_tree_tuple_definitions
+ * implement building index tuple from record tuple (and key tuple) and page_id in bplus_tree_tuple_definitions
 
  * implement update which split or merges depending on the size of the node being updated,
    it does nothing for a fixed length tuple updates
