@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_H
 #define BPLUS_TREE_H
 
-#include<bplus_tree_cursor.h>
+#include<bplus_tree_iterator.h>
 
 #include<data_access_methods.h>
 #include<bplus_tree_tuple_definitions.h>
@@ -16,7 +16,7 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_acc
 // if the key is NULL
 // 	then if the scan_dir == -1, then the cursor points to the greatest record in the bplus_tree
 // 	then if the scan_dir == +1, then the cursor points to the least record in the bplus_tree
-bplus_tree_cursor* find_in_bplus_tree(uint64_t root_page_id, const void* key, int scan_dir, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, int scan_dir, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 // insert record in bplus_tree
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
