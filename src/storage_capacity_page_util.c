@@ -48,13 +48,21 @@ int may_require_split_for_insert_for_bplus_tree(const void* page, uint32_t page_
 {
 	uint32_t allotted_space = get_space_allotted_to_all_tuples(page, page_size, def);
 	uint32_t used_space = get_space_occupied_by_all_tuples(page, page_size, def);
+
+	// the space that will become free memory -> after defragmentation and discarding tomb stones (ther should be no tomb stones, though)
+	uint32_t available_space_after_compaction = allotted_space - used_space;
 	
 	// page will be surely split if the unused space is lesser than incoming tuple size for fixed sized tuple
 	if(is_fixed_sized_tuple_def(def))
-		return (allotted_space - used_space) < def->size;
+		return available_space_after_compaction < def->size;
 	// for a variable sized tuple the page must be more than half full to may require spliting
 	else
-		return used_space > (allotted_space / 2);
+	{
+		// maximum space that will be required by the new tuple, along with its additional_space_per_tuple
+		// i.e. offset on te page
+		uint32_t max_space_required_for_new_tuple = allotted_space / 2;
+		return available_space_after_compaction < max_space_required_for_new_tuple;
+	}
 }
 
 int may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(const void* page, uint32_t page_size, const tuple_def* index_def, uint32_t child_index)
