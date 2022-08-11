@@ -3,8 +3,6 @@ new tasks:: (yet to be prioritized and ordered)
  * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task
  * build stacked iterator using bplus_tree_locked_pages_stack
 
- * (minisclue optimization) in may_require_split_for_insert calculate new_tuple_available_space = (allotted_space - used_space), and compare it with tuple->size (fixed length tuple) and (allotted_space / 2) (for varibale length tuple maximum size), to check if the page may split
-
  * make bplus_tree_locked_pages_stack into locked_pages_stack, since this stack can be used for any further data structure
 
  * implement bplus_tree_cursor
