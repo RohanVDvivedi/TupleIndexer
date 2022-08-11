@@ -3,8 +3,6 @@ new tasks:: (yet to be prioritized and ordered)
  * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task
  * build stacked iterator using bplus_tree_locked_pages_stack
 
- * make bplus_tree_locked_pages_stack into locked_pages_stack, since this stack can be used for any further data structure
-
  * implement bplus_tree_cursor
  * implement find
    * implement TOWARDS_FIRST_RECORD_WITH_KEY and TOWARDS_LAST_RECORD_WITH_KEY in interior page util functions
