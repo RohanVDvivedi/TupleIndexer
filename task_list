@@ -1,5 +1,5 @@
-new tasks:: (yet to be prioritized and ordered)
-
+***************
+    **Priority Tasks**
  * implement bplus_tree_cursor
  * implement find
    * implement TOWARDS_FIRST_RECORD_WITH_KEY and TOWARDS_LAST_RECORD_WITH_KEY in interior page util functions
@@ -15,6 +15,8 @@ new tasks:: (yet to be prioritized and ordered)
  * use the above utilities in split and merge functions where ever possible
 
  * provide a way to allow additional default header in the implementation, i.e. default header size for all headers of b+tree
+
+****************
 
 **
  * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
