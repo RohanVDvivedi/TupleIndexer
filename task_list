@@ -1,29 +1,8 @@
 new tasks:: (yet to be prioritized and ordered)
- * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
- * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task
- * build stacked iterator using bplus_tree_locked_pages_stack
 
  * implement bplus_tree_cursor
  * implement find
    * implement TOWARDS_FIRST_RECORD_WITH_KEY and TOWARDS_LAST_RECORD_WITH_KEY in interior page util functions
-
- * implement extract key from record and index tuples in bplus_tree_tuple_definitions
- * implement building index tuple from record tuple (and key tuple) and page_id in bplus_tree_tuple_definitions
-
- * implement update which split or merges depending on the size of the node being updated,
-   it does nothing for a fixed length tuple updates
-   * inplace updates of fixed length record b+tree is very simple and highly parallelizable, we only need read locks on interior pages and write lock only on the leaf page (and on the root page, so that we are sure that root is not a leaf and we can safely read the level of the tree)
-   * you my want to segregate functionalities of insert and delete into different functions, to accomodate this
-
- * implement delete range, deleting an entire sub tree if it falls into the range
-
- * ponder on supporting duplicates, by assigning a number sequence to each duplicates, i.e.
-   * for 2 duplicates "key"->"value_A" and "key"->"value_B", we make them into "key",0->"value_A" and "key",1->"value_B"
-   * we increment the sequence for a key every time we find the last one
-   * for deletes they need to provide the 
-
- * provide a way to allow additional default header in the implementation
-
  * implement find test cases to find range of values, add this tests between insert and delete test cases
 
  * test insertion of tuple longer than max insertable record size
@@ -31,10 +10,42 @@ new tasks:: (yet to be prioritized and ordered)
  * test inserting records with already existing keys
  * interleave insertions and deletion test cases
 
- * implement redistribute keys functions for fixed length index_def and record_def tuples, this will reduce propogation of merges, this task can be delayed to be done at the end
+ * implement extract key from record and index tuples in bplus_tree_tuple_definitions
+ * implement building index tuple from record tuple (and key tuple) and page_id in bplus_tree_tuple_definitions
+ * use the above utilities in split and merge functions where ever possible
 
+ * provide a way to allow additional default header in the implementation, i.e. default header size for all headers of b+tree
+
+**
+ * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
+ * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task of segregation
+
+**
+ * the above task will also help in further implementation of
+ * insert with a int allow_duplicates_flag
+ * implement update which split or merges depending on the size of the node being updated,
+   it does nothing for a fixed length tuple updates
+   * inplace updates of fixed length record b+tree is very simple and highly parallelizable, we only need read locks on interior pages and write lock only on the leaf page (and on the root page, so that we are sure that root is not a leaf and we can safely read the level of the tree)
+   * you my want to segregate functionalities of insert and delete into different functions, to accomodate this
+
+* ponder on supporting duplicates, by assigning a number sequence to each duplicates, i.e.
+   * for 2 duplicates "key"->"value_A" and "key"->"value_B", we make them into "key",0->"value_A" and "key",1->"value_B"
+   * we increment the sequence for a key every time we find the last one
+   * for deletes they need to provide the exact key including its index to delete
+
+**
+ * implement delete range, deleting an entire sub tree if it falls into the range
+ * build stacked iterator using locked_pages_stack, this can be used to iterate over all the tuples in the b+tree including the interior page - index tuples
+ * such that it allows you to go to first record down the tuple and etc other operation to be though of later
+
+**
+ * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
+ * see how this can be accomodated in the delete and update functions available at that point in future
+
+**
  * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
  * implement throwing errors appropriately, upon failures from dam_p
 
+**
  * write multi threaded test cases to insert a large csv in to b+tree, measure performance difference
