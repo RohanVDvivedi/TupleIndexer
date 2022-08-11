@@ -1,4 +1,4 @@
-#include<bplus_tree_locked_pages_stack.h>
+#include<locked_pages_stack.h>
 
 #include<stdlib.h>
 

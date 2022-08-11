@@ -1,6 +1,6 @@
 #include<bplus_tree.h>
 
-#include<bplus_tree_locked_pages_stack.h>
+#include<locked_pages_stack.h>
 #include<storage_capacity_page_util.h>
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>

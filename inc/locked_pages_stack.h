@@ -1,5 +1,5 @@
-#ifndef BPLUS_TREE_LOCKED_PAGES_STACK_H
-#define BPLUS_TREE_LOCKED_PAGES_STACK_H
+#ifndef LOCKED_PAGES_STACK_H
+#define LOCKED_PAGES_STACK_H
 
 #include<arraylist.h>
 
