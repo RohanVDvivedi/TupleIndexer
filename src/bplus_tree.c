@@ -31,8 +31,6 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_acc
 	return root_page_id;
 }
 
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
-
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// the tuple to be inserted must not exceed a certain size
