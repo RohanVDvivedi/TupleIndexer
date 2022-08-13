@@ -1,6 +1,6 @@
 ***************
     **Priority Tasks**
- * implement bplus_tree_cursor
+ * implement bplus_tree_iterator
  * implement find
    * implement TOWARDS_FIRST_RECORD_WITH_KEY and TOWARDS_LAST_RECORD_WITH_KEY in interior page util functions
  * implement find test cases to find range of values, add this tests between insert and delete test cases
