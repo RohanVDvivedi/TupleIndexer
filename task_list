@@ -1,7 +1,8 @@
 ***************
     **Priority Tasks**
- * implement find
-   * implement TOWARDS_FIRST_RECORD_WITH_KEY and TOWARDS_LAST_RECORD_WITH_KEY in interior page util functions
+ * implement TOWARDS_FIRST_RECORD_WITH_KEY and TOWARDS_LAST_RECORD_WITH_KEY in interior page util functions
+ * completed all find_type cases in find_bplus_tree function
+
  * implement find test cases to find range of values, add this tests between insert and delete test cases
 
  * test insertion of tuple longer than max insertable record size
