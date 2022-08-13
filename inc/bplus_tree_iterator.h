@@ -6,6 +6,8 @@
 #include<data_access_methods.h>
 #include<bplus_tree_tuple_definitions.h>
 
+// this iterator can only be used to reading leaf tuples of the b+ tree
+
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 struct bplus_tree_iterator
 {

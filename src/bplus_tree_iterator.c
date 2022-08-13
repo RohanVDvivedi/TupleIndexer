@@ -41,7 +41,10 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 
 const void* get_curr_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
-	return NULL;
+	if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID || 
+		bpi_p->curr_tuple_index >= get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def))
+		return NULL;
+	return get_nth_tuple(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index);
 }
 
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
