@@ -48,7 +48,7 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 		return 1;
 	}
 
-	// else we keep visiting the next pages until we reach a page that has atleast a tuple
+	// else we keep visiting the next pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
 		// get reader lock on the next page
@@ -61,14 +61,21 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 		// release lock on the curr_page
 		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page);
 
-		bpi_p->curr_tuple_index = 0;
 		bpi_p->curr_page = next_page;
 		bpi_p->curr_page_id = next_page_id;
 
 		// a valid next_page may be a NULL page or a page that has atleast a tuple
-		if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID 
-			|| get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def) > 0)
+		if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
 			break;
+
+		uint32_t curr_page_tuple_count = get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def);
+
+		// or a valid page has atleast a tuple
+		if(curr_page_tuple_count > 0)
+		{
+			bpi_p->curr_tuple_index = 0;
+			break;
+		}
 	}
 
 	return 1;
@@ -88,6 +95,50 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 	if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
 		return 0;
 
+	// increment the current tuple count, if the tuple that we are pointing to is not the first tuple on the page
+	if(bpi_p->curr_tuple_index != 0)
+	{
+		bpi_p->curr_tuple_index--;
+		return 1;
+	}
+
+	// else we keep visiting the previous pages until we reach a page that has atleast a tuple or if the page is a NULL page
+	while(1)
+	{
+		// get reader lock on the prev page
+		uint64_t prev_page_id = get_prev_page_id_of_bplus_tree_leaf_page(bpi_p->curr_page, bpi_p->bpttd_p);
+
+		void* prev_page = NULL;
+		if(prev_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
+			prev_page = bpi_p->dam_p->acquire_page_with_reader_lock(bpi_p->dam_p->context, prev_page_id);
+
+		// release lock on the curr_page
+		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page);
+
+		bpi_p->curr_page = prev_page;
+		bpi_p->curr_page_id = prev_page_id;
+
+		// a valid next_page may be a NULL page
+		if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
+			break;
+
+		uint32_t curr_page_tuple_count = get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def);
+
+		// or a valid page has atleast a tuple
+		if(curr_page_tuple_count > 0)
+		{
+			bpi_p->curr_tuple_index = curr_page_tuple_count - 1;
+			break;
+		}
+	}
+
+	return 1;
+}
+
+int error_occurred_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
+{
+	if(bpi_p->curr_page == NULL && bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
+		return 1;
 	return 0;
 }
 

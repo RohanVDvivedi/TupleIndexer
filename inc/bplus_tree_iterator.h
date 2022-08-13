@@ -45,6 +45,9 @@ const void* get_curr_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 // returns 1 for success, it returns 0, if there are no records to move to
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 
+// check if an error occurred after a next_* or a prev_* call on a bplus_tree_iterator
+int error_occurred_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+
 // all locks held by the iterator will be released before, the iterator is destroyed/deleted
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 
