@@ -1,6 +1,7 @@
 #include<bplus_tree_iterator.h>
 
 #include<page_layout.h>
+#include<bplus_tree_leaf_page_header.h>
 
 #include<stdlib.h>
 
@@ -36,7 +37,41 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(void* curr_page, uint64_t curr_
 
 int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
-	return 0;
+	// if the page itself is invalid, then quit
+	if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
+		return 0;
+
+	// increment the current tuple count, if the next tuple we point to will be on this page
+	if(bpi_p->curr_tuple_index + 1 < get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def))
+	{
+		bpi_p->curr_tuple_index++;
+		return 1;
+	}
+
+	// else we keep visiting the next pages until we reach a page that has atleast a tuple
+	while(1)
+	{
+		// get reader lock on the next page
+		uint64_t next_page_id = get_next_page_id_of_bplus_tree_leaf_page(bpi_p->curr_page, bpi_p->bpttd_p);
+
+		void* next_page = NULL;
+		if(next_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
+			next_page = bpi_p->dam_p->acquire_page_with_reader_lock(bpi_p->dam_p->context, next_page_id);
+
+		// release lock on the curr_page
+		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page);
+
+		bpi_p->curr_tuple_index = 0;
+		bpi_p->curr_page = next_page;
+		bpi_p->curr_page_id = next_page_id;
+
+		// a valid next_page may be a NULL page or a page that has atleast a tuple
+		if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID 
+			|| get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def) > 0)
+			break;
+	}
+
+	return 1;
 }
 
 const void* get_curr_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
@@ -49,6 +84,10 @@ const void* get_curr_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
+	// if the page itself is invalid, then quit
+	if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
+		return 0;
+
 	return 0;
 }
 
