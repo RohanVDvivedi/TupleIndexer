@@ -1,5 +1,16 @@
 #include<bplus_tree.h>
 
+#include<bplus_tree_leaf_page_util.h>
+#include<bplus_tree_interior_page_util.h>
+#include<bplus_tree_leaf_page_header.h>
+#include<bplus_tree_interior_page_header.h>
+#include<sorted_packed_page_util.h>
+
+#include<page_layout.h>
+#include<tuple.h>
+
+#include<stdint.h>
+
 // order of the enum values in find_type must remain the same
 typedef enum find_type find_type;
 enum find_type
@@ -16,9 +27,9 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 {
 	find_type f_type;
 
-	if(key == NULL && find_pos == GREATER_THAN || find_pos == GREATER_THAN_EQUALS)
+	if(key == NULL && (find_pos == GREATER_THAN || find_pos == GREATER_THAN_EQUALS))
 		f_type = MIN_TUPLE;
-	else if(key == NULL && find_pos == LESSER_THAN || find_pos == LESSER_THAN_EQUALS)
+	else if(key == NULL && (find_pos == LESSER_THAN || find_pos == LESSER_THAN_EQUALS))
 		f_type = MAX_TUPLE;
 	else
 		f_type = LESSER_THAN_KEY + (find_pos - LESSER_THAN);
@@ -29,42 +40,49 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 
 	while(!is_bplus_tree_leaf_page(curr_page, bpttd_p->page_size))
 	{
-		uint64_t next_page_id = bpttd_p->NULL_PAGE_ID;
-		void* next_page = NULL;
+		uint32_t child_index = 0;
 
-		// TODO
 		// get lock on the next page based on the f_type
 		switch(f_type)
 		{
 			case MIN_TUPLE :
 			{
+				child_index = -1;
 				break;
 			}
 			case LESSER_THAN_KEY :
 			{
+				// TODO
 				break;
 			}
 			case LESSER_THAN_EQUALS_KEY :
 			{
+				// TODO
 				break;
 			}
 			case GREATER_THAN_EQUALS_KEY :
 			{
+				// TODO
 				break;
 			}
 			case GREATER_THAN_KEY :
 			{
+				// TODO
 				break;
 			}
 			case MAX_TUPLE :
 			{
+				child_index = get_tuple_count(curr_page, bpttd_p->page_size, bpttd_p->index_def) - 1;
 				break;
 			}
 		}
 
+		uint64_t next_page_id = find_child_page_id_by_child_index(curr_page, child_index, bpttd_p);
+		void* next_page = dam_p->acquire_page_with_reader_lock(dam_p->context, next_page_id);
+
 		// release lock on the curr_page and 
 		// make the next_page as the curr_page
-		dam_p->release_reader_lock_on_page(curr_page);
+		dam_p->release_reader_lock_on_page(dam_p->context, curr_page);
 		curr_page = next_page;
 		curr_page_id = next_page_id;
 	}

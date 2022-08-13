@@ -11,8 +11,6 @@
 #include<page_layout.h>
 #include<tuple.h>
 
-#include<arraylist.h>
-
 #include<stdlib.h>
 
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)

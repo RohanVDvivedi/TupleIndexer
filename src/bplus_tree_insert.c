@@ -1,3 +1,17 @@
+#include<bplus_tree.h>
+
+#include<locked_pages_stack.h>
+#include<storage_capacity_page_util.h>
+#include<bplus_tree_leaf_page_util.h>
+#include<bplus_tree_interior_page_util.h>
+#include<bplus_tree_leaf_page_header.h>
+#include<bplus_tree_interior_page_header.h>
+#include<sorted_packed_page_util.h>
+
+#include<page_layout.h>
+#include<tuple.h>
+
+#include<stdlib.h>
 
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
