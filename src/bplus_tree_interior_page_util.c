@@ -28,28 +28,64 @@ void print_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_def
 	print_page(page, bpttd_p->page_size, bpttd_p->index_def);
 }
 
-uint32_t find_child_index_for_key(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p)
+uint32_t find_child_index_for_key(const void* page, const void* key, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
 {
-	// find preceding equals in the interior pages, by comparing against all index entries
-	uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
-									page, bpttd_p->page_size, 
-									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
-									key, bpttd_p->key_def, NULL
-								);
+	switch(type)
+	{
+		case TOWARDS_FIRST_WITH_KEY :
+		{
+			// find preceding in the interior pages, by comparing against all index entries
+			uint32_t child_index = find_preceding_in_sorted_packed_page(
+										page, bpttd_p->page_size,
+										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+										key, bpttd_p->key_def, NULL
+									);
 
-	return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+			return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+		}
+		case TOWARDS_LAST_WITH_KEY :
+		default :
+		{
+			// find preceding equals in the interior pages, by comparing against all index entries
+			uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
+										page, bpttd_p->page_size,
+										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+										key, bpttd_p->key_def, NULL
+									);
+
+			return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+		}
+	}
 }
 
-uint32_t find_child_index_for_record(const void* page, const void* record, const bplus_tree_tuple_defs* bpttd_p)
+uint32_t find_child_index_for_record(const void* page, const void* record, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
 {
-	// find preceding equals in the interior pages, by comparing against all index entries
-	uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
-									page, bpttd_p->page_size, 
-									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
-									record, bpttd_p->record_def, bpttd_p->key_element_ids
-								);
+	switch(type)
+	{
+		case TOWARDS_FIRST_WITH_KEY :
+		{
+			// find preceding in the interior pages, by comparing against all index entries
+			uint32_t child_index = find_preceding_in_sorted_packed_page(
+										page, bpttd_p->page_size,
+										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+										record, bpttd_p->record_def, bpttd_p->key_element_ids
+									);
 
-	return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+			return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+		}
+		case TOWARDS_LAST_WITH_KEY :
+		default :
+		{
+			// find preceding equals in the interior pages, by comparing against all index entries
+			uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
+										page, bpttd_p->page_size,
+										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+										record, bpttd_p->record_def, bpttd_p->key_element_ids
+									);
+
+			return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+		}
+	}
 }
 
 uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, const bplus_tree_tuple_defs* bpttd_p)

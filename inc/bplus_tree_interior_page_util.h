@@ -17,13 +17,20 @@ int init_bplus_tree_interior_page(void* page, uint32_t level, int is_last_page_o
 // prints of bplus_tree interior page
 void print_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
 
-// this the index of the tuple in the interior page that you should follow
-// you may cache this, it may help in case of a split
-uint32_t find_child_index_for_key(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p);
+typedef enum find_child_index_type find_child_index_type;
+enum find_child_index_type
+{
+	TOWARDS_FIRST_WITH_KEY, // takes you towards a record that is lesser than the key or the first record that equals key
+	TOWARDS_LAST_WITH_KEY,  // takes you towards a record that is greater than the key or the last record that equals key
+};
 
 // this the index of the tuple in the interior page that you should follow
 // you may cache this, it may help in case of a split
-uint32_t find_child_index_for_record(const void* page, const void* record, const bplus_tree_tuple_defs* bpttd_p);
+uint32_t find_child_index_for_key(const void* page, const void* key, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p);
+
+// this the index of the tuple in the interior page that you should follow
+// you may cache this, it may help in case of a split
+uint32_t find_child_index_for_record(const void* page, const void* record, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p);
 
 // returns the page_id stored with the corresponding tuple at index, in its attribute "child_page_id" 
 uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, const bplus_tree_tuple_defs* bpttd_p);

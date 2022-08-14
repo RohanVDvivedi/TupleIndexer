@@ -39,7 +39,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		if(!is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size))
 		{
 			// figure out which child page to go to next
-			curr_locked_page->child_index = find_child_index_for_record(curr_locked_page->page, record, bpttd_p);
+			curr_locked_page->child_index = find_child_index_for_record(curr_locked_page->page, record, TOWARDS_LAST_WITH_KEY, bpttd_p);
 
 			// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 			uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->page, curr_locked_page->child_index, bpttd_p);
