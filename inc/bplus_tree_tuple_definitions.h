@@ -46,6 +46,12 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 // there must be atleast 2 data records per leaf page and 2 index records per interior page of any bplus_tree
 uint32_t get_maximum_insertable_record_size(const bplus_tree_tuple_defs* bpttd_p);
 
+// copy all the key elements from the record_tuple to make the key
+void extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key);
+
+// copy all the key elements from the index_entry to make the key
+void extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key);
+
 // it deallocates the index_def and
 // then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);

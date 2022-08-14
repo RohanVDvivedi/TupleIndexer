@@ -1,5 +1,7 @@
 #include<bplus_tree_tuple_definitions.h>
 
+#include<tuple.h>
+
 #include<stdlib.h>
 #include<string.h>
 
@@ -83,6 +85,20 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 	}
 
 	return 1;
+}
+
+void extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key)
+{
+	init_tuple(bpttd_p->key_def, key);
+	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
+		set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+}
+
+void extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key)
+{
+	init_tuple(bpttd_p->key_def, key);
+	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
+		set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->index_def, i, index_entry);
 }
 
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
