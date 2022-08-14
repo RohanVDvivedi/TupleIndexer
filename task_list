@@ -1,6 +1,10 @@
 ***************
     **Priority Tasks**
 
+ * implement extract key from record and index tuples in bplus_tree_tuple_definitions
+ * implement building index tuple from record tuple (and key tuple) and page_id in bplus_tree_tuple_definitions
+ * use the above utilities in split and merge functions where ever possible
+
 * segregate test cases into insert_tests, find_tests and delete_tests, and call them in order to meed the following requirements for test case coverage
  * test find on keys that are absent in the b+tree
  * test find on keys at the end and beginnning of the b+tree such that the iterator returns a NULL before specific keys are read.
@@ -9,10 +13,6 @@
  * test deletion of non existing keys
  * test inserting records with already existing keys
  * interleave insertions and deletion test cases
-
- * implement extract key from record and index tuples in bplus_tree_tuple_definitions
- * implement building index tuple from record tuple (and key tuple) and page_id in bplus_tree_tuple_definitions
- * use the above utilities in split and merge functions where ever possible
 
  * provide a way to allow additional default header in the implementation, i.e. default header size for all headers of b+tree
 
