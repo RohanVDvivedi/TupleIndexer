@@ -248,6 +248,7 @@ int main()
 	}
 
 	delete_bplus_tree_iterator(bpi_p);
+	printf("\n");
 
 	printf("printing the last 4 tuples\n");
 
@@ -264,6 +265,7 @@ int main()
 	}
 
 	delete_bplus_tree_iterator(bpi_p);
+	printf("\n");
 
 	while(!feof(f))
 	{
@@ -281,27 +283,27 @@ int main()
 		char key_tuple[PAGE_SIZE];
 		build_key_tuple_from_record_struct(bpttd.key_def, key_tuple, &r);
 
-		find_position find_pos = LESSER_THAN + (tuples_processed_limit % 4);
+		find_position find_pos = (LESSER_THAN + (tuples_processed % 4));
 		switch(find_pos)
 		{
 			case LESSER_THAN :
 			{
-				printf("LESSER_THAN\n");
+				printf("LESSER_THAN\n\n");
 				break;
 			}
 			case LESSER_THAN_EQUALS :
 			{
-				printf("LESSER_THAN_EQUALS\n");
+				printf("LESSER_THAN_EQUALS\n\n");
 				break;
 			}
 			case GREATER_THAN_EQUALS :
 			{
-				printf("GREATER_THAN_EQUALS\n");
+				printf("GREATER_THAN_EQUALS\n\n");
 				break;
 			}
 			case GREATER_THAN :
 			{
-				printf("GREATER_THAN\n");
+				printf("GREATER_THAN\n\n");
 				break;
 			}
 		}
@@ -333,13 +335,12 @@ int main()
 		}
 
 		delete_bplus_tree_iterator(bpi_p);
+		printf("\n");
+		printf("----------------\n\n");
 
 		// increment the tuples_processed count
 		tuples_processed++;
 	}
-
-	// print bplus tree
-	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
 
 	// close the file
 	fclose(f);
