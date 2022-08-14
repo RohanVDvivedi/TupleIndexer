@@ -156,23 +156,42 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	{
 		case LESSER_THAN_KEY :
 		{
-			const void* tuple_to_skip = ;
-			while(1)
+			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_element_count) >= 0)
 			{
-
+				prev_bplus_tree_iterator(bpi_p);
+				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
 		}
 		case LESSER_THAN_EQUALS_KEY :
 		{
+			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_element_count) > 0)
+			{
+				prev_bplus_tree_iterator(bpi_p);
+				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+			}
 			break;
 		}
 		case GREATER_THAN_EQUALS_KEY :
 		{
+			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_element_count) < 0)
+			{
+				next_bplus_tree_iterator(bpi_p);
+				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+			}
 			break;
 		}
 		case GREATER_THAN_KEY :
 		{
+			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_element_count) <= 0)
+			{
+				next_bplus_tree_iterator(bpi_p);
+				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+			}
 			break;
 		}
 		default :
