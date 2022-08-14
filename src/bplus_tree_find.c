@@ -90,23 +90,95 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	// find the curr_tuple_index for the iterator to start with
 	uint32_t curr_tuple_index = 0;
 
-	if(f_type == MIN_TUPLE)
-		curr_tuple_index = 0;
-	else if(f_type == MAX_TUPLE)
-		curr_tuple_index = LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE;
-	else
+	switch(f_type)
 	{
-		//TODO
-		// use several of sorted_packed_page_util functions to figure out which tuple to start from
+		case MIN_TUPLE :
+		{
+			curr_tuple_index = 0;
+			break;
+		}
+		case LESSER_THAN_KEY :
+		{
+			curr_tuple_index = find_preceding_in_sorted_packed_page(
+									curr_page, bpttd_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									key, bpttd_p->key_def, NULL
+								);
+
+			curr_tuple_index = (curr_tuple_index != NO_TUPLE_FOUND) ? curr_tuple_index : 0;
+			break;
+		}
+		case LESSER_THAN_EQUALS_KEY :
+		{
+			curr_tuple_index = find_preceding_equals_in_sorted_packed_page(
+									curr_page, bpttd_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									key, bpttd_p->key_def, NULL
+								);
+
+			curr_tuple_index = (curr_tuple_index != NO_TUPLE_FOUND) ? curr_tuple_index : 0;
+			break;
+		}
+		case GREATER_THAN_EQUALS_KEY :
+		{
+			curr_tuple_index = find_succeeding_equals_in_sorted_packed_page(
+									curr_page, bpttd_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									key, bpttd_p->key_def, NULL
+								);
+
+			curr_tuple_index = (curr_tuple_index != NO_TUPLE_FOUND) ? curr_tuple_index : LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE;
+			break;
+		}
+		case GREATER_THAN_KEY :
+		{
+			curr_tuple_index = find_succeeding_in_sorted_packed_page(
+									curr_page, bpttd_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									key, bpttd_p->key_def, NULL
+								);
+
+			curr_tuple_index = (curr_tuple_index != NO_TUPLE_FOUND) ? curr_tuple_index : LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE;
+			break;
+		}
+		case MAX_TUPLE :
+		{
+			curr_tuple_index = LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE;
+			break;
+		}
 	}
 
 	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(curr_page, curr_page_id, curr_tuple_index, bpttd_p, dam_p);
 
 	// iterate next or previous in bplus_tree_iterator, based on the f_type
 	// this is not required for MIN_TUPLE and MAX_TUPLE
-	if(f_type != MIN_TUPLE && f_type != MAX_TUPLE)
+	switch(f_type)
 	{
-		// TODO
+		case LESSER_THAN_KEY :
+		{
+			const void* tuple_to_skip = ;
+			while(1)
+			{
+
+			}
+			break;
+		}
+		case LESSER_THAN_EQUALS_KEY :
+		{
+			break;
+		}
+		case GREATER_THAN_EQUALS_KEY :
+		{
+			break;
+		}
+		case GREATER_THAN_KEY :
+		{
+			break;
+		}
+		default :
+		case MIN_TUPLE :
+		case MAX_TUPLE :
+			break;
 	}
 
 	return bpi_p;
