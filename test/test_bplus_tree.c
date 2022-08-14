@@ -219,6 +219,139 @@ int main()
 
 
 
+
+
+	/* FIND STARTED */
+
+	// open test data file
+	f = fopen(TEST_DATA_FILE, "r");
+
+	// stores the count of tuples processed
+	tuples_processed = 0;
+
+	tuples_processed_limit = 12;
+
+	uint32_t found_tuples_to_print = 4;
+
+	printf("printing the first 4 tuples\n");
+
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, GREATER_THAN, &bpttd, dam_p);
+
+	const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+	uint32_t tuples_to_print = 0;
+	while(tuple_to_print != NULL && tuples_to_print < found_tuples_to_print)
+	{
+		print_tuple(tuple_to_print, bpttd.record_def);
+		tuples_to_print++;
+		next_bplus_tree_iterator(bpi_p);
+		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+	}
+
+	delete_bplus_tree_iterator(bpi_p);
+
+	printf("printing the last 4 tuples\n");
+
+	bpi_p = find_in_bplus_tree(root_page_id, NULL, LESSER_THAN, &bpttd, dam_p);
+
+	tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+	tuples_to_print = 0;
+	while(tuple_to_print != NULL && tuples_to_print < found_tuples_to_print)
+	{
+		print_tuple(tuple_to_print, bpttd.record_def);
+		tuples_to_print++;
+		prev_bplus_tree_iterator(bpi_p);
+		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+	}
+
+	delete_bplus_tree_iterator(bpi_p);
+
+	while(!feof(f))
+	{
+		if(tuples_processed == tuples_processed_limit)
+			break;
+
+		// read a record from the file
+		record r;
+		read_record_from_file(&r, f);
+
+		// print the record we read
+		print_record(&r);
+
+		// construct key tuple from this record
+		char key_tuple[PAGE_SIZE];
+		build_key_tuple_from_record_struct(bpttd.key_def, key_tuple, &r);
+
+		find_position find_pos = LESSER_THAN + (tuples_processed_limit % 4);
+		switch(find_pos)
+		{
+			case LESSER_THAN :
+			{
+				printf("LESSER_THAN\n");
+				break;
+			}
+			case LESSER_THAN_EQUALS :
+			{
+				printf("LESSER_THAN_EQUALS\n");
+				break;
+			}
+			case GREATER_THAN_EQUALS :
+			{
+				printf("GREATER_THAN_EQUALS\n");
+				break;
+			}
+			case GREATER_THAN :
+			{
+				printf("GREATER_THAN\n");
+				break;
+			}
+		}
+
+		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, find_pos, &bpttd, dam_p);
+
+		const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+		uint32_t tuples_to_print = 0;
+		while(tuple_to_print != NULL && tuples_to_print < found_tuples_to_print)
+		{
+			print_tuple(tuple_to_print, bpttd.record_def);
+			tuples_to_print++;
+			switch(find_pos)
+			{
+				case LESSER_THAN :
+				case LESSER_THAN_EQUALS :
+				{
+					prev_bplus_tree_iterator(bpi_p);
+					break;
+				}
+				case GREATER_THAN_EQUALS :
+				case GREATER_THAN :
+				{
+					next_bplus_tree_iterator(bpi_p);
+					break;
+				}
+			}
+			tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+		}
+
+		delete_bplus_tree_iterator(bpi_p);
+
+		// increment the tuples_processed count
+		tuples_processed++;
+	}
+
+	// print bplus tree
+	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
+
+	// close the file
+	fclose(f);
+
+	printf("finds in bplus tree completed\n");
+
+	/* FIND COMPLETED */
+
+
+
+
+
 	/* DELETIONS STARTED */
 
 	// open test data file
