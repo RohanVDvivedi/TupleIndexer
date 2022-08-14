@@ -52,22 +52,22 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			}
 			case LESSER_THAN_KEY :
 			{
-				// TODO
+				child_index = find_child_index_for_key(curr_page, key, TOWARDS_FIRST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case LESSER_THAN_EQUALS_KEY :
 			{
-				// TODO
+				child_index = find_child_index_for_key(curr_page, key, TOWARDS_LAST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case GREATER_THAN_EQUALS_KEY :
 			{
-				// TODO
+				child_index = find_child_index_for_key(curr_page, key, TOWARDS_FIRST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case GREATER_THAN_KEY :
 			{
-				// TODO
+				child_index = find_child_index_for_key(curr_page, key, TOWARDS_LAST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case MAX_TUPLE :
