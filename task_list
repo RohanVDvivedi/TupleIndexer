@@ -1,9 +1,8 @@
 ***************
     **Priority Tasks**
 
- * implement extract key from record and index tuples in bplus_tree_tuple_definitions
- * implement building index tuple from record tuple (and key tuple) and page_id in bplus_tree_tuple_definitions
- * use the above utilities in split and merge functions where ever possible
+ * use extract key from record and index tuples in bplus_tree_tuple_definitions
+ * implement and use building index tuple from record tuple (and key tuple) and page_id in bplus_tree_tuple_definitions
 
 * segregate test cases into insert_tests, find_tests and delete_tests, and call them in order to meed the following requirements for test case coverage
  * test find on keys that are absent in the b+tree
