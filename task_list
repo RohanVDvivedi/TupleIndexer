@@ -1,6 +1,6 @@
 ***************
     **Priority Tasks**
- * implement TOWARDS_FIRST_RECORD_WITH_KEY and TOWARDS_LAST_RECORD_WITH_KEY in interior page util functions
+ * implement TOWARDS_LESSER_THAN_OR_FIRST_RECORD_WITH_KEY and TOWARDS_GREATER_THAN_IF_ABSENT_OR_LAST_RECORD_WITH_KEY in interior page util functions.
  * completed all find_type cases in find_bplus_tree function
 
  * implement find test cases to find range of values, add this tests between insert and delete test cases
