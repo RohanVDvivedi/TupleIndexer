@@ -70,8 +70,8 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 		if(is_bplus_tree_leaf_page(curr_locked_page.page, bpttd_p->page_size)) // is a leaf page, perform delete in the leaf page
 		{
-			// find first index of first record that has the given key
-			uint32_t found_index = find_first_in_sorted_packed_page(
+			// find index of last record that has the given key on the page
+			uint32_t found_index = find_last_in_sorted_packed_page(
 												curr_locked_page.page, bpttd_p->page_size,
 												bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
 												key, bpttd_p->key_def, NULL
