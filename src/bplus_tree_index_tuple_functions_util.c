@@ -11,5 +11,5 @@ uint64_t get_child_page_id_from_index_tuple(const void* index_tuple, const bplus
 
 void set_child_page_id_in_index_tuple(void* index_tuple, uint64_t child_page_id, const bplus_tree_tuple_defs* bpttd_p)
 {
-	set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_tuple, &((user_value){.uint_value = child_page_id}));
+	set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_tuple, &((const user_value){.uint_value = child_page_id}));
 }

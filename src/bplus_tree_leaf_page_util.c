@@ -286,15 +286,8 @@ int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void
 	// create tuple to be returned, this tuple needs to be inserted into the parent page, after the child_index
 	const void* first_tuple_page2 = get_nth_tuple(page2, bpttd_p->page_size, bpttd_p->record_def, 0);
 
-	// intialize parent insert tuple
-	init_tuple(bpttd_p->index_def, output_parent_insert);
-
-	// insert key attributes from first_tuple_page2 to output_parent_insert
-	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
-		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, output_parent_insert, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
-
-	// now insert the pointer to the page2 in this parent tuple
-	set_child_page_id_in_index_tuple(output_parent_insert, page2_id, bpttd_p);
+	// rebuild parent insert tuple using the first record of the page2 and the child_page_id = page2_id
+	build_index_entry_from_record_tuple(bpttd_p, first_tuple_page2, page2_id, output_parent_insert);
 
 	// release lock on the page2, and mark it as modified
 	dam_p->release_writer_lock_on_page(dam_p->context, page2, 1);

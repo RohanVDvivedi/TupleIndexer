@@ -117,7 +117,7 @@ void build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, c
 		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
 
 	// copy the child_page_id to the last element in the index entry
-	set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_entry, &((user_value){.uint_value = child_page_id}));
+	set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_entry, &((const user_value){.uint_value = child_page_id}));
 }
 
 void build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry)
