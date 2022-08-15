@@ -102,7 +102,7 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 void build_key_tuple_from_record_struct(const bplus_tree_tuple_defs* bpttd_p, void* key_tuple, const record* r)
 {
 	char record_tuple[PAGE_SIZE];
-	build_tuple_from_record_struct(bpttd->record_def, record_tuple, r);
+	build_tuple_from_record_struct(bpttd_p->record_def, record_tuple, r);
 	extract_key_from_record_tuple(bpttd_p, record_tuple, key_tuple);
 }
 
