@@ -99,24 +99,11 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 	set_element_in_tuple(def, 6, tuple, &((user_value){.uint_value = r->score}));
 }
 
-void build_key_tuple_from_record_struct(const tuple_def* key_def, void* key_tuple, const record* r)
+void build_key_tuple_from_record_struct(const bplus_tree_tuple_defs* bpttd_p, void* key_tuple, const record* r)
 {
-	init_tuple(key_def, key_tuple);
-
-	#if defined KEY_NAME_EMAIL
-		set_element_in_tuple(key_def, 0, key_tuple, &((user_value){.data = r->name, .data_size = strlen(r->name)}));
-		set_element_in_tuple(key_def, 1, key_tuple, &((user_value){.data = r->email, .data_size = strlen(r->email)}));
-	#elif defined KEY_INDEX_PHONE
-		set_element_in_tuple(key_def, 0, key_tuple, &((user_value){.int_value = r->index}));
-		set_element_in_tuple(key_def, 1, key_tuple, &((user_value){.data = r->phone, .data_size = strlen(r->phone)}));
-	#elif defined KEY_PHONE_SCORE
-		set_element_in_tuple(key_def, 0, key_tuple, &((user_value){.data = r->phone, .data_size = strlen(r->phone)}));
-		set_element_in_tuple(key_def, 1, key_tuple, &((user_value){.uint_value = r->score}));
-	#elif defined KEY_EMAIL_AGE_SEX
-		set_element_in_tuple(key_def, 0, key_tuple, &((user_value){.data = r->email, .data_size = strlen(r->email)}));
-		set_element_in_tuple(key_def, 1, key_tuple, &((user_value){.uint_value = r->age}));
-		set_element_in_tuple(key_def, 2, key_tuple, &((user_value){.uint_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}));
-	#endif
+	char record_tuple[PAGE_SIZE];
+	build_tuple_from_record_struct(bpttd->record_def, record_tuple, r);
+	extract_key_from_record_tuple(bpttd_p, record_tuple, key_tuple);
 }
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
@@ -281,7 +268,7 @@ int main()
 
 		// construct key tuple from this record
 		char key_tuple[PAGE_SIZE];
-		build_key_tuple_from_record_struct(bpttd.key_def, key_tuple, &r);
+		build_key_tuple_from_record_struct(&bpttd, key_tuple, &r);
 
 		find_position find_pos = (LESSER_THAN + (tuples_processed % 4));
 		switch(find_pos)
@@ -377,7 +364,7 @@ int main()
 
 		// construct key tuple from this record
 		char key_tuple[PAGE_SIZE];
-		build_key_tuple_from_record_struct(bpttd.key_def, key_tuple, &r);
+		build_key_tuple_from_record_struct(&bpttd, key_tuple, &r);
 
 		// printing built key_tuple
 		//char print_buffer[PAGE_SIZE];
