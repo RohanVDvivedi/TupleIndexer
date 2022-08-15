@@ -52,6 +52,12 @@ void extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const v
 // copy all the key elements from the index_entry to make the key
 void extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key);
 
+// builds an index_entry from record_tuple and a child_page_id
+void build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, uint64_t child_page_id, void* index_entry);
+
+// builds an index_entry from key and a child_page_id
+void build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry);
+
 // it deallocates the index_def and
 // then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);

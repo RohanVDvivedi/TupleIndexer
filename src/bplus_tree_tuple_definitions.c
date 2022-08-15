@@ -89,16 +89,48 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 
 void extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key)
 {
+	// init the key tuple
 	init_tuple(bpttd_p->key_def, key);
+
+	// copy all the elements from record into the key tuple
 	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
 		set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
 }
 
 void extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key)
 {
+	// init the key tuple
 	init_tuple(bpttd_p->key_def, key);
+
+	// copy all the elements from index_entry into the key tuple
 	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
 		set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->index_def, i, index_entry);
+}
+
+void build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, uint64_t child_page_id, void* index_entry)
+{
+	// init the index_entry
+	init_tuple(bpttd_p->index_def, index_entry);
+
+	// copy all the elements from record to the index_tuple, except for the child_page_id
+	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
+		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+
+	// copy the child_page_id to the last element in the index entry
+	set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_entry, &((user_value){.uint_value = child_page_id}));
+}
+
+void build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry)
+{
+	// init the index_entry
+	init_tuple(bpttd_p->index_def, index_entry);
+
+	// copy all the elements from key to the index_tuple
+	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
+		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->key_def, i, key);
+
+	// copy the child_page_id to the last element in the index entry
+	set_element_in_tuple(bpttd_p->index_def, bpttd_p->index_def->element_count - 1, index_entry, &((user_value){.uint_value = child_page_id}));
 }
 
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
