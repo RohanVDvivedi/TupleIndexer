@@ -11,7 +11,7 @@
  * test inserting records with already existing keys
  * interleave insertions and deletion test cases
 
- * variable number keys, for find
+ * use key_elements_of_concern, for find to consider searching using only partial number of key elements
 
  * provide a way to allow additional default header in the implementation, i.e. default header size for all headers of b+tree
 
