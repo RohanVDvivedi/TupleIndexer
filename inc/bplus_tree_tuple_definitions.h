@@ -21,12 +21,12 @@ struct bplus_tree_tuple_defs
 	uint32_t key_element_count;
 
 	// element ids of the keys (as per their element_ids in record_def) in the order as you want them to be ordered
-	const uint32_t* key_element_ids;
+	uint32_t* key_element_ids;
 
 	// ith element_def in index_def has the same type, name and size as the key_element_ids[i] th element_def in record_def
 
 	// tuple definition of the leaf pages in the bplus_tree
-	const tuple_def* record_def;
+	tuple_def* record_def;
 
 	// tuple definition of the interior pages in the bplus_tree
 	tuple_def* index_def;

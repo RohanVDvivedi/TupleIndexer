@@ -24,15 +24,17 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 	bpttd_p->page_id_width = page_id_width;
 	bpttd_p->page_size = page_size;
 	bpttd_p->key_element_count = key_element_count;
-	bpttd_p->key_element_ids = key_element_ids;
-	bpttd_p->record_def = record_def;
 
+	bpttd_p->key_element_ids = malloc(sizeof(uint32_t) * bpttd_p->key_element_count);
+	memcpy(bpttd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * bpttd_p->key_element_count);
+
+	bpttd_p->record_def = clone_tuple_def(record_def);
+	finalize_tuple_def(bpttd_p->record_def, page_size);
 
 	// initialize index_def
 
 	// allocate memory for index def and initialize it
-	bpttd_p->index_def = malloc(size_of_tuple_def(key_element_count + 1));
-	init_tuple_def(bpttd_p->index_def, "temp_index_def");
+	bpttd_p->index_def = get_new_tuple_def("temp_index_def", key_element_count + 1);
 
 	// result of inserting element_definitions to index def
 	int res = 1;
@@ -58,8 +60,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 	// initialize key def
 
 	// allocate memory for key_def and initialize it
-	bpttd_p->key_def = malloc(size_of_tuple_def(key_element_count));
-	init_tuple_def(bpttd_p->key_def, "temp_key_def");
+	bpttd_p->key_def = get_new_tuple_def("temp_key_def", key_element_count);
 
 	// result of inserting element_definitions to key_def
 	res = 1;
@@ -135,10 +136,14 @@ void build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void
 
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 {
+	if(bpttd_p->record_def)
+		delete_tuple_def(bpttd_p->record_def);
 	if(bpttd_p->index_def)
-		free(bpttd_p->index_def);
+		delete_tuple_def(bpttd_p->index_def);
 	if(bpttd_p->key_def)
-		free(bpttd_p->key_def);
+		delete_tuple_def(bpttd_p->key_def);
+	if(bpttd_p->key_element_ids)
+		free(bpttd_p->key_element_ids);
 
 	bpttd_p->NULL_PAGE_ID = 0;
 	bpttd_p->page_id_width = 0;
