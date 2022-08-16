@@ -61,18 +61,18 @@ void print_record(record* r)
 		r->index, r->name, r->age, r->sex, r->email, r->phone, r->score);
 }
 
-void init_tuple_definition(tuple_def* def)
+tuple_def* get_tuple_definition()
 {
 	// initialize tuple definition and insert element definitions
-	init_tuple_def(def, "students");
+	tuple_def* def = get_new_tuple_def("students", 7);
 
-	insert_element_def(def, "index", INT, 4, 0, &NULL_USER_VALUE);
-	insert_element_def(def, "name", VAR_STRING, 1, 0, &NULL_USER_VALUE);
-	insert_element_def(def, "age", UINT, 1, 0, &NULL_USER_VALUE);
-	insert_element_def(def, "sex", UINT, 1, 0, &NULL_USER_VALUE);
-	insert_element_def(def, "email", VAR_STRING, 1, 0, &NULL_USER_VALUE);
-	insert_element_def(def, "phone", STRING, 14, 0, &NULL_USER_VALUE);
-	insert_element_def(def, "score", UINT, 1, 0, &NULL_USER_VALUE);
+	insert_element_def(def, "index", INT, 4, 0, NULL_USER_VALUE);
+	insert_element_def(def, "name", VAR_STRING, 1, 0, NULL_USER_VALUE);
+	insert_element_def(def, "age", UINT, 1, 0, NULL_USER_VALUE);
+	insert_element_def(def, "sex", UINT, 1, 0, NULL_USER_VALUE);
+	insert_element_def(def, "email", VAR_STRING, 1, 0, NULL_USER_VALUE);
+	insert_element_def(def, "phone", STRING, 14, 0, NULL_USER_VALUE);
+	insert_element_def(def, "score", UINT, 1, 0, NULL_USER_VALUE);
 
 	finalize_tuple_def(def, PAGE_SIZE);
 
@@ -84,6 +84,7 @@ void init_tuple_definition(tuple_def* def)
 
 	print_tuple_def(def);
 	printf("\n\n");
+	return def;
 }
 
 void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const record* r)
@@ -128,12 +129,11 @@ int main()
 {
 	/* SETUP STARTED */
 
-	// allocate record tuple definition and initialize it
-	tuple_def* record_def = alloca(size_of_tuple_def(7));
-	init_tuple_definition(record_def);
-
 	// construct an in-memory data store
 	data_access_methods* dam_p = get_new_in_memory_data_store(PAGE_SIZE, PAGE_ID_WIDTH);
+
+	// allocate record tuple definition and initialize it
+	tuple_def* record_def = get_tuple_definition();
 
 	// construct tuple definitions for bplus_tree
 	bplus_tree_tuple_defs bpttd;
@@ -407,6 +407,9 @@ int main()
 
 	// destroy bplus_tree_tuple_definitions
 	deinit_bplus_tree_tuple_definitions(&bpttd);
+
+	// delete the record definition
+	delete_tuple_def(record_def);
 
 	return 0;
 }
