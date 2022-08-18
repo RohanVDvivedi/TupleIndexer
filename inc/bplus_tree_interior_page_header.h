@@ -5,6 +5,7 @@
 #include<bplus_tree_common_page_header.h>
 #include<bplus_tree_tuple_definitions.h>
 
+// size of the complete header for a BPLUS_TREE_INTERIOR_PAGE type
 uint32_t sizeof_INTERIOR_PAGE_HEADER(const bplus_tree_tuple_defs* bpttd_p);
 
 uint64_t get_least_keys_page_id_of_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);

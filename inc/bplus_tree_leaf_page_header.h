@@ -5,6 +5,7 @@
 #include<bplus_tree_common_page_header.h>
 #include<bplus_tree_tuple_definitions.h>
 
+// size of the complete header for a BPLUS_TREE_LEAF_PAGE type
 uint32_t sizeof_LEAF_PAGE_HEADER(const bplus_tree_tuple_defs* bpttd_p);
 
 // getter and setter for next_page_id of the page
