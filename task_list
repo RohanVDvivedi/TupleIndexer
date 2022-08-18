@@ -11,8 +11,6 @@
  * test inserting records with already existing keys
  * interleave insertions and deletion test cases
 
- * use key_elements_of_concern, for find to consider searching using only partial number of key elements
-
  * provide a way to allow additional default header in the implementation, i.e. default header size for all headers of b+tree
 
  * refactor code to evaluate optimizations as per the new preallocate (in page_layout) and precalculate (tuple size) functionalities of TupleStore once they are implemented. grep ./src/*.c for insert_tuple and update_tuple.
