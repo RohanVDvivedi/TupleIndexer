@@ -3,7 +3,7 @@
 
 #include<stdint.h>
 
-uint32_t get_offset_of_bplus_tree_page_level_header(const void* page, uint32_t page_size);
+uint32_t get_offset_of_bplus_tree_page_level_header(const bplus_tree_tuple_defs* bpttd_p);
 
 uint32_t get_size_of_bplus_tree_page_level_header();
 

@@ -11,7 +11,7 @@ const char* page_type_string[] = {
 // allowed values for size for storing page_type = 1 or 2
 #define BYTES_FOR_PAGE_TYPE 2
 
-uint32_t get_offset_of_page_type_header(const void* page, uint32_t page_size)
+uint32_t get_offset_of_page_type_header(const bplus_tree_tuple_defs* bpttd_p)
 {
 	return 0;
 }

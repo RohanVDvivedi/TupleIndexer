@@ -10,9 +10,9 @@
 // values in range 1 to 4 both inclusive
 #define BYTES_FOR_PAGE_LEVEL 2
 
-uint32_t get_offset_of_bplus_tree_page_level_header(const void* page, uint32_t page_size)
+uint32_t get_offset_of_bplus_tree_page_level_header(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_offset_of_page_type_header(page, page_size) + get_size_of_page_type_header();
+	return get_offset_of_page_type_header(bpttd_p) + get_size_of_page_type_header();
 }
 
 uint32_t get_size_of_bplus_tree_page_level_header()
