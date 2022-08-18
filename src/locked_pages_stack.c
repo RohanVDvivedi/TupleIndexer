@@ -2,7 +2,7 @@
 
 #include<stdlib.h>
 
-#include<bplus_tree_page.h>
+#include<bplus_tree_common_page_header.h>
 
 locked_pages_stack* new_locked_pages_stack(uint32_t capacity)
 {

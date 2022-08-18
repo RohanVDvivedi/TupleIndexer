@@ -1,4 +1,4 @@
-#include<bplus_tree_page.h>
+#include<bplus_tree_common_page_header.h>
 
 #include<common_page_header.h>
 

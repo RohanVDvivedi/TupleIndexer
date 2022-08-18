@@ -2,7 +2,7 @@
 #define BPLUS_TREE_INTERIOR_PAGE_HEADER_H
 
 #include<common_page_header.h>
-#include<bplus_tree_page.h>
+#include<bplus_tree_common_page_header.h>
 #include<bplus_tree_tuple_definitions.h>
 
 uint32_t sizeof_INTERIOR_PAGE_HEADER(const bplus_tree_tuple_defs* bpttd_p);
