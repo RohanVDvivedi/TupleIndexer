@@ -24,13 +24,16 @@ enum find_child_index_type
 	TOWARDS_LAST_WITH_KEY,  // takes you towards a record that is greater than the key or the last record that equals key
 };
 
-// this the index of the tuple in the interior page that you should follow
-// you may cache this, it may help in case of a split
-uint32_t find_child_index_for_key(const void* page, const void* key, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p);
+// this macro can be passed to key_element_count_concerned, to consider all the key_elements as found in bpttd_p(->key_element_count)
+#define KEY_ELEMENT_COUNT UINT32_C(-1)
 
 // this the index of the tuple in the interior page that you should follow
 // you may cache this, it may help in case of a split
-uint32_t find_child_index_for_record(const void* page, const void* record, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p);
+uint32_t find_child_index_for_key(const void* page, const void* key, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p);
+
+// this the index of the tuple in the interior page that you should follow
+// you may cache this, it may help in case of a split
+uint32_t find_child_index_for_record(const void* page, const void* record, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p);
 
 // returns the page_id stored with the corresponding tuple at index, in its attribute "child_page_id" 
 uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, const bplus_tree_tuple_defs* bpttd_p);

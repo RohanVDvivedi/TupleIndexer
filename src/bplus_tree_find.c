@@ -23,7 +23,7 @@ enum find_type
 	MAX_TUPLE,
 };
 
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	find_type f_type;
 
@@ -52,22 +52,22 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			}
 			case LESSER_THAN_KEY :
 			{
-				child_index = find_child_index_for_key(curr_page, key, TOWARDS_FIRST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(curr_page, key, key_element_count_concerned, TOWARDS_FIRST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case LESSER_THAN_EQUALS_KEY :
 			{
-				child_index = find_child_index_for_key(curr_page, key, TOWARDS_LAST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(curr_page, key, key_element_count_concerned, TOWARDS_LAST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case GREATER_THAN_EQUALS_KEY :
 			{
-				child_index = find_child_index_for_key(curr_page, key, TOWARDS_FIRST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(curr_page, key, key_element_count_concerned, TOWARDS_FIRST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case GREATER_THAN_KEY :
 			{
-				child_index = find_child_index_for_key(curr_page, key, TOWARDS_LAST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(curr_page, key, key_element_count_concerned, TOWARDS_LAST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case MAX_TUPLE :

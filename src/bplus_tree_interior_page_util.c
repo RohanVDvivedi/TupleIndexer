@@ -28,8 +28,13 @@ void print_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_def
 	print_page(page, bpttd_p->page_size, bpttd_p->index_def);
 }
 
-uint32_t find_child_index_for_key(const void* page, const void* key, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
+uint32_t find_child_index_for_key(const void* page, const void* key, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
 {
+	// if the key_element_count_concerned is equal to KEY_ELEMENT_COUNT then
+	// set the key_element_count_concerned to bpttd_p->key_element_count
+	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
+		key_element_count_concerned = bpttd_p->key_element_count;
+
 	switch(type)
 	{
 		case TOWARDS_FIRST_WITH_KEY :
@@ -37,7 +42,7 @@ uint32_t find_child_index_for_key(const void* page, const void* key, find_child_
 			// find preceding in the interior pages, by comparing against all index entries
 			uint32_t child_index = find_preceding_in_sorted_packed_page(
 										page, bpttd_p->page_size,
-										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+										bpttd_p->index_def, NULL, key_element_count_concerned,
 										key, bpttd_p->key_def, NULL
 									);
 
@@ -49,7 +54,7 @@ uint32_t find_child_index_for_key(const void* page, const void* key, find_child_
 			// find preceding equals in the interior pages, by comparing against all index entries
 			uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
 										page, bpttd_p->page_size,
-										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+										bpttd_p->index_def, NULL, key_element_count_concerned,
 										key, bpttd_p->key_def, NULL
 									);
 
@@ -58,8 +63,13 @@ uint32_t find_child_index_for_key(const void* page, const void* key, find_child_
 	}
 }
 
-uint32_t find_child_index_for_record(const void* page, const void* record, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
+uint32_t find_child_index_for_record(const void* page, const void* record, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
 {
+	// if the key_element_count_concerned is equal to KEY_ELEMENT_COUNT then
+	// set the key_element_count_concerned to bpttd_p->key_element_count
+	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
+		key_element_count_concerned = bpttd_p->key_element_count;
+
 	switch(type)
 	{
 		case TOWARDS_FIRST_WITH_KEY :
@@ -67,7 +77,7 @@ uint32_t find_child_index_for_record(const void* page, const void* record, find_
 			// find preceding in the interior pages, by comparing against all index entries
 			uint32_t child_index = find_preceding_in_sorted_packed_page(
 										page, bpttd_p->page_size,
-										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+										bpttd_p->index_def, NULL, key_element_count_concerned,
 										record, bpttd_p->record_def, bpttd_p->key_element_ids
 									);
 
@@ -79,7 +89,7 @@ uint32_t find_child_index_for_record(const void* page, const void* record, find_
 			// find preceding equals in the interior pages, by comparing against all index entries
 			uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
 										page, bpttd_p->page_size,
-										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+										bpttd_p->index_def, NULL, key_element_count_concerned,
 										record, bpttd_p->record_def, bpttd_p->key_element_ids
 									);
 

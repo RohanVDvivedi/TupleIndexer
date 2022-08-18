@@ -19,10 +19,10 @@ enum find_position
 	GREATER_THAN,
 };
 
-// returns a bplus_tree_cursor to read from key
+// returns a bplus_tree_cursor to read from key (key_element_count_concerned suggests the number of elements of the key that would be considered for find operation)
 // the key == NULL and find_pos == GREATER_THAN, then the iterator will point to the first tuple of the bplus_tree
 // the key == NULL and find_pos == LESSER_THAN, then the iterator will point to the last tuple of the bplus_tree
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 // insert record in bplus_tree
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
