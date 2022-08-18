@@ -11,6 +11,11 @@ const char* page_type_string[] = {
 // allowed values for size for storing page_type = 1 or 2
 #define BYTES_FOR_PAGE_TYPE 2
 
+uint32_t get_offset_of_page_type_header(const void* page, uint32_t page_size)
+{
+	return 0;
+}
+
 uint32_t get_size_of_page_type_header()
 {
 	return BYTES_FOR_PAGE_TYPE;
@@ -18,15 +23,13 @@ uint32_t get_size_of_page_type_header()
 
 page_type get_type_of_page(const void* page, uint32_t page_size)
 {
-	const void* page_header = get_page_header((void*)page, page_size);
-	const void* page_type_header = page_header + 0;
+	const void* page_type_header = get_page_header((void*)page, page_size) + get_offset_of_page_type_header(page, page_size);
 	return (page_type)read_uint16(page_type_header, BYTES_FOR_PAGE_TYPE);
 }
 
 void set_type_of_page(void* page, uint32_t page_size, page_type type)
 {
-	void* page_header = get_page_header((void*)page, page_size);
-	void* page_type_header = page_header + 0;
+	void* page_type_header = get_page_header((void*)page, page_size) + get_offset_of_page_type_header(page, page_size);
 	write_uint16(page_type_header, BYTES_FOR_PAGE_TYPE, ((uint16_t)type));
 }
 

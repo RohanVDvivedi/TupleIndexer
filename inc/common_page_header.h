@@ -10,6 +10,8 @@ enum page_type
 	BPLUS_TREE_INTERIOR_PAGE,
 };
 
+uint32_t get_offset_of_page_type_header(const void* page, uint32_t page_size);
+
 uint32_t get_size_of_page_type_header();
 
 // getter and setter for page type of the page
