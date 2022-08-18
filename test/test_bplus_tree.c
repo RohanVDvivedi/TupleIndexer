@@ -210,6 +210,8 @@ int main()
 
 	/* FIND STARTED */
 
+	uint32_t key_element_count_concerned = 1;
+
 	// open test data file
 	f = fopen(TEST_DATA_FILE, "r");
 
@@ -222,7 +224,7 @@ int main()
 
 	printf("printing the first 4 tuples\n");
 
-	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, GREATER_THAN, &bpttd, dam_p);
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, &bpttd, dam_p);
 
 	const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	uint32_t tuples_to_print = 0;
@@ -239,7 +241,7 @@ int main()
 
 	printf("printing the last 4 tuples\n");
 
-	bpi_p = find_in_bplus_tree(root_page_id, NULL, LESSER_THAN, &bpttd, dam_p);
+	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, &bpttd, dam_p);
 
 	tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	tuples_to_print = 0;
@@ -295,7 +297,7 @@ int main()
 			}
 		}
 
-		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, find_pos, &bpttd, dam_p);
+		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, &bpttd, dam_p);
 
 		const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 		uint32_t tuples_to_print = 0;
