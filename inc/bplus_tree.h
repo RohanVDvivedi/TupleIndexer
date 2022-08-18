@@ -20,7 +20,6 @@ enum find_position
 };
 
 // this macro can be passed to key_element_count_concerned (to find_in_bplus_tree), to consider all the key_elements as found in bpttd_p(->key_element_count)
-// it must have the same value as KEY_ELEMENT_COUNT as in bplus_tree_interior_page_util.h file
 #define KEY_ELEMENT_COUNT UINT32_C(-1)
 
 // returns a bplus_tree_cursor to read from key (key_element_count_concerned suggests the number of elements of the key that would be considered for find operation)

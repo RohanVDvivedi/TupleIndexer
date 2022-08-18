@@ -35,7 +35,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		if(!is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size)) // is not a leaf page
 		{
 			// figure out which child page to go to next
-			curr_locked_page->child_index = find_child_index_for_key(curr_locked_page->page, key, KEY_ELEMENT_COUNT, TOWARDS_LAST_WITH_KEY, bpttd_p);
+			curr_locked_page->child_index = find_child_index_for_key(curr_locked_page->page, key, bpttd_p->key_element_count, TOWARDS_LAST_WITH_KEY, bpttd_p);
 
 			// check if a merge happens at child_index of this curr_locked_page, will this page be required to be merged aswell
 			if(curr_locked_page->page_id != root_page_id && !may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(curr_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )

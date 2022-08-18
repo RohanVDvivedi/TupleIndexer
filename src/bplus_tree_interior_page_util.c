@@ -30,11 +30,6 @@ void print_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_def
 
 uint32_t find_child_index_for_key(const void* page, const void* key, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
 {
-	// if the key_element_count_concerned is equal to KEY_ELEMENT_COUNT then
-	// set the key_element_count_concerned to bpttd_p->key_element_count
-	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
-		key_element_count_concerned = bpttd_p->key_element_count;
-
 	switch(type)
 	{
 		case TOWARDS_FIRST_WITH_KEY :
@@ -65,11 +60,6 @@ uint32_t find_child_index_for_key(const void* page, const void* key, uint32_t ke
 
 uint32_t find_child_index_for_record(const void* page, const void* record, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
 {
-	// if the key_element_count_concerned is equal to KEY_ELEMENT_COUNT then
-	// set the key_element_count_concerned to bpttd_p->key_element_count
-	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
-		key_element_count_concerned = bpttd_p->key_element_count;
-
 	switch(type)
 	{
 		case TOWARDS_FIRST_WITH_KEY :
