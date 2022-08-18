@@ -10,6 +10,11 @@
 // values in range 1 to 4 both inclusive
 #define BYTES_FOR_PAGE_LEVEL 2
 
+uint32_t get_offset_of_bplus_tree_page_level_header(const void* page, uint32_t page_size)
+{
+	return get_offset_of_page_type_header(page, page_size) + get_size_of_page_type_header();
+}
+
 uint32_t get_size_of_bplus_tree_page_level_header()
 {
 	return BYTES_FOR_PAGE_LEVEL;
@@ -17,15 +22,13 @@ uint32_t get_size_of_bplus_tree_page_level_header()
 
 uint32_t get_level_of_bplus_tree_page(const void* page, uint32_t page_size)
 {
-	const void* page_header = get_page_header((void*)page, page_size);
-	const void* page_level_header = page_header + get_size_of_page_type_header();
+	const void* page_level_header = get_page_header((void*)page, page_size) + get_offset_of_bplus_tree_page_level_header(page, page_size);
 	return read_uint32(page_level_header, BYTES_FOR_PAGE_LEVEL);
 }
 
 void set_level_of_bplus_tree_page(void* page, uint32_t page_size, uint32_t level)
 {
-	void* page_header = get_page_header((void*)page, page_size);
-	void* page_level_header = page_header + get_size_of_page_type_header();
+	void* page_level_header = get_page_header((void*)page, page_size) + get_offset_of_bplus_tree_page_level_header(page, page_size);
 	write_uint32(page_level_header, BYTES_FOR_PAGE_LEVEL, level);
 }
 
