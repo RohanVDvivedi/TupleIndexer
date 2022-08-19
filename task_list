@@ -11,8 +11,6 @@
  * test inserting records with already existing keys
  * interleave insertions and deletion test cases
 
- * provide a way to allow additional default header in the implementation, i.e. default header size for all headers of b+tree
-
 ****************
 
 **
