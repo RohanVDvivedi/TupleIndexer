@@ -34,6 +34,8 @@
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){4,2,3}
 #endif
 
+#define DEFAULT_COMMON_PAGE_HEADER_SIZE 3
+
 #define PAGE_SIZE 256
 
 #define PAGE_ID_WIDTH 3
@@ -137,7 +139,7 @@ int main()
 
 	// construct tuple definitions for bplus_tree
 	bplus_tree_tuple_defs bpttd;
-	init_bplus_tree_tuple_definitions(&bpttd, record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_COUNT, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
+	init_bplus_tree_tuple_definitions(&bpttd, DEFAULT_COMMON_PAGE_HEADER_SIZE, record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_COUNT, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
 
 	// print the generated bplus tree tuple defs
 	print_bplus_tree_tuple_definitions(&bpttd);
