@@ -20,25 +20,25 @@ uint32_t get_size_of_bplus_tree_page_level_header()
 	return BYTES_FOR_PAGE_LEVEL;
 }
 
-uint32_t get_level_of_bplus_tree_page(const void* page, uint32_t page_size)
+uint32_t get_level_of_bplus_tree_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	const void* page_level_header = get_page_header((void*)page, page_size) + get_offset_of_bplus_tree_page_level_header(page, page_size);
+	const void* page_level_header = get_page_header((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_page_level_header(bpttd_p);
 	return read_uint32(page_level_header, BYTES_FOR_PAGE_LEVEL);
 }
 
-void set_level_of_bplus_tree_page(void* page, uint32_t page_size, uint32_t level)
+void set_level_of_bplus_tree_page(void* page, uint32_t level, const bplus_tree_tuple_defs* bpttd_p)
 {
-	void* page_level_header = get_page_header((void*)page, page_size) + get_offset_of_bplus_tree_page_level_header(page, page_size);
+	void* page_level_header = get_page_header((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_page_level_header(bpttd_p);
 	write_uint32(page_level_header, BYTES_FOR_PAGE_LEVEL, level);
 }
 
-void print_bplus_tree_page_header(const void* page, uint32_t page_size)
+void print_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	print_common_page_header(page, page_size);
-	printf("level : %"PRIu32"\n", get_level_of_bplus_tree_page(page, page_size));
+	print_common_page_header(page, bpttd_p);
+	printf("level : %"PRIu32"\n", get_level_of_bplus_tree_page(page, bpttd_p));
 }
 
-int is_bplus_tree_leaf_page(const void* page, uint32_t page_size)
+int is_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_level_of_bplus_tree_page(page, page_size) == 0;
+	return get_level_of_bplus_tree_page(page, bpttd_p) == 0;
 }
