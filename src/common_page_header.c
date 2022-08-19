@@ -13,7 +13,7 @@ const char* page_type_string[] = {
 
 uint32_t get_offset_of_page_type_header(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return 0;
+	return bpttd_p->default_common_header_size;
 }
 
 uint32_t get_size_of_page_type_header()

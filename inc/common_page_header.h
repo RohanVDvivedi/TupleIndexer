@@ -12,6 +12,11 @@ enum page_type
 	BPLUS_TREE_INTERIOR_PAGE,
 };
 
+/*
+**		default common header is prefix to even the common page header
+**		size of this default common header is equal to the what was specified in bplus_tree_tuple_definitions object
+*/
+
 uint32_t get_offset_of_page_type_header(const bplus_tree_tuple_defs* bpttd_p);
 
 uint32_t get_size_of_page_type_header();
