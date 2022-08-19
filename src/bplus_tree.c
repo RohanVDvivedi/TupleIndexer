@@ -35,10 +35,10 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	void* root_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_page_id);
 
 	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p);
 
 	// edge case : if the root itself is a leaf page then free it, no locked_pages_stack required
-	if(is_bplus_tree_leaf_page(root_page, bpttd_p->page_size))
+	if(is_bplus_tree_leaf_page(root_page, bpttd_p))
 	{
 		dam_p->release_reader_lock_and_free_page(dam_p->context, root_page);
 		return 1;
@@ -55,7 +55,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// if this is an interior page whose all child pages are leaf pages, i.e. level = 1
-		if(get_level_of_bplus_tree_page(curr_locked_page->page, bpttd_p->page_size) == 1)
+		if(get_level_of_bplus_tree_page(curr_locked_page->page, bpttd_p) == 1)
 		{
 			// free all child leaf pages of this page
 			// without acquiring lock on this pages
@@ -124,7 +124,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	void* root_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_page_id);
 
 	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p);
 
 	// create a stack of capacity = levels
 	locked_pages_stack* locked_pages_stack_p = new_locked_pages_stack(root_page_level + 1);
@@ -137,7 +137,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// print current page as a leaf page
-		if(is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size))
+		if(is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p))
 		{
 			// print this page and its page_id
 			printf("page_id : %"PRIu64"\n\n", curr_locked_page->page_id);

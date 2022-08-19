@@ -23,7 +23,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	void* root_page = dam_p->acquire_page_with_writer_lock(dam_p->context, root_page_id);
 
 	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p);
 
 	// create a stack of capacity = levels + 1
 	locked_pages_stack* locked_pages_stack_p = new_locked_pages_stack(root_page_level + 2);
@@ -36,7 +36,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	{
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
-		if(!is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size))
+		if(!is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p))
 		{
 			// figure out which child page to go to next
 			curr_locked_page->child_index = find_child_index_for_record(curr_locked_page->page, record, bpttd_p->key_element_count, TOWARDS_LAST_WITH_KEY, bpttd_p);
@@ -46,8 +46,8 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			void* child_page = dam_p->acquire_page_with_writer_lock(dam_p->context, child_page_id);
 
 			// if child page will not require a split, then release locks on all the parent pages
-			if( ( is_bplus_tree_leaf_page(child_page, bpttd_p->page_size) && !may_require_split_for_insert_for_bplus_tree(child_page, bpttd_p->page_size, bpttd_p->record_def))
-			||  (!is_bplus_tree_leaf_page(child_page, bpttd_p->page_size) && !may_require_split_for_insert_for_bplus_tree(child_page, bpttd_p->page_size, bpttd_p->index_def )) )
+			if( ( is_bplus_tree_leaf_page(child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(child_page, bpttd_p->page_size, bpttd_p->record_def))
+			||  (!is_bplus_tree_leaf_page(child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(child_page, bpttd_p->page_size, bpttd_p->index_def )) )
 			{
 				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 				{
@@ -76,7 +76,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		locked_page_info curr_locked_page = *get_top_of_locked_pages_stack(locked_pages_stack_p);
 		pop_from_locked_pages_stack(locked_pages_stack_p);
 
-		if(is_bplus_tree_leaf_page(curr_locked_page.page, bpttd_p->page_size)) // is a leaf page, insert / split_insert record to the leaf page
+		if(is_bplus_tree_leaf_page(curr_locked_page.page, bpttd_p)) // is a leaf page, insert / split_insert record to the leaf page
 		{
 			// check if the record already exists in this leaf page
 			int found = (NO_TUPLE_FOUND != find_first_in_sorted_packed_page(

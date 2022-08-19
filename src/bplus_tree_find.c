@@ -43,7 +43,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	uint64_t curr_page_id = root_page_id;
 	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_page_id);
 
-	while(!is_bplus_tree_leaf_page(curr_page, bpttd_p->page_size))
+	while(!is_bplus_tree_leaf_page(curr_page, bpttd_p))
 	{
 		uint32_t child_index = 0;
 

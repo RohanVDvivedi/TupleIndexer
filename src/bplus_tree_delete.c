@@ -19,7 +19,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	void* root_page = dam_p->acquire_page_with_writer_lock(dam_p->context, root_page_id);
 
 	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p->page_size);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p);
 
 	// create a stack of capacity = levels
 	locked_pages_stack* locked_pages_stack_p = new_locked_pages_stack(root_page_level + 1);
@@ -32,7 +32,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	{
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
-		if(!is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p->page_size)) // is not a leaf page
+		if(!is_bplus_tree_leaf_page(curr_locked_page->page, bpttd_p)) // is not a leaf page
 		{
 			// figure out which child page to go to next
 			curr_locked_page->child_index = find_child_index_for_key(curr_locked_page->page, key, bpttd_p->key_element_count, TOWARDS_LAST_WITH_KEY, bpttd_p);
@@ -68,7 +68,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		locked_page_info curr_locked_page = *get_top_of_locked_pages_stack(locked_pages_stack_p);
 		pop_from_locked_pages_stack(locked_pages_stack_p);
 
-		if(is_bplus_tree_leaf_page(curr_locked_page.page, bpttd_p->page_size)) // is a leaf page, perform delete in the leaf page
+		if(is_bplus_tree_leaf_page(curr_locked_page.page, bpttd_p)) // is a leaf page, perform delete in the leaf page
 		{
 			// find index of last record that has the given key on the page
 			uint32_t found_index = find_last_in_sorted_packed_page(
@@ -180,7 +180,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 					void* only_child_page = dam_p->acquire_page_with_reader_lock(dam_p->context, only_child_page_id);
 
 					// clone the only_child_page in to the curr_locked_page
-					if(is_bplus_tree_leaf_page(only_child_page, bpttd_p->page_size))
+					if(is_bplus_tree_leaf_page(only_child_page, bpttd_p))
 						clone_page(curr_locked_page.page, bpttd_p->page_size, bpttd_p->record_def, 1, only_child_page);
 					else
 						clone_page(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def, 1, only_child_page);
@@ -189,7 +189,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 					dam_p->release_reader_lock_and_free_page(dam_p->context, only_child_page);
 
 					// root_page_level will now be what was the level of its child (root_page_level -= 1, should have sufficed here)
-					root_page_level = get_level_of_bplus_tree_page(curr_locked_page.page, bpttd_p->page_size);
+					root_page_level = get_level_of_bplus_tree_page(curr_locked_page.page, bpttd_p);
 				}
 
 				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.page, 1);
