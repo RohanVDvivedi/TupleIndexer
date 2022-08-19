@@ -1,11 +1,15 @@
 #include<bplus_tree_tuple_definitions.h>
 
+#include<page_layout.h>
 #include<tuple.h>
+
+#include<bplus_tree_leaf_page_header.h>
+#include<bplus_tree_interior_page_header.h>
 
 #include<stdlib.h>
 #include<string.h>
 
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID)
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t default_common_header_size, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID)
 {
 	// basic parameter check
 	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || record_def->element_count == 0)
@@ -24,6 +28,11 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const tupl
 	bpttd_p->page_id_width = page_id_width;
 	bpttd_p->page_size = page_size;
 	bpttd_p->key_element_count = key_element_count;
+
+	bpttd_p->default_common_header_size = default_common_header_size;
+
+	if(sizeof_INTERIOR_PAGE_HEADER(bpttd_p) >= page_size || sizeof_LEAF_PAGE_HEADER(bpttd_p) >= page_size)
+		return 0;
 
 	bpttd_p->key_element_ids = malloc(sizeof(uint32_t) * bpttd_p->key_element_count);
 	memcpy(bpttd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * bpttd_p->key_element_count);
@@ -154,11 +163,6 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	bpttd_p->index_def = NULL;
 	bpttd_p->key_def = NULL;
 }
-
-#include<bplus_tree_leaf_page_header.h>
-#include<bplus_tree_interior_page_header.h>
-
-#include<page_layout.h>
 
 uint32_t get_maximum_insertable_record_size(const bplus_tree_tuple_defs* bpttd_p)
 {
