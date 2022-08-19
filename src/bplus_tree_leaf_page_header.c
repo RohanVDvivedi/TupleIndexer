@@ -50,7 +50,7 @@ void set_prev_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, cons
 
 void print_bplus_tree_leaf_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	print_bplus_tree_page_header(page, bpttd_p->page_size);
+	print_bplus_tree_page_header(page, bpttd_p);
 	printf("next_page_id : %"PRIu64"\n", get_next_page_id_of_bplus_tree_leaf_page(page, bpttd_p));
 	printf("prev_page_id : %"PRIu64"\n", get_prev_page_id_of_bplus_tree_leaf_page(page, bpttd_p));
 }
