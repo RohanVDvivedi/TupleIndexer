@@ -27,8 +27,9 @@ Note:
 ## Using The library
  * add `-ltupleindexer -ltuplestore -lbufferpool -lcutlery` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
-   * `<bplus_tree.h>`
-   * `<in_memory_data_store.h>`
+   * `#include<bplus_tree.h>`
+   * `#include<data_access_methods.h>`
+   * `#include<in_memory_data_store.h>`
 
 ## Instructions for uninstalling library
 
