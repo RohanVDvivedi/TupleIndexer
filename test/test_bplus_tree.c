@@ -489,7 +489,7 @@ int main()
 	// again insert all from TEST_DATA_RANDOM_FILE -> lesser than 62 failures
 	/* INSERTIONS SARTED */
 
-	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p);
+	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -500,7 +500,7 @@ int main()
 	// delete all
 	/* DELETIONS STARTED */
 
-	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p);
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p);
 
 	printf("deletions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
