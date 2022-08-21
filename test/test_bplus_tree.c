@@ -240,6 +240,129 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
+result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, uint32_t max_scan_length, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+{
+	// open test data file
+	FILE* f = fopen(file_name, "r");
+
+	result res = {};
+
+	printf("printing the first 4 tuples\n");
+
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, bpttd_p, dam_p);
+
+	const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+	uint32_t tuples_to_print = 0;
+	while(tuple_to_print != NULL && tuples_to_print < max_scan_length)
+	{
+		print_tuple(tuple_to_print, bpttd_p->record_def);
+		tuples_to_print++;
+		next_bplus_tree_iterator(bpi_p);
+		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+	}
+
+	delete_bplus_tree_iterator(bpi_p);
+	printf("\n");
+
+	printf("printing the last 4 tuples\n");
+
+	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, bpttd_p, dam_p);
+
+	tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+	tuples_to_print = 0;
+	while(tuple_to_print != NULL && tuples_to_print < max_scan_length)
+	{
+		print_tuple(tuple_to_print, bpttd_p->record_def);
+		tuples_to_print++;
+		prev_bplus_tree_iterator(bpi_p);
+		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+	}
+
+	delete_bplus_tree_iterator(bpi_p);
+	printf("\n");
+
+	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
+	{
+		// read a record from the file
+		record r;
+		read_record_from_file(&r, f);
+
+		if(res.records_processed < skip_first || (res.records_processed - skip_first) % (skip_every + 1) != 0)
+			continue;
+
+		// print the record we read
+		print_record(&r);
+
+		// construct key tuple from this record
+		char key_tuple[PAGE_SIZE];
+		build_key_tuple_from_record_struct(bpttd_p, key_tuple, &r);
+
+		find_position find_pos = (LESSER_THAN + (res.records_processed % 4));
+		switch(find_pos)
+		{
+			case LESSER_THAN :
+			{
+				printf("LESSER_THAN\n\n");
+				break;
+			}
+			case LESSER_THAN_EQUALS :
+			{
+				printf("LESSER_THAN_EQUALS\n\n");
+				break;
+			}
+			case GREATER_THAN_EQUALS :
+			{
+				printf("GREATER_THAN_EQUALS\n\n");
+				break;
+			}
+			case GREATER_THAN :
+			{
+				printf("GREATER_THAN\n\n");
+				break;
+			}
+		}
+
+		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, bpttd_p, dam_p);
+
+		const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+		uint32_t tuples_to_print = 0;
+		while(tuple_to_print != NULL && tuples_to_print < max_scan_length)
+		{
+			print_tuple(tuple_to_print, bpttd_p->record_def);
+			tuples_to_print++;
+			switch(find_pos)
+			{
+				case LESSER_THAN :
+				case LESSER_THAN_EQUALS :
+				{
+					prev_bplus_tree_iterator(bpi_p);
+					break;
+				}
+				case GREATER_THAN_EQUALS :
+				case GREATER_THAN :
+				{
+					next_bplus_tree_iterator(bpi_p);
+					break;
+				}
+			}
+			tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
+		}
+
+		delete_bplus_tree_iterator(bpi_p);
+		printf("\n");
+		printf("----------------\n\n");
+
+		// increment the tuples_processed count
+		res.operations_succeeded++;
+		res.records_processed++;
+	}
+
+	// close the file
+	fclose(f);
+
+	return res;
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -281,131 +404,9 @@ int main()
 
 	/* FIND STARTED */
 
-	uint32_t key_element_count_concerned = 1;
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 6, 1, &bpttd, dam_p);
 
-	// open test data file
-	f = fopen(TEST_DATA_FILE, "r");
-
-	// stores the count of tuples processed
-	tuples_processed = 0;
-
-	tuples_processed_limit = 12;
-
-	uint32_t found_tuples_to_print = 4;
-
-	printf("printing the first 4 tuples\n");
-
-	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, &bpttd, dam_p);
-
-	const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
-	uint32_t tuples_to_print = 0;
-	while(tuple_to_print != NULL && tuples_to_print < found_tuples_to_print)
-	{
-		print_tuple(tuple_to_print, bpttd.record_def);
-		tuples_to_print++;
-		next_bplus_tree_iterator(bpi_p);
-		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
-	}
-
-	delete_bplus_tree_iterator(bpi_p);
-	printf("\n");
-
-	printf("printing the last 4 tuples\n");
-
-	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, &bpttd, dam_p);
-
-	tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
-	tuples_to_print = 0;
-	while(tuple_to_print != NULL && tuples_to_print < found_tuples_to_print)
-	{
-		print_tuple(tuple_to_print, bpttd.record_def);
-		tuples_to_print++;
-		prev_bplus_tree_iterator(bpi_p);
-		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
-	}
-
-	delete_bplus_tree_iterator(bpi_p);
-	printf("\n");
-
-	while(!feof(f))
-	{
-		if(tuples_processed == tuples_processed_limit)
-			break;
-
-		// read a record from the file
-		record r;
-		read_record_from_file(&r, f);
-
-		// print the record we read
-		print_record(&r);
-
-		// construct key tuple from this record
-		char key_tuple[PAGE_SIZE];
-		build_key_tuple_from_record_struct(&bpttd, key_tuple, &r);
-
-		find_position find_pos = (LESSER_THAN + (tuples_processed % 4));
-		switch(find_pos)
-		{
-			case LESSER_THAN :
-			{
-				printf("LESSER_THAN\n\n");
-				break;
-			}
-			case LESSER_THAN_EQUALS :
-			{
-				printf("LESSER_THAN_EQUALS\n\n");
-				break;
-			}
-			case GREATER_THAN_EQUALS :
-			{
-				printf("GREATER_THAN_EQUALS\n\n");
-				break;
-			}
-			case GREATER_THAN :
-			{
-				printf("GREATER_THAN\n\n");
-				break;
-			}
-		}
-
-		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, &bpttd, dam_p);
-
-		const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
-		uint32_t tuples_to_print = 0;
-		while(tuple_to_print != NULL && tuples_to_print < found_tuples_to_print)
-		{
-			print_tuple(tuple_to_print, bpttd.record_def);
-			tuples_to_print++;
-			switch(find_pos)
-			{
-				case LESSER_THAN :
-				case LESSER_THAN_EQUALS :
-				{
-					prev_bplus_tree_iterator(bpi_p);
-					break;
-				}
-				case GREATER_THAN_EQUALS :
-				case GREATER_THAN :
-				{
-					next_bplus_tree_iterator(bpi_p);
-					break;
-				}
-			}
-			tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
-		}
-
-		delete_bplus_tree_iterator(bpi_p);
-		printf("\n");
-		printf("----------------\n\n");
-
-		// increment the tuples_processed count
-		tuples_processed++;
-	}
-
-	// close the file
-	fclose(f);
-
-	printf("finds in bplus tree completed\n");
+	printf("finds in bplus tree completed (%u of %u)\n", res.operations_succeeded, res.records_processed);
 
 	/* FIND COMPLETED */
 
