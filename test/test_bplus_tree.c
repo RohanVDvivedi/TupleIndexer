@@ -166,7 +166,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p);
 
 		// print bplus tree
-		if(print_tree_on_completion)
+		if(print_tree_after_each)
 		{
 			printf("---------------------------------------------------------------------------------------------------------\n");
 			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
@@ -219,7 +219,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		res.operations_succeeded += delete_from_bplus_tree(root_page_id, key_tuple, bpttd_p, dam_p);
 
 		// print bplus tree
-		if(print_tree_on_completion)
+		if(print_tree_after_each)
 		{
 			printf("---------------------------------------------------------------------------------------------------------\n");
 			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
