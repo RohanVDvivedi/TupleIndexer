@@ -454,7 +454,7 @@ int main()
 	// perfrom find on remaining tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 3, 3, 9, 6, 1, &bpttd, dam_p);
+	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 9, 6, 1, &bpttd, dam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
