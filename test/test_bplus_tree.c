@@ -127,6 +127,119 @@ void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 	r->score = get_value_from_element_from_tuple(tpl_d, 6, tupl).uint_value;
 }
 
+typedef struct result result;
+struct result
+{
+	uint32_t operations_succeeded;
+	uint32_t records_processed;
+};
+
+result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+{
+	// open test data file
+	FILE* f = fopen(file_name, "r");
+
+	result res = {};
+
+	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
+	{
+		// read a record from the file
+		record r;
+		read_record_from_file(&r, f);
+
+		if(res.records_processed < skip_first || (res.records_processed - skip_first) % (skip_every + 1) != 0)
+			continue;
+
+		// print the record we read
+		//print_record(&r);
+
+		// construct tuple from this record
+		char record_tuple[PAGE_SIZE];
+		build_tuple_from_record_struct(bpttd_p->record_def, record_tuple, &r);
+
+		// printing built tuple
+		//char print_buffer[PAGE_SIZE];
+		//sprint_tuple(print_buffer, record_tuple, record_def);
+		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
+
+		// insert the record_tuple in the bplus_tree rooted at root_page_id
+		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p);
+
+		// print bplus tree
+		if(print_tree_on_completion)
+		{
+			printf("---------------------------------------------------------------------------------------------------------\n");
+			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
+			printf("---------------------------------------------------------------------------------------------------------\n\n");
+		}
+
+		// increment the tuples_processed count
+		res.records_processed++;
+	}
+
+	// print bplus tree
+	if(print_tree_on_completion)
+		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p);
+
+	// close the file
+	fclose(f);
+
+	return res;
+}
+
+result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+{
+	// open test data file
+	FILE* f = fopen(file_name, "r");
+
+	result res = {};
+
+	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
+	{
+		// read a record from the file
+		record r;
+		read_record_from_file(&r, f);
+
+		if(res.records_processed < skip_first || (res.records_processed - skip_first) % (skip_every + 1) != 0)
+			continue;
+
+		// print the record we read
+		//print_record(&r);
+
+		// construct key tuple from this record
+		char key_tuple[PAGE_SIZE];
+		build_key_tuple_from_record_struct(bpttd_p, key_tuple, &r);
+
+		// printing built key_tuple
+		//char print_buffer[PAGE_SIZE];
+		//sprint_tuple(print_buffer, key_tuple, bpttd.key_def);
+		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
+
+		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
+		res.operations_succeeded += delete_from_bplus_tree(root_page_id, key_tuple, bpttd_p, dam_p);
+
+		// print bplus tree
+		if(print_tree_on_completion)
+		{
+			printf("---------------------------------------------------------------------------------------------------------\n");
+			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
+			printf("---------------------------------------------------------------------------------------------------------\n\n");
+		}
+
+		// increment the tuples_processed count
+		res.records_processed++;
+	}
+
+	// print bplus tree
+	if(print_tree_on_completion)
+		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p);
+
+	// close the file
+	fclose(f);
+
+	return res;
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -147,62 +260,18 @@ int main()
 	// create a bplus tree and get its root
 	uint64_t root_page_id = get_new_bplus_tree(&bpttd, dam_p);
 
+	// variable to test insert and delete operations
+	result res;
+
 	/* SETUP COMPLETED */
 
 
 
 	/* INSERTIONS SARTED */
 
-	// open test data file
-	FILE* f = fopen(TEST_DATA_FILE, "r");
+	res = insert_from_file(root_page_id, TEST_DATA_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p);
 
-	// stores the count of tuples processed
-	uint32_t tuples_processed = 0;
-
-	uint32_t tuples_processed_limit = 256;
-
-	while(!feof(f))
-	{
-		if(tuples_processed == tuples_processed_limit)
-			break;
-
-		// read a record from the file
-		record r;
-		read_record_from_file(&r, f);
-
-		// print the record we read
-		//print_record(&r);
-
-		// construct tuple from this record
-		char record_tuple[PAGE_SIZE];
-		build_tuple_from_record_struct(record_def, record_tuple, &r);
-
-		// printing built tuple
-		//char print_buffer[PAGE_SIZE];
-		//sprint_tuple(print_buffer, record_tuple, record_def);
-		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
-
-		// insert the record_tuple in the bplus_tree rooted at root_page_id
-		insert_in_bplus_tree(root_page_id, record_tuple, &bpttd, dam_p);
-
-		// print bplus tree
-		//printf("---------------------------------------------------------------------------------------------------------\n");
-		//printf("---------------------------------------------------------------------------------------------------------\n");
-		//print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
-		//printf("---------------------------------------------------------------------------------------------------------\n");
-		//printf("---------------------------------------------------------------------------------------------------------\n");
-
-		// increment the tuples_processed count
-		tuples_processed++;
-	}
-
-	// print bplus tree
-	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
-
-	// close the file
-	fclose(f);
-
-	printf("insertions to bplus tree completed\n");
+	printf("insertions to bplus tree completed (%u of %u)\n", res.operations_succeeded, res.records_processed);
 
 	/* INSERTIONS COMPLETED */
 
@@ -346,56 +415,9 @@ int main()
 
 	/* DELETIONS STARTED */
 
-	// open test data file
-	f = fopen(TEST_DATA_RANDOM_FILE, "r");
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p);
 
-	// stores the count of tuples processed
-	tuples_processed = 0;
-
-	tuples_processed_limit = 256;
-
-	while(!feof(f))
-	{
-		if(tuples_processed == tuples_processed_limit)
-			break;
-
-		// read a record from the file
-		record r;
-		read_record_from_file(&r, f);
-
-		// print the record we read
-		//print_record(&r);
-
-		// construct key tuple from this record
-		char key_tuple[PAGE_SIZE];
-		build_key_tuple_from_record_struct(&bpttd, key_tuple, &r);
-
-		// printing built key_tuple
-		//char print_buffer[PAGE_SIZE];
-		//sprint_tuple(print_buffer, key_tuple, bpttd.key_def);
-		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
-
-		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
-		delete_from_bplus_tree(root_page_id, key_tuple, &bpttd, dam_p);
-
-		// print bplus tree
-		//printf("---------------------------------------------------------------------------------------------------------\n");
-		//printf("---------------------------------------------------------------------------------------------------------\n");
-		//print_bplus_tree(root_page_id, 0, &bpttd, dam_p);
-		//printf("---------------------------------------------------------------------------------------------------------\n");
-		//printf("---------------------------------------------------------------------------------------------------------\n");
-
-		// increment the tuples_processed count
-		tuples_processed++;
-	}
-
-	// print bplus tree
-	print_bplus_tree(root_page_id, 1, &bpttd, dam_p);
-
-	// close the file
-	fclose(f);
-
-	printf("deletions to bplus tree completed\n");
+	printf("deletions to bplus tree completed(%u of %u)\n", res.operations_succeeded, res.records_processed);
 
 	/* DELETIONS COMPLETED */
 
