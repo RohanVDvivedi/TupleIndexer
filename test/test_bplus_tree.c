@@ -405,6 +405,7 @@ int main()
 	result res;
 
 	/* SETUP COMPLETED */
+	printf("\n");
 
 
 
@@ -413,7 +414,7 @@ int main()
 
 	res = insert_from_file(root_page_id, TEST_DATA_FILE, 0, 3, 256, 0, 0, &bpttd, dam_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* INSERTIONS COMPLETED */
 
@@ -424,7 +425,7 @@ int main()
 
 	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* INSERTIONS COMPLETED */
 
@@ -434,7 +435,7 @@ int main()
 
 	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 6, 1, &bpttd, dam_p);
 
-	printf("finds in bplus tree completed (%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* FIND COMPLETED */
 
@@ -444,7 +445,7 @@ int main()
 
 	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 30, 0, 0, &bpttd, dam_p);
 
-	printf("deletions to bplus tree completed(%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("deletions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* DELETIONS COMPLETED */
 
@@ -455,7 +456,7 @@ int main()
 
 	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 3, 3, 9, 6, 1, &bpttd, dam_p);
 
-	printf("finds in bplus tree completed (%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* FIND COMPLETED */
 
@@ -467,7 +468,7 @@ int main()
 
 	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 0, &bpttd, dam_p);
 
-	printf("deletions to bplus tree completed(%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("deletions to bplus tree completed(%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* DELETIONS COMPLETED */
 
@@ -479,7 +480,7 @@ int main()
 
 	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 9, 6, 1, &bpttd, dam_p);
 
-	printf("finds in bplus tree completed (%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* FIND COMPLETED */
 
@@ -490,7 +491,7 @@ int main()
 
 	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* INSERTIONS COMPLETED */
 
@@ -501,7 +502,7 @@ int main()
 
 	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p);
 
-	printf("deletions to bplus tree completed(%u of %u)\n", res.operations_succeeded, res.records_processed);
+	printf("deletions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* DELETIONS COMPLETED */
 
