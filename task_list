@@ -1,17 +1,3 @@
-***************
-    **Priority Tasks**
-
-* segregate test cases into insert_tests, find_tests and delete_tests, and call them in order to meed the following requirements for test case coverage
- * pick between random and sorted test file, for all 3 operations
- * test find on keys that are absent in the b+tree
- * test find on keys at the end and beginnning of the b+tree such that the iterator returns a NULL before specific keys are read.
- * skip on inserts and deletes from the file
- * test insertion of tuple longer than max insertable record size
- * test deletion of non existing keys
- * test inserting records with already existing keys
- * interleave insertions and deletion test cases
-
-****************
 
 **
  * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
