@@ -141,14 +141,20 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 
 	result res = {};
 
+	uint32_t records_seen = 0;
 	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
 	{
 		// read a record from the file
 		record r;
 		read_record_from_file(&r, f);
 
-		if(res.records_processed < skip_first || (res.records_processed - skip_first) % (skip_every + 1) != 0)
+		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
+		{
+			records_seen++;
 			continue;
+		}
+		else
+			records_seen++;
 
 		// print the record we read
 		//print_record(&r);
@@ -194,14 +200,20 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 
 	result res = {};
 
+	uint32_t records_seen = 0;
 	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
 	{
 		// read a record from the file
 		record r;
 		read_record_from_file(&r, f);
 
-		if(res.records_processed < skip_first || (res.records_processed - skip_first) % (skip_every + 1) != 0)
+		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
+		{
+			records_seen++;
 			continue;
+		}
+		else
+			records_seen++;
 
 		// print the record we read
 		//print_record(&r);
@@ -281,14 +293,20 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	delete_bplus_tree_iterator(bpi_p);
 	printf("\n");
 
+	uint32_t records_seen = 0;
 	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
 	{
 		// read a record from the file
 		record r;
 		read_record_from_file(&r, f);
 
-		if(res.records_processed < skip_first || (res.records_processed - skip_first) % (skip_every + 1) != 0)
+		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
+		{
+			records_seen++;
 			continue;
+		}
+		else
+			records_seen++;
 
 		// print the record we read
 		print_record(&r);
