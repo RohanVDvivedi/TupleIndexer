@@ -79,7 +79,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		if(is_bplus_tree_leaf_page(curr_locked_page.page, bpttd_p)) // is a leaf page, insert / split_insert record to the leaf page
 		{
 			// check if the record already exists in this leaf page
-			int found = (NO_TUPLE_FOUND != find_first_in_sorted_packed_page(
+			int found = (NO_TUPLE_FOUND != find_last_in_sorted_packed_page(
 												curr_locked_page.page, bpttd_p->page_size, 
 												bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
 												record, bpttd_p->record_def, bpttd_p->key_element_ids
