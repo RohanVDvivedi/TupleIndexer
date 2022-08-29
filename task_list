@@ -1,34 +1,25 @@
 
-**
+** UTILITY AND REFACTORING
  * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
  * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task of segregation
-
-**
- * the above task will also help in further implementation of
- * insert with a int allow_duplicates_flag
- * implement update which split or merges depending on the size of the node being updated,
-   it does nothing for a fixed length tuple updates
-   * inplace updates of fixed length record b+tree is very simple and highly parallelizable, we only need read locks on interior pages and write lock only on the leaf page (and on the root page, so that we are sure that root is not a leaf and we can safely read the level of the tree)
-   * you my want to segregate functionalities of insert and delete into different functions, to accomodate this
-
-* ponder on supporting duplicates, by assigning a number sequence to each duplicates, i.e.
-   * for 2 duplicates "key"->"value_A" and "key"->"value_B", we make them into "key",0->"value_A" and "key",1->"value_B"
-   * we increment the sequence for a key every time we find the last one
-   * for deletes they need to provide the exact key including its index to delete
-
-**
- * implement delete range, deleting an entire sub tree if it falls into the range
+ * add a flag as a parameter "fail_on_duplicate_key", that decides to fail an insert if a record being inserted has a duplicate key, else allow duplicates
  * build stacked iterator using locked_pages_stack, this can be used to iterate over all the tuples in the b+tree including the interior page - index tuples
- * such that it allows you to go to first record down the tuple and etc other operation to be though of later
+ * utility function to delete an index tuple from an index page
 
-**
+** UPDATE FUNCTIONALITY
+ * implement update which split or merges depending on the size of the record being updated, (and does neither for fixed length records or if new record and old record are of same size)
+ * update by key (updates the last 1) or update by record (updates an exact match record -> here we will already know if it will be a merge or a split)
+
+** ADDITIONAL DELETE FUNCTIONALITY
+ * implement delete range, deleting an entire sub tree if it falls into the range (parameter key1 and key2, (key1 <= key2) and flags that suggest whether key1 and key2 are inclusive or not)
+ * implement delete record, to delete a specific record from b+tree
+
+* OPTIMIZATION
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
  * see how this can be accomodated in the delete and update functions available at that point in future
 
-**
+** NECESSARY BUT DELAYED UNTIL ACTUAL REQUIREMENTS ARE FULFILLED
  * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
  * implement throwing errors appropriately, upon failures from dam_p
-
-**
  * write multi threaded test cases to insert a large csv in to b+tree, measure performance difference
