@@ -23,3 +23,9 @@
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
  * implement throwing errors appropriately, upon failures from dam_p
  * write multi threaded test cases to insert a large csv in to b+tree, measure performance difference
+
+**OTHER DATABASE DATASTRUCTURE TASKS
+ * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
+ * hash_table a linux page table like hashtable where each bucket points a linked_page_list
+ * sort that can be called on a linked_page_list or a hash_table
+ * building a b+tree using a sorted linked_page_list, layer by layer - think how to get it done without having first index entries
