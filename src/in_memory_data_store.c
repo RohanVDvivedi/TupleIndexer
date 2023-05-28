@@ -98,14 +98,14 @@ static int compare_page_descs_by_page_memories(const void* page_desc1, const voi
 		return -1;
 }
 
-static unsigned int hash_on_page_id(const void* page_desc)
+static cy_uint hash_on_page_id(const void* page_desc)
 {
-	return (unsigned int)(((const page_descriptor*)(page_desc))->page_id);
+	return ((const page_descriptor*)(page_desc))->page_id;
 }
 
-static unsigned int hash_on_page_memory(const void* page_desc)
+static cy_uint hash_on_page_memory(const void* page_desc)
 {
-	return (unsigned int)((uintptr_t)(((const page_descriptor*)(page_desc))->page_memory));
+	return ((uintptr_t)(((const page_descriptor*)(page_desc))->page_memory));
 }
 
 // blocking, unsafe function, must be called within lock on global_lock
