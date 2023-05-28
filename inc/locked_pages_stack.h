@@ -1,8 +1,6 @@
 #ifndef LOCKED_PAGES_STACK_H
 #define LOCKED_PAGES_STACK_H
 
-#include<arraylist.h>
-
 #include<bplus_tree_tuple_definitions.h>
 #include<data_access_methods.h>
 
