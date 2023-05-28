@@ -13,19 +13,14 @@
 
 char page[PAGE_SIZE] = {};
 
-void init_tuple_definition(tuple_def* def)
+tuple_def* get_tuple_definition()
 {
 	// initialize tuple definition and insert element definitions
-	int res = init_tuple_def(def, "my_table");
+	tuple_def* def = get_new_tuple_def("my_table", 3);
 
-	res = res && insert_element_def(def, "key_1", INT, 4, 0, NULL);
-
-	res = res && insert_element_def(def, "key_2", VAR_STRING, 1, 0, NULL);
-
-	res = res && insert_element_def(def, "val", VAR_STRING, 1, 0, NULL);
-
-	if(!res)
-		exit(-1);
+	insert_element_def(def, "key_1", INT, 4, 0, NULL);
+	insert_element_def(def, "key_2", VAR_STRING, 1, 0, NULL);
+	insert_element_def(def, "val", VAR_STRING, 1, 0, NULL);
 
 	finalize_tuple_def(def, PAGE_SIZE);
 
@@ -37,6 +32,8 @@ void init_tuple_definition(tuple_def* def)
 
 	print_tuple_def(def);
 	printf("\n\n");
+
+	return def;
 }
 
 // a row like struct for ease in building test tuples
@@ -65,11 +62,8 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 
 int main()
 {
-	// allocate size of tuple definition
-	tuple_def* def = alloca(size_of_tuple_def(16));
-
-	// initialize tuple definition and insert element definitions
-	init_tuple_definition(def);
+	// intialize tuple definition
+	tuple_def* def = get_tuple_definition();
 
 	// ---------------	DECLARE TEMP variables
 
@@ -367,9 +361,8 @@ int main()
 	// ----------------  TEST ALL FIND FUNCTIONS
 
 	// intialize single integer key definition
-	tuple_def* key_def = alloca(size_of_tuple_def(16));
-	init_tuple_def(key_def, "my_table");
-	res = insert_element_def(key_def, "key_1", INT, 4, 0, &ZERO_USER_VALUE);
+	tuple_def* key_def = get_new_tuple_def("my_table", 1);
+	insert_element_def(key_def, "key_1", INT, 4, 0, ZERO_USER_VALUE);
 	finalize_tuple_def(key_def, PAGE_SIZE);
 
 	for(int32_t i = 0; i <= 25; i++)
@@ -427,6 +420,8 @@ int main()
 		printf("\n\n");
 	}
 
+	delete_tuple_def(key_def);
+
 	// ----------------  REVERSE PAGE SORT
 
 	reverse_sort_order_on_sorted_packed_page(page, PAGE_SIZE, def);
@@ -464,6 +459,8 @@ int main()
 
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
+
+	delete_tuple_def(def);
 	
 	return 0;
 }
