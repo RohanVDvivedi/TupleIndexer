@@ -1,3 +1,7 @@
+** NEW TASKS IDENTIFIED FOR FULLFLEDGED DATABASE
+ * Think how you could decouple Tuple Store and instead take in page_modification_methods, that has similar api to TupleStore, but logging could be build into them
+ * refactor and change data_access_methods to page_access_methods
+ * allow page_access_methods (future name of data_access_methods) to also enable locking only tuples on the page
 
 ** UTILITY AND REFACTORING
  * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
