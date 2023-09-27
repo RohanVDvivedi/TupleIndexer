@@ -249,14 +249,12 @@ int delete_all_in_sorted_packed_page(
 									uint32_t start_index, uint32_t end_index
 								)
 {
-	uint32_t count = get_tuple_count(page, page_size, tpl_def);
+	uint32_t count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
 	if(count == 0 || start_index > end_index || end_index >= count)
 		return 0;
 
 	for(uint32_t i = start_index; i <= end_index; i++)
-		delete_tuple(page, page_size, tpl_def, i);
-
-	run_page_compaction(page, page_size, tpl_def, 1, 0);
+		discard_tuple_on_page(page, page_size, &(tpl_def->size_def), start_index); // a discarded tuple does not leave a slot, hence always discarding at start_index
 
 	return 1;
 }
