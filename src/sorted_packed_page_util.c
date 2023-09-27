@@ -269,21 +269,18 @@ uint32_t insert_all_from_sorted_packed_page(
 									uint32_t start_index, uint32_t end_index
 								)
 {
-	const tuple_accessed_page tap = get_tuple_accessed_page(page, page_size, tpl_def);
-	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, tpl_def, tuple_keys_to_compare, keys_count);
-
-	uint32_t src_count = get_tuple_count(page_src, page_size, tpl_def);
+	uint32_t src_count = get_tuple_count_on_page(page_src, page_size, &(tpl_def->size_def));
 	if(src_count == 0 || start_index > end_index || end_index >= src_count)
 		return 0;
 
 	// if the dest page is empty, insert all no comparisons needed
-	uint32_t dest_count = get_tuple_count(page_dest, page_size, tpl_def);
+	uint32_t dest_count = get_tuple_count_on_page(page_dest, page_size, &(tpl_def->size_def));
 	if(dest_count == 0)
 		return insert_tuples_from_page(page_dest, page_size, tpl_def, page_src, start_index, end_index);
 
 	// compare the last tuple of the dest page and first tuple of the src page
-	const void* last_tuple_dest = get_nth_tuple(page_dest, page_size, tpl_def, dest_count - 1);
-	const void* first_tuple_src = get_nth_tuple(page_src, page_size, tpl_def, 0);
+	const void* last_tuple_dest = get_nth_tuple_on_page(page_dest, page_size, &(tpl_def->size_def), dest_count - 1);
+	const void* first_tuple_src = get_nth_tuple_on_page(page_src, page_size, &(tpl_def->size_def), 0);
 
 	// if they are in order then perform a direct copy
 	int compare_last_first = compare_tuples(last_tuple_dest, tpl_def, tuple_keys_to_compare, first_tuple_src, tpl_def, tuple_keys_to_compare, keys_count);
@@ -295,7 +292,7 @@ uint32_t insert_all_from_sorted_packed_page(
 	// insert using stupstom api from start_index to end_index
 	for(uint32_t index = start_index; index <= end_index; index++)
 	{
-		const void* tup = get_nth_tuple(page_src, page_size, tpl_def, index);
+		const void* tup = get_nth_tuple_on_page(page_src, page_size, &(tpl_def->size_def), index);
 		if(tup != NULL && insert_to_sorted_packed_page(page_dest, page_size, tpl_def, tuple_keys_to_compare, keys_count, tup, NULL))
 			inserted_count++;
 		else
@@ -311,6 +308,9 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 									const void* tuple
 									)
 {
+	const tuple_accessed_page tap = get_tuple_accessed_page(page, page_size, tpl_def);
+	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, tpl_def, tuple_keys_to_compare, keys_count);
+
 	uint32_t count = get_tuple_count(page, page_size, tpl_def);
 	if(count == 0)
 		return 0;
