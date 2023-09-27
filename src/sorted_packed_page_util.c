@@ -331,46 +331,16 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 									const void* tuple
 									)
 {
+	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+
+	// if the page is empty insert it at 0
+	if(tuple_count == 0)
+		return 0;
+
 	const tuple_accessed_page tap = get_tuple_accessed_page(page, page_size, tpl_def);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, tpl_def, tuple_keys_to_compare, keys_count);
 
-	uint32_t count = get_tuple_count(page, page_size, tpl_def);
-	if(count == 0)
-		return 0;
-
-	// if the provided tuple is lesser than the first tuple
-	const void* tup_first = get_nth_tuple(page, page_size, tpl_def, 0);
-	if(compare_tuples(tup_first, tpl_def, tuple_keys_to_compare, tuple, tpl_def, tuple_keys_to_compare, keys_count) > 0)
-		return 0;
-
-	uint32_t insertion_index = NO_TUPLE_FOUND;
-
-	uint32_t low = 0;
-	uint32_t high = count;
-
-	while(low <= high)
-	{
-		uint32_t mid = low + (high - low) / 2;
-
-		if(mid == count)
-		{
-			insertion_index = count;
-			break;
-		}
-
-		const void* tup_mid = get_nth_tuple(page, page_size, tpl_def, mid);
-		int compare = compare_tuples(tup_mid, tpl_def, tuple_keys_to_compare, tuple, tpl_def, tuple_keys_to_compare, keys_count);
-
-		if(compare > 0)
-		{
-			insertion_index = mid;
-			high = mid - 1;
-		}
-		else
-			low = mid + 1;
-	}
-
-	return insertion_index;
+	return find_insertion_index_in_sorted_iai(&tap, 0, tuple_count - 1, tuple, ontexted_comparator(&topcc, compare_tuples_using_comparator_context));
 }
 
 uint32_t find_first_in_sorted_packed_page(
