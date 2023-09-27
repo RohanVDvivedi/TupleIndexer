@@ -1,0 +1,2400 @@
+Tuple definition for "my_table" : 
+is_variable_sized : 1
+	 min_size : 11
+	 byte_offset_to_is_null_bitmap : 2
+	 size_of_byte_offsets : 2
+	 is_NULL_bitmap_size_in_bits : 1
+	 element_count : 3
+		 Column : 0
+			 "key_1" of type : INT
+			 size : 4
+			 byte_offset : 3
+			 NON_NULL : 0
+			 is_NULL_bitmap_bit_offset : 0
+			 default : NULL
+		 Column : 1
+			 "key_2" of type : VAR_STRING
+			 size_specifier_prefix_size : 1
+			 byte_offset_to_byte_offset : 7
+			 NON_NULL : 0
+			 default : NULL
+		 Column : 2
+			 "val" of type : VAR_STRING
+			 size_specifier_prefix_size : 1
+			 byte_offset_to_byte_offset : 9
+			 NON_NULL : 0
+			 default : NULL
+
+
+Built tuple : size(30)
+	5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 32 (tomb_stones occupy 0)
+free space       = 982
+fragmented space = 0
+
+tuple_count      = 1
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (1)
+		tuple 0
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+
+
+
+
+
+Built tuple : size(42)
+	5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+Insert_at : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 76 (tomb_stones occupy 0)
+free space       = 938
+fragmented space = 0
+
+tuple_count      = 2
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (2)
+		tuple 0
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 1
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+
+
+
+
+
+Built tuple : size(38)
+	2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 116 (tomb_stones occupy 0)
+free space       = 898
+fragmented space = 0
+
+tuple_count      = 3
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (3)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 2
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+
+
+
+
+
+Built tuple : size(35)
+	2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 153 (tomb_stones occupy 0)
+free space       = 861
+fragmented space = 0
+
+tuple_count      = 4
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (4)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 2
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 3
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+
+
+
+
+
+Built tuple : size(39)
+	2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 194 (tomb_stones occupy 0)
+free space       = 820
+fragmented space = 0
+
+tuple_count      = 5
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (5)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 2
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 3
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 4
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+
+
+
+
+
+Built tuple : size(29)
+	5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 225 (tomb_stones occupy 0)
+free space       = 789
+fragmented space = 0
+
+tuple_count      = 6
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (6)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 2
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 3
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 4
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 5
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+
+
+
+
+
+Built tuple : size(26)
+	17, [11]->"Adam", [16]->"First man"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 253 (tomb_stones occupy 0)
+free space       = 761
+fragmented space = 0
+
+tuple_count      = 7
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (7)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 2
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 3
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 4
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 5
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 6
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+
+
+
+
+
+Built tuple : size(27)
+	10, [11]->"Eve", [15]->"First woman"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 282 (tomb_stones occupy 0)
+free space       = 732
+fragmented space = 0
+
+tuple_count      = 8
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (8)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 2
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 3
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 4
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 5
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 6
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 7
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+
+
+
+
+
+Built tuple : size(40)
+	10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 324 (tomb_stones occupy 0)
+free space       = 690
+fragmented space = 0
+
+tuple_count      = 9
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (9)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 2
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 3
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 4
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 5
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 6
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 7
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 8
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+
+
+
+
+
+Built tuple : size(44)
+	17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 370 (tomb_stones occupy 0)
+free space       = 644
+fragmented space = 0
+
+tuple_count      = 10
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (10)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 2
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 3
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 4
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 5
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 6
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 7
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 8
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 9
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+
+
+
+
+
+Built tuple : size(38)
+	5, [11]->"Rohan", [17]->"created this project"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 410 (tomb_stones occupy 0)
+free space       = 604
+fragmented space = 0
+
+tuple_count      = 11
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (11)
+		tuple 0
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 1
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 2
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 3
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 4
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 5
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 6
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 7
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 8
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 9
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 10
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+
+
+
+
+
+Built tuple : size(36)
+	2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 448 (tomb_stones occupy 0)
+free space       = 566
+fragmented space = 0
+
+tuple_count      = 12
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (12)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 9
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 10
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 11
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+
+
+
+
+
+Built tuple : size(30)
+	6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 480 (tomb_stones occupy 0)
+free space       = 534
+fragmented space = 0
+
+tuple_count      = 13
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (13)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 10
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 11
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 12
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+
+
+
+
+
+Built tuple : size(37)
+	23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 519 (tomb_stones occupy 0)
+free space       = 495
+fragmented space = 0
+
+tuple_count      = 14
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (14)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 10
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 11
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 12
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 13
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+
+
+
+
+
+Built tuple : size(33)
+	11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 554 (tomb_stones occupy 0)
+free space       = 460
+fragmented space = 0
+
+tuple_count      = 15
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (15)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 10
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 11
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 12
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 13
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 14
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+
+
+
+
+
+Built tuple : size(41)
+	6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 597 (tomb_stones occupy 0)
+free space       = 417
+fragmented space = 0
+
+tuple_count      = 16
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (16)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 10
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 14
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 15
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+
+
+
+
+
+Built tuple : size(35)
+	14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 634 (tomb_stones occupy 0)
+free space       = 380
+fragmented space = 0
+
+tuple_count      = 17
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (17)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 10
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 14
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 15
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 16
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+
+
+
+
+
+Built tuple : size(45)
+	14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 681 (tomb_stones occupy 0)
+free space       = 333
+fragmented space = 0
+
+tuple_count      = 18
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (18)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 10
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 14
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 15
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 16
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 17
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+
+
+
+
+
+Built tuple : size(42)
+	11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 725 (tomb_stones occupy 0)
+free space       = 289
+fragmented space = 0
+
+tuple_count      = 19
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (19)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 10
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[337] size(42) :: 11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+		tuple 14
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 15
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 16
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 17
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 18
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+
+
+
+
+
+Built tuple : size(33)
+	23, [11]->"Jumbo", [17]->"eats dried nuts"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 760 (tomb_stones occupy 0)
+free space       = 254
+fragmented space = 0
+
+tuple_count      = 20
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (20)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 10
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[337] size(42) :: 11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+		tuple 14
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 15
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 16
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 17
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 18
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+		tuple 19
+			offset[304] size(33) :: 23, [11]->"Jumbo", [17]->"eats dried nuts"
+
+
+
+
+
+
+
+Built tuple : size(34)
+	14, [11]->"Sai", [15]->"eats green veggies"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 796 (tomb_stones occupy 0)
+free space       = 218
+fragmented space = 0
+
+tuple_count      = 21
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (21)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 10
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[337] size(42) :: 11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+		tuple 14
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 15
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 16
+			offset[270] size(34) :: 14, [11]->"Sai", [15]->"eats green veggies"
+
+
+		tuple 17
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 18
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 19
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+		tuple 20
+			offset[304] size(33) :: 23, [11]->"Jumbo", [17]->"eats dried nuts"
+
+
+
+
+
+
+
+Built tuple : size(34)
+	11, [11]->"Vipul", [17]->"has adam's apple"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 832 (tomb_stones occupy 0)
+free space       = 182
+fragmented space = 0
+
+tuple_count      = 22
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (22)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 10
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[337] size(42) :: 11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+		tuple 14
+			offset[236] size(34) :: 11, [11]->"Vipul", [17]->"has adam's apple"
+
+
+		tuple 15
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 16
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 17
+			offset[270] size(34) :: 14, [11]->"Sai", [15]->"eats green veggies"
+
+
+		tuple 18
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 19
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 20
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+		tuple 21
+			offset[304] size(33) :: 23, [11]->"Jumbo", [17]->"eats dried nuts"
+
+
+
+
+
+
+
+Built tuple : size(59)
+	20, [11]->"Mithu", [17]->"means sweet and can be anyone's nick name"
+
+
+Insert : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 893 (tomb_stones occupy 0)
+free space       = 121
+fragmented space = 0
+
+tuple_count      = 23
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (23)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 4
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 9
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 10
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[337] size(42) :: 11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+		tuple 14
+			offset[236] size(34) :: 11, [11]->"Vipul", [17]->"has adam's apple"
+
+
+		tuple 15
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 16
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 17
+			offset[270] size(34) :: 14, [11]->"Sai", [15]->"eats green veggies"
+
+
+		tuple 18
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 19
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 20
+			offset[177] size(59) :: 20, [11]->"Mithu", [17]->"means sweet and can be anyone's nick name"
+
+
+		tuple 21
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+		tuple 22
+			offset[304] size(33) :: 23, [11]->"Jumbo", [17]->"eats dried nuts"
+
+
+
+
+
+
+
+---------------------------------------------------
+
+finding 0 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = NO_TUPLE_FOUND
+PRECEDING EQUALS = NO_TUPLE_FOUND
+
+SUCCEEDING EQUALS = 0
+SUCCEEDING = 0
+
+
+---------------------------------------------------
+
+finding 1 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = NO_TUPLE_FOUND
+PRECEDING EQUALS = NO_TUPLE_FOUND
+
+SUCCEEDING EQUALS = 0
+SUCCEEDING = 0
+
+
+---------------------------------------------------
+
+finding 2 -> 
+
+FIND FIRST = 0
+FIND LAST = 3
+
+PRECEDING = NO_TUPLE_FOUND
+PRECEDING EQUALS = 3
+
+SUCCEEDING EQUALS = 0
+SUCCEEDING = 4
+
+
+---------------------------------------------------
+
+finding 3 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 3
+PRECEDING EQUALS = 3
+
+SUCCEEDING EQUALS = 4
+SUCCEEDING = 4
+
+
+---------------------------------------------------
+
+finding 4 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 3
+PRECEDING EQUALS = 3
+
+SUCCEEDING EQUALS = 4
+SUCCEEDING = 4
+
+
+---------------------------------------------------
+
+finding 5 -> 
+
+FIND FIRST = 4
+FIND LAST = 7
+
+PRECEDING = 3
+PRECEDING EQUALS = 7
+
+SUCCEEDING EQUALS = 4
+SUCCEEDING = 8
+
+
+---------------------------------------------------
+
+finding 6 -> 
+
+FIND FIRST = 8
+FIND LAST = 9
+
+PRECEDING = 7
+PRECEDING EQUALS = 9
+
+SUCCEEDING EQUALS = 8
+SUCCEEDING = 10
+
+
+---------------------------------------------------
+
+finding 7 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 9
+PRECEDING EQUALS = 9
+
+SUCCEEDING EQUALS = 10
+SUCCEEDING = 10
+
+
+---------------------------------------------------
+
+finding 8 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 9
+PRECEDING EQUALS = 9
+
+SUCCEEDING EQUALS = 10
+SUCCEEDING = 10
+
+
+---------------------------------------------------
+
+finding 9 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 9
+PRECEDING EQUALS = 9
+
+SUCCEEDING EQUALS = 10
+SUCCEEDING = 10
+
+
+---------------------------------------------------
+
+finding 10 -> 
+
+FIND FIRST = 10
+FIND LAST = 11
+
+PRECEDING = 9
+PRECEDING EQUALS = 11
+
+SUCCEEDING EQUALS = 10
+SUCCEEDING = 12
+
+
+---------------------------------------------------
+
+finding 11 -> 
+
+FIND FIRST = 12
+FIND LAST = 14
+
+PRECEDING = 11
+PRECEDING EQUALS = 14
+
+SUCCEEDING EQUALS = 12
+SUCCEEDING = 15
+
+
+---------------------------------------------------
+
+finding 12 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 14
+PRECEDING EQUALS = 14
+
+SUCCEEDING EQUALS = 15
+SUCCEEDING = 15
+
+
+---------------------------------------------------
+
+finding 13 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 14
+PRECEDING EQUALS = 14
+
+SUCCEEDING EQUALS = 15
+SUCCEEDING = 15
+
+
+---------------------------------------------------
+
+finding 14 -> 
+
+FIND FIRST = 15
+FIND LAST = 17
+
+PRECEDING = 14
+PRECEDING EQUALS = 17
+
+SUCCEEDING EQUALS = 15
+SUCCEEDING = 18
+
+
+---------------------------------------------------
+
+finding 15 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 17
+PRECEDING EQUALS = 17
+
+SUCCEEDING EQUALS = 18
+SUCCEEDING = 18
+
+
+---------------------------------------------------
+
+finding 16 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 17
+PRECEDING EQUALS = 17
+
+SUCCEEDING EQUALS = 18
+SUCCEEDING = 18
+
+
+---------------------------------------------------
+
+finding 17 -> 
+
+FIND FIRST = 18
+FIND LAST = 19
+
+PRECEDING = 17
+PRECEDING EQUALS = 19
+
+SUCCEEDING EQUALS = 18
+SUCCEEDING = 20
+
+
+---------------------------------------------------
+
+finding 18 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 19
+PRECEDING EQUALS = 19
+
+SUCCEEDING EQUALS = 20
+SUCCEEDING = 20
+
+
+---------------------------------------------------
+
+finding 19 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 19
+PRECEDING EQUALS = 19
+
+SUCCEEDING EQUALS = 20
+SUCCEEDING = 20
+
+
+---------------------------------------------------
+
+finding 20 -> 
+
+FIND FIRST = 20
+FIND LAST = 20
+
+PRECEDING = 19
+PRECEDING EQUALS = 20
+
+SUCCEEDING EQUALS = 20
+SUCCEEDING = 21
+
+
+---------------------------------------------------
+
+finding 21 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 20
+PRECEDING EQUALS = 20
+
+SUCCEEDING EQUALS = 21
+SUCCEEDING = 21
+
+
+---------------------------------------------------
+
+finding 22 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 20
+PRECEDING EQUALS = 20
+
+SUCCEEDING EQUALS = 21
+SUCCEEDING = 21
+
+
+---------------------------------------------------
+
+finding 23 -> 
+
+FIND FIRST = 21
+FIND LAST = 22
+
+PRECEDING = 20
+PRECEDING EQUALS = 22
+
+SUCCEEDING EQUALS = 21
+SUCCEEDING = NO_TUPLE_FOUND
+
+
+---------------------------------------------------
+
+finding 24 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 22
+PRECEDING EQUALS = 22
+
+SUCCEEDING EQUALS = NO_TUPLE_FOUND
+SUCCEEDING = NO_TUPLE_FOUND
+
+
+---------------------------------------------------
+
+finding 25 -> 
+
+FIND FIRST = NO_TUPLE_FOUND
+FIND LAST = NO_TUPLE_FOUND
+
+PRECEDING = 22
+PRECEDING EQUALS = 22
+
+SUCCEEDING EQUALS = NO_TUPLE_FOUND
+SUCCEEDING = NO_TUPLE_FOUND
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 893 (tomb_stones occupy 0)
+free space       = 121
+fragmented space = 0
+
+tuple_count      = 23
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (23)
+		tuple 0
+			offset[304] size(33) :: 23, [11]->"Jumbo", [17]->"eats dried nuts"
+
+
+		tuple 1
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+		tuple 2
+			offset[177] size(59) :: 20, [11]->"Mithu", [17]->"means sweet and can be anyone's nick name"
+
+
+		tuple 3
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 4
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 5
+			offset[270] size(34) :: 14, [11]->"Sai", [15]->"eats green veggies"
+
+
+		tuple 6
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 7
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 8
+			offset[236] size(34) :: 11, [11]->"Vipul", [17]->"has adam's apple"
+
+
+		tuple 9
+			offset[337] size(42) :: 11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+		tuple 10
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 11
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 12
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 13
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 14
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 15
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 16
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 17
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 18
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 19
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 20
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 21
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 22
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+
+
+
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 893 (tomb_stones occupy 0)
+free space       = 121
+fragmented space = 0
+
+tuple_count      = 23
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (23)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 4
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 9
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 10
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 11
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[236] size(34) :: 11, [11]->"Vipul", [17]->"has adam's apple"
+
+
+		tuple 14
+			offset[337] size(42) :: 11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+		tuple 15
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 16
+			offset[270] size(34) :: 14, [11]->"Sai", [15]->"eats green veggies"
+
+
+		tuple 17
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 18
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 19
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 20
+			offset[177] size(59) :: 20, [11]->"Mithu", [17]->"means sweet and can be anyone's nick name"
+
+
+		tuple 21
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+		tuple 22
+			offset[304] size(33) :: 23, [11]->"Jumbo", [17]->"eats dried nuts"
+
+
+
+
+
+
+
+Built tuple : size(30)
+	16, [11]->"insert_at", [21]->"failed 1"
+
+
+Insert_at : 0
+
+
+Built tuple : size(30)
+	21, [11]->"insert_at", [21]->"failed 2"
+
+
+Insert_at : 0
+
+
+Built tuple : size(29)
+	20, [11]->"Ainsert_at", [22]->"passed"
+
+
+Insert_at : 1
+
+
+PAGE : 
+space allotted   = 1014
+space occupied   = 924 (tomb_stones occupy 0)
+free space       = 90
+fragmented space = 0
+
+tuple_count      = 24
+tomb_stone_count = 0
+
+SLOTTED PAGE :
+
+	Tuples :: (24)
+		tuple 0
+			offset[600] size(36) :: 2, [11]->"Devashre", [20]->"sister of Rohan"
+
+
+		tuple 1
+			offset[840] size(39) :: 2, [11]->"Devashree", [21]->"Daughter of Vipul"
+
+
+		tuple 2
+			offset[879] size(35) :: 2, [11]->"Devashree", [21]->"Wife of Manan"
+
+
+		tuple 3
+			offset[914] size(38) :: 2, [11]->"Devashree", [21]->"Daughter of Rupa"
+
+
+		tuple 4
+			offset[636] size(38) :: 5, [11]->"Rohan", [17]->"created this project"
+
+
+		tuple 5
+			offset[811] size(29) :: 5, [11]->"Rohan", [17]->"Son of Rupa"
+
+
+		tuple 6
+			offset[994] size(30) :: 5, [11]->"Rohan", [17]->"Son of Vipul"
+
+
+		tuple 7
+			offset[952] size(42) :: 5, [11]->"Zohan", [17]->"YOU DONT MESS WITH ZOHAN"
+
+
+		tuple 8
+			offset[459] size(41) :: 6, [11]->"Rupa", [16]->"can also be called Roopa"
+
+
+		tuple 9
+			offset[570] size(30) :: 6, [11]->"Rupa", [16]->"wife of Vipul"
+
+
+		tuple 10
+			offset[718] size(40) :: 10, [11]->"Eve", [15]->"exclaimed Eeeewwwweeehhh"
+
+
+		tuple 11
+			offset[758] size(27) :: 10, [11]->"Eve", [15]->"First woman"
+
+
+		tuple 12
+			offset[500] size(33) :: 11, [11]->"Vipul", [17]->"husband of Rupa"
+
+
+		tuple 13
+			offset[236] size(34) :: 11, [11]->"Vipul", [17]->"has adam's apple"
+
+
+		tuple 14
+			offset[337] size(42) :: 11, [11]->"Vipul", [17]->"can also be called Milan"
+
+
+		tuple 15
+			offset[424] size(35) :: 14, [11]->"Sai", [15]->"not just a tortoise"
+
+
+		tuple 16
+			offset[270] size(34) :: 14, [11]->"Sai", [15]->"eats green veggies"
+
+
+		tuple 17
+			offset[379] size(45) :: 14, [11]->"Sai", [15]->"species: Indian Star Tortoise"
+
+
+		tuple 18
+			offset[785] size(26) :: 17, [11]->"Adam", [16]->"First man"
+
+
+		tuple 19
+			offset[674] size(44) :: 17, [11]->"Adam", [16]->"exclaimed OOOOOOooooohhhhhh"
+
+
+		tuple 20
+			offset[148] size(29) :: 20, [11]->"Ainsert_at", [22]->"passed"
+
+
+		tuple 21
+			offset[177] size(59) :: 20, [11]->"Mithu", [17]->"means sweet and can be anyone's nick name"
+
+
+		tuple 22
+			offset[533] size(37) :: 23, [11]->"Jumbo", [17]->"not just a squirrel"
+
+
+		tuple 23
+			offset[304] size(33) :: 23, [11]->"Jumbo", [17]->"eats dried nuts"
+
+
+
+
+
+
+
