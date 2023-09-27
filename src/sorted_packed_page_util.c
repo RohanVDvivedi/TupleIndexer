@@ -240,12 +240,7 @@ int delete_in_sorted_packed_page(
 									uint32_t index
 								)
 {
-	if(!delete_tuple(page, page_size, tpl_def, index))
-		return 0;
-
-	run_page_compaction(page, page_size, tpl_def, 1, 0);
-
-	return 1;
+	return discard_tuple_on_page(page, page_size, &(tpl_def->size_def), index);
 }
 
 int delete_all_in_sorted_packed_page(
