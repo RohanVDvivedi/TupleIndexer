@@ -360,7 +360,13 @@ uint32_t find_first_in_sorted_packed_page(
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
-	return binary_search_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), FIRST_OCCURENCE);
+	cy_uint result = binary_search_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), FIRST_OCCURENCE);
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
 }
 
 uint32_t find_last_in_sorted_packed_page(
@@ -379,7 +385,13 @@ uint32_t find_last_in_sorted_packed_page(
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
-	return binary_search_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), LAST_OCCURENCE);
+	cy_uint result = binary_search_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), LAST_OCCURENCE);
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
 }
 
 uint32_t find_preceding_in_sorted_packed_page(
@@ -398,7 +410,13 @@ uint32_t find_preceding_in_sorted_packed_page(
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
-	return find_preceding_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+	cy_uint result = find_preceding_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
 }
 
 uint32_t find_preceding_equals_in_sorted_packed_page(
@@ -417,7 +435,13 @@ uint32_t find_preceding_equals_in_sorted_packed_page(
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
-	return find_preceding_or_equals_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+	cy_uint result = find_preceding_or_equals_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
 }
 
 uint32_t find_succeeding_equals_in_sorted_packed_page(
@@ -436,7 +460,13 @@ uint32_t find_succeeding_equals_in_sorted_packed_page(
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
-	return find_succeeding_or_equals_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+	cy_uint result = find_succeeding_or_equals_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
 }
 
 uint32_t find_succeeding_in_sorted_packed_page(
@@ -455,7 +485,13 @@ uint32_t find_succeeding_in_sorted_packed_page(
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
-	return find_succeeding_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+	cy_uint result = find_succeeding_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
 }
 
 void reverse_sort_order_on_sorted_packed_page(
