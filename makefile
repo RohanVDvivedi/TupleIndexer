@@ -53,10 +53,8 @@ ${LIB_DIR} :
 	${MK} $@
 
 # generic rule to make a library
-#${OBJECTS} | ${LIB_DIR}
-${LIB_DIR}/${LIBRARY} : ./obj/sorted_packed_page_util.o | ${LIB_DIR}
-	${AR} $@ ./obj/sorted_packed_page_util.o
-#${AR} $@ ${OBJECTS}
+${LIB_DIR}/${LIBRARY} : ${OBJECTS} | ${LIB_DIR}
+	${AR} $@ ${OBJECTS}
 
 # rule to make the directory for storing binaries, that we create
 ${BIN_DIR} :
