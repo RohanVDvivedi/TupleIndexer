@@ -492,6 +492,16 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
 
+	// ----------------  DELETE SOME TUPLES
+
+	res = delete_all_in_sorted_packed_page(page, PAGE_SIZE, def, 18, 20);
+	printf("Delete 18 to 20 : %d\n\n\n", res);
+
+	// ----------------  PRINT PAGE
+
+	print_page(page, PAGE_SIZE, def);
+	printf("\n\n");
+
 	delete_tuple_def(def);
 	
 	return 0;
