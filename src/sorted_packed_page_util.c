@@ -27,6 +27,12 @@ struct tuple_on_page_compare_context
 	uint32_t keys_count;
 };
 
+int compare_tuples_using_comparator_context(const void* context, const void* tuple1, const void* tuple2)
+{
+	const tuple_on_page_compare_context* context_p = context;
+	return compare_tuples(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, tuple2, context_p->key_def, context_p->key_elements_to_compare, context_p->keys_count);
+}
+
 typedef struct tuple_accessed_page tuple_accessed_page;
 struct tuple_accessed_page
 {
@@ -39,6 +45,39 @@ struct tuple_accessed_page
 	// tuple_def to be used with the page
 	const tuple_def* tpl_def;
 };
+
+static const void* get_tuple_from_tuple_accessed_page(const void* ds_p, cy_uint index);
+{
+	const tuple_accessed_page* tap = ds_p;
+	return get_nth_tuple_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_d.size_def), index);
+}
+
+// set functionality will not be provided
+
+static int swap_tuples_in_tuple_accessed_page(void* ds_p, cy_uint i1, cy_uint i2)
+{
+	tuple_accessed_page* tap = ds_p;
+	return swap_tuples_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_d.size_def), i1, i2);
+}
+
+static cy_uint get_tuple_count_for_tuple_accessed_page(const void* ds_p)
+{
+	const tuple_accessed_page* tap = ds_p;
+	return get_tuple_count_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_d.size_def));
+}
+
+#define get_tuple_accessed_page(page, page_size, tpl_def) ((tuple_accessed_page){.page = page, .page_size = page_size, .tpl_def = tpl_def})
+
+index_accessed_interface get_index_accessed_interface_for_sorted_packed_page(tuple_accessed_page* tap_p)
+{
+	return (index_accessed_interface) {
+		.ds_p = tap_p,
+		.get_element = get_tuple_from_tuple_accessed_page,
+		.set_element = NULL, // set element functionality will not be provided
+		.swap_elements = swap_tuples_in_tuple_accessed_page,
+		.get_element_count = get_tuple_count_for_tuple_accessed_page
+	};
+}
 
 // ---------------- UTILTI CODE FOR SORTED PACKED PAGE -------------------------------------------------
 
