@@ -473,46 +473,20 @@ void reverse_sort_order_on_sorted_packed_page(
 }
 
 // on page quick sort algorithm
-static void sort_and_convert_to_sorted_packed_page_recursively(
-									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									uint32_t first, uint32_t last
-								)
-{
-	if(first >= last)
-		return;
-
-	const void* pivot = get_nth_tuple(page, page_size, tpl_def, last);
-
-	uint32_t j = first;
-	for(uint32_t i = first; i <= last; i++)
-	{
-		const void* ith_tuple = get_nth_tuple(page, page_size, tpl_def, i);
-		if(compare_tuples(ith_tuple, tpl_def, tuple_keys_to_compare, pivot, tpl_def, tuple_keys_to_compare, keys_count) <= 0)
-			swap_tuples(page, page_size, tpl_def, i, j++);
-	}
-
-	uint32_t pivot_index = j - 1;
-
-	if(pivot_index > first)
-		sort_and_convert_to_sorted_packed_page_recursively(page, page_size, tpl_def, tuple_keys_to_compare, keys_count, first, pivot_index - 1);
-	if(pivot_index < last)
-		sort_and_convert_to_sorted_packed_page_recursively(page, page_size, tpl_def, tuple_keys_to_compare, keys_count, pivot_index + 1, last);
-}
-
 void sort_and_convert_to_sorted_packed_page(
 									void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count
 								)
 {
-	// remove tomb stones of deleted tuples
-	run_page_compaction(page, page_size, tpl_def, 1, 0);
+	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
 
-	// if tuple count is lesser or equal to 1, then there is nothing to do
-	uint32_t count = get_tuple_count(page, page_size, tpl_def);
-	if(count <= 1)
+	// if the page is empty
+	if(tuple_count == 0)
 		return ;
 
-	// use quick sort to sort in place
-	sort_and_convert_to_sorted_packed_page_recursively(page, page_size, tpl_def, tuple_keys_to_compare, keys_count, 0, count - 1);
+	tuple_accessed_page tap = get_tuple_accessed_page(((void*)page), page_size, tpl_def);
+	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, tpl_def, tuple_keys_to_compare, keys_count);
+	index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
+
+	quick_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
 }
