@@ -46,24 +46,24 @@ struct tuple_accessed_page
 	const tuple_def* tpl_def;
 };
 
-static const void* get_tuple_from_tuple_accessed_page(const void* ds_p, cy_uint index);
+static const void* get_tuple_from_tuple_accessed_page(const void* ds_p, cy_uint index)
 {
-	const tuple_accessed_page* tap = ds_p;
-	return get_nth_tuple_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_d.size_def), index);
+	const tuple_accessed_page* tap_p = ds_p;
+	return get_nth_tuple_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_def->size_def), index);
 }
 
 // set functionality will not be provided
 
 static int swap_tuples_in_tuple_accessed_page(void* ds_p, cy_uint i1, cy_uint i2)
 {
-	tuple_accessed_page* tap = ds_p;
-	return swap_tuples_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_d.size_def), i1, i2);
+	tuple_accessed_page* tap_p = ds_p;
+	return swap_tuples_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_def->size_def), i1, i2);
 }
 
 static cy_uint get_tuple_count_for_tuple_accessed_page(const void* ds_p)
 {
-	const tuple_accessed_page* tap = ds_p;
-	return get_tuple_count_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_d.size_def));
+	const tuple_accessed_page* tap_p = ds_p;
+	return get_tuple_count_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_def->size_def));
 }
 
 #define get_tuple_accessed_page(page, page_size, tpl_def) ((tuple_accessed_page){.page = page, .page_size = page_size, .tpl_def = tpl_def})
@@ -91,14 +91,14 @@ static int insert_at_in_page(
 									uint32_t index
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, tpl_def);
+	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
 
 	// if the index is not valid we fail the insertion
 	if( !(0 <= index && index <= tuple_count) )
 		return 0;
 
 	// insert tuple to the end of the page
-	if(!append_tuple_on_page(page, page_size, tpl_def, tuple))
+	if(!append_tuple_on_page(page, page_size, &(tpl_def->size_def), tuple))
 		return 0;
 
 	// insert succeedded, so tuple_count incremented
@@ -109,7 +109,10 @@ static int insert_at_in_page(
 
 	// swap until the new tuple is not at index
 	while(index != curr_index)
-		swap_tuples(page, page_size, tpl_def, --curr_index, curr_index);
+	{
+		swap_tuples_on_page(page, page_size, &(tpl_def->size_def), curr_index - 1, curr_index);
+		curr_index--;
+	}
 
 	return 1;
 }
