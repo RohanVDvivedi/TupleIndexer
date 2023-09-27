@@ -27,6 +27,8 @@ struct tuple_on_page_compare_context
 	uint32_t keys_count;
 };
 
+#define get_tuple_on_page_compare_context(tpl_def_v, tuple_keys_to_compare_v, key_def_v, key_elements_to_compare_v, keys_count_v) ((tuple_on_page_compare_context){.tpl_def = tpl_def_v, .tuple_keys_to_compare = tuple_keys_to_compare_v, .key_def = key_def_v, .key_elements_to_compare = key_elements_to_compare_v, .keys_count = keys_count_v})
+
 int compare_tuples_using_comparator_context(const void* context, const void* tuple1, const void* tuple2)
 {
 	const tuple_on_page_compare_context* context_p = context;
@@ -66,7 +68,7 @@ static cy_uint get_tuple_count_for_tuple_accessed_page(const void* ds_p)
 	return get_tuple_count_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_def->size_def));
 }
 
-#define get_tuple_accessed_page(page, page_size, tpl_def) ((tuple_accessed_page){.page = page, .page_size = page_size, .tpl_def = tpl_def})
+#define get_tuple_accessed_page(page_v, page_size_v, tpl_def_v) ((tuple_accessed_page){.page = page_v, .page_size = page_size_v, .tpl_def = tpl_def_v})
 
 index_accessed_interface get_index_accessed_interface_for_sorted_packed_page(tuple_accessed_page* tap_p)
 {
