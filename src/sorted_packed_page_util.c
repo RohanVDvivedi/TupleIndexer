@@ -6,7 +6,7 @@
 #include<index_accessed_interface.h>
 #include<index_accessed_search_sort.h>
 
-// ---------------- UTILTI CODE FOR SORTED PACKED PAGE -------------------------------------------------
+// ---------------- UTILTY CODE FOR SORTED PACKED PAGE BEGIN -------------------------------------------------
 
 typedef struct tuple_on_page_compare_context tuple_on_page_compare_context;
 struct tuple_on_page_compare_context
@@ -79,7 +79,7 @@ index_accessed_interface get_index_accessed_interface_for_sorted_packed_page(tup
 	};
 }
 
-// ---------------- UTILTI CODE FOR SORTED PACKED PAGE -------------------------------------------------
+// ---------------- UTILTY CODE FOR SORTED PACKED PAGE END ---------------------------------------------------
 
 // the 0 <= index <= tuple_count
 // internal function to insert a tuple at a specified index
@@ -91,14 +91,14 @@ static int insert_at_in_page(
 									uint32_t index
 								)
 {
-	uint32_t tuple_count = get_tuple_count(page, page_size, tpl_def);
+	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, tpl_def);
 
 	// if the index is not valid we fail the insertion
 	if( !(0 <= index && index <= tuple_count) )
 		return 0;
 
 	// insert tuple to the end of the page
-	if(!insert_tuple(page, page_size, tpl_def, tuple))
+	if(!append_tuple_on_page(page, page_size, tpl_def, tuple))
 		return 0;
 
 	// insert succeedded, so tuple_count incremented
@@ -109,10 +109,7 @@ static int insert_at_in_page(
 
 	// swap until the new tuple is not at index
 	while(index != curr_index)
-	{
-		swap_tuples(page, page_size, tpl_def, curr_index - 1, curr_index);
-		curr_index--;
-	}
+		swap_tuples(page, page_size, tpl_def, --curr_index, curr_index);
 
 	return 1;
 }
