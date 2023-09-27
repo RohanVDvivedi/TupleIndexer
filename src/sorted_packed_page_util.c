@@ -179,7 +179,7 @@ int update_resiliently_at_in_sorted_packed_page(
 									uint32_t index
 								)
 {
-	uint32_t tuple_count = get_tuple_count(page, page_size, tpl_def);
+	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
 
 	// if the index is not valid we fail the update
 	if( !(0 <= index && index < tuple_count) )
@@ -190,7 +190,7 @@ int update_resiliently_at_in_sorted_packed_page(
 	// the tuple compares greater than the tuple at (index + 1), we fail
 	if(tuple_count > 0 && index != tuple_count - 1)
 	{
-		const void* i_1_th_tuple = get_nth_tuple(page, page_size, tpl_def, index + 1);
+		const void* i_1_th_tuple = get_nth_tuple_on_page(page, page_size, &(tpl_def->size_def), index + 1);
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, keys_count) > 0)
 			return 0;
 	}
@@ -198,12 +198,12 @@ int update_resiliently_at_in_sorted_packed_page(
 	// the tuple compares lesser than the tuple at (index - 1), we fail
 	if(tuple_count > 0 && index > 0)
 	{
-		const void* i_1_th_tuple = get_nth_tuple(page, page_size, tpl_def, index - 1);
+		const void* i_1_th_tuple = get_nth_tuple_on_page(page, page_size, &(tpl_def->size_def), index - 1);
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, keys_count) < 0)
 			return 0;
 	}
 
-	int update_successfull = update_tuple(page, page_size, tpl_def, index, tuple);
+	int update_successfull = update_tuple_on_page(page, page_size, &(tpl_def->size_def), index, tuple);
 
 	// if simple update was successfull (without defragmenting and discarding tombstones)
 	if(update_successfull)
@@ -211,24 +211,24 @@ int update_resiliently_at_in_sorted_packed_page(
 
 	// get free space on page after it gets defragmented
 	// here we assume that the page passed to this functions has no tombstones as should be the case with sorted_packed_page
-	uint32_t free_space_after_defragmentation = get_free_space(page, page_size, tpl_def) + get_fragmentation_space(page, page_size, tpl_def);
+	uint32_t free_space_after_defragmentation = get_free_space_on_page(page, page_size, &(tpl_def->size_def)) + get_fragmentation_space_on_page(page, page_size, &(tpl_def->size_def));
 
 	// get size of existing tuple (at index = index)
-	const void* existing_tuple = get_nth_tuple(page, page_size, tpl_def, index);
+	const void* existing_tuple = get_nth_tuple_on_page(page, page_size, &(tpl_def->size_def), index);
 	uint32_t existing_tuple_size = get_tuple_size(tpl_def, existing_tuple);
 
 	// if discarding the existing tuple can make enough room for the new tuple then
 	if(free_space_after_defragmentation + existing_tuple_size >= get_tuple_size(tpl_def, tuple))
 	{
-		// delete the old tuple at the index
-		delete_tuple(page, page_size, tpl_def, index);
+		// place tomb_stone for the old tuple at the index
+		update_tuple_on_page(page, page_size, &(tpl_def->size_def), index, NULL);
 
-		// defragment the page (do not discard the tomb stone of the tuple we just deleted above)
-		run_page_compaction(page, page_size, tpl_def, 0, 1);
+		// defragment the page
+		run_page_compaction(page, page_size, &(tpl_def->size_def));
 
 		// then at the end attempt to update the tuple again
 		// this time it must succeed
-		update_successfull = update_tuple(page, page_size, tpl_def, index, tuple);
+		update_successfull = update_tuple_on_page(page, page_size, &(tpl_def->size_def), index, tuple);
 	}
 
 	return update_successfull;
