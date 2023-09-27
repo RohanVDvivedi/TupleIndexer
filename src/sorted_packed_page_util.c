@@ -246,18 +246,18 @@ int delete_in_sorted_packed_page(
 int delete_all_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, 
-									uint32_t start_index, uint32_t end_index
+									uint32_t start_index, uint32_t last_index
 								)
 {
 	uint32_t count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
-	if(count == 0 || start_index > end_index || end_index >= count)
+	if(count == 0 || start_index > last_index || last_index >= count)
 		return 0;
 
 	// if the user wants to discard all tuple, do it quickly using
-	if(start_index == 0 && end_index == count - 1)
+	if(start_index == 0 && last_index == count - 1)
 		return discard_all_tuples_on_page(page, page_size, &(tpl_def->size_def));
 
-	for(uint32_t i = start_index; i <= end_index; i++)
+	for(uint32_t i = start_index; i <= last_index; i++)
 		discard_tuple_on_page(page, page_size, &(tpl_def->size_def), start_index); // a discarded tuple does not leave a slot, hence always discarding at start_index
 
 	return 1;
@@ -285,17 +285,17 @@ static uint32_t append_tuples_from_page(void* page_dest, uint32_t page_size, con
 uint32_t insert_all_from_sorted_packed_page(
 									void* page_dest, const void* page_src, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									uint32_t start_index, uint32_t end_index
+									uint32_t start_index, uint32_t last_index
 								)
 {
 	uint32_t src_count = get_tuple_count_on_page(page_src, page_size, &(tpl_def->size_def));
-	if(src_count == 0 || start_index > end_index || end_index >= src_count)
+	if(src_count == 0 || start_index > last_index || last_index >= src_count)
 		return 0;
 
 	// if the dest page is empty, insert all no comparisons needed
 	uint32_t dest_count = get_tuple_count_on_page(page_dest, page_size, &(tpl_def->size_def));
 	if(dest_count == 0)
-		return append_tuples_from_page(page_dest, page_size, &(tpl_def->size_def), page_src, start_index, end_index);
+		return append_tuples_from_page(page_dest, page_size, &(tpl_def->size_def), page_src, start_index, last_index);
 
 	// compare the last tuple of the dest page and first tuple of the src page
 	const void* last_tuple_dest = get_nth_tuple_on_page(page_dest, page_size, &(tpl_def->size_def), dest_count - 1);
@@ -304,12 +304,12 @@ uint32_t insert_all_from_sorted_packed_page(
 	// if they are in order then perform a direct copy
 	int compare_last_first = compare_tuples(last_tuple_dest, tpl_def, tuple_keys_to_compare, first_tuple_src, tpl_def, tuple_keys_to_compare, keys_count);
 	if(compare_last_first <= 0)
-		return append_tuples_from_page(page_dest, page_size, &(tpl_def->size_def), page_src, start_index, end_index);
+		return append_tuples_from_page(page_dest, page_size, &(tpl_def->size_def), page_src, start_index, last_index);
 
 	uint32_t inserted_count = 0;
 
-	// insert using stupstom api from start_index to end_index
-	for(uint32_t index = start_index; index <= end_index; index++)
+	// insert one by one from start_index to last_index
+	for(uint32_t index = start_index; index <= last_index; index++)
 	{
 		const void* tup = get_nth_tuple_on_page(page_src, page_size, &(tpl_def->size_def), index);
 		if(tup == NULL)

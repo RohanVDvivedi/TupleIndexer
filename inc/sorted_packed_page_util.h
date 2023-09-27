@@ -56,20 +56,20 @@ int delete_in_sorted_packed_page(
 									uint32_t index
 								);
 
-// insert n tuples from src page to dest page
+// insert n number of tuples [start_index, last_index] (both inclusive) from src page to dest page
 // returns the number of tuples inserted
 uint32_t insert_all_from_sorted_packed_page(
 									void* page_dest, const void* page_src, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									uint32_t start_index, uint32_t end_index
+									uint32_t start_index, uint32_t last_index
 								);
 
-// delete all tuples between index range [start_index, end_index] included
+// delete all tuples between index range [start_index, last_index] included
 // returns 1, if the tuple was deleted
 int delete_all_in_sorted_packed_page(
 									void* page, uint32_t page_size, 
 									const tuple_def* tpl_def, 
-									uint32_t start_index, uint32_t end_index
+									uint32_t start_index, uint32_t last_index
 								);
 
 #define NO_TUPLE_FOUND (~((uint32_t)0))
