@@ -463,13 +463,13 @@ void reverse_sort_order_on_sorted_packed_page(
 									const tuple_def* tpl_def
 								)
 {
-	uint32_t count = get_tuple_count(page, page_size, tpl_def);
+	uint32_t count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
 	if(count == 0)
 		return ;
 
 	// swap first and last tuples iteratively
 	for(uint32_t i = 0; i < count / 2; i++)
-		swap_tuples(page, page_size, tpl_def, i, count - 1 - i);
+		swap_tuples_on_page(page, page_size, &(tpl_def->size_def), i, count - 1 - i);
 }
 
 // on page quick sort algorithm
