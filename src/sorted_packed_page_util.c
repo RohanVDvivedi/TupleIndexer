@@ -3,6 +3,45 @@
 #include<tuple.h>
 #include<page_layout.h>
 
+#include<index_accessed_interface.h>
+#include<index_accessed_search_sort.h>
+
+// ---------------- UTILTI CODE FOR SORTED PACKED PAGE -------------------------------------------------
+
+typedef struct tuple_on_page_compare_context tuple_on_page_compare_context;
+struct tuple_on_page_compare_context
+{
+	// tuple_def for all tuples to be compared that are on the page
+	const tuple_def* tpl_def;
+
+	// keys of the tuple on the page to compare on
+	const uint32_t* tuple_keys_to_compare;
+
+	// tuple_def for the 2nd parameter of the comparator, this must equal tpl_def when not in use
+	const tuple_def* key_def;
+
+	// keys of the key tuple, this must equal tuple_keys_to_compare when not in use
+	const uint32_t* key_elements_to_compare;
+
+	// number of elements in tuple_keys_to_compare and key_elements_to_compare
+	uint32_t keys_count;
+};
+
+typedef struct tuple_accessed_page tuple_accessed_page;
+struct tuple_accessed_page
+{
+	// the actual page pointer
+	void* page;
+
+	// the size of the page
+	uint32_t page_size;
+
+	// tuple_def to be used with the page
+	const tuple_def* tpl_def;
+};
+
+// ---------------- UTILTI CODE FOR SORTED PACKED PAGE -------------------------------------------------
+
 // the 0 <= index <= tuple_count
 // internal function to insert a tuple at a specified index
 // this function does not check that the sort order is maintained
