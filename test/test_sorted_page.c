@@ -16,13 +16,35 @@ char page[PAGE_SIZE] = {};
 tuple_def* get_tuple_definition()
 {
 	// initialize tuple definition and insert element definitions
-	tuple_def* def = get_new_tuple_def("my_table", 3);
+	tuple_def* def = get_new_tuple_def("my_table", 3, PAGE_SIZE);
 
-	insert_element_def(def, "key_1", INT, 4, 0, NULL);
-	insert_element_def(def, "key_2", VAR_STRING, 1, 0, NULL);
-	insert_element_def(def, "val", VAR_STRING, 1, 0, NULL);
+	int res = 0;
 
-	finalize_tuple_def(def, PAGE_SIZE);
+	res = insert_element_def(def, "key_1", INT, 4, 0, NULL);
+	if(!res)
+	{
+		printf("failed to insert element def key_1\n");
+		exit(-1);
+	}
+	res = insert_element_def(def, "key_2", VAR_STRING, 1, 0, NULL);
+	if(!res)
+	{
+		printf("failed to insert element def key_2\n");
+		exit(-1);
+	}
+	res = insert_element_def(def, "val", VAR_STRING, 1, 0, NULL);
+	if(!res)
+	{
+		printf("failed to insert element def val\n");
+		exit(-1);
+	}
+
+	res = finalize_tuple_def(def);
+	if(!res)
+	{
+		printf("failed to finalize tuple def");
+		exit(-1);
+	}
 
 	if(is_empty_tuple_def(def))
 	{
@@ -76,7 +98,7 @@ int main()
 
 	// ---------------  INITIALIZE PAGE
 
-	if(!init_page(page, PAGE_SIZE, 0, def))
+	if(!init_page(page, PAGE_SIZE, 0, &(def->size_def)))
 	{
 		printf("ERROR INITIALIZING THE PAGE\n");
 		exit(-1);
@@ -361,9 +383,19 @@ int main()
 	// ----------------  TEST ALL FIND FUNCTIONS
 
 	// intialize single integer key definition
-	tuple_def* key_def = get_new_tuple_def("my_table", 1);
-	insert_element_def(key_def, "key_1", INT, 4, 0, ZERO_USER_VALUE);
-	finalize_tuple_def(key_def, PAGE_SIZE);
+	tuple_def* key_def = get_new_tuple_def("my_table", 1, PAGE_SIZE);
+	res = insert_element_def(key_def, "key_1", INT, 4, 0, ZERO_USER_VALUE);
+	if(!res)
+	{
+		printf("failed to insert element def key_1\n");
+		exit(-1);
+	}
+	res = finalize_tuple_def(key_def);
+	if(!res)
+	{
+		printf("failed to finalize tuple def");
+		exit(-1);
+	}
 
 	for(int32_t i = 0; i <= 25; i++)
 	{
