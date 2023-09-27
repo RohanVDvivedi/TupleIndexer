@@ -253,6 +253,10 @@ int delete_all_in_sorted_packed_page(
 	if(count == 0 || start_index > end_index || end_index >= count)
 		return 0;
 
+	// if the user wants to discard all tuple, do it quickly using
+	if(start_index == 0 && end_index == count - 1)
+		return discard_all_tuples_on_page(page, page_size, &(tpl_def->size_def));
+
 	for(uint32_t i = start_index; i <= end_index; i++)
 		discard_tuple_on_page(page, page_size, &(tpl_def->size_def), start_index); // a discarded tuple does not leave a slot, hence always discarding at start_index
 
