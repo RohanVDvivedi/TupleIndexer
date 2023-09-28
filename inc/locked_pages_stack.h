@@ -1,6 +1,8 @@
 #ifndef LOCKED_PAGES_STACK_H
 #define LOCKED_PAGES_STACK_H
 
+#include<stdint.h>
+
 typedef struct locked_page_info locked_page_info;
 struct locked_page_info
 {
