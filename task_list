@@ -1,5 +1,4 @@
 ** PICKED TASKS
- * make child_page_id non nullable, to save 1 bit of memory
  * implement locked_pages_stack using value_arraylist
  * refactor and change data_access_methods to page_access_methods
  * pass persistent_page around instead
