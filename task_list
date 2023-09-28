@@ -3,7 +3,7 @@
  * make child_page_id non nullable, to save 1 bit of memory
  * implement locked_pages_stack using value_arraylist
  * refactor and change data_access_methods to page_access_methods
- * build a struct persistent_page that holds page, page_id and page_size, and pass that around instead
+ * pass persistent_page around instead
  * make in_memory_data_store use rwlock
  * calculate precisely whether a tuple can be inserted into a bplus tree in bpttd
  * make page_access_methods and allow only modifying a page thtrough it
