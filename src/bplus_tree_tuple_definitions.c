@@ -76,7 +76,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t d
 
 	// initialize element_defs of the key_def
 	for(uint32_t i = 0; i < key_element_count && res == 1; i++)
-		res = insert_copy_of_element_def(bpttd_p->key_def, NULL, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+		res = res && insert_copy_of_element_def(bpttd_p->key_def, NULL, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
 	
 	// if any of the index element_definitions could not be inserted
 	if(!res)
@@ -174,8 +174,7 @@ uint32_t get_maximum_insertable_record_size(const bplus_tree_tuple_defs* bpttd_p
 	uint32_t min_index_record_tuple_count = 2;
 	uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 	uint32_t total_available_space_in_interior_page_per_min_tuple_count = total_available_space_in_interior_page / min_index_record_tuple_count;
-	uint32_t max_key_size_per_interior_page = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - bpttd_p->page_id_width - 1; 
-	// this 1 at the end is important believe me, it represents a spill over bit from storing the is_null bit for the child page pointer
+	uint32_t max_key_size_per_interior_page = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - bpttd_p->page_id_width; 
 
 	#define min(a,b) (((a)<(b))?(a):(b))
 	return  min(max_record_size_per_leaf_page, max_key_size_per_interior_page);
