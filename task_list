@@ -7,6 +7,9 @@
  * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
 
+ * make no accesses to data_access_methods in bplus_tree_leaf_page_util and bplus_tree_interior_page_util, hand them persistent_page to new page (for split) and free the merged page in the insert and delete functions
+ * implement must_split and can_merge functions with similar api to split and merge functions, and use them prior to test possibility for merge and split
+
  * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task of segregation
 
  * add a flag as a parameter "fail_on_duplicate_key", that decides to fail an insert if a record being inserted has a duplicate key, else allow duplicates
