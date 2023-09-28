@@ -3,6 +3,8 @@
 
 #include<tuple_def.h>
 
+// The below functions only read the page provided and must not and will not modify the page
+
 int is_page_lesser_than_half_full(const void* page, uint32_t page_size, const tuple_def* def);
 
 int is_page_lesser_than_or_equal_to_half_full(const void* page, uint32_t page_size, const tuple_def* def);
