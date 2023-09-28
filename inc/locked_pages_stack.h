@@ -2,15 +2,15 @@
 #define LOCKED_PAGES_STACK_H
 
 #include<stdint.h>
+#include<persistent_page.h>
+
+#include<value_arraylist.h>
 
 typedef struct locked_page_info locked_page_info;
 struct locked_page_info
 {
-	// page_id of the page
-	uint64_t page_id;
-
-	// pointer to the page
-	void* page;
+	// page_id of the page and pointer to the page
+	persistent_page ppage;
 
 	// only used if level > 0
 	// it signifies the direction that we took while traversing the bplus_tree through this interior node
@@ -20,23 +20,14 @@ struct locked_page_info
 // macro to initialize locked_page_info struct on stack
 #define INIT_LOCKED_PAGE_INFO(page_val, page_id_val) ((locked_page_info){.page_id = page_id_val, .page = page_val, .child_index = -1})
 
-typedef struct locked_pages_stack locked_pages_stack;
-struct locked_pages_stack
-{
-	uint32_t capacity;
-	uint32_t start_index;
-	uint32_t element_count;
-	locked_page_info locked_page_infos[];
-};
+data_definitions_value_arraylist(locked_pages_stack, locked_page_info)
 
-#define sizeof_locked_pages_stack(capacity) (sizeof(locked_pages_stack) + capacity * sizeof(locked_page_info))
+int initialize_locked_pages_stack(locked_pages_stack* lps, cy_uint capacity);
 
-locked_pages_stack* new_locked_pages_stack(uint32_t capacity);
-
-void delete_locked_pages_stack(locked_pages_stack* lps);
+void deinitialize_locked_pages_stack(locked_pages_stack* lps);
 
 // returns number of locked_page_info s inside the stack
-uint32_t get_element_count_locked_pages_stack(const locked_pages_stack* lps);
+cy_uint get_element_count_locked_pages_stack(const locked_pages_stack* lps);
 
 // pushes the locked_page_info to the locked_pages_stack
 int push_to_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi_p);
