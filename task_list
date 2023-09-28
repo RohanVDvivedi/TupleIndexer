@@ -1,12 +1,11 @@
 ** PICKED TASKS
  * implement locked_pages_stack using value_arraylist
- * refactor and change data_access_methods to page_access_methods
  * pass persistent_page around instead
  * make in_memory_data_store use rwlock
+ * make page_modification_methods and allow only modifying a page only through it
  * calculate precisely whether a tuple can be inserted into a bplus tree in bpttd
- * make page_access_methods and allow only modifying a page thtrough it
- * allow page_access_methods (with a context) to also enable locking only tuples on the page
- * allow transaction_context to be passed around and this is a input parameter to page_access_methods and page_modification_methods
+ * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods
+ * allow data_access_methods (with a context) to also enable locking only tuples on the page
 
 ** UTILITY AND REFACTORING
  * segregate insert and delete into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
@@ -29,7 +28,7 @@
 
 ** NECESSARY BUT DELAYED UNTIL ACTUAL REQUIREMENTS ARE FULFILLED
  * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
- * go through the project and implemnt better error handling for failures of malloc and data_access_methods (now page_access_methods)
+ * go through the project and implemnt better error handling for failures of malloc and data_access_methods
  * implement throwing errors appropriately, upon failures from dam_p
  * write multi threaded test cases to insert a large csv in to b+tree, measure performance difference
 
