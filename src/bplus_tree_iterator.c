@@ -23,7 +23,7 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(void* curr_page, uint64_t curr_
 	}
 
 	if(curr_tuple_index == LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE)
-		curr_tuple_index = get_tuple_count(curr_page, bpttd_p->page_size, bpttd_p->record_def) - 1;
+		curr_tuple_index = get_tuple_count_on_page(curr_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def)) - 1;
 
 	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
 	bpi_p->curr_page = curr_page;
@@ -42,7 +42,7 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 		return 0;
 
 	// increment the current tuple count, if the next tuple we point to will be on this page
-	if(bpi_p->curr_tuple_index + 1 < get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def))
+	if(bpi_p->curr_tuple_index + 1 < get_tuple_count_on_page(bpi_p->curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 	{
 		bpi_p->curr_tuple_index++;
 		return 1;
@@ -68,7 +68,7 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 		if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
 			break;
 
-		uint32_t curr_page_tuple_count = get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def);
+		uint32_t curr_page_tuple_count = get_tuple_count_on_page(bpi_p->curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
 		// or a valid page has atleast a tuple
 		if(curr_page_tuple_count > 0)
@@ -84,9 +84,9 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID || 
-		bpi_p->curr_tuple_index >= get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def))
+		bpi_p->curr_tuple_index >= get_tuple_count_on_page(bpi_p->curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 		return NULL;
-	return get_nth_tuple(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index);
+	return get_nth_tuple_on_page(bpi_p->curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def), bpi_p->curr_tuple_index);
 }
 
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
@@ -122,7 +122,7 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 		if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
 			break;
 
-		uint32_t curr_page_tuple_count = get_tuple_count(bpi_p->curr_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def);
+		uint32_t curr_page_tuple_count = get_tuple_count_on_page(bpi_p->curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
 		// or a valid page has atleast a tuple
 		if(curr_page_tuple_count > 0)
