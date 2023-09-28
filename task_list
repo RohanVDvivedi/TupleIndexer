@@ -1,22 +1,21 @@
 ** PICKED TASKS
- * implement locked_pages_stack using value_arraylist
- * pass persistent_page around instead, when both page and page_id are required parameters
- * make in_memory_data_store use rwlock
- * make page_modification_methods and allow only modifying a page only through it
  * calculate precisely whether a tuple can be inserted into a bplus tree in bpttd
    * project tuple on index_def and check its size
- * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods
+ * bplus_tree_leaf_page_util and bplus_tree_interior_page_util
+   * pass persistent_page around instead, when both page and page_id are required parameters
+   * make no accesses to data_access_methods in bplus_tree_leaf_page_util and bplus_tree_interior_page_util, hand them persistent_page to new page (for split) and free the merged page in the insert and delete functions
+   * implement must_split and can_merge functions with similar api to split and merge functions, and use them prior to test possibility for merge and split
+ * make in_memory_data_store use rwlock
+ * page_modification_methods
+   * make page_modification_methods and allow only modifying a page only through it, refactor the complete library to use page_layout_read_only.h instead of page_layout.h
+ * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
-
- * make no accesses to data_access_methods in bplus_tree_leaf_page_util and bplus_tree_interior_page_util, hand them persistent_page to new page (for split) and free the merged page in the insert and delete functions
- * implement must_split and can_merge functions with similar api to split and merge functions, and use them prior to test possibility for merge and split
-
- * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task of segregation
 
  * add a flag as a parameter "fail_on_duplicate_key", that decides to fail an insert if a record being inserted has a duplicate key, else allow duplicates
 
-** UTILITY AND REFACTORING
+** UTILITY
  * segregate insert and delete both into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
+ * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task of segregation
  * build stacked iterator using locked_pages_stack, this can be used to iterate over all the tuples in the b+tree including the interior page and also only index tuples
 
 ** UPDATE FUNCTIONALITY
