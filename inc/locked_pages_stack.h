@@ -18,7 +18,7 @@ struct locked_page_info
 };
 
 // macro to initialize locked_page_info struct on stack
-#define INIT_LOCKED_PAGE_INFO(page_val, page_id_val) ((locked_page_info){.page_id = page_id_val, .page = page_val, .child_index = -1})
+#define INIT_LOCKED_PAGE_INFO(page_val, page_id_val) ((locked_page_info){.ppage.page_id = page_id_val, .ppage.page = page_val, .child_index = -1})
 
 data_definitions_value_arraylist(locked_pages_stack, locked_page_info)
 
