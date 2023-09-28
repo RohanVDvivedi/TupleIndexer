@@ -110,7 +110,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// check if the insert can succeed on compaction
 			if(can_insert_this_tuple_without_split_for_bplus_tree(curr_locked_page.page, bpttd_p->page_size, bpttd_p->record_def, record))
 			{
-				run_page_compaction(curr_locked_page.page, bpttd_p->page_size, bpttd_p->record_def, 0, 1);
+				run_page_compaction(curr_locked_page.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 				inserted = insert_at_in_sorted_packed_page(
 														curr_locked_page.page, bpttd_p->page_size, 
@@ -136,7 +136,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				void* root_least_keys_child = dam_p->get_new_page_with_write_lock(dam_p->context, &root_least_keys_child_id);
 
 				// clone root page contents into the new root_least_keys_child
-				clone_page(root_least_keys_child, bpttd_p->page_size, bpttd_p->record_def, 1, curr_locked_page.page);
+				clone_page(root_least_keys_child, bpttd_p->page_size, &(bpttd_p->record_def->size_def), curr_locked_page.page);
 
 				// re intialize root page as an interior page
 				init_bplus_tree_interior_page(curr_locked_page.page, ++root_page_level, 1, bpttd_p);
@@ -152,10 +152,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			}
 
 			if(is_fixed_sized_tuple_def(bpttd_p->index_def))
-				parent_insert = malloc(bpttd_p->index_def->size);
+				parent_insert = malloc(bpttd_p->index_def->size_def.size);
 			else
 			{
-				uint32_t largest_index_tuple_size = (get_space_to_be_allotted_to_all_tuples(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, bpttd_p->index_def) / 2) - get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->index_def);
+				uint32_t largest_index_tuple_size = (get_space_to_be_allotted_to_all_tuples_on_page(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->index_def->size_def)) / 2) - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 				parent_insert = malloc(largest_index_tuple_size);
 			}
 
@@ -193,7 +193,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// check if the insert can succeed on compaction
 			if(can_insert_this_tuple_without_split_for_bplus_tree(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def, parent_insert))
 			{
-				run_page_compaction(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def, 0, 1);
+				run_page_compaction(curr_locked_page.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 				parent_tuple_inserted = insert_at_in_sorted_packed_page(
 										curr_locked_page.page, bpttd_p->page_size, 
@@ -219,7 +219,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				void* root_least_keys_child = dam_p->get_new_page_with_write_lock(dam_p->context, &root_least_keys_child_id);
 
 				// clone root page contents into the new root_least_keys_child
-				clone_page(root_least_keys_child, bpttd_p->page_size, bpttd_p->index_def, 1, curr_locked_page.page);
+				clone_page(root_least_keys_child, bpttd_p->page_size, &(bpttd_p->index_def->size_def), curr_locked_page.page);
 
 				// re intialize root page as an interior page
 				init_bplus_tree_interior_page(curr_locked_page.page, ++root_page_level, 1, bpttd_p);
