@@ -11,7 +11,7 @@
 
 int init_bplus_tree_leaf_page(void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	int inited = init_page(page, bpttd_p->page_size, sizeof_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->record_def);
+	int inited = init_page(page, bpttd_p->page_size, sizeof_LEAF_PAGE_HEADER(bpttd_p), &(bpttd_p->record_def->size_def));
 	if(!inited)
 		return 0;
 	set_type_of_page(page, BPLUS_TREE_LEAF_PAGE, bpttd_p);
@@ -48,7 +48,7 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const
 // this will the tuples that will remain in the page_info after after the complete split operation
 static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
 {
-	uint32_t tuple_count = get_tuple_count(page1, bpttd_p->page_size, bpttd_p->record_def);
+	uint32_t tuple_count = get_tuple_count_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 	if(is_fixed_sized_tuple_def(bpttd_p->record_def))
 	{
@@ -61,10 +61,10 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	else
 	{
 		// pre calculate the space that will be occupied by the new tuple
-		uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->record_def);
+		uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 		// this is the total space available to you to store the tuples
-		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples(page1, bpttd_p->page_size, bpttd_p->record_def);
+		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 		// this is the result number of tuple that should stay on this page
 		uint32_t result = 0;
@@ -89,7 +89,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 				}
 
 				// process the ith tuple
-				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples(page1, bpttd_p->page_size, bpttd_p->record_def, i, i);
+				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def), i, i);
 				space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
 				if(space_occupied_until <= limit)
 					result++;
@@ -123,7 +123,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 				}
 
 				// process the ith tuple
-				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples(page1, bpttd_p->page_size, bpttd_p->record_def, i, i);
+				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def), i, i);
 				space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
 				result++;
 				if(space_occupied_until > limit)
@@ -145,13 +145,13 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert)
 {
 	// do not perform a split if the page can accomodate the new tuple
-	if(can_insert_tuple(page1, bpttd_p->page_size, bpttd_p->record_def, tuple_to_insert))
+	if(can_append_tuple_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def), tuple_to_insert))
 		return 0;
 
 	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
 	// if it does then you should not be calling this function
-	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple(bpttd_p->page_size, bpttd_p->record_def);
-	uint32_t space_available_page1 = get_space_allotted_to_all_tuples(page1, bpttd_p->page_size, bpttd_p->record_def) - get_space_occupied_by_all_tuples(page1, bpttd_p->page_size, bpttd_p->record_def);
+	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t space_available_page1 = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def)) - get_space_occupied_by_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
 	if(space_available_page1 >= space_occupied_by_new_tuple)
@@ -166,7 +166,7 @@ int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void
 								);
 
 	// current tuple count of the page to be split
-	uint32_t page1_tuple_count = get_tuple_count(page1, bpttd_p->page_size, bpttd_p->record_def);
+	uint32_t page1_tuple_count = get_tuple_count_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 	// total number of tuples we would be dealing with
 	//uint32_t total_tuple_count = page1_tuple_count + 1;
@@ -257,8 +257,8 @@ int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void
 	if(new_tuple_goes_to_page1)
 	{
 		// if can not insert then compact the page first
-		if(!can_insert_tuple(page1, bpttd_p->page_size, bpttd_p->record_def, tuple_to_insert))
-			run_page_compaction(page1, bpttd_p->page_size, bpttd_p->record_def, 0, 1);
+		if(!can_append_tuple_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def), tuple_to_insert))
+			run_page_compaction(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page1
 		insert_at_in_sorted_packed_page(
@@ -271,20 +271,20 @@ int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void
 	else
 	{
 		// if can not insert then compact the page first
-		if(!can_insert_tuple(page2, bpttd_p->page_size, bpttd_p->record_def, tuple_to_insert))
-			run_page_compaction(page2, bpttd_p->page_size, bpttd_p->record_def, 0, 1);
+		if(!can_append_tuple_on_page(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def), tuple_to_insert))
+			run_page_compaction(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page2
 		insert_at_in_sorted_packed_page(
 									page2, bpttd_p->page_size,
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
-									tuple_to_insert, 
+									tuple_to_insert,
 									tuple_to_insert_at - tuples_stay_in_page1
 								);
 	}
 
 	// create tuple to be returned, this tuple needs to be inserted into the parent page, after the child_index
-	const void* first_tuple_page2 = get_nth_tuple(page2, bpttd_p->page_size, bpttd_p->record_def, 0);
+	const void* first_tuple_page2 = get_nth_tuple_on_page(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def), 0);
 
 	// rebuild parent insert tuple using the first record of the page2 and the child_page_id = page2_id
 	build_index_entry_from_record_tuple(bpttd_p, first_tuple_page2, page2_id, output_parent_insert);
@@ -313,10 +313,10 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree
 		return 0;
 
 	// check if a merge can be performed
-	uint32_t total_space_page1 = get_space_allotted_to_all_tuples(page1, bpttd_p->page_size, bpttd_p->record_def);
-	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples(page1, bpttd_p->page_size, bpttd_p->record_def);
-	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples(page2, bpttd_p->page_size, bpttd_p->record_def);
-	uint32_t space_in_tomb_stones_page2 = get_space_occupied_by_all_tomb_stones(page2, bpttd_p->page_size, bpttd_p->record_def);
+	uint32_t total_space_page1 = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_page(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t space_in_tomb_stones_page2 = get_space_occupied_by_all_tomb_stones_on_page(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 	// inserting tuples from one page to the another is done while discarding tomb_stones during the insertion
 	if(total_space_page1 < space_in_use_page1 + space_in_use_page2 - space_in_tomb_stones_page2)
@@ -370,14 +370,14 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree
 	// now, we can safely transfer all tuples from page2 to page1
 
 	// only if there are any tuples to move
-	uint32_t tuple_count_page2 = get_tuple_count(page2, bpttd_p->page_size, bpttd_p->record_def);
+	uint32_t tuple_count_page2 = get_tuple_count_on_page(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 	if(tuple_count_page2 > 0)
 	{
-		uint32_t free_space_page1 = get_free_space(page1, bpttd_p->page_size, bpttd_p->record_def);
+		uint32_t free_space_page1 = get_free_space_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 		// if free space is not enough perform a compaction in advance
 		if(free_space_page1 < space_in_use_page2)
-			run_page_compaction(page1, bpttd_p->page_size, bpttd_p->record_def, 0, 1);
+			run_page_compaction(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 		// only if there are any tuples to move
 		insert_all_from_sorted_packed_page(
