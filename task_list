@@ -4,6 +4,7 @@
  * make in_memory_data_store use rwlock
  * make page_modification_methods and allow only modifying a page only through it
  * calculate precisely whether a tuple can be inserted into a bplus tree in bpttd
+   * project tuple on index_def and check its size
  * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
 
