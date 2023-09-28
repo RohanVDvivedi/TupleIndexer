@@ -1,5 +1,3 @@
-** Priority tasks
- * make the project work with the new TupleStore API
 
 ** NEW TASKS IDENTIFIED FOR FULLFLEDGED DATABASE
  * Think how you could decouple Tuple Store and instead take in page_modification_methods, that has similar api to TupleStore, but logging could be build into them
