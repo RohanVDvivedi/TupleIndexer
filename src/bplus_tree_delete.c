@@ -108,7 +108,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// We will now check to see if the page can be merged
 
 			locked_page_info* parent_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-			uint32_t parent_tuple_count = get_tuple_count(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
+			uint32_t parent_tuple_count = get_tuple_count_on_page(parent_locked_page->page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// will be set of the page has been merged
 			int merged = 0;
@@ -174,16 +174,16 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				// need to handle empty root parent page
 				// we clone the contents of the <only child of the root page> to the <root page>, to reduce the level of the page
 				// we can do this only if the root is an interior page i.e. root_page_level > 0
-				while(root_page_level > 0 && get_tuple_count(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def) == 0)
+				while(root_page_level > 0 && get_tuple_count_on_page(curr_locked_page.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) == 0)
 				{
 					uint64_t only_child_page_id = find_child_page_id_by_child_index(curr_locked_page.page, -1, bpttd_p);
 					void* only_child_page = dam_p->acquire_page_with_reader_lock(dam_p->context, only_child_page_id);
 
 					// clone the only_child_page in to the curr_locked_page
 					if(is_bplus_tree_leaf_page(only_child_page, bpttd_p))
-						clone_page(curr_locked_page.page, bpttd_p->page_size, bpttd_p->record_def, 1, only_child_page);
+						clone_page(curr_locked_page.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def), only_child_page);
 					else
-						clone_page(curr_locked_page.page, bpttd_p->page_size, bpttd_p->index_def, 1, only_child_page);
+						clone_page(curr_locked_page.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def), only_child_page);
 
 					// free and unlock only_child_page
 					dam_p->release_reader_lock_and_free_page(dam_p->context, only_child_page);
@@ -205,7 +205,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			}
 
 			locked_page_info* parent_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-			uint32_t parent_tuple_count = get_tuple_count(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def);
+			uint32_t parent_tuple_count = get_tuple_count_on_page(parent_locked_page->page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// will be set if the page has been merged
 			int merged = 0;
@@ -219,7 +219,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				void* page2 = dam_p->acquire_page_with_writer_lock(dam_p->context, page2_id);
 				locked_page_info child_page2 = INIT_LOCKED_PAGE_INFO(page2, page2_id);
 
-				const void* separator_parent_tuple = get_nth_tuple(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, parent_locked_page->child_index + 1);
+				const void* separator_parent_tuple = get_nth_tuple_on_page(parent_locked_page->page, bpttd_p->page_size, &(bpttd_p->index_def->size_def), parent_locked_page->child_index + 1);
 
 				merged = merge_bplus_tree_interior_pages(child_page1.page, child_page1.page_id, separator_parent_tuple, child_page2.page, child_page2.page_id, bpttd_p, dam_p);
 
@@ -243,7 +243,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				void* page1 = dam_p->acquire_page_with_writer_lock(dam_p->context, page1_id);
 				locked_page_info child_page1 = INIT_LOCKED_PAGE_INFO(page1, page1_id);
 
-				const void* separator_parent_tuple = get_nth_tuple(parent_locked_page->page, bpttd_p->page_size, bpttd_p->index_def, parent_locked_page->child_index);
+				const void* separator_parent_tuple = get_nth_tuple_on_page(parent_locked_page->page, bpttd_p->page_size, &(bpttd_p->index_def->size_def), parent_locked_page->child_index);
 
 				merged = merge_bplus_tree_interior_pages(child_page1.page, child_page1.page_id, separator_parent_tuple, child_page2.page, child_page2.page_id, bpttd_p, dam_p);
 
