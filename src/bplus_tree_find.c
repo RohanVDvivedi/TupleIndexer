@@ -77,7 +77,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			}
 			case MAX_TUPLE :
 			{
-				child_index = get_tuple_count(curr_page, bpttd_p->page_size, bpttd_p->index_def) - 1;
+				child_index = get_tuple_count_on_page(curr_page, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
 				break;
 			}
 		}
