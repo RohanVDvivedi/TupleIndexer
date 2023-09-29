@@ -111,13 +111,13 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			locked_page_info* parent_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 			uint32_t parent_tuple_count = get_tuple_count_on_page(parent_locked_page->ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
-			// will be set of the page has been merged
+			// will be set if the page has been merged
 			int merged = 0;
 
 			// attempt a merge with next page of curr_locked_page, if it has a next page with same parent
 			if(!merged && parent_locked_page->child_index + 1 < parent_tuple_count)
 			{
-				merged = merge_bplus_tree_leaf_pages(curr_locked_page.ppage.page, curr_locked_page.ppage.page_id, bpttd_p, dam_p);
+				merged = merge_bplus_tree_leaf_pages(curr_locked_page.ppage, bpttd_p, dam_p);
 
 				// if merged we need to delete entry at child_index in the parent page
 				if(merged)
@@ -135,7 +135,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				void* prev_child_page = dam_p->acquire_page_with_writer_lock(dam_p->context, prev_child_page_id);
 				curr_locked_page = INIT_LOCKED_PAGE_INFO(prev_child_page, prev_child_page_id);
 
-				merged = merge_bplus_tree_leaf_pages(curr_locked_page.ppage.page, curr_locked_page.ppage.page_id, bpttd_p, dam_p);
+				merged = merge_bplus_tree_leaf_pages(curr_locked_page.ppage, bpttd_p, dam_p);
 
 				// if merged we need to delete entry at child_index in the parent page
 
@@ -214,49 +214,49 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// attempt a merge with next page of curr_locked_page, if it has a next page with same parent
 			if(!merged && parent_locked_page->child_index + 1 < parent_tuple_count)
 			{
-				locked_page_info child_page1 = curr_locked_page;
+				persistent_page child_page1 = curr_locked_page.ppage;
 
-				uint64_t page2_id = find_child_page_id_by_child_index(parent_locked_page->ppage.page, parent_locked_page->child_index + 1, bpttd_p);
-				void* page2 = dam_p->acquire_page_with_writer_lock(dam_p->context, page2_id);
-				locked_page_info child_page2 = INIT_LOCKED_PAGE_INFO(page2, page2_id);
+				persistent_page child_page2;
+				child_page2.page_id = find_child_page_id_by_child_index(parent_locked_page->ppage.page, parent_locked_page->child_index + 1, bpttd_p);
+				child_page2.page = dam_p->acquire_page_with_writer_lock(dam_p->context, child_page2.page_id);
 
 				const void* separator_parent_tuple = get_nth_tuple_on_page(parent_locked_page->ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def), parent_locked_page->child_index + 1);
 
-				merged = merge_bplus_tree_interior_pages(child_page1.ppage.page, child_page1.ppage.page_id, separator_parent_tuple, child_page2.ppage.page, child_page2.ppage.page_id, bpttd_p, dam_p);
+				merged = merge_bplus_tree_interior_pages(child_page1, separator_parent_tuple, child_page2, bpttd_p, dam_p);
 
 				// if merged we need to delete entry at child_index in the parent page, and free child_page2
 				if(merged)
 				{
 					parent_locked_page->child_index += 1;
 
-					dam_p->release_writer_lock_and_free_page(dam_p->context, child_page2.ppage.page);
+					dam_p->release_writer_lock_and_free_page(dam_p->context, child_page2.page);
 				}
 				else // release lock on the page that is not curr_locked_page
-					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.ppage.page, 0);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, 0);
 			}
 
 			// attempt a merge with prev page of curr_locked_page, if it has a prev page with same parent
 			if(!merged && parent_locked_page->child_index < parent_tuple_count)
 			{
-				locked_page_info child_page2 = curr_locked_page;
+				persistent_page child_page2 = curr_locked_page.ppage;
 
-				uint64_t page1_id = find_child_page_id_by_child_index(parent_locked_page->ppage.page, parent_locked_page->child_index - 1, bpttd_p);
-				void* page1 = dam_p->acquire_page_with_writer_lock(dam_p->context, page1_id);
-				locked_page_info child_page1 = INIT_LOCKED_PAGE_INFO(page1, page1_id);
+				persistent_page child_page1;
+				child_page1.page_id = find_child_page_id_by_child_index(parent_locked_page->ppage.page, parent_locked_page->child_index - 1, bpttd_p);
+				child_page1.page = dam_p->acquire_page_with_writer_lock(dam_p->context, child_page1.page_id);
 
 				const void* separator_parent_tuple = get_nth_tuple_on_page(parent_locked_page->ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def), parent_locked_page->child_index);
 
-				merged = merge_bplus_tree_interior_pages(child_page1.ppage.page, child_page1.ppage.page_id, separator_parent_tuple, child_page2.ppage.page, child_page2.ppage.page_id, bpttd_p, dam_p);
+				merged = merge_bplus_tree_interior_pages(child_page1, separator_parent_tuple, child_page2, bpttd_p, dam_p);
 
 				// if merged we need to delete entry at child_index in the parent page, and free child_page2
 				if(merged)
 				{
-					dam_p->release_writer_lock_and_free_page(dam_p->context, child_page2.ppage.page);
+					dam_p->release_writer_lock_and_free_page(dam_p->context, child_page2.page);
 
-					curr_locked_page = child_page1;
+					curr_locked_page.ppage = child_page1;
 				}
 				else // release lock on the page that is not curr_locked_page
-					dam_p->release_writer_lock_on_page(dam_p->context, child_page1.ppage.page, 0);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page1.page, 0);
 			}
 
 			// release lock on the curr_locked_page
