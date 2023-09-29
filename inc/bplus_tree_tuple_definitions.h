@@ -55,7 +55,7 @@ struct bplus_tree_tuple_defs
 int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t default_common_header_size, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID);
 
 // checks to see if a record_tuple can be inserted into a bplus_tree
-int check_if_record_can_be_inserted(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple);
+int check_if_record_can_be_inserted_into_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple);
 
 // copy all the key elements from the record_tuple to make the key
 void extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key);
