@@ -1,6 +1,5 @@
 ** PICKED TASKS
  * calculate precisely whether a tuple can be inserted into a bplus tree in bpttd
-   * calculate and store max_record_size and max_index_record_size in bpttd
    * project tuple on index_def and check its size
  * bplus_tree_leaf_page_util and bplus_tree_interior_page_util
    * pass persistent_page around instead, when both page and page_id are required parameters
