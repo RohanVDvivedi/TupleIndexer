@@ -199,6 +199,24 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	}
 }
 
+int must_split_for_insert_bplus_tree_interior_page(void* page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// do not perform a split if the page can accomodate the new tuple
+	if(can_append_tuple_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def), tuple_to_insert))
+		return 0;
+
+	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
+	// if tuple_to_insert can fit on the page after a compaction, then you should not be splitting the page
+	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_available_page1 = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - get_space_occupied_by_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+
+	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
+	if(space_available_page1 >= space_occupied_by_new_tuple)
+		return 0;
+
+	return 1;
+}
+
 int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert)
 {
 	// do not perform a split if the page can accomodate the new tuple
