@@ -219,17 +219,8 @@ int must_split_for_insert_bplus_tree_interior_page(const void* page1, uint64_t p
 
 int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert)
 {
-	// do not perform a split if the page can accomodate the new tuple
-	if(can_append_tuple_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def), tuple_to_insert))
-		return 0;
-
-	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
-	// if it does then you should not be calling this function
-	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_available_page1 = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - get_space_occupied_by_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-
-	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
-	if(space_available_page1 >= space_occupied_by_new_tuple)
+	// check if a page must split to accomodate the new tuple
+	if(!must_split_for_insert_bplus_tree_interior_page(page1, page1_id, tuple_to_insert, bpttd_p))
 		return 0;
 
 	// if the index of the new tuple was not provided then calculate it
@@ -395,23 +386,14 @@ int can_merge_bplus_tree_interior_pages(const void* page1, uint64_t page1_id, co
 
 int merge_bplus_tree_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
-	// ensure that the separator_parent_tuple child_page_id is equal to the page2_id
-	if(get_child_page_id_from_index_tuple(separator_parent_tuple, bpttd_p) != page2_id)
-		return 0;
-
-	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
-
-	// check if a merge can be performed
-	uint32_t total_space_page1 = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_to_be_occupied_by_separator_tuple = separator_tuple_size + get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_page(page2, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-
-	// the page1 must be able to accomodate all its current tuples, the separator tuple and the tuples of page2
-	if(total_space_page1 < space_in_use_page1 + space_to_be_occupied_by_separator_tuple + space_in_use_page2)
+	// ensure that we can merge
+	if(!can_merge_bplus_tree_interior_pages(page1, page1_id, separator_parent_tuple, page2, page2_id, bpttd_p))
 		return 0;
 
 	// now we can be sure that a merge can be performed on page1 and page2
+
+	// get the size of the separator tuple
+	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
 
 	// check if page2 was the last page of the level
 	int page2_is_last_page_of_level = is_last_page_of_level_of_bplus_tree_interior_page(page2, bpttd_p);
@@ -423,6 +405,8 @@ int merge_bplus_tree_interior_pages(void* page1, uint64_t page1_id, const void* 
 
 	// make sure that there is enough free space on page1 else defragment the page first
 	uint32_t free_space_page1 = get_free_space_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_to_be_occupied_by_separator_tuple = separator_tuple_size + get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_page(page2, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 	if(free_space_page1 < space_to_be_occupied_by_separator_tuple + space_in_use_page2)
 		run_page_compaction(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
