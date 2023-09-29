@@ -314,6 +314,19 @@ int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void
 	return 1;
 }
 
+int can_merge_bplus_tree_leaf_pages(const void* page1, uint64_t page1_id, const void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// check if a merge can be performed, by comparing the used space in both the pages
+	uint32_t total_space_page1 = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_page(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+
+	if(total_space_page1 < space_in_use_page1 + space_in_use_page2)
+		return 0;
+
+	return 1;
+}
+
 int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// get the next adjacent page of this page

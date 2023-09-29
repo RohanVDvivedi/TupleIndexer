@@ -30,6 +30,9 @@ int must_split_for_insert_bplus_tree_leaf_page(const void* page1, uint64_t page1
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 int split_insert_bplus_tree_leaf_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert);
 
+// check if 2 bplus_tree leaf pages can be merged
+int can_merge_bplus_tree_leaf_pages(const void* page1, uint64_t page1_id, const void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p);
+
 // it performs merge of the 2 leaf pages (page1 and the one next to it)
 // the page1 must have an adjacent page and both of them must have a single parent node
 // this function will perform page compaction on the page1 if required
