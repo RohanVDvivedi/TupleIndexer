@@ -17,6 +17,9 @@ uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const void* page, cons
 // when you want tuples in ascending order from the key
 uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const void* key, const bplus_tree_tuple_defs* bpttd_p);
 
+// check if a bplus tree leaf page must split for an insertion of a tuple
+int must_split_for_insert_bplus_tree_leaf_page(void* page, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p);
+
 // it performs a split insert to the leaf page provided
 // and returns the tuple that needs to be inserted to the parent page
 // you may call this function only if you are sure that the new_tuple will not fit on the page even after a compaction
