@@ -1,7 +1,5 @@
 ** PICKED TASKS
  * bplus_tree_leaf_page_util and bplus_tree_interior_page_util not depend on data_access_methods
-   * implement must_split_for_insert_bplus_tree_*_page and can_merge_bplus_tree_*_pages functions with similar api to split and merge functions, and use them prior to test possibility for merge and split
-   * make no accesses to data_access_methods in bplus_tree_leaf_page_util and bplus_tree_interior_page_util, hand them persistent_page to new page (for split) and free the merged page in the insert and delete functions
    * pass persistent pages as parameters
  * make in_memory_data_store use rwlock
  * page_modification_methods
