@@ -178,6 +178,8 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	bpttd_p->record_def = NULL;
 	bpttd_p->index_def = NULL;
 	bpttd_p->key_def = NULL;
+	bpttd_p->max_record_size = 0;
+	bpttd_p->max_index_record_size = 0;
 }
 
 int check_if_record_can_be_inserted_into_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple)
