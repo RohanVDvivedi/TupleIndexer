@@ -335,17 +335,8 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree
 		return 0;
 
 	// check if a merge can be performed
-	uint32_t total_space_page1 = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_page(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-
-	// inserting tuples from one page to the another is done while discarding tomb_stones during the insertion
-	if(total_space_page1 < space_in_use_page1 + space_in_use_page2)
-	{
-		// release writer lock on the page, and we did not modify it
-		dam_p->release_writer_lock_on_page(dam_p->context, page2, 0);
+	if(!can_merge_bplus_tree_leaf_pages(page1, page1_id, page2, page2_id, bpttd_p))
 		return 0;
-	}
 
 	// now we can be sure that a merge can be performed on page1 and page2
 
@@ -395,6 +386,7 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree
 	if(tuple_count_page2 > 0)
 	{
 		uint32_t free_space_page1 = get_free_space_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+		uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_page(page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 		// if free space is not enough perform a compaction in advance
 		if(free_space_page1 < space_in_use_page2)
