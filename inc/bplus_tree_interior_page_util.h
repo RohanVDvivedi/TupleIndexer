@@ -40,7 +40,7 @@ uint32_t find_child_index_for_record(const void* page, const void* record, uint3
 uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, const bplus_tree_tuple_defs* bpttd_p);
 
 // check if a bplus tree interior page must split for an insertion of a tuple
-int must_split_for_insert_bplus_tree_interior_page(const void* page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p);
+int must_split_for_insert_bplus_tree_interior_page(const void* page1, uint64_t page1_id, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p);
 
 // it performs a split insert to the interior page provided
 // and returns the tuple that needs to be inserted to the parent page

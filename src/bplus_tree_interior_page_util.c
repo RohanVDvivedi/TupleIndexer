@@ -372,7 +372,7 @@ int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const 
 	return 1;
 }
 
-int can_merge_bplus_tree_interior_pages(const void* page1, uint64_t page1_id, const void* separator_parent_tuple, const void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p)
+int can_merge_bplus_tree_interior_pages(const void* page1, uint64_t page1_id, uint64_t page1_id, const void* separator_parent_tuple, const void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// ensure that the separator_parent_tuple child_page_id is equal to the page2_id
 	if(get_child_page_id_from_index_tuple(separator_parent_tuple, bpttd_p) != page2_id)
