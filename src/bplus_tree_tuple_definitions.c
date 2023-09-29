@@ -88,7 +88,23 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t d
 	// end step
 	finalize_tuple_def(bpttd_p->key_def);
 
-	if(get_maximum_insertable_record_size(bpttd_p) < get_minimum_tuple_size(bpttd_p->record_def))
+	/* compute max_record_size for the leaf pages and interior pages of the bplus tree */
+	{
+		uint32_t min_record_tuple_count = 2;
+		uint32_t total_available_space_in_leaf_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+		uint32_t total_available_space_in_leaf_page_per_min_tuple_count = total_available_space_in_leaf_page / min_record_tuple_count;
+		bpttd_p->max_record_size = total_available_space_in_leaf_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	}
+
+	{
+		uint32_t min_index_record_tuple_count = 2;
+		uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+		uint32_t total_available_space_in_interior_page_per_min_tuple_count = total_available_space_in_interior_page / min_index_record_tuple_count;
+		bpttd_p->max_index_record_size = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - bpttd_p->page_id_width; 
+	}
+
+	if(bpttd_p->max_record_size < get_minimum_tuple_size(bpttd_p->record_def) ||
+		bpttd_p->max_index_record_size < get_minimum_tuple_size(bpttd_p->index_def))
 	{
 		deinit_bplus_tree_tuple_definitions(bpttd_p);
 		return 0;
@@ -174,7 +190,7 @@ uint32_t get_maximum_insertable_record_size(const bplus_tree_tuple_defs* bpttd_p
 	uint32_t min_index_record_tuple_count = 2;
 	uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 	uint32_t total_available_space_in_interior_page_per_min_tuple_count = total_available_space_in_interior_page / min_index_record_tuple_count;
-	uint32_t max_key_size_per_interior_page = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - bpttd_p->page_id_width; 
+	uint32_t max_key_size_per_interior_page = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - bpttd_p->page_id_width;
 
 	#define min(a,b) (((a)<(b))?(a):(b))
 	return  min(max_record_size_per_leaf_page, max_key_size_per_interior_page);
