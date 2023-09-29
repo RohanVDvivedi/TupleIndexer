@@ -3,6 +3,7 @@
 
 #include<stdint.h>
 
+#include<persistent_page.h>
 #include<bplus_tree_tuple_definitions.h>
 #include<data_access_methods.h>
 
@@ -40,7 +41,7 @@ uint32_t find_child_index_for_record(const void* page, const void* record, uint3
 uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, const bplus_tree_tuple_defs* bpttd_p);
 
 // check if a bplus tree interior page must split for an insertion of a tuple
-int must_split_for_insert_bplus_tree_interior_page(const void* page1, uint64_t page1_id, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p);
+int must_split_for_insert_bplus_tree_interior_page(persistent_page page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p);
 
 // it performs a split insert to the interior page provided
 // and returns the tuple that needs to be inserted to the parent page
@@ -48,10 +49,10 @@ int must_split_for_insert_bplus_tree_interior_page(const void* page1, uint64_t p
 // it returns 0, on failure if the tuple was not inserted, and the split was not performed
 // This function MUST be called only if the direct insert (OR a compaction + insert) to this page fails, (else it will fail the split regardless)
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
-int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert);
+int split_insert_bplus_tree_interior_page(persistent_page page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert);
 
 // check if 2 bplus_tree interior pages can be merged
-int can_merge_bplus_tree_interior_pages(const void* page1, uint64_t page1_id, const void* separator_parent_tuple, const void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p);
+int can_merge_bplus_tree_interior_pages(persistent_page page1, const void* separator_parent_tuple, persistent_page page2, const bplus_tree_tuple_defs* bpttd_p);
 
 // it performs merge of the 2 leaf pages (page1 and page2 the one next to it)
 // the page1 must have an adjacent page and both of them must have a single parent node
@@ -62,6 +63,6 @@ int can_merge_bplus_tree_interior_pages(const void* page1, uint64_t page1_id, co
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 // page2 is not freed by the function, you MUST free this page if this function returns a 1 (stating a successful merge)
 // if this function returns a 1, then separator_tuple must be deleted from the parent page
-int merge_bplus_tree_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator_parent_tuple, persistent_page page2, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 #endif
