@@ -51,7 +51,7 @@ int must_split_for_insert_bplus_tree_interior_page(const void* page1, const void
 int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert);
 
 // check if 2 bplus_tree interior pages can be merged
-int can_merge__bplus_tree_interior_pages(const void* page1, uint64_t page1_id, const void* separator_parent_tuple, const void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p);
+int can_merge_bplus_tree_interior_pages(const void* page1, uint64_t page1_id, const void* separator_parent_tuple, const void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p);
 
 // it performs merge of the 2 leaf pages (page1 and page2 the one next to it)
 // the page1 must have an adjacent page and both of them must have a single parent node
