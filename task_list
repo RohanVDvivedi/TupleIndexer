@@ -1,11 +1,11 @@
 ** PICKED TASKS
- * bplus_tree_leaf_page_util and bplus_tree_interior_page_util
-   * pass persistent_page around instead, when both page and page_id are required parameters
+ * bplus_tree_leaf_page_util and bplus_tree_interior_page_util not depend on data_access_methods
+   * implement must_split_for_insert_bplus_tree_*_page and can_merge_bplus_tree_*_pages functions with similar api to split and merge functions, and use them prior to test possibility for merge and split
    * make no accesses to data_access_methods in bplus_tree_leaf_page_util and bplus_tree_interior_page_util, hand them persistent_page to new page (for split) and free the merged page in the insert and delete functions
-   * implement must_split and can_merge functions with similar api to split and merge functions, and use them prior to test possibility for merge and split
+   * pass persistent pages as parameters
  * make in_memory_data_store use rwlock
  * page_modification_methods
-   * make page_modification_methods and allow only modifying a page only through it, refactor the complete library to use page_layout_read_only.h instead of page_layout.h
+   * make page_modification_methods and allow only modifying a page only through it, refactor the complete library to use page_layout_unaltered.h instead of page_layout.h
    * page_modification_methods work with persistent_page, and take in context, like the data_access_moethods
  * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
