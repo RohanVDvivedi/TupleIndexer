@@ -160,7 +160,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				parent_insert = malloc(largest_index_tuple_size);
 			}
 
-			inserted = split_insert_bplus_tree_leaf_page(curr_locked_page.ppage.page, curr_locked_page.ppage.page_id, record, insertion_point, bpttd_p, dam_p, parent_insert);
+			inserted = split_insert_bplus_tree_leaf_page(curr_locked_page.ppage, record, insertion_point, bpttd_p, dam_p, parent_insert);
 
 			// if an insertion was done (at this point a split was also performed), on this page
 			// then lock on this page should be released with modification
@@ -236,7 +236,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				curr_locked_page = root_least_keys_child_info;
 			}
 
-			parent_tuple_inserted = split_insert_bplus_tree_interior_page(curr_locked_page.ppage.page, curr_locked_page.ppage.page_id, parent_insert, insertion_point, bpttd_p, dam_p, parent_insert);
+			parent_tuple_inserted = split_insert_bplus_tree_interior_page(curr_locked_page.ppage, parent_insert, insertion_point, bpttd_p, dam_p, parent_insert);
 
 			// if an insertion was done (at this point a split was also performed), on this page
 			// then lock on this page should be released with modification
