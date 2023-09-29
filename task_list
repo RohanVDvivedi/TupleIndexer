@@ -1,5 +1,7 @@
 ** PICKED TASKS
  * calculate precisely whether a tuple can be inserted into a bplus tree in bpttd
+   * calculate and store max_record_size and max_index_record_size in bpttd
+   * implement int can_set_uninitialized_element_in_initialized_tuple(uint32_t prior_tuple_size, const tuple_def* tpl_d, uint32_t index, const user_value* value, uint32_t* new_size) in tuple store
    * project tuple on index_def and check its size
  * bplus_tree_leaf_page_util and bplus_tree_interior_page_util
    * pass persistent_page around instead, when both page and page_id are required parameters
