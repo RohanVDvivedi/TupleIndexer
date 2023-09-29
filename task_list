@@ -1,4 +1,7 @@
 ** PICKED TASKS
+ * build for all page headers api to get_*_header_from_page, and set_*_header_in_page, and use that instead
+   * implement structs to represent each of them
+   * replace all accessed to struct accessed
  * make in_memory_data_store use rwlock
  * page_modification_methods
    * make page_modification_methods and allow only modifying a page only through it, refactor the complete library to use page_layout_unaltered.h instead of page_layout.h
