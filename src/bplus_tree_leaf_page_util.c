@@ -334,9 +334,12 @@ int merge_bplus_tree_leaf_pages(void* page1, uint64_t page1_id, const bplus_tree
 	if(page2 == NULL)
 		return 0;
 
-	// check if a merge can be performed
+	// check if a merge can be performed, release writer lock on page2, that we just acquired
 	if(!can_merge_bplus_tree_leaf_pages(page1, page1_id, page2, page2_id, bpttd_p))
+	{
+		dam_p->release_writer_lock_on_page(dam_p->context, page2, 0);
 		return 0;
+	}
 
 	// now we can be sure that a merge can be performed on page1 and page2
 
