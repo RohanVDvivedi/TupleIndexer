@@ -46,7 +46,7 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const void* page, const
 }
 
 // this will the tuples that will remain in the page_info after after the complete split operation
-static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
+static uint32_t calculate_final_tuple_count_of_page_to_be_split(const void* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
 {
 	uint32_t tuple_count = get_tuple_count_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 

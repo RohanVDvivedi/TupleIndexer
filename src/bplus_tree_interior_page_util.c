@@ -103,7 +103,7 @@ uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, con
 	return child_page_id;
 }
 
-static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
+static uint32_t calculate_final_tuple_count_of_page_to_be_split(const void* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
 {
 	uint32_t tuple_count = get_tuple_count_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
