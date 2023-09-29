@@ -180,20 +180,35 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	bpttd_p->key_def = NULL;
 }
 
-uint32_t get_maximum_insertable_record_size(const bplus_tree_tuple_defs* bpttd_p)
+int check_if_record_can_be_inserted(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple)
 {
-	uint32_t min_record_tuple_count = 2;
-	uint32_t total_available_space_in_leaf_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-	uint32_t total_available_space_in_leaf_page_per_min_tuple_count = total_available_space_in_leaf_page / min_record_tuple_count;
-	uint32_t max_record_size_per_leaf_page = total_available_space_in_leaf_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t record_tuple_size = get_tuple_size(bpttd_p->record_def, record_tuple);
 
-	uint32_t min_index_record_tuple_count = 2;
-	uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t total_available_space_in_interior_page_per_min_tuple_count = total_available_space_in_interior_page / min_index_record_tuple_count;
-	uint32_t max_key_size_per_interior_page = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - bpttd_p->page_id_width;
+	// if the size of the record tuple is greater than the max_record_size of the bpttd, then it can not be inserted into the bplus_tree with the given bpttd
+	if(record_tuple_size > bpttd_p->max_record_size)
+		return 0;
 
-	#define min(a,b) (((a)<(b))?(a):(b))
-	return  min(max_record_size_per_leaf_page, max_key_size_per_interior_page);
+	// calcuate the index_record_tuple_size, that this record entry might insert on any of the interior pages
+	uint32_t index_record_tuple_size = get_minimum_tuple_size(bpttd_p->index_def);
+
+	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
+	{
+		user_value value = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+		int can_set_in_index_tuple = can_set_uninitialized_element_in_tuple(bpttd_p->index_def, i, index_record_tuple_size, &value, &index_record_tuple_size);
+		if(!can_set_in_index_tuple)
+			return 0;
+	}
+
+	// check the size after inserting a child_page_id, 
+	int can_set_in_index_tuple = can_set_uninitialized_element_in_tuple(bpttd_p->index_def, bpttd_p->key_element_count, index_record_tuple_size, &((user_value){.uint_value = bpttd_p->NULL_PAGE_ID}), &index_record_tuple_size);
+	if(!can_set_in_index_tuple)
+		return 0;
+
+	// if index_record_tuple_size exceeds the max_index_record_size, then this record_tuple can not be inserted in the bplus_tree
+	if(index_record_tuple_size > bpttd_p->max_index_record_size)
+		return 0;
+
+	return 1;
 }
 
 #include<stdio.h>
