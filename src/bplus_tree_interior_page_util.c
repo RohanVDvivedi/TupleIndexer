@@ -199,7 +199,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	}
 }
 
-int must_split_for_insert_bplus_tree_interior_page(void* page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p)
+int must_split_for_insert_bplus_tree_interior_page(const void* page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// do not perform a split if the page can accomodate the new tuple
 	if(can_append_tuple_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def), tuple_to_insert))
@@ -370,6 +370,11 @@ int split_insert_bplus_tree_interior_page(void* page1, uint64_t page1_id, const 
 
 	// return success
 	return 1;
+}
+
+int can_merge__bplus_tree_interior_pages(const void* page1, uint64_t page1_id, const void* separator_parent_tuple, const void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p)
+{
+
 }
 
 int merge_bplus_tree_interior_pages(void* page1, uint64_t page1_id, const void* separator_parent_tuple, void* page2, uint64_t page2_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
