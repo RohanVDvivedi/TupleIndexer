@@ -1,6 +1,4 @@
 ** PICKED TASKS
- * bplus_tree_leaf_page_util and bplus_tree_interior_page_util not depend on data_access_methods
-   * pass persistent pages as parameters
  * make in_memory_data_store use rwlock
  * page_modification_methods
    * make page_modification_methods and allow only modifying a page only through it, refactor the complete library to use page_layout_unaltered.h instead of page_layout.h
