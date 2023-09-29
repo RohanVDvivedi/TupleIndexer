@@ -1,6 +1,6 @@
 #include<bplus_tree_tuple_definitions.h>
 
-#include<page_layout.h>
+#include<page_layout_unaltered.h>
 #include<tuple.h>
 
 #include<bplus_tree_leaf_page_header.h>
