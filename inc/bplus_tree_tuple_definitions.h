@@ -7,7 +7,7 @@
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs
 {
-	// page_id_with is bytes required for storing page_id, it can be 1,2,4 or 8
+	// page_id_witdh is bytes required for storing page_id, it can be in range [1, 8] both inclusive
 	uint8_t page_id_width;
 
 	// size of each page inside this bplus tree
