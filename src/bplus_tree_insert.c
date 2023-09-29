@@ -15,8 +15,8 @@
 
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
-	// the tuple to be inserted must not exceed a certain size
-	if(get_tuple_size(bpttd_p->record_def, record) > get_maximum_insertable_record_size(bpttd_p))
+	// the tuple to be inserted must pass this test
+	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, record))
 		return 0;
 
 	// get lock on the root page of the bplus_tree
