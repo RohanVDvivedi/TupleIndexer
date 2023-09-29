@@ -142,7 +142,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(void* page1, con
 	}
 }
 
-int must_split_for_insert_bplus_tree_leaf_page(void* page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p)
+int must_split_for_insert_bplus_tree_leaf_page(const void* page1, uint64_t page1_id, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// do not perform a split if the page can accomodate the new tuple
 	if(can_append_tuple_on_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def), tuple_to_insert))
