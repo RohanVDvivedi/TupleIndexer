@@ -261,7 +261,7 @@ static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 	return page_ptr;
 }
 
-static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr)
+static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr, int was_modified, int force_flush)
 {
 	memory_store_context* cntxt = context;
 
@@ -277,6 +277,24 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	return lock_downgraded;
+}
+
+static int upgrade_reader_lock_to_writer_lock_on_page(void* context, void* pg_ptr)
+{
+	memory_store_context* cntxt = context;
+
+	int lock_upgraded = 0;
+
+	pthread_mutex_lock(&(cntxt->global_lock));
+
+		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
+
+		if(page_desc)
+			lock_upgraded = upgrade_lock(&(page_desc->page_lock));
+
+	pthread_mutex_unlock(&(cntxt->global_lock));
+
+	return lock_upgraded;
 }
 
 static int delete_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
@@ -612,19 +630,18 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t pa
 		return NULL;
 
 	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
+	if(dam_p == NULL)
+		return NULL;
 
 	dam_p->open_data_file = open_data_file;
 	dam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
 	dam_p->acquire_page_with_reader_lock = acquire_page_with_reader_lock;
 	dam_p->acquire_page_with_writer_lock = acquire_page_with_writer_lock;
 	dam_p->downgrade_writer_lock_to_reader_lock_on_page = downgrade_writer_lock_to_reader_lock_on_page;
+	dam_p->upgrade_reader_lock_to_writer_lock_on_page = upgrade_reader_lock_to_writer_lock_on_page;
 	dam_p->release_reader_lock_on_page = release_reader_lock_on_page;
 	dam_p->release_writer_lock_on_page = release_writer_lock_on_page;
-	dam_p->release_writer_lock_and_free_page = release_writer_lock_and_free_page;
-	dam_p->release_reader_lock_and_free_page = release_reader_lock_and_free_page;
 	dam_p->free_page = free_page;
-	dam_p->get_page_id_for_page = get_page_id_for_page;
-	dam_p->force_write_to_disk = force_write_to_disk;
 	dam_p->close_data_file = close_data_file;
 
 	dam_p->page_size = page_size;
@@ -637,6 +654,11 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t pa
 		dam_p->NULL_PAGE_ID = -1;
 	
 	dam_p->context = malloc(sizeof(memory_store_context));
+	if(dam_p->context == NULL)
+	{
+		free(dam_p);
+		return NULL;
+	}
 	
 	((memory_store_context*)(dam_p->context))->page_size = page_size;
 	((memory_store_context*)(dam_p->context))->MAX_PAGE_COUNT = dam_p->NULL_PAGE_ID;
@@ -644,11 +666,11 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t pa
 	// on success return the data access methods
 	if(dam_p->open_data_file(dam_p->context))
 		return dam_p;
-
-	// on error return NULL
-	free(dam_p->context);
-	free(dam_p);
-	return NULL;
+	else
+		// on error return NULL
+		free(dam_p->context);
+		free(dam_p);
+		return NULL;
 }
 
 int close_and_destroy_in_memory_data_store(data_access_methods* dam_p)
