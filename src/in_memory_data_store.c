@@ -357,6 +357,24 @@ static int free_page_if_marked_for_free_unsafe(memory_store_context* cntxt, page
 	return 0;
 }
 */
+
+static int run_free_page_management_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
+{
+	return 0;
+	// TODO
+	// int freed = 0;
+	// if the page is not free
+	// then
+		// mark it as free
+		// set return value freed = 1
+	// if the page is not read or write locked as of now
+	// then
+		// free the page memory
+		// insert it into the free_page_descs
+		// delete trailing free_pages from free_page_descs
+	// return freed
+}
+
 static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified, int force_flush, int free_page)
 {
 	memory_store_context* cntxt = context;
@@ -372,7 +390,7 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 			lock_released = write_unlock(&(page_desc->page_lock));
 
 			if(lock_released && (free_page || page_desc->is_free))
-				run_free_page_management(cntxt, page_desc);
+				run_free_page_management_unsafe(cntxt, page_desc);
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
@@ -395,7 +413,7 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr, int free_pag
 			lock_released = read_unlock(&(page_desc->page_lock));
 
 			if(lock_released && (free_page || page_desc->is_free))
-				run_free_page_management(cntxt, page_desc);
+				run_free_page_management_unsafe(cntxt, page_desc);
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
@@ -403,7 +421,7 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr, int free_pag
 	return lock_released;
 }
 
-int free_page(void* context, uint64_t page_id)
+static int free_page(void* context, uint64_t page_id)
 {
 	memory_store_context* cntxt = context;
 
@@ -414,9 +432,9 @@ int free_page(void* context, uint64_t page_id)
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
 
 		// if the page_desc exists and is not free
-		if(page_desc != NULL && !page_desc->is_free)			
+		if(page_desc != NULL)
 			// run_free_page_management, will take care of everything
-			is_freed = run_free_page_management(cntxt, page_desc);
+			is_freed = run_free_page_management_unsafe(cntxt, page_desc);
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
