@@ -301,7 +301,7 @@ static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 	int page_count_shrunk = 0;
 
 	// loop to delete trailing page_descriptors
-	page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs))
+	page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
 	while(trailing != NULL)
 	{
 		// if trailing is not the last page based on its id, then break
@@ -309,7 +309,7 @@ static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 			break;
 
 		// the page_desc with second largest page_id in free_page_desc
-		page_descriptor* trailing_prev = get_inorder_prev_of_in_bst(&(cntxt->free_page_descs), trailing);
+		page_descriptor* trailing_prev = (page_descriptor*)get_inorder_prev_of_in_bst(&(cntxt->free_page_descs), trailing);
 
 		// remove the trailing page_descriptor, it will not exist in page_memory_map, since it is a free page
 		// we also do not need to deallocate the page_memory, since we found this page in the free_page_descs
