@@ -357,7 +357,7 @@ int split_insert_bplus_tree_interior_page(persistent_page page1, const void* tup
 								);
 
 	// release lock on the page2, and mark it as modified
-	dam_p->release_writer_lock_on_page(dam_p->context, page2.page, 1);
+	dam_p->release_writer_lock_on_page(dam_p->context, page2.page, WAS_MODIFIED);
 
 	// return success
 	return 1;
