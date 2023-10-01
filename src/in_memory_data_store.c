@@ -329,53 +329,35 @@ static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 	return page_count_shrunk;
 }
 
-/*
-static int free_page_if_marked_for_free_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
-{
-	// if the page_desc is already free OR is not marked for freeing then return with a failure
-	if(page_desc->is_free || !page_desc->is_marked_for_freeing)
-		return 0;
-
-	// free, only if there are no threads holding locks on this page, AND no thread is waiting to release locks on this page
-	if(page_desc->reading_threads == 0 && page_desc->writing_threads == 0 && page_desc->waiting_threads == 0)
-	{
-		// remove page_desc from page_memory_map
-		remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
-
-		// deallocate page and mark page for freeing
-		deallocate_page(page_desc->page_memory);
-		page_desc->page_memory = NULL;
-		page_desc->is_free = 1;
-		page_desc->is_marked_for_freeing = 0;
-
-		// insert page_desc in free_page_descs
-		insert_in_bst(&(cntxt->free_page_descs), page_desc);
-
-		// delete trailing page_descriptors
-		delete_trailing_free_page_descs_unsafe(cntxt);
-
-		return 1;
-	}
-	
-	return 0;
-}
-*/
-
 static int run_free_page_management_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
 {
-	return 0;
-	// TODO
-	// int freed = 0;
-	// if the page is not free
-	// then
-		// mark it as free
-		// set return value freed = 1
-	// if the page is not read or write locked as of now
-	// then
-		// free the page memory
+	int freed = 0;
+
+	// if not free, mark it as free
+	if(!(page_desc->is_free))
+	{
+		page_desc->is_free = 1;
+		freed = 1;
+	}
+
+	// if the page has allocated page memory, and is not read or write locked as of now, then
+	if(page_desc->page_memory != NULL && (!is_read_locked(&(page_desc->page_lock))) && (!is_write_locked(&(page_desc->page_lock))))
+	{
 		// insert it into the free_page_descs
+		insert_in_bst(&(cntxt->free_page_descs), page_desc);
+
+		// if it is not read or write locked, then it is not going to be accessed with it's page_memeory
+		// remove it from page_memory_map
+		remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+
+		// deallocate page_memeory
+		deallocate_page(page_desc->page_memory);
+
 		// delete trailing free_pages from free_page_descs
-	// return freed
+		discard_trailing_free_page_descs_unsafe(cntxt);
+	}
+
+	return freed;
 }
 
 static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified, int force_flush, int free_page)
