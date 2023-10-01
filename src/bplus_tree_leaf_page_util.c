@@ -226,7 +226,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 			if(page3.page == NULL)
 			{
 				// make sure you free the page that you acquired
-				dam_p->release_writer_lock_and_free_page(dam_p->context, page2.page);
+				dam_p->release_writer_lock_on_page(dam_p->context, page2.page, FREE_PAGE);
 				return 0;
 			}
 
@@ -237,7 +237,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 			set_next_page_id_of_bplus_tree_leaf_page(page2.page, page3.page_id, bpttd_p);
 
 			// release writer lock on page3, mark it as modified
-			dam_p->release_writer_lock_on_page(dam_p->context, page3.page, 1);
+			dam_p->release_writer_lock_on_page(dam_p->context, page3.page, WAS_MODIFIED);
 		}
 		else
 		{
@@ -303,7 +303,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 	build_index_entry_from_record_tuple(bpttd_p, first_tuple_page2, page2.page_id, output_parent_insert);
 
 	// release lock on the page2, and mark it as modified
-	dam_p->release_writer_lock_on_page(dam_p->context, page2.page, 1);
+	dam_p->release_writer_lock_on_page(dam_p->context, page2.page, WAS_MODIFIED);
 
 	// return success
 	return 1;
@@ -342,7 +342,7 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 	// check if a merge can be performed, and on failure release writer lock on page2, that we just acquired
 	if(!can_merge_bplus_tree_leaf_pages(page1, page2, bpttd_p))
 	{
-		dam_p->release_writer_lock_on_page(dam_p->context, page2.page, 0);
+		dam_p->release_writer_lock_on_page(dam_p->context, page2.page, NONE_OPTION);
 		return 0;
 	}
 
@@ -365,7 +365,7 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 			if(page3.page == NULL)
 			{
 				// on error, we release writer lock on page2, suggesting it was not modified
-				dam_p->release_writer_lock_on_page(dam_p->context, page2.page, 0);
+				dam_p->release_writer_lock_on_page(dam_p->context, page2.page, NONE_OPTION);
 				return 0;
 			}
 
@@ -374,7 +374,7 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 			set_prev_page_id_of_bplus_tree_leaf_page(page3.page, page1.page_id, bpttd_p);
 
 			// release lock on page3, marking it as modified
-			dam_p->release_writer_lock_on_page(dam_p->context, page3.page, 1);
+			dam_p->release_writer_lock_on_page(dam_p->context, page3.page, WAS_MODIFIED);
 		}
 		else // page2 is indeed the last page
 		{
@@ -411,7 +411,7 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 	}
 
 	// free page2 and release its lock
-	dam_p->release_writer_lock_and_free_page(dam_p->context, page2.page);
+	dam_p->release_writer_lock_on_page(dam_p->context, page2.page, FREE_PAGE);
 
 	return 1;
 }
