@@ -204,7 +204,11 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 		// deallocate page_memory
 		deallocate_page(page_desc->page_memory);
 		page_desc->page_memory = NULL;
+	}
 
+	// if the page_desc does not exist in the free_page_desc and it is not referenced by any readers, writers or waiters
+	if(is_free_floating_bstnode(&(page_desc->free_page_descs_node)) && (!is_referenced(&(page_desc->page_lock))))
+	{
 		// insert it into the free_page_descs, this ensures, that this page_desc can be reused by a get_new_page_with_write_lock call
 		insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
@@ -299,7 +303,11 @@ static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 			{
 				// page could have been freed while we were blocked for the lock
 				if(page_desc->is_free)
+				{
 					read_unlock(&(page_desc->page_lock));
+
+					run_free_page_management_unsafe(cntxt, page_desc);
+				}
 				else
 					page_ptr = page_desc->page_memory;
 			}
@@ -329,7 +337,11 @@ static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 			{
 				// page could have been freed while we were blocked for the lock
 				if(page_desc->is_free)
+				{
 					write_unlock(&(page_desc->page_lock));
+
+					run_free_page_management_unsafe(cntxt, page_desc);
+				}
 				else
 					page_ptr = page_desc->page_memory;
 			}
