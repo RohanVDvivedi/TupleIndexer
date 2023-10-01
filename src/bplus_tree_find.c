@@ -87,7 +87,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 
 		// release lock on the curr_page and 
 		// make the next_page as the curr_page
-		dam_p->release_reader_lock_on_page(dam_p->context, curr_page);
+		dam_p->release_reader_lock_on_page(dam_p->context, curr_page, NONE_OPTION);
 		curr_page = next_page;
 		curr_page_id = next_page_id;
 	}
