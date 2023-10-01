@@ -39,6 +39,9 @@ struct page_descriptor
 page_descriptor* get_new_page_descriptor(uint64_t page_id, pthread_mutex_t* global_lock_p)
 {
 	page_descriptor* page_desc = malloc(sizeof(page_descriptor));
+	if(page_desc == NULL)
+		return NULL;
+
 	page_desc->page_id = page_id;
 	page_desc->is_free = 1;	// because initially page_memory = NULL
 	page_desc->page_memory = NULL;
@@ -145,6 +148,39 @@ static int open_data_file(void* context)
 	return 1;
 }
 
+static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
+{
+	int page_count_shrunk = 0;
+
+	// loop to delete trailing page_descriptors
+	page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
+	while(trailing != NULL)
+	{
+		// if trailing is not the last page based on its id, then break
+		if(trailing->page_id != get_element_count_hashmap(&(cntxt->page_id_map)) - 1)
+			break;
+
+		// the page_desc with second largest page_id in free_page_desc
+		page_descriptor* trailing_prev = (page_descriptor*)get_inorder_prev_of_in_bst(&(cntxt->free_page_descs), trailing);
+
+		// remove the trailing page_descriptor, it will not exist in page_memory_map, since it is a free page
+		// we also do not need to deallocate the page_memory, since we found this page in the free_page_descs
+		remove_from_bst(&(cntxt->free_page_descs), trailing);
+		remove_from_hashmap(&(cntxt->page_id_map), trailing);
+
+		// now we can safely delete the page_descriptor
+		delete_page_descriptor(trailing);
+
+		// mark true that the total_pages_count was shrunk
+		page_count_shrunk = 1;
+
+		// prepare for next iteration
+		trailing = trailing_prev;
+	}
+
+	return page_count_shrunk;
+}
+
 static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_returned)
 {
 	memory_store_context* cntxt = context;
@@ -168,8 +204,9 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 				// create a new page_descriptor for the new unseen page
 				page_desc = get_new_page_descriptor(get_element_count_hashmap(&(cntxt->page_id_map)), &(cntxt->global_lock));
 
-				// insert this new page descriptor in the page_id_map
-				insert_in_hashmap(&(cntxt->page_id_map), page_desc);
+				// insert this new page descriptor in the page_id_map (,if it was allocated and initialized)
+				if(page_desc)
+					insert_in_hashmap(&(cntxt->page_id_map), page_desc);
 			}
 		}
 
@@ -179,20 +216,29 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 			// allocate page memory for this free page descriptor
 			page_desc->page_memory = allocate_page(cntxt->page_size);
 
-			// TODO : ROLLBACK, if allocation fails
+			if(page_desc->page_memory != NULL)
+			{
+				// this page_descriptor has page_memory associated with it, hopefully if the call to malloc doesn't fail
+				page_desc->is_free = 0;
 
-			// this page_descriptor has page_memory associated with it, hopefully if the call to malloc doesn't fail
-			page_desc->is_free = 0;
+				// insert this page in the page_memory_map, so that they future calls to release or upgrade/downgrade lock calls can find it
+				insert_in_hashmap(&(cntxt->page_memory_map), page_desc);
 
-			// insert this page in the page_memory_map
-			insert_in_hashmap(&(cntxt->page_memory_map), page_desc);
+				// get write lock on this page, this call will not fail here at all
+				write_lock(&(page_desc->page_lock), BLOCKING);
 
-			// get write lock on this page, this call will not fail here at all
-			write_lock(&(page_desc->page_lock), BLOCKING);
+				// assign return values
+				page_ptr = page_desc->page_memory;
+				*page_id_returned = page_desc->page_id;
+			}
+			else // ROLLBACK, if allocation fails
+			{
+				// insert it back into free_page_descs, it has no page_memory
+				insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
-			// assign return values
-			page_ptr = page_desc->page_memory;
-			*page_id_returned = page_desc->page_id;
+				// delete trailing free_pages from free_page_descs
+				discard_trailing_free_page_descs_unsafe(cntxt);
+			}
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
@@ -296,39 +342,6 @@ static int upgrade_reader_lock_to_writer_lock_on_page(void* context, void* pg_pt
 	return lock_upgraded;
 }
 
-static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
-{
-	int page_count_shrunk = 0;
-
-	// loop to delete trailing page_descriptors
-	page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
-	while(trailing != NULL)
-	{
-		// if trailing is not the last page based on its id, then break
-		if(trailing->page_id != get_element_count_hashmap(&(cntxt->page_id_map)) - 1)
-			break;
-
-		// the page_desc with second largest page_id in free_page_desc
-		page_descriptor* trailing_prev = (page_descriptor*)get_inorder_prev_of_in_bst(&(cntxt->free_page_descs), trailing);
-
-		// remove the trailing page_descriptor, it will not exist in page_memory_map, since it is a free page
-		// we also do not need to deallocate the page_memory, since we found this page in the free_page_descs
-		remove_from_bst(&(cntxt->free_page_descs), trailing);
-		remove_from_hashmap(&(cntxt->page_id_map), trailing);
-
-		// now we can safely delete the page_descriptor
-		delete_page_descriptor(trailing);
-
-		// mark true that the total_pages_count was shrunk
-		page_count_shrunk = 1;
-
-		// prepare for next iteration
-		trailing = trailing_prev;
-	}
-
-	return page_count_shrunk;
-}
-
 static int run_free_page_management_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
 {
 	int freed = 0;
@@ -337,6 +350,8 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 	if(!(page_desc->is_free))
 	{
 		page_desc->is_free = 1; // this will ensure that, any waiters will fail to acquire a lock on this page
+			// yet this page_desc and its page_id can not be reused until, it gets put back into the free_page_desc (with its page_memeory freed)
+			// this will happen (if this function is called properly), when all the locks on that page are released
 		freed = 1;
 	}
 
