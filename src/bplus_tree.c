@@ -21,7 +21,7 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_acc
 	// if init_page fails
 	if(!init_bplus_tree_leaf_page(root_page, bpttd_p))
 	{
-		dam_p->release_writer_on_page(dam_p->context, root_page, FREE_PAGE);
+		dam_p->release_writer_lock_on_page(dam_p->context, root_page, FREE_PAGE);
 		return bpttd_p->NULL_PAGE_ID;
 	}
 
@@ -76,7 +76,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			}
 
 			// free it and pop it from the stack
-			dam_p->release_reader_lock(dam_p->context, curr_locked_page->ppage.page, FREE_PAGE);
+			dam_p->release_reader_lock_on_page(dam_p->context, curr_locked_page->ppage.page, FREE_PAGE);
 			pop_from_locked_pages_stack(locked_pages_stack_p);
 		}
 		// handle free-ing on pages at level >= 2
@@ -97,7 +97,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			else // we have free all its children, now we free this page
 			{
 				// free it and pop it from the stack
-				dam_p->release_reader_lock(dam_p->context, curr_locked_page->ppage.page, FREE_PAGE);
+				dam_p->release_reader_lock_on_page(dam_p->context, curr_locked_page->ppage.page, FREE_PAGE);
 				pop_from_locked_pages_stack(locked_pages_stack_p);
 			}
 		}
