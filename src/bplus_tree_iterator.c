@@ -59,7 +59,7 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 			next_page = bpi_p->dam_p->acquire_page_with_reader_lock(bpi_p->dam_p->context, next_page_id);
 
 		// release lock on the curr_page
-		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page);
+		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page, NONE_OPTION);
 
 		bpi_p->curr_page = next_page;
 		bpi_p->curr_page_id = next_page_id;
@@ -113,7 +113,7 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 			prev_page = bpi_p->dam_p->acquire_page_with_reader_lock(bpi_p->dam_p->context, prev_page_id);
 
 		// release lock on the curr_page
-		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page);
+		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page, NONE_OPTION);
 
 		bpi_p->curr_page = prev_page;
 		bpi_p->curr_page_id = prev_page_id;
@@ -145,6 +145,6 @@ int error_occurred_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	if(bpi_p->curr_page_id != bpi_p->bpttd_p->NULL_PAGE_ID && bpi_p->curr_page != NULL)
-		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page);
+		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page, NONE_OPTION);
 	free(bpi_p);
 }
