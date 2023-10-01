@@ -580,27 +580,7 @@ int free_page(void* context, uint64_t page_id)
 	return will_be_freed;
 }
 
-uint64_t get_page_id_for_page(void* context, void* pg_ptr)
-{
-	memory_store_context* cntxt = context;
-
-	uint64_t page_id = cntxt->MAX_PAGE_COUNT;
-
-	pthread_mutex_lock(&(cntxt->global_lock));
-
-		const page_descriptor* page_desc = find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
-
-		if(page_desc)
-			page_id = page_desc->page_id;
-
-	pthread_mutex_unlock(&(cntxt->global_lock));
-
-	return page_id;
-}
-
-static int force_write_to_disk(void* context, uint64_t page_id){ /* NOOP */ return 1;}
-
-static void delete_page_descriptor_hashmap_operation(const void* data, const void* additional_params)
+static void delete_notified_page_descriptor(void* resource_p, const void* data)
 {
 	if(((page_descriptor*)(data))->page_memory != NULL)
 		deallocate_page(((page_descriptor*)(data))->page_memory);
@@ -611,8 +591,7 @@ static int close_data_file(void* context)
 {
 	memory_store_context* cntxt = context;
 
-	for_each_in_hashmap(&(cntxt->page_id_map), delete_page_descriptor_hashmap_operation, NULL);
-
+	remove_all_from_hashmap(&(cntxt->page_id_map), &((notifier_interface){NULL, delete_notified_page_descriptor}));
 	deinitialize_hashmap(&(cntxt->page_id_map));
 	deinitialize_hashmap(&(cntxt->page_memory_map));
 	pthread_mutex_destroy(&(cntxt->global_lock));
