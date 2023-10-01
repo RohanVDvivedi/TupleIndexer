@@ -1,4 +1,7 @@
 ** PICKED TASKS
+ * resolve BUGS :: in in_memory_data_store
+   * add a page to fre_page_descs only after all waiters have left
+   * while acquiring lock on a page, if the page is free after acquiring the lock then, run_free_page_management to make sure that the page gets added to free page descs
  * page_modification_methods
    * make page_modification_methods and allow only modifying a page only through it, refactor the complete library to use page_layout_unaltered.h instead of page_layout.h
    * build for all page headers api to get_*_header_from_page, and set_*_header_in_page, and use that instead
