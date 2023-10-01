@@ -90,10 +90,9 @@ static void* allocate_page(uint32_t page_size)
 	return malloc(page_size);
 }
 
-static int deallocate_page(void* page)
+static void deallocate_page(void* page)
 {
 	free(page);
-	return 1;
 }
 
 typedef struct memory_store_context memory_store_context;
@@ -296,37 +295,41 @@ static int upgrade_reader_lock_to_writer_lock_on_page(void* context, void* pg_pt
 
 	return lock_upgraded;
 }
-/*
-static int delete_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
+
+static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 {
 	int page_count_shrunk = 0;
 
 	// loop to delete trailing page_descriptors
-	while(1)
+	page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs))
+	while(trailing != NULL)
 	{
-		page_descriptor* trailing = (page_descriptor*)find_largest_in_bst(&(cntxt->free_page_descs));
-
-		// check if this page_descriptor is a trailing (the last of page_descriptors)
-		if(trailing != NULL && trailing->page_id + 1 == cntxt->total_pages_count)
-		{
-			// remove the trailing page_descriptor, it will not exist in page_memory_map, since it is a free page
-			remove_from_bst(&(cntxt->free_page_descs), trailing);
-			remove_from_hashmap(&(cntxt->page_id_map), trailing);
-
-			// now we can safely delete the page_descriptor
-			delete_page_descriptor(trailing);
-			trailing = NULL; // discarding dangling local pointer
-
-			// mark true that the total_pages_count was shrunk
-			page_count_shrunk = 1;
-		}
-		else
+		// if trailing is not the last page based on its id, then break
+		if(trailing->page_id != get_element_count_hashmap(&(cntxt->page_id_map)) - 1)
 			break;
+
+		// the page_desc with second largest page_id in free_page_desc
+		page_descriptor* trailing_prev = get_inorder_prev_of_in_bst(&(cntxt->free_page_descs), trailing);
+
+		// remove the trailing page_descriptor, it will not exist in page_memory_map, since it is a free page
+		// we also do not need to deallocate the page_memory, since we found this page in the free_page_descs
+		remove_from_bst(&(cntxt->free_page_descs), trailing);
+		remove_from_hashmap(&(cntxt->page_id_map), trailing);
+
+		// now we can safely delete the page_descriptor
+		delete_page_descriptor(trailing);
+
+		// mark true that the total_pages_count was shrunk
+		page_count_shrunk = 1;
+
+		// prepare for next iteration
+		trailing = trailing_prev;
 	}
 
 	return page_count_shrunk;
 }
 
+/*
 static int free_page_if_marked_for_free_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
 {
 	// if the page_desc is already free OR is not marked for freeing then return with a failure
