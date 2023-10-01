@@ -18,29 +18,11 @@ struct page_descriptor
 	// and page_memory = NULL
 	int is_free;
 
-	int is_marked_for_freeing;
-
 	// this will be NULL for a free page_desc
 	void* page_memory;
 
-	// below are the main attributes that enable locking for reads and writes
-
-	// number of threads holding read lock
-	uint32_t reading_threads;
-
-	// number of threads holding write lock
-	uint32_t writing_threads;
-
-	// number of threads waiting to acquire lock
-	uint32_t waiting_threads;
-
-	// threads block here on this condition variable, until they can acquire the lock
-	pthread_cond_t block_wait;
-
-	// the thread that wants to free this page_desc (after marking it for freeing) may block here, 
-	// until there is atleast 1 waiting_threads
-	// only 1 thread may wait on this condition variable, and only if there are waiting threads and after marking the page_desc for freeing
-	pthread_cond_t free_wait;
+	// reader wrier lock for the page
+	rwlock page_lock;
 
 	// below are the 2 embedded nodes used by page_id_map and page_memory_map
 
@@ -53,18 +35,14 @@ struct page_descriptor
 	bstnode free_page_descs_node;
 };
 
-page_descriptor* get_new_page_descriptor(uint64_t page_id)
+page_descriptor* get_new_page_descriptor(uint64_t page_id, pthread_mutex_t* global_lock_p)
 {
 	page_descriptor* page_desc = malloc(sizeof(page_descriptor));
 	page_desc->page_id = page_id;
 	page_desc->is_free = 1;	// because initially page_memory = NULL
 	page_desc->is_marked_for_freeing = 0;
 	page_desc->page_memory = NULL;
-	page_desc->reading_threads = 0;
-	page_desc->writing_threads = 0;
-	page_desc->waiting_threads = 0;
-	pthread_cond_init(&(page_desc->block_wait), NULL);
-	pthread_cond_init(&(page_desc->free_wait), NULL);
+	initialize_rwlock(&(page_desc->page_lock), global_lock_p);
 	initialize_llnode(&(page_desc->page_id_map_node));
 	initialize_llnode(&(page_desc->page_memory_map_node));
 	initialize_bstnode(&(page_desc->free_page_descs_node));
@@ -73,8 +51,7 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id)
 
 void delete_page_descriptor(page_descriptor* page_desc)
 {
-	pthread_cond_destroy(&(page_desc->block_wait));
-	pthread_cond_destroy(&(page_desc->free_wait));
+	deinitialize_rwlock(&(page_desc->page_lock));
 	free(page_desc);
 }
 
