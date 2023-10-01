@@ -45,7 +45,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1)
 				{
 					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-					dam_p->release_writer_lock_on_page(dam_p->context, bottom->ppage.page, 0);
+					dam_p->release_writer_lock_on_page(dam_p->context, bottom->ppage.page, NONE_OPTION);
 					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 				}
 			}
@@ -81,7 +81,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// if no such record can be found, we break and exit
 			if(NO_TUPLE_FOUND == found_index)
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 0);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, NONE_OPTION);
 				break;
 			}
 
@@ -94,7 +94,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			if(!deleted) // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 0);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, NONE_OPTION);
 				break;
 			}
 
@@ -102,7 +102,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// i.e. we can not merge a page which is root OR is more than half full
 			if(curr_locked_page.ppage.page_id == root_page_id || is_page_more_than_half_full(curr_locked_page.ppage.page, bpttd_p->page_size, bpttd_p->record_def))
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
 			}
 
@@ -128,7 +128,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			if(!merged && parent_locked_page->child_index < parent_tuple_count)
 			{
 				// release lock on the curr_locked_page
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 
 				// make the previous of curr_locked_page as the curr_locked_page
 				uint32_t prev_child_page_id = find_child_page_id_by_child_index(parent_locked_page->ppage.page, parent_locked_page->child_index - 1, bpttd_p);
@@ -141,7 +141,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 				if(!merged)
 				{
-					dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 0);
+					dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, NONE_OPTION);
 
 					// mark curr_locked_page as empty / locks already released
 					curr_locked_page = INIT_LOCKED_PAGE_INFO(NULL, bpttd_p->NULL_PAGE_ID);
@@ -150,7 +150,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			// release lock on the curr_locked_page, if not released yet
 			if(curr_locked_page.ppage.page_id != bpttd_p->NULL_PAGE_ID)
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 
 			if(!merged)
 				break;
@@ -166,7 +166,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			if(!deleted) // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 0);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, NONE_OPTION);
 				break;
 			}
 
@@ -187,13 +187,13 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 						clone_page(curr_locked_page.ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def), only_child_page);
 
 					// free and unlock only_child_page
-					dam_p->release_reader_lock_and_free_page(dam_p->context, only_child_page);
+					dam_p->release_reader_lock_on_page(dam_p->context, only_child_page, FREE_PAGE);
 
 					// root_page_level will now be what was the level of its child (root_page_level -= 1, should have sufficed here)
 					root_page_level = get_level_of_bplus_tree_page(curr_locked_page.ppage.page, bpttd_p);
 				}
 
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
 			}
 
@@ -201,7 +201,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// i.e. we can not merge a page which is more than half full
 			if(is_page_more_than_half_full(curr_locked_page.ppage.page, bpttd_p->page_size, bpttd_p->index_def))
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
 			}
 
@@ -229,10 +229,10 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				{
 					parent_locked_page->child_index += 1;
 
-					dam_p->release_writer_lock_and_free_page(dam_p->context, child_page2.page);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, FREE_PAGE);
 				}
 				else // release lock on the page that is not curr_locked_page
-					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, 0);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, NONE_OPTION);
 			}
 
 			// attempt a merge with prev page of curr_locked_page, if it has a prev page with same parent
@@ -251,16 +251,16 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				// if merged we need to delete entry at child_index in the parent page, and free child_page2
 				if(merged)
 				{
-					dam_p->release_writer_lock_and_free_page(dam_p->context, child_page2.page);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, FREE_PAGE);
 
 					curr_locked_page.ppage = child_page1;
 				}
 				else // release lock on the page that is not curr_locked_page
-					dam_p->release_writer_lock_on_page(dam_p->context, child_page1.page, 0);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page1.page, NONE_OPTION);
 			}
 
 			// release lock on the curr_locked_page
-			dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+			dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 
 			if(!merged)
 				break;
@@ -271,7 +271,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-		dam_p->release_writer_lock_on_page(dam_p->context, bottom->ppage.page, 0);
+		dam_p->release_writer_lock_on_page(dam_p->context, bottom->ppage.page, NONE_OPTION);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 
