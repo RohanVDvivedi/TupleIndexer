@@ -26,36 +26,20 @@ struct data_access_methods
 	void* (*acquire_page_with_writer_lock)(void* context, uint64_t page_id);
 
 	// downgrade a writer lock to a reader lock
-	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, void* pg_ptr);
+	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, void* pg_ptr, int was_modified, int force_flush);
+	int (*upgrade_reader_lock_to_writer_lock_on_page)(void* context, void* pg_ptr);
 
-	// releases lock on the page, accordingly
-	int (*release_reader_lock_on_page)(void* context, void* pg_ptr);
-	int (*release_writer_lock_on_page)(void* context, void* pg_ptr, int was_modified);
+	// releases lock on the page, accordingly, free_page flag will free the page, after releasing the lock
+	int (*release_reader_lock_on_page)(void* context, void* pg_ptr, int free_page);
+	int (*release_writer_lock_on_page)(void* context, void* pg_ptr, int was_modified, int force_flush, int free_page);
 
 	// the was_modified parameter suggests that the page that we had a writer lock on was modified,
-	// and any disk based system is suppossed to mark this page dirty now and possibly persist this new version of page to disk, whenever it deems necessary
-
-	// releases writer lock and mark the page as free
-	int (*release_writer_lock_and_free_page)(void* context, void* pg_ptr);
-
-	// releases reader lock and mark the page as free
-	// all the threads waiting for lock on this page must be denied lock on this page
-	// no further locks on this page should be issued until this page is freed
-	// free this page only after the last reader has unlocked it
-	// multiple calls to this function by all the readers holding lock on this page must be allowed
-	int (*release_reader_lock_and_free_page)(void* context, void* pg_ptr);
+	// and any disk based system is suppossed to mark this page dirty now and possibly persist this new version of page to disk,
+	// whenever it deems necessary OR try to flush it immediately, if the force_flush param is set
 
 	// make a page free, you may call this function, even if you don't have lock on the page
-	// fails if the page is already free
+	// fails only if the page is already free
 	int (*free_page)(void* context, uint64_t page_id);
-
-	// get page id corresponding to a pg_ptr
-	// you may call this function only while holding read or write lock on this page
-	uint64_t (*get_page_id_for_page)(void* context, void* pg_ptr);
-
-	// equivalent to msync
-	// you must call this function while holding a reader lock on the page
-	int (*force_write_to_disk)(void* context, uint64_t page_id);
 
 	int (*close_data_file)(void* context);
 
@@ -84,18 +68,12 @@ struct data_access_methods
 **
 **	Lock transitions allowed
 **
-**  case 1 :
-**	  N -> R 		by calling acquire_reader_lock
-**	  R -> N 		by calling release_reader_lock
-**
-**  case 2 :
-**	  N -> W 		by calling acquire_writer_lock
-**	  W -> N 		by calling release_writer_lock
-**
-**  case 3 :
-**	  N -> W 		by calling acquire_writer_lock
-**	  W -> R 		by calling downgrade_writer_lock_to_reader_lock
-**	  R -> N 		by calling release_reader_lock
+**	  N -> R 		by calling acquire_page_with_reader_lock
+**	  R -> N 		by calling release_reader_lock_on_page
+**	  N -> W 		by calling acquire_page_with_writer_lock
+**	  W -> N 		by calling release_writer_lock_on_page
+**	  W -> R 		by calling downgrade_writer_lock_to_reader_lock_on_page
+**	  R -> W 		by calling upgrade_reader_lock_to_writer_lock_on_page
 **
 */
 
