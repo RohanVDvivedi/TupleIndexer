@@ -1,0 +1,10 @@
+#ifndef UNWALED_PAGE_MODIFICATION_METHODS_H
+#define UNWALED_PAGE_MODIFICATION_METHODS_H
+
+#include<page_modification_methods.h>
+
+page_modification_methods* get_new_unWALed_page_modification_methods();
+
+void delete_unWALed_page_modification_methods(page_modification_methods* pmm_p);
+
+#endif
