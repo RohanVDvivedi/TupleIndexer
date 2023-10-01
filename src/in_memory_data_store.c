@@ -336,22 +336,23 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 	// if not free, mark it as free
 	if(!(page_desc->is_free))
 	{
-		page_desc->is_free = 1;
+		page_desc->is_free = 1; // this will ensure that, any waiters will fail to acquire a lock on this page
 		freed = 1;
 	}
 
 	// if the page has allocated page memory, and is not read or write locked as of now, then
 	if(page_desc->page_memory != NULL && (!is_read_locked(&(page_desc->page_lock))) && (!is_write_locked(&(page_desc->page_lock))))
 	{
-		// insert it into the free_page_descs
-		insert_in_bst(&(cntxt->free_page_descs), page_desc);
-
 		// if it is not read or write locked, then it is not going to be accessed with it's page_memeory
 		// remove it from page_memory_map
 		remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
 
-		// deallocate page_memeory
+		// deallocate page_memory
 		deallocate_page(page_desc->page_memory);
+		page_desc->page_memory = NULL;
+
+		// insert it into the free_page_descs, this ensures, that this page_desc can be reused by a get_new_page_with_write_lock call
+		insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
 		// delete trailing free_pages from free_page_descs
 		discard_trailing_free_page_descs_unsafe(cntxt);
