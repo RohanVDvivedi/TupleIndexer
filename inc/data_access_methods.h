@@ -12,6 +12,12 @@
 **  0 or NULL impiles an error with the corresponding operation
 */
 
+// below are the options that can go with the functions below
+#define NO_OPTION    0b000
+#define FREE_PAGE    0b001
+#define FORCE_FLUSH  0b010
+#define WAS_MODIFIED 0b100
+
 typedef struct data_access_methods data_access_methods;
 struct data_access_methods
 {
@@ -26,12 +32,12 @@ struct data_access_methods
 	void* (*acquire_page_with_writer_lock)(void* context, uint64_t page_id);
 
 	// downgrade a writer lock to a reader lock
-	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, void* pg_ptr, int was_modified, int force_flush);
+	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, void* pg_ptr, int opts); // acceptable options : WAS_MODIFIED and FORCE_FLUSH
 	int (*upgrade_reader_lock_to_writer_lock_on_page)(void* context, void* pg_ptr);
 
 	// releases lock on the page, accordingly, free_page flag will free the page, after releasing the lock
-	int (*release_reader_lock_on_page)(void* context, void* pg_ptr, int free_page);
-	int (*release_writer_lock_on_page)(void* context, void* pg_ptr, int was_modified, int force_flush, int free_page);
+	int (*release_reader_lock_on_page)(void* context, void* pg_ptr, int opts); // acceptable options : FREE_PAGE
+	int (*release_writer_lock_on_page)(void* context, void* pg_ptr, int opts); // acceptable options : WAS_MODIFIED, FORCE_FLUSH and FREE_PAGE
 
 	// the was_modified parameter suggests that the page that we had a writer lock on was modified,
 	// and any disk based system is suppossed to mark this page dirty now and possibly persist this new version of page to disk,
