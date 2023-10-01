@@ -53,7 +53,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 				{
 					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-					dam_p->release_writer_lock_on_page(dam_p->context, bottom->ppage.page, 0);
+					dam_p->release_writer_lock_on_page(dam_p->context, bottom->ppage.page, NONE_OPTION);
 					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 				}
 			}
@@ -88,7 +88,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(found)
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 0);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, NONE_OPTION);
 				break;
 			}
 
@@ -103,7 +103,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(inserted)
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
 			}
 
@@ -123,7 +123,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(inserted)
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
 			}
 
@@ -166,10 +166,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// then lock on this page should be released with modification
 			// and in the next loop we continue to insert parent_insert to parent page
 			if(inserted)
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 			else // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 0);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, NONE_OPTION);
 				break;
 			}
 		}
@@ -187,7 +187,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(parent_tuple_inserted)
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
 			}
 
@@ -206,7 +206,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			if(parent_tuple_inserted)
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
 			}
 
@@ -242,10 +242,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// then lock on this page should be released with modification
 			// and in the next loop we continue to insert parent_insert to parent page
 			if(parent_tuple_inserted)
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 1);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 			else // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, 0);
+				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, NONE_OPTION);
 				break;
 			}
 		}
@@ -258,7 +258,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-		dam_p->release_writer_lock_on_page(dam_p->context, bottom->ppage.page, 0);
+		dam_p->release_writer_lock_on_page(dam_p->context, bottom->ppage.page, NONE_OPTION);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 
