@@ -306,7 +306,7 @@ static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 	return page_ptr;
 }
 
-static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr, int was_modified, int force_flush)
+static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr, int opts)
 {
 	memory_store_context* cntxt = context;
 
@@ -376,7 +376,7 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 	return freed;
 }
 
-static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modified, int force_flush, int free_page)
+static int release_writer_lock_on_page(void* context, void* pg_ptr, int opts)
 {
 	memory_store_context* cntxt = context;
 
@@ -390,7 +390,7 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 		{
 			lock_released = write_unlock(&(page_desc->page_lock));
 
-			if(lock_released && (free_page || page_desc->is_free))
+			if(lock_released && ((opts & FREE_PAGE) || page_desc->is_free))
 				run_free_page_management_unsafe(cntxt, page_desc);
 		}
 
@@ -399,7 +399,7 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int was_modi
 	return lock_released;
 }
 
-static int release_reader_lock_on_page(void* context, void* pg_ptr, int free_page)
+static int release_reader_lock_on_page(void* context, void* pg_ptr, int opts)
 {
 	memory_store_context* cntxt = context;
 
@@ -413,7 +413,7 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr, int free_pag
 		{
 			lock_released = read_unlock(&(page_desc->page_lock));
 
-			if(lock_released && (free_page || page_desc->is_free))
+			if(lock_released && ((opts & FREE_PAGE) || page_desc->is_free))
 				run_free_page_management_unsafe(cntxt, page_desc);
 		}
 
