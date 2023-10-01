@@ -13,7 +13,7 @@
 */
 
 // below are the options that can go with the functions below
-#define NO_OPTION    0b000
+#define NONE_OPTION  0b000
 #define FREE_PAGE    0b001
 #define FORCE_FLUSH  0b010
 #define WAS_MODIFIED 0b100
