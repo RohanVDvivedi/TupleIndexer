@@ -8,7 +8,7 @@
 #include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
 
-#include<page_layout.h>
+#include<page_layout_unaltered.h>
 #include<tuple.h>
 
 #include<stdlib.h>
