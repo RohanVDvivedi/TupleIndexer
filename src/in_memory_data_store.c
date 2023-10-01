@@ -181,6 +181,40 @@ static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 	return page_count_shrunk;
 }
 
+static int run_free_page_management_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
+{
+	int freed = 0;
+
+	// if not free, mark it as free
+	if(!(page_desc->is_free))
+	{
+		page_desc->is_free = 1; // this will ensure that, any waiters will fail to acquire a lock on this page
+			// yet this page_desc and its page_id can not be reused until, it gets put back into the free_page_desc (with its page_memeory freed)
+			// this will happen (if this function is called properly), when all the locks on that page are released
+		freed = 1;
+	}
+
+	// if the page has allocated page memory, and is not read or write locked as of now, then
+	if(page_desc->page_memory != NULL && (!is_read_locked(&(page_desc->page_lock))) && (!is_write_locked(&(page_desc->page_lock))))
+	{
+		// if it is not read or write locked, then it is not going to be accessed with it's page_memeory
+		// remove it from page_memory_map
+		remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+
+		// deallocate page_memory
+		deallocate_page(page_desc->page_memory);
+		page_desc->page_memory = NULL;
+
+		// insert it into the free_page_descs, this ensures, that this page_desc can be reused by a get_new_page_with_write_lock call
+		insert_in_bst(&(cntxt->free_page_descs), page_desc);
+
+		// delete trailing free_pages from free_page_descs
+		discard_trailing_free_page_descs_unsafe(cntxt);
+	}
+
+	return freed;
+}
+
 static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_returned)
 {
 	memory_store_context* cntxt = context;
@@ -340,40 +374,6 @@ static int upgrade_reader_lock_to_writer_lock_on_page(void* context, void* pg_pt
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	return lock_upgraded;
-}
-
-static int run_free_page_management_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
-{
-	int freed = 0;
-
-	// if not free, mark it as free
-	if(!(page_desc->is_free))
-	{
-		page_desc->is_free = 1; // this will ensure that, any waiters will fail to acquire a lock on this page
-			// yet this page_desc and its page_id can not be reused until, it gets put back into the free_page_desc (with its page_memeory freed)
-			// this will happen (if this function is called properly), when all the locks on that page are released
-		freed = 1;
-	}
-
-	// if the page has allocated page memory, and is not read or write locked as of now, then
-	if(page_desc->page_memory != NULL && (!is_read_locked(&(page_desc->page_lock))) && (!is_write_locked(&(page_desc->page_lock))))
-	{
-		// if it is not read or write locked, then it is not going to be accessed with it's page_memeory
-		// remove it from page_memory_map
-		remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
-
-		// deallocate page_memory
-		deallocate_page(page_desc->page_memory);
-		page_desc->page_memory = NULL;
-
-		// insert it into the free_page_descs, this ensures, that this page_desc can be reused by a get_new_page_with_write_lock call
-		insert_in_bst(&(cntxt->free_page_descs), page_desc);
-
-		// delete trailing free_pages from free_page_descs
-		discard_trailing_free_page_descs_unsafe(cntxt);
-	}
-
-	return freed;
 }
 
 static int release_writer_lock_on_page(void* context, void* pg_ptr, int opts)
