@@ -108,11 +108,6 @@ struct memory_store_context
 	// constant
 	uint64_t MAX_PAGE_COUNT;
 
-	// total number of pages in the system
-	// the number of pages in page_id_map = total_pages
-	// the number of pages in page_memory_map = total_pages - free_pages_count
-	uint64_t total_pages_count;
-
 	// bst of free_pages, ordered by their page_ids
 	// this pages are free (they dont have their page_memory populated)
 	// we always allocate new page from the least page_id from free_page_descs
@@ -130,6 +125,10 @@ struct memory_store_context
 
 	// page_memory -> page_desc
 	hashmap page_memory_map;
+
+	// total number of pages in the system = total_page
+	// total_pages = get_element_count_hashmap(page_id_map)
+	// the number of pages in page_memory_map = total_pages - free_pages_count
 };
 
 #define MIN_BUCKET_COUNT 128
@@ -140,7 +139,6 @@ static int open_data_file(void* context)
 
 	pthread_mutex_init(&(cntxt->global_lock), NULL);
 	cntxt->free_pages_count = 0;
-	cntxt->total_pages_count = 0;
 	initialize_bst(&(cntxt->free_page_descs), RED_BLACK_TREE, &simple_comparator(compare_page_descs_by_page_ids), offsetof(page_descriptor, free_page_descs_node));
 	initialize_hashmap(&(cntxt->page_id_map), ELEMENTS_AS_LINKEDLIST_INSERT_AT_HEAD, MIN_BUCKET_COUNT, &simple_hasher(hash_on_page_id), &simple_comparator(compare_page_descs_by_page_ids), offsetof(page_descriptor, page_id_map_node));
 	initialize_hashmap(&(cntxt->page_memory_map), ELEMENTS_AS_LINKEDLIST_INSERT_AT_HEAD, MIN_BUCKET_COUNT, &simple_hasher(hash_on_page_memory), &simple_comparator(compare_page_descs_by_page_memories), offsetof(page_descriptor, page_memory_map_node));
@@ -161,19 +159,15 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 
 		if(page_desc != NULL)
 		{
-			*page_id_returned = page_desc->page_id;
-
 			// if a page_desc is found, then then remove it from the free_page_descs
 			remove_from_bst(&(cntxt->free_page_descs), page_desc);
 		}
 		else
 		{
-			if(cntxt->total_pages_count < cntxt->MAX_PAGE_COUNT)
+			if(get_element_count_hashmap(&(cntxt->page_id_map)) < cntxt->MAX_PAGE_COUNT)
 			{
-				*page_id_returned = cntxt->total_pages_count++;
-
 				// create a new page_descriptor for the new unseen page
-				page_desc = get_new_page_descriptor(*page_id_returned);
+				page_desc = get_new_page_descriptor(get_element_count_hashmap(&(cntxt->page_id_map)), &(cntxt->global_lock));
 
 				// insert this new page descriptor in the page_id_map
 				insert_in_hashmap(&(cntxt->page_id_map), page_desc);
@@ -185,17 +179,21 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 		{
 			// allocate page memory for this free page descriptor
 			page_desc->page_memory = allocate_page(cntxt->page_size);
-			page_ptr = page_desc->page_memory;
+
+			// TODO : ROLLBACK, if allocation fails
 
 			// this page_descriptor has page_memory associated with it, hopefully if the call to malloc doesn't fail
 			page_desc->is_free = 0;
-			page_desc->is_marked_for_freeing = 0;
 
 			// insert this page in the page_memory_map
 			insert_in_hashmap(&(cntxt->page_memory_map), page_desc);
 
 			// get write lock on this page, this call will not fail here at all
-			acquire_write_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
+			write_lock(&(page_desc->page_lock), BLOCKING);
+
+			// assign return values
+			page_ptr = page_desc->page_memory;
+			*page_id_returned = page_desc->page_id;
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
@@ -214,12 +212,18 @@ static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
 
 		// attempt to acquire a lock if such a page_descriptor exists and is not free
-		if(page_desc != NULL && (!page_desc->is_free) && (!page_desc->is_marked_for_freeing))
+		if(page_desc != NULL && (!(page_desc->is_free)))
 		{
-			int lock_acquired = acquire_read_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
+			int lock_acquired = read_lock(&(page_desc->page_lock), READ_PREFERRING, BLOCKING);
 
 			if(lock_acquired)
-				page_ptr = page_desc->page_memory;
+			{
+				// page could have been freed while we were blocked for the lock
+				if(page_desc->is_free)
+					read_unlock(&(page_desc->page_lock));
+				else
+					page_ptr = page_desc->page_memory;
+			}
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
@@ -240,10 +244,16 @@ static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 		// attempt to acquire a lock if such a page_descriptor exists and is not free
 		if(page_desc != NULL && (!page_desc->is_free) && (!page_desc->is_marked_for_freeing))
 		{
-			int lock_acquired = acquire_write_lock_on_page_memory_unsafe(page_desc, &(cntxt->global_lock));
+			int lock_acquired = write_lock(&(page_desc->page_lock), NON_BLOCKING);
 			
 			if(lock_acquired)
-				page_ptr = page_desc->page_memory;
+			{
+				// page could have been freed while we were blocked for the lock
+				if(page_desc->is_free)
+					write_unlock(&(page_desc->page_lock));
+				else
+					page_ptr = page_desc->page_memory;
+			}
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
@@ -262,7 +272,7 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
 
 		if(page_desc)
-			lock_downgraded = downgrade_writer_lock_to_reader_lock_on_page_memory_unsafe(page_desc);
+			lock_downgraded = downgrade_lock(&(page_desc->page_lock));
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
@@ -281,16 +291,13 @@ static int delete_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 		// check if this page_descriptor is a trailing (the last of page_descriptors)
 		if(trailing != NULL && trailing->page_id + 1 == cntxt->total_pages_count)
 		{
-			// remove the trailing page_descriptor
+			// remove the trailing page_descriptor, it will not exist in page_memory_map, since it is a free page
 			remove_from_bst(&(cntxt->free_page_descs), trailing);
 			remove_from_hashmap(&(cntxt->page_id_map), trailing);
 
 			// now we can safely delete the page_descriptor
 			delete_page_descriptor(trailing);
 			trailing = NULL; // discarding dangling local pointer
-
-			// decrement the total pages count
-			cntxt->total_pages_count--;
 
 			// mark true that the total_pages_count was shrunk
 			page_count_shrunk = 1;
@@ -605,6 +612,7 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t pa
 		return NULL;
 
 	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
+
 	dam_p->open_data_file = open_data_file;
 	dam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
 	dam_p->acquire_page_with_reader_lock = acquire_page_with_reader_lock;
