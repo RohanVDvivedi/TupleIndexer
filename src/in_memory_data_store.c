@@ -85,129 +85,6 @@ static cy_uint hash_on_page_memory(const void* page_desc)
 	return ((uintptr_t)(((const page_descriptor*)(page_desc))->page_memory));
 }
 
-// blocking, unsafe function, must be called within lock on global_lock
-static int acquire_read_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
-{
-	// we can never lock a free page or a page that is marked to be freed in future
-	if(page_desc->is_free || page_desc->is_marked_for_freeing)
-		return 0;
-
-	// wait until there are writers on this page
-	// quit this loop if the page is freed or is marked to be freed
-	while(page_desc->writing_threads > 0 && !page_desc->is_free && !page_desc->is_marked_for_freeing)
-	{
-		page_desc->waiting_threads++;
-		pthread_cond_wait(&(page_desc->block_wait), global_lock);
-		page_desc->waiting_threads--;
-	}
-
-	// fail to acquire the lock if the page is freed OR is marked to be freed,
-	// while we may have waited on the condition variable
-	if(page_desc->is_free || page_desc->is_marked_for_freeing)
-	{
-		// if the page is marked for freeing and we were the last waiting_thread then
-		// we signal the thread that is waiting for blocked threads to leave, that it can now proceed
-		// note that only 1 thread must wait for the waiting threads to leave while the page_descriptor is marked for freeing
-		if(page_desc->is_marked_for_freeing && page_desc->waiting_threads == 0)
-			pthread_cond_signal(&(page_desc->free_wait));
-		return 0;
-	}
-
-	// increment reader thread count
-	page_desc->reading_threads++;
-
-	// if you are the first reader thread then wake all the threads
-	// some of them might be writers aswell
-	if(page_desc->reading_threads == 1)
-		pthread_cond_broadcast(&(page_desc->block_wait));
-
-	return 1;
-}
-
-// blocking, unsafe function, must be called within lock on global_lock
-static int acquire_write_lock_on_page_memory_unsafe(page_descriptor* page_desc, pthread_mutex_t* global_lock)
-{
-	// we can never lock a free page or a page that is marked to be freed in future
-	if(page_desc->is_free || page_desc->is_marked_for_freeing)
-		return 0;
-
-	// wait until there are readers and writers on this page
-	while((page_desc->writing_threads > 0 || page_desc->reading_threads > 0) && !page_desc->is_free && !page_desc->is_marked_for_freeing)
-	{
-		page_desc->waiting_threads++;
-		pthread_cond_wait(&(page_desc->block_wait), global_lock);
-		page_desc->waiting_threads--;
-	}
-
-	// fail to acquire the lock if the page is freed OR is marked to be freed,
-	// while we may have waited on the condition variable
-	if(page_desc->is_free || page_desc->is_marked_for_freeing)
-	{
-		// if the page is marked for freeing and we were the last waiting_thread then
-		// we signal the thread that is waiting for blocked threads to leave, that it can now proceed
-		// note that only 1 thread must wait for the waiting threads to leave while the page_descriptor is marked for freeing
-		if(page_desc->is_marked_for_freeing && page_desc->waiting_threads == 0)
-			pthread_cond_signal(&(page_desc->free_wait));
-		return 0;
-	}
-
-	// increment writer thread count
-	page_desc->writing_threads++;
-
-	return 1;
-}
-
-static int downgrade_writer_lock_to_reader_lock_on_page_memory_unsafe(page_descriptor* page_desc)
-{
-	// if the page was not already locked for writing then return with a failure
-	if(page_desc->writing_threads == 0)
-		return 0;
-
-	// converting from writer to a reader
-	page_desc->writing_threads--;
-	page_desc->reading_threads++;
-
-	// the number of reading threads are suppossed to be 0 at this point here
-	// but there can be other reader threads that are waiting, we wake all the threads up, since we are the first reader now
-	pthread_cond_broadcast(&(page_desc->block_wait));
-
-	return 1;
-}
-
-// unsafe function, must be called within lock on global_lock
-static int release_read_lock_on_page_memory_unsafe(page_descriptor* page_desc)
-{
-	// if the page was not locked for read, then return with a failure
-	if(page_desc->reading_threads == 0)
-		return 0;
-
-	// grab your reader lock and exit
-	page_desc->reading_threads--;
-
-	// wake 1 next thread, if you are the last reader, this may be a reader or a writer
-	if(page_desc->reading_threads == 0)
-		pthread_cond_signal(&(page_desc->block_wait));
-
-	return 1;
-}
-
-// unsafe function, must be called within lock on global_lock
-static int release_write_lock_on_page_memory_unsafe(page_descriptor* page_desc)
-{
-	// if the page was not locked for write, then return with a failure
-	if(page_desc->writing_threads == 0)
-		return 0;
-
-	// grab your writer lock and exit
-	page_desc->writing_threads--;
-
-	// wake 1 next thread, this may be a reader or a writer
-	// page_desc->writing_threads must be 0 here
-	pthread_cond_signal(&(page_desc->block_wait));
-
-	return 1;
-}
-
 static void* allocate_page(uint32_t page_size)
 {
 	return malloc(page_size);
@@ -246,7 +123,7 @@ struct memory_store_context
 	uint64_t free_pages_count;
 
 	// there are 2 maps that store page_desc
-	// this allows us to get pages both using page_id (to acquire locks) and page_memory (to free locks)
+	// this allows us to get pages both using page_id (to acquire locks) and page_memory (to free and upgrade/downgrade locks)
 
 	// page_id -> page_desc
 	hashmap page_id_map;
