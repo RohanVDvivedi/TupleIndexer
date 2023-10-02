@@ -49,7 +49,7 @@ struct tuple_accessed_page
 
 	// page_modification_methods allowing you to modify tuples on page
 	// only required for swapping tuples
-	page_modification_methods* pmm_p;
+	const page_modification_methods* pmm_p;
 };
 
 static const void* get_tuple_from_tuple_accessed_page(const void* ds_p, cy_uint index)
@@ -95,7 +95,7 @@ static int insert_at_in_page(
 									const tuple_def* tpl_def,
 									const void* tuple, 
 									uint32_t index,
-									page_modification_methods* pmm_p
+									const page_modification_methods* pmm_p
 								)
 {
 	uint32_t tuple_count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
@@ -125,21 +125,22 @@ static int insert_at_in_page(
 }
 
 int insert_to_sorted_packed_page(
-									void* page, uint32_t page_size, 
+									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
-									uint32_t* index
+									uint32_t* index,
+									const page_modification_methods* pmm_p
 								)
 {
 	// search for a viable index for the new tuple to insert
-	uint32_t new_index = find_insertion_point_in_sorted_packed_page(page, page_size, tpl_def, tuple_keys_to_compare, keys_count, tuple);
+	uint32_t new_index = find_insertion_point_in_sorted_packed_page(ppage.page, page_size, tpl_def, tuple_keys_to_compare, keys_count, tuple);
 
 	// this is the final index for the newly inserted element
 	if(index != NULL)
 		(*index) = new_index;
 
 	// insert tuple to the page at the desired index
-	return insert_at_in_page(page, page_size, tpl_def, tuple, new_index);
+	return insert_at_in_page(ppage, page_size, tpl_def, tuple, new_index, pmm_p);
 }
 
 int insert_at_in_sorted_packed_page(
