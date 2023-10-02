@@ -31,19 +31,6 @@ int is_page_more_than_half_full(const void* page, uint32_t page_size, const tupl
 	return used_space > (allotted_space / 2);
 }
 
-int can_insert_this_tuple_without_split_for_bplus_tree(const void* page, uint32_t page_size, const tuple_def* def, const void* tuple)
-{
-	uint32_t allotted_space = get_space_allotted_to_all_tuples_on_page(page, page_size, &(def->size_def));
-	uint32_t used_space = get_space_occupied_by_all_tuples_on_page(page, page_size, &(def->size_def));
-
-	uint32_t space_required_by_tuple = get_tuple_size(def, tuple) + get_additional_space_overhead_per_tuple_on_page(page_size, &(def->size_def));
-
-	if(allotted_space >= used_space + space_required_by_tuple)
-		return 1;
-
-	return 0;
-}
-
 int may_require_split_for_insert_for_bplus_tree(const void* page, uint32_t page_size, const tuple_def* def)
 {
 	uint32_t allotted_space = get_space_allotted_to_all_tuples_on_page(page, page_size, &(def->size_def));

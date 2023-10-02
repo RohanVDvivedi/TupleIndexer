@@ -13,9 +13,6 @@ int is_page_more_than_or_equal_to_half_full(const void* page, uint32_t page_size
 
 int is_page_more_than_half_full(const void* page, uint32_t page_size, const tuple_def* def);
 
-// returns true if the tuple can be inserted into this page without requiring a split
-int can_insert_this_tuple_without_split_for_bplus_tree(const void* page, uint32_t page_size, const tuple_def* def, const void* tuple);
-
 // method only valid for bplus tree and variants
 // returns 1 -> MAY require split
 // returns 0 -> will SURELY not require any split
