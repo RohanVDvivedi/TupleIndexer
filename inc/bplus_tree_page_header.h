@@ -27,7 +27,7 @@ uint32_t get_level_of_bplus_tree_page(const void* page, const bplus_tree_tuple_d
 
 int is_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
 
-bplus_tree_page_header get_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+bplus_tree_page_header get_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
 
 void serialize_bplus_tree_page_header(void* hdr_serial, const bplus_tree_page_header* bptph_p, const bplus_tree_tuple_defs* bpttd_p);
 

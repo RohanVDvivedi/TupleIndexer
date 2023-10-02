@@ -18,6 +18,7 @@ uint32_t get_size_of_bplus_tree_page_header()
 	return BYTES_FOR_PAGE_LEVEL;
 }
 
+/*
 uint32_t get_level_of_bplus_tree_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
 	const void* page_level_header = get_page_header((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_page_level_header(bpttd_p);
@@ -29,14 +30,26 @@ void set_level_of_bplus_tree_page(void* page, uint32_t level, const bplus_tree_t
 	void* page_level_header = get_page_header((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_page_level_header(bpttd_p);
 	write_uint32(page_level_header, BYTES_FOR_PAGE_LEVEL, level);
 }
+*/
 
-void print_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+uint32_t get_level_of_bplus_tree_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	print_common_page_header(page, bpttd_p);
-	printf("level : %"PRIu32"\n", get_level_of_bplus_tree_page(page, bpttd_p));
+	return get_bplus_tree_page_header(page, bpttd_p).level;
 }
 
 int is_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
 	return get_level_of_bplus_tree_page(page, bpttd_p) == 0;
+}
+
+bplus_tree_page_header get_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+
+void serialize_bplus_tree_page_header(void* hdr_serial, const bplus_tree_page_header* bptph_p, const bplus_tree_tuple_defs* bpttd_p);
+
+void set_bplus_tree_page_header(persistent_page ppage, const bplus_tree_page_header* bptph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
+
+void print_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+{
+	print_common_page_header(page, bpttd_p);
+	printf("level : %"PRIu32"\n", get_level_of_bplus_tree_page(page, bpttd_p));
 }
