@@ -8,12 +8,12 @@
 #include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
 
-#include<page_layout.h>
+#include<page_layout_unaltered.h>
 #include<tuple.h>
 
 #include<stdlib.h>
 
-int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// the tuple to be inserted must pass this test
 	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, record))

@@ -3,8 +3,9 @@
 
 #include<bplus_tree_iterator.h>
 
-#include<data_access_methods.h>
 #include<bplus_tree_tuple_definitions.h>
+#include<data_access_methods.h>
+#include<page_modification_methods.h>
 
 // returns pointer to the root page of the bplus_tree
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
@@ -29,10 +30,10 @@ enum find_position
 bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 // insert record in bplus_tree
-int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
 
 // delete a record given by key
-int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
 
 // frees all the pages occupied by the bplus_tree
 int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);

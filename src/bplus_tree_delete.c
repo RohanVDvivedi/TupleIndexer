@@ -8,12 +8,12 @@
 #include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
 
-#include<page_layout.h>
+#include<page_layout_unaltered.h>
 #include<tuple.h>
 
 #include<stdlib.h>
 
-int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// get lock on the root page of the bplus_tree
 	void* root_page = dam_p->acquire_page_with_writer_lock(dam_p->context, root_page_id);
