@@ -1,4 +1,5 @@
 ** PICKED TASKS
+ * implement resilient append and update functions in pmm
  * headers to use page_modification_methods
    * build for all page headers api to get_*_header_from_page, and set_*_header_in_page, and use that instead
    * implement structs (or nested header structs) to represent each of these header
