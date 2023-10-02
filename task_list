@@ -1,10 +1,9 @@
 ** PICKED TASKS
  * page_modification_methods
-   * make page_modification_methods and allow only modifying a page only through it, refactor the complete library to use page_layout_unaltered.h instead of page_layout.h
+   * allow only modifying a page only through page_modification_methods, refactor the complete library to use page_layout_unaltered.h instead of page_layout.h
    * build for all page headers api to get_*_header_from_page, and set_*_header_in_page, and use that instead
    * implement structs to represent each of them
    * replace all accesses to headers using get and set functions in to struct accessed
-   * page_modification_methods work with persistent_page, and take in context, like the data_access_moethods
  * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
 
