@@ -18,9 +18,9 @@ struct bplus_tree_tuple_defs
 	uint64_t NULL_PAGE_ID;
 
 	// this is the additional page header space left out by the library for your use
-	// any page that will be used by the library for the bplus_tree will have page_header size of this plus the ones additionally required by the specif page type
+	// any page that will be used by the library for the bplus_tree will have page_header size of this plus the ones additionally required by the specific page type
 	// this many number of bytes will be left in the preface of the page_header and will be left untouched
-	uint32_t default_common_header_size;
+	uint32_t system_header_size;
 
 	// number of elements considered as keys
 	uint32_t key_element_count;
@@ -48,11 +48,11 @@ struct bplus_tree_tuple_defs
 };
 
 // initializes the attributes in bplus_tree_tuple_defs struct as per the provided parameters
-// it allocates memory only for index_def
+// it allocates memory only for index_def and the key_def
 // returns 1 for success, it fails with 0, if the record_def has element_count 0 OR key_element_count == 0 OR key_elements == NULL OR if any of the key_element_ids is out of bounds
-// it may also fail if the default_common_header size makes it impossible to store any tuples in the page
-// page_id_with is bytes required for storing page_id, it can be 1,2,4 or 8
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t default_common_header_size, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID);
+// it may also fail if the system_header size makes it impossible to store any tuples in the page
+// page_id_width is bytes required for storing page_id, it can be 1,2,4 or 8
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t system_header_size, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID);
 
 // checks to see if a record_tuple can be inserted into a bplus_tree
 int check_if_record_can_be_inserted_into_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple);
