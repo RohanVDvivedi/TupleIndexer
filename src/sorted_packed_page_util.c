@@ -91,20 +91,21 @@ index_accessed_interface get_index_accessed_interface_for_sorted_packed_page(tup
 // internal function to insert a tuple at a specified index
 // this function does not check that the sort order is maintained
 static int insert_at_in_page(
-									void* page, uint32_t page_size, 
+									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def,
 									const void* tuple, 
-									uint32_t index
+									uint32_t index,
+									page_modification_methods* pmm_p
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
 
 	// if the index is not valid we fail the insertion
 	if( !(0 <= index && index <= tuple_count) )
 		return 0;
 
 	// insert tuple to the end of the page
-	if(!append_tuple_on_page(page, page_size, &(tpl_def->size_def), tuple))
+	if(!(pmm_p->append_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), tuple)))
 		return 0;
 
 	// insert succeedded, so tuple_count incremented
@@ -116,7 +117,7 @@ static int insert_at_in_page(
 	// swap until the new tuple is not at index
 	while(index != curr_index)
 	{
-		swap_tuples_on_page(page, page_size, &(tpl_def->size_def), curr_index - 1, curr_index);
+		pmm_p->swap_tuples_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), curr_index - 1, curr_index);
 		curr_index--;
 	}
 
