@@ -40,4 +40,10 @@ struct page_modification_methods
 	void* context;
 };
 
+// helper resilient methods, to be used to avoid calls to run_page_compaction
+
+int append_tuple_on_page_resiliently(const page_modification_methods* pmm_p, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple);
+
+int update_tuple_on_page_resiliently(const page_modification_methods* pmm_p, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple);
+
 #endif
