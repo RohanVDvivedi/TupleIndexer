@@ -1,8 +1,6 @@
-#include<bplus_tree_common_page_header.h>
+#include<bplus_tree_page_header.h>
 
-#include<common_page_header.h>
-
-#include<page_layout.h>
+#include<page_layout_unaltered.h>
 #include<int_accesses.h>
 
 // number of bytes to store level of the page

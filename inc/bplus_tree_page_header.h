@@ -2,8 +2,22 @@
 #define BPLUS_TREE_PAGE_H
 
 #include<bplus_tree_tuple_definitions.h>
+#include<page_modification_methods.h>
+
+#include<common_page_header.h>
 
 #include<stdint.h>
+
+typedef struct bplus_tree_page_header bplus_tree_page_header;
+struct bplus_tree_page_header
+{
+	common_page_header parent;
+
+	// level of the page in bplus_tree,
+	// = 0 -> leaf page
+	// > 0 -> interior page
+	uint32_t level;
+};
 
 uint32_t get_offset_of_bplus_tree_page_level_header(const bplus_tree_tuple_defs* bpttd_p);
 
