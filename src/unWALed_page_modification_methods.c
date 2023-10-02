@@ -4,25 +4,54 @@
 
 #include<stdlib.h>
 
-static int init_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d);
+static int init_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d)
+{
+	return init_page(ppage.page, page_size, page_header_size, tpl_sz_d);
+}
 
 static int set_page_header_unWALed(void* context, persistent_page ppage, uint32_t page_size, const void* hdr);
 
-static int append_tuple_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple);
+static int append_tuple_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple)
+{
+	return append_tuple_on_page(ppage.page, page_size, tpl_sz_d, external_tuple);
+}
 
-static int update_tuple_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple);
+static int update_tuple_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple)
+{
+	return update_tuple_on_page(ppage.page, page_size, tpl_sz_d, index, external_tuple);
+}
 
-static int discard_tuple_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index);
+static int discard_tuple_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index)
+{
+	return discard_tuple_on_page(ppage.page, page_size, tpl_sz_d, index);
+}
 
-static int discard_all_tuples_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d);
+static int discard_all_tuples_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+{
+	return discard_all_tuples_on_page(ppage.page, page_size, tpl_sz_d);
+}
 
-static int discard_trailing_tomb_stones_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t* tomb_stones_discarded);
+static int discard_trailing_tomb_stones_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t* tomb_stones_discarded)
+{
+	(*tomb_stones_discarded) = discard_trailing_tomb_stones_on_page(ppage.page, page_size, tpl_sz_d);
+	return 1;
+}
 
-static int swap_tuples_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2);
+static int swap_tuples_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2)
+{
+	return swap_tuples_on_page(ppage.page, page_size, tpl_sz_d, i1, i2);
+}
 
-static int set_element_in_tuple_in_place_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, uint32_t element_index, const user_value* value);
+static int set_element_in_tuple_in_place_on_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, uint32_t element_index, const user_value* value)
+{
+	return set_element_in_tuple_in_place_on_page(ppage.page, page_size, tpl_d, tuple_index, element_index, value);
+}
 
-static int clone_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src);
+static int clone_page_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src)
+{
+	clone_page(ppage.page, page_size, tpl_sz_d, ppage_src.page);
+	return 1;
+}
 
 page_modification_methods* get_new_unWALed_page_modification_methods()
 {
@@ -39,7 +68,7 @@ page_modification_methods* get_new_unWALed_page_modification_methods()
 	pmm_p->discard_trailing_tomb_stones_on_page = discard_trailing_tomb_stones_on_page_unWALed;
 	pmm_p->swap_tuples_on_page = swap_tuples_on_page_unWALed;
 	pmm_p->set_element_in_tuple_in_place_on_page = set_element_in_tuple_in_place_on_page_unWALed;
-	pmm_p->clone_page = clone_page;
+	pmm_p->clone_page = clone_page_unWALed;
 
 	pmm_p->context = NULL;
 
