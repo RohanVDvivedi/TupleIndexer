@@ -104,23 +104,9 @@ static int insert_at_in_page(
 	if( !(0 <= index && index <= tuple_count) )
 		return 0;
 
-	// insert tuple to the end of the page
-	if(!(pmm_p->append_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), tuple)))
-	{
-		// if it fails the first time then calculate unused space on the page and the space required by the tuple
-		uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_page(ppage.page, page_size, &(tpl_def->size_def)) - get_space_occupied_by_all_tuples_on_page(ppage.page, page_size, &(tpl_def->size_def));
-		uint32_t space_required_by_tuple = get_tuple_size(tpl_def, tuple) + get_additional_space_overhead_per_tuple_on_page(page_size, &(tpl_def->size_def));
-
-		// if page does not have enough unused space then we can't do anything
-		if(unused_space_on_page < space_required_by_tuple)
-			return 0;
-
-		// else run_page_compaction and try again
-		run_page_compaction(ppage.page, page_size, &(tpl_def->size_def));
-
-		if(!(pmm_p->append_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), tuple)))
-			return 0;
-	}
+	// append tuple to the end of the page
+	if(!append_tuple_on_page_resiliently(pmm_p, ppage, page_size, &(tpl_def->size_def), tuple))
+		return 0;
 
 	// insert succeedded, so tuple_count incremented
 	tuple_count++;
@@ -225,35 +211,7 @@ int update_resiliently_at_in_sorted_packed_page(
 			return 0;
 	}
 
-	int update_successfull = pmm_p->update_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), index, tuple);
-
-	// if simple update was successfull (without defragmenting and discarding tombstones)
-	if(update_successfull)
-		return update_successfull;
-
-	// get free space on page after it gets defragmented
-	// here we assume that the page passed to this functions has no tombstones as should be the case with sorted_packed_page
-	uint32_t free_space_after_defragmentation = get_free_space_on_page(ppage.page, page_size, &(tpl_def->size_def)) + get_fragmentation_space_on_page(ppage.page, page_size, &(tpl_def->size_def));
-
-	// get size of existing tuple (at index = index)
-	const void* existing_tuple = get_nth_tuple_on_page(ppage.page, page_size, &(tpl_def->size_def), index);
-	uint32_t existing_tuple_size = get_tuple_size(tpl_def, existing_tuple);
-
-	// if discarding the existing tuple can make enough room for the new tuple then
-	if(free_space_after_defragmentation + existing_tuple_size >= get_tuple_size(tpl_def, tuple))
-	{
-		// place tomb_stone for the old tuple at the index
-		pmm_p->update_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), index, NULL);
-
-		// defragment the page
-		run_page_compaction(ppage.page, page_size, &(tpl_def->size_def));
-
-		// then at the end attempt to update the tuple again
-		// this time it must succeed
-		update_successfull = pmm_p->update_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), index, tuple);
-	}
-
-	return update_successfull;
+	return update_tuple_on_page_resiliently(pmm_p, ppage, page_size, &(tpl_def->size_def), index, tuple);
 }
 
 int delete_in_sorted_packed_page(
