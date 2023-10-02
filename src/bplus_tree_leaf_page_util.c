@@ -4,20 +4,20 @@
 #include<bplus_tree_leaf_page_header.h>
 #include<bplus_tree_index_tuple_functions_util.h>
 
-#include<page_layout.h>
+#include<page_layout_unaltered.h>
 #include<tuple.h>
 
 #include<stdlib.h>
 
-int init_bplus_tree_leaf_page(void* page, const bplus_tree_tuple_defs* bpttd_p)
+int init_bplus_tree_leaf_page(persistent_page ppage, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
 {
-	int inited = init_page(page, bpttd_p->page_size, sizeof_LEAF_PAGE_HEADER(bpttd_p), &(bpttd_p->record_def->size_def));
+	int inited = pmm_p->init_page(pmm_p->context, ppage, bpttd_p->page_size, sizeof_LEAF_PAGE_HEADER(bpttd_p), &(bpttd_p->record_def->size_def));
 	if(!inited)
 		return 0;
-	set_type_of_page(page, BPLUS_TREE_LEAF_PAGE, bpttd_p);
-	set_level_of_bplus_tree_page(page, 0, bpttd_p);
-	set_prev_page_id_of_bplus_tree_leaf_page(page, bpttd_p->NULL_PAGE_ID, bpttd_p);
-	set_next_page_id_of_bplus_tree_leaf_page(page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+	set_type_of_page(ppage.page, BPLUS_TREE_LEAF_PAGE, bpttd_p);
+	set_level_of_bplus_tree_page(ppage.page, 0, bpttd_p);
+	set_prev_page_id_of_bplus_tree_leaf_page(ppage.page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+	set_next_page_id_of_bplus_tree_leaf_page(ppage.page, bpttd_p->NULL_PAGE_ID, bpttd_p);
 	return 1;
 }
 
@@ -160,7 +160,7 @@ int must_split_for_insert_bplus_tree_leaf_page(persistent_page page1, const void
 	return 1;
 }
 
-int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, void* output_parent_insert)
+int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, void* output_parent_insert)
 {
 	// check if a page must split to accomodate the new tuple
 	if(!must_split_for_insert_bplus_tree_leaf_page(page1, tuple_to_insert, bpttd_p))
@@ -208,7 +208,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 		return 0;
 
 	// initialize page2 (as a leaf page)
-	init_bplus_tree_leaf_page(page2.page, bpttd_p);
+	init_bplus_tree_leaf_page(page2, bpttd_p, pmm_p);
 
 	// link page2 in between page1 and the next page of page1
 	{
@@ -254,16 +254,18 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 
 	// copy all required tuples from the page1 to page2
 	insert_all_from_sorted_packed_page(
-									page2.page, page1.page, bpttd_p->page_size,
+									page2, page1, bpttd_p->page_size,
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
-									tuples_stay_in_page1, page1_tuple_count - 1
+									tuples_stay_in_page1, page1_tuple_count - 1,
+									pmm_p
 								);
 
 	// delete the corresponding (copied) tuples in the page1
 	delete_all_in_sorted_packed_page(
-									page1.page, bpttd_p->page_size,
+									page1, bpttd_p->page_size,
 									bpttd_p->record_def,
-									tuples_stay_in_page1, page1_tuple_count - 1
+									tuples_stay_in_page1, page1_tuple_count - 1,
+									pmm_p
 								);
 
 	// insert the new tuple (tuple_to_insert) to page1 or page2 based on "new_tuple_goes_to_page1", as calculated earlier
@@ -275,10 +277,11 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page1
 		insert_at_in_sorted_packed_page(
-									page1.page, bpttd_p->page_size,
+									page1, bpttd_p->page_size,
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
 									tuple_to_insert, 
-									tuple_to_insert_at
+									tuple_to_insert_at,
+									pmm_p
 								);
 	}
 	else
@@ -289,10 +292,11 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page2
 		insert_at_in_sorted_packed_page(
-									page2.page, bpttd_p->page_size,
+									page2, bpttd_p->page_size,
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
 									tuple_to_insert,
-									tuple_to_insert_at - tuples_stay_in_page1
+									tuple_to_insert_at - tuples_stay_in_page1,
+									pmm_p
 								);
 	}
 
@@ -322,7 +326,7 @@ int can_merge_bplus_tree_leaf_pages(persistent_page page1, persistent_page page2
 	return 1;
 }
 
-int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// get the next adjacent page of this page
 	persistent_page page2;
@@ -404,9 +408,10 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 
 		// only if there are any tuples to move
 		insert_all_from_sorted_packed_page(
-									page1.page, page2.page, bpttd_p->page_size, 
+									page1, page2, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
-									0, tuple_count_page2 - 1
+									0, tuple_count_page2 - 1,
+									pmm_p
 								);
 	}
 
