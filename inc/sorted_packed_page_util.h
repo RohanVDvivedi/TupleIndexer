@@ -44,7 +44,7 @@ int insert_at_in_sorted_packed_page(
 
 // update the tuple at given index
 // returns 1, if tuple was updated
-int update_resiliently_at_in_sorted_packed_page(
+int update_at_in_sorted_packed_page(
 									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 

@@ -179,7 +179,7 @@ int insert_at_in_sorted_packed_page(
 	return insert_at_in_page(ppage, page_size, tpl_def, tuple, index, pmm_p);
 }
 
-int update_resiliently_at_in_sorted_packed_page(
+int update_at_in_sorted_packed_page(
 									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
