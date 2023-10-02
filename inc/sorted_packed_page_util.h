@@ -9,6 +9,7 @@
 */
 
 #include<tuple_def.h>
+#include<page_modification_methods.h>
 
 // returns index at which a new tuple may be inserted
 // returns an index in range from (0 to tuple_count) where the tuple can be inserted, keeping the sorted page sorted
@@ -24,52 +25,58 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 // returns 1 tuple was inserted
 // returns the index the new tuple is inserted on
 int insert_to_sorted_packed_page(
-									void* page, uint32_t page_size, 
+									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
-									uint32_t* index
+									uint32_t* index,
+									page_modification_methods* pmm_p
 								);
 
 // insert tuple at given index (pushing elements at index >= index, down)
 // returns 1, if tuple was inserted
 int insert_at_in_sorted_packed_page(
-									void* page, uint32_t page_size, 
+									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
-									uint32_t index
+									uint32_t index,
+									page_modification_methods* pmm_p
 								);
 
 // update the tuple at given index
 // returns 1, if tuple was updated
 int update_resiliently_at_in_sorted_packed_page(
-									void* page, uint32_t page_size, 
+									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
-									uint32_t index
+									uint32_t index,
+									page_modification_methods* pmm_p
 								);
 
 // delete tuple at given index
 // returns 1, if the tuple was deleted
 int delete_in_sorted_packed_page(
-									void* page, uint32_t page_size, 
+									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, 
-									uint32_t index
+									uint32_t index,
+									page_modification_methods* pmm_p
 								);
 
 // insert n number of tuples [start_index, last_index] (both inclusive) from src page to dest page
 // returns the number of tuples inserted
 uint32_t insert_all_from_sorted_packed_page(
-									void* page_dest, const void* page_src, uint32_t page_size, 
+									persistent_page ppage_dest, persistent_page ppage_src, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
-									uint32_t start_index, uint32_t last_index
+									uint32_t start_index, uint32_t last_index,
+									page_modification_methods* pmm_p
 								);
 
 // delete all tuples between index range [start_index, last_index] included
 // returns 1, if the tuple was deleted
 int delete_all_in_sorted_packed_page(
-									void* page, uint32_t page_size, 
+									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, 
-									uint32_t start_index, uint32_t last_index
+									uint32_t start_index, uint32_t last_index,
+									page_modification_methods* pmm_p
 								);
 
 #define NO_TUPLE_FOUND (~((uint32_t)0))
@@ -126,8 +133,9 @@ void reverse_sort_order_on_sorted_packed_page(
 
 // creates a page into its sorted_packed_page form
 void sort_and_convert_to_sorted_packed_page(
-									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count
+									persistent_page ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									page_modification_methods* pmm_p
 								);
 
 #endif
