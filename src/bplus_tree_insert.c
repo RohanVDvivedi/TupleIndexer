@@ -108,28 +108,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				break;
 			}
 
-			// if the insertion fails
-			// check if the insert can succeed on compaction
-			if(can_insert_this_tuple_without_split_for_bplus_tree(curr_locked_page.ppage.page, bpttd_p->page_size, bpttd_p->record_def, record))
-			{
-				run_page_compaction(curr_locked_page.ppage.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-
-				inserted = insert_at_in_sorted_packed_page(
-														curr_locked_page.ppage, bpttd_p->page_size, 
-														bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
-														record, 
-														insertion_point,
-														pmm_p
-													);
-			}
-
-			if(inserted)
-			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
-				break;
-			}
-
-			// if it still fails then call the split insert
+			// if it fails then call the split insert
 
 			// but before calling split insert we make sure that the page to be split is not a root page
 			if(curr_locked_page.ppage.page_id == root_page_id)
@@ -194,27 +173,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				break;
 			}
 
-			// check if the insert can succeed on compaction
-			if(can_insert_this_tuple_without_split_for_bplus_tree(curr_locked_page.ppage.page, bpttd_p->page_size, bpttd_p->index_def, parent_insert))
-			{
-				run_page_compaction(curr_locked_page.ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-
-				parent_tuple_inserted = insert_at_in_sorted_packed_page(
-										curr_locked_page.ppage, bpttd_p->page_size, 
-										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
-										parent_insert, 
-										insertion_point,
-										pmm_p
-									);
-			}
-
-			if(parent_tuple_inserted)
-			{
-				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
-				break;
-			}
-
-			// if it still fails then call the split insert
+			// if it fails then call the split insert
 
 			// but before calling split insert we make sure that the page to be split is not a root page
 			if(curr_locked_page.ppage.page_id == root_page_id)
