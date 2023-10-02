@@ -273,16 +273,16 @@ int delete_all_in_sorted_packed_page(
 	return 1;
 }
 
-static uint32_t append_tuples_from_page(void* page_dest, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* page_src, uint32_t start_index, uint32_t last_index)
+static uint32_t append_tuples_from_page(persistent_page ppage_dest, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src, uint32_t start_index, uint32_t last_index, const page_modification_methods* pmm_p)
 {
 	uint32_t appended_count = 0;
 	for(uint32_t i = start_index; i <= last_index; i++)
 	{
-		const void* tup = get_nth_tuple_on_page(page_src, page_size, tpl_sz_d, i);
+		const void* tup = get_nth_tuple_on_page(ppage_src.page, page_size, tpl_sz_d, i);
 		if(tup == NULL)
 			continue;
 
-		int res = append_tuple_on_page(page_dest, page_size, tpl_sz_d, tup);
+		int res = pmm_p->append_tuple_on_page(pmm_p->context, ppage_dest, page_size, tpl_sz_d, tup);
 		if(res == 0)
 			break;
 
