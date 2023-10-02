@@ -42,7 +42,14 @@ int is_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd
 	return get_level_of_bplus_tree_page(page, bpttd_p) == 0;
 }
 
-bplus_tree_page_header get_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+bplus_tree_page_header get_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+{
+	const void* bplus_tree_page_header_serial = get_page_header_ua((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_page_header(bpttd_p);
+	return (bplus_tree_page_header){
+		.parent = get_common_page_header(page, bpttd_p),
+		.level = read_uint32(bplus_tree_page_header_serial, BYTES_FOR_PAGE_LEVEL),
+	};
+}
 
 void serialize_bplus_tree_page_header(void* hdr_serial, const bplus_tree_page_header* bptph_p, const bplus_tree_tuple_defs* bpttd_p);
 
