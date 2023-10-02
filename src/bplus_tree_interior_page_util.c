@@ -7,7 +7,8 @@
 #include<page_layout_unaltered.h>
 #include<tuple.h>
 
-#include<string.h>
+#include<cutlery_stds.h>
+
 #include<stdlib.h>
 
 int init_bplus_tree_interior_page(persistent_page ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
@@ -348,7 +349,7 @@ int split_insert_bplus_tree_interior_page(persistent_page page1, const void* tup
 	set_least_keys_page_id_of_bplus_tree_interior_page(page2.page, page2_least_keys_page_id, bpttd_p);
 
 	// copy all the contents of the first_tuple_page2 to output_parent_insert
-	memmove(output_parent_insert, first_tuple_page2, sizeof(char) * size_of_first_tuple_page2);
+	memory_move(output_parent_insert, first_tuple_page2, size_of_first_tuple_page2);
 
 	// now insert the pointer to the page2 in this parent tuple
 	set_child_page_id_in_index_tuple(output_parent_insert, page2.page_id, bpttd_p);
@@ -417,7 +418,7 @@ int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator
 
 	// now we construct a separator tuple and insert it into the page 1
 	void* separator_tuple = malloc(sizeof(char) * separator_tuple_size);
-	memmove(separator_tuple, separator_parent_tuple, sizeof(char) * separator_tuple_size);
+	memory_move(separator_tuple, separator_parent_tuple, sizeof(char) * separator_tuple_size);
 
 	// update child_page_id of separator_tuple with the value from least_keys_page_id
 	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2.page, bpttd_p);
