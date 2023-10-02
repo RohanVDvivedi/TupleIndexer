@@ -1,8 +1,8 @@
 ** PICKED TASKS
- * page_modification_methods
+ * headers to use page_modification_methods
    * build for all page headers api to get_*_header_from_page, and set_*_header_in_page, and use that instead
-   * implement structs to represent each of them
-   * replace all accesses to headers using get and set functions in to struct accessed
+   * implement structs (or nested header structs) to represent each of these header
+   * replace all accesses to headers using get and set functions in to struct accesses
  * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
 
