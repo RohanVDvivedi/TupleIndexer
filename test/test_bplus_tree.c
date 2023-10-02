@@ -10,6 +10,7 @@
 #include<bplus_tree_tuple_definitions.h>
 #include<data_access_methods.h>
 #include<in_memory_data_store.h>
+#include<unWALed_page_modification_methods.h>
 
 // un comment based on the keys that you want to test with
 #define KEY_NAME_EMAIL
@@ -134,7 +135,7 @@ struct result
 	uint32_t records_processed;
 };
 
-result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -169,7 +170,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p);
+		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p, pmm_p);
 
 		// print bplus tree
 		if(print_tree_after_each)
@@ -193,7 +194,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
-result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -228,7 +229,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
 
 		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += delete_from_bplus_tree(root_page_id, key_tuple, bpttd_p, dam_p);
+		res.operations_succeeded += delete_from_bplus_tree(root_page_id, key_tuple, bpttd_p, dam_p, pmm_p);
 
 		// print bplus tree
 		if(print_tree_after_each)
@@ -388,6 +389,9 @@ int main()
 	// construct an in-memory data store
 	data_access_methods* dam_p = get_new_in_memory_data_store(PAGE_SIZE, PAGE_ID_WIDTH);
 
+	// construct unWALed page_modification_methods
+	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
+
 	// allocate record tuple definition and initialize it
 	tuple_def* record_def = get_tuple_definition();
 
@@ -399,7 +403,7 @@ int main()
 	print_bplus_tree_tuple_definitions(&bpttd);
 
 	// create a bplus tree and get its root
-	uint64_t root_page_id = get_new_bplus_tree(&bpttd, dam_p);
+	uint64_t root_page_id = get_new_bplus_tree(&bpttd, dam_p, pmm_p);
 
 	// variable to test insert and delete operations
 	result res;
@@ -412,7 +416,7 @@ int main()
 	// insert every 4th tuple from TEST_DATA_FILE
 	/* INSERTIONS SARTED */
 
-	res = insert_from_file(root_page_id, TEST_DATA_FILE, 0, 3, 256, 0, 0, &bpttd, dam_p);
+	res = insert_from_file(root_page_id, TEST_DATA_FILE, 0, 3, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -423,7 +427,7 @@ int main()
 	// again try insert all tuples now 64/256 tuples must fail from TEST_DATA_RANDOM_FILE
 	/* INSERTIONS SARTED */
 
-	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p);
+	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -443,7 +447,7 @@ int main()
 	// delete some random 30 tuples from TEST_DATA_RANDOM_FILE -> 30/30
 	/* DELETIONS STARTED */
 
-	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 30, 0, 0, &bpttd, dam_p);
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 30, 0, 0, &bpttd, dam_p, pmm_p);
 
 	printf("deletions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -466,7 +470,7 @@ int main()
 	// delete some random 30 tuples from TEST_DATA_RANDOM_FILE -> lesser than 32 success
 	/* DELETIONS STARTED */
 
-	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 0, &bpttd, dam_p);
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
 	printf("deletions to bplus tree completed(%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -489,7 +493,7 @@ int main()
 	// again insert all from TEST_DATA_RANDOM_FILE -> lesser than 62 failures
 	/* INSERTIONS SARTED */
 
-	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p);
+	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -500,7 +504,7 @@ int main()
 	// delete all
 	/* DELETIONS STARTED */
 
-	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p);
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p, pmm_p);
 
 	printf("deletions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -518,6 +522,9 @@ int main()
 
 	// destroy bplus_tree_tuple_definitions
 	deinit_bplus_tree_tuple_definitions(&bpttd);
+
+	// destory page_modification_methods
+	delete_unWALed_page_modification_methods(pmm_p);
 
 	// delete the record definition
 	delete_tuple_def(record_def);
