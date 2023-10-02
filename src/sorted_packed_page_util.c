@@ -522,17 +522,18 @@ void reverse_sort_order_on_sorted_packed_page(
 
 // on page quick sort algorithm
 void sort_and_convert_to_sorted_packed_page(
-									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count
+									persistent_page ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
 
 	// if the page is empty
 	if(tuple_count == 0)
 		return ;
 
-	tuple_accessed_page tap = get_tuple_accessed_page(((void*)page), page_size, tpl_def);
+	tuple_accessed_page tap = get_tuple_accessed_page(ppage, page_size, tpl_def, pmm_p);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, tpl_def, tuple_keys_to_compare, keys_count);
 	index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
