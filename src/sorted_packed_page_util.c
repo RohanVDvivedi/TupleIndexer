@@ -144,13 +144,14 @@ int insert_to_sorted_packed_page(
 }
 
 int insert_at_in_sorted_packed_page(
-									void* page, uint32_t page_size, 
+									persistent_page ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
-									uint32_t index
+									uint32_t index,
+									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
 
 	// if the index is not valid we fail the insertion
 	if( !(0 <= index && index <= tuple_count) )
@@ -161,7 +162,7 @@ int insert_at_in_sorted_packed_page(
 	// the tuple compares greater than the tuple at index, we fail
 	if(tuple_count > 0 && index < tuple_count)
 	{
-		const void* ith_tuple = get_nth_tuple_on_page(page, page_size, &(tpl_def->size_def), index);
+		const void* ith_tuple = get_nth_tuple_on_page(ppage.page, page_size, &(tpl_def->size_def), index);
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, ith_tuple, tpl_def, tuple_keys_to_compare, keys_count) > 0)
 			return 0;
 	}
@@ -169,13 +170,13 @@ int insert_at_in_sorted_packed_page(
 	// the tuple compares lesser than the tuple at (index - 1), we fail
 	if(tuple_count > 0 && index > 0)
 	{
-		const void* i_1_th_tuple = get_nth_tuple_on_page(page, page_size, &(tpl_def->size_def), index - 1);
+		const void* i_1_th_tuple = get_nth_tuple_on_page(ppage.page, page_size, &(tpl_def->size_def), index - 1);
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, keys_count) < 0)
 			return 0;
 	}
 
 	// insert tuple to the page at the desired index
-	return insert_at_in_page(page, page_size, tpl_def, tuple, index);
+	return insert_at_in_page(ppage, page_size, tpl_def, tuple, index, pmm_p);
 }
 
 int update_resiliently_at_in_sorted_packed_page(
