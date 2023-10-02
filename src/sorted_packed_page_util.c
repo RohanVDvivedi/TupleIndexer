@@ -1,7 +1,7 @@
 #include<sorted_packed_page_util.h>
 
 #include<tuple.h>
-#include<page_layout.h>
+#include<page_layout_unaltered.h>
 
 #include<index_accessed_interface.h>
 #include<index_accessed_search_sort.h>
