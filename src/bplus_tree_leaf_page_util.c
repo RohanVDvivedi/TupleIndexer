@@ -271,10 +271,6 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 	// insert the new tuple (tuple_to_insert) to page1 or page2 based on "new_tuple_goes_to_page1", as calculated earlier
 	if(new_tuple_goes_to_page1)
 	{
-		// if can not insert then compact the page first
-		if(!can_append_tuple_on_page(page1.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def), tuple_to_insert))
-			run_page_compaction(page1.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page1
 		insert_at_in_sorted_packed_page(
 									page1, bpttd_p->page_size,
@@ -286,10 +282,6 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 	}
 	else
 	{
-		// if can not insert then compact the page first
-		if(!can_append_tuple_on_page(page2.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def), tuple_to_insert))
-			run_page_compaction(page2.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page2
 		insert_at_in_sorted_packed_page(
 									page2, bpttd_p->page_size,
