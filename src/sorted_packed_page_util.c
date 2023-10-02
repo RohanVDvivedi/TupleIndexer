@@ -506,17 +506,18 @@ uint32_t find_succeeding_in_sorted_packed_page(
 }
 
 void reverse_sort_order_on_sorted_packed_page(
-									void* page, uint32_t page_size, 
-									const tuple_def* tpl_def
+									persistent_page ppage, uint32_t page_size, 
+									const tuple_def* tpl_def,
+									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
 	if(count == 0)
 		return ;
 
 	// swap first and last tuples iteratively
 	for(uint32_t i = 0; i < count / 2; i++)
-		swap_tuples_on_page(page, page_size, &(tpl_def->size_def), i, count - 1 - i);
+		pmm_p->swap_tuples_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), i, count - 1 - i);
 }
 
 // on page quick sort algorithm
