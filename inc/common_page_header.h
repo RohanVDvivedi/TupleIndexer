@@ -33,7 +33,7 @@ page_type get_type_of_page(const void* page, const bplus_tree_tuple_defs* bpttd_
 
 common_page_header get_common_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
 
-void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p);
+void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p);
 
 void set_common_page_header(persistent_page ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
 

@@ -46,13 +46,17 @@ page_type get_type_of_page(const void* page, const bplus_tree_tuple_defs* bpttd_
 
 common_page_header get_common_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	const void* page_type_header = get_page_header_ua((void*)page, bpttd_p->page_size) + get_offset_of_page_type_header(bpttd_p);
+	const void* common_page_header_serial = get_page_header_ua((void*)page, bpttd_p->page_size) + get_offset_of_page_type_header(bpttd_p);
 	return (common_page_header){
-		.type = (page_type) read_uint16(page_type_header, BYTES_FOR_PAGE_TYPE),
+		.type = (page_type) read_uint16(common_page_header_serial, BYTES_FOR_PAGE_TYPE),
 	};
 }
 
-void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p);
+void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p)
+{
+	void* common_page_header_serial = hdr_serial + get_offset_of_page_type_header(bpttd_p);
+	write_uint16(common_page_header_serial, BYTES_FOR_PAGE_TYPE, ((uint16_t)(cph_p->type)));
+}
 
 void set_common_page_header(persistent_page ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
 {
@@ -65,7 +69,7 @@ void set_common_page_header(persistent_page ppage, const common_page_header* cph
 	memory_move(hdr_serial, get_page_header_ua(ppage.page, bpttd_p->page_size), page_header_size);
 
 	// serialize cph_p on the hdr_serial
-	serialize_common_page_header(hdr_serial, cph_p);
+	serialize_common_page_header(hdr_serial, cph_p, bpttd_p);
 
 	// write hdr_serial to the new header position
 	pmm_p->set_page_header(pmm_p->context, ppage, bpttd_p->page_size, hdr_serial);
