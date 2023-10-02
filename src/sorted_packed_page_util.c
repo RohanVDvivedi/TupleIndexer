@@ -265,7 +265,10 @@ int delete_all_in_sorted_packed_page(
 
 	// if the user wants to discard all tuple, do it quickly using
 	if(start_index == 0 && last_index == count - 1)
-		return pmm_p->discard_all_tuples_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def));
+	{
+		pmm_p->discard_all_tuples_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def));
+		return 1;
+	}
 
 	for(uint32_t i = start_index; i <= last_index; i++)
 		pmm_p->discard_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), start_index); // a discarded tuple does not leave a slot, hence always discarding at start_index
