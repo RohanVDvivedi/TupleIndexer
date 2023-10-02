@@ -133,13 +133,8 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				curr_locked_page = root_least_keys_child_info;
 			}
 
-			if(is_fixed_sized_tuple_def(bpttd_p->index_def))
-				parent_insert = malloc(bpttd_p->index_def->size_def.size);
-			else
-			{
-				uint32_t largest_index_tuple_size = (get_space_to_be_allotted_to_all_tuples_on_page(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->index_def->size_def)) / 2) - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-				parent_insert = malloc(largest_index_tuple_size);
-			}
+			// make parent hold enough memeory to build any interior page record possible by this bplus_tree
+			parent_insert = malloc(bpttd_p->max_index_record_size);
 
 			inserted = split_insert_bplus_tree_leaf_page(curr_locked_page.ppage, record, insertion_point, bpttd_p, dam_p, pmm_p, parent_insert);
 

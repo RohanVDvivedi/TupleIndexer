@@ -110,6 +110,12 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t d
 		return 0;
 	}
 
+	if(is_fixed_sized_tuple_def(bpttd_p->record_def))
+		bpttd_p->max_record_size = bpttd_p->record_def->size_def.size;
+
+	if(is_fixed_sized_tuple_def(bpttd_p->index_def))
+		bpttd_p->max_index_record_size = bpttd_p->index_def->size_def.size;
+
 	return 1;
 }
 
