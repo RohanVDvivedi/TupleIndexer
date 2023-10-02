@@ -2,6 +2,8 @@
 #define PAGE_MODIFICATION_METHODS_H
 
 #include<stdint.h>
+
+#include<tuple_def.h>
 #include<persistent_page.h>
 
 /*
@@ -31,7 +33,7 @@ struct page_modification_methods
 
 	int (*set_element_in_tuple_in_place_on_page)(void* context, persistent_page page, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, uint32_t element_index, const user_value* value);
 
-	int (*clone_page)(void* context, persistent_page page, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* page_src);
+	int (*clone_page)(void* context, persistent_page page, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page page_src);
 
 	void* context;
 };
