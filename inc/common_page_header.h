@@ -25,9 +25,9 @@ struct common_page_header
 **		size of this system header is equal to the what was specified in bplus_tree_tuple_definitions object
 */
 
-uint32_t get_offset_of_page_type_header(const bplus_tree_tuple_defs* bpttd_p);
+uint32_t get_offset_of_common_page_header(const bplus_tree_tuple_defs* bpttd_p);
 
-uint32_t get_size_of_page_type_header();
+uint32_t get_size_of_common_page_header();
 
 page_type get_type_of_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
 
