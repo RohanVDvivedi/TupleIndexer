@@ -12,10 +12,9 @@
 ** Note :: They must be backed by the corresponding functions from TupleStore ONLY
 */
 
-// All the operation of page_modification_methods will return an int error code that must be ALWAYS BE ONE of the following
-#define PMM_SUCCESS            1
-#define PMM_FAIL               0
-#define PMM_FAILED_TO_WAL_LOG -1 // fatal error, the transaction needs to abort on this error
+// All the operation of page_modification_methods will and must return an int, either 0 OR 1
+// 0 implying a failure to operate on AND 1 for success
+// In case an error occurs in persisting a log entry, we want you to kill the application
 
 typedef struct page_modification_methods page_modification_methods;
 struct page_modification_methods
