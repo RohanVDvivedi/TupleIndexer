@@ -106,7 +106,21 @@ static int insert_at_in_page(
 
 	// insert tuple to the end of the page
 	if(!(pmm_p->append_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), tuple)))
-		return 0;
+	{
+		// if it fails the first time then calculate unused space on the page and the space required by the tuple
+		uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_page(ppage.page, page_size, &(tpl_def->size_def)) - get_space_occupied_by_all_tuples_on_page(ppage.page, page_size, &(tpl_def->size_def));
+		uint32_t space_required_by_tuple = get_tuple_size(tpl_def, tuple) + get_additional_space_overhead_per_tuple_on_page(page_size, &(tpl_def->size_def));
+
+		// if page does not have enough unused space then we can't do anything
+		if(unused_space_on_page < space_required_by_tuple)
+			return 0;
+
+		// else run_page_compaction and try again
+		run_page_compaction(ppage.page, page_size, &(tpl_def->size_def));
+
+		if(!(pmm_p->append_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), tuple)))
+			return 0;
+	}
 
 	// insert succeedded, so tuple_count incremented
 	tuple_count++;
