@@ -80,7 +80,7 @@ index_accessed_interface get_index_accessed_interface_for_sorted_packed_page(tup
 		.ds_p = tap_p,
 		.get_element = get_tuple_from_tuple_accessed_page,
 		.set_element = NULL, // set element functionality will not be provided
-		.swap_elements = swap_tuples_in_tuple_accessed_page,
+		.swap_elements = (tap_p->pmm_p == NULL) ? NULL : swap_tuples_in_tuple_accessed_page, // you are not suppossed to modify a persistent page if pmm_p is NULL
 		.get_element_count = get_tuple_count_for_tuple_accessed_page
 	};
 }
