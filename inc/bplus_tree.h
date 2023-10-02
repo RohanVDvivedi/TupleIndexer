@@ -8,7 +8,7 @@
 #include<page_modification_methods.h>
 
 // returns pointer to the root page of the bplus_tree
-uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
 
 // order of the enum values in find_position must remain the same
 typedef enum find_position find_position;

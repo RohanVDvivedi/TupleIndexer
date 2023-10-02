@@ -13,20 +13,20 @@
 
 #include<stdlib.h>
 
-uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
-	uint64_t root_page_id;
-	void* root_page = dam_p->get_new_page_with_write_lock(dam_p->context, &root_page_id);
+	persistent_page root_page;
+	root_page.page = dam_p->get_new_page_with_write_lock(dam_p->context, &(root_page.page_id));
 
 	// if init_page fails
-	if(!init_bplus_tree_leaf_page(root_page, bpttd_p))
+	if(!init_bplus_tree_leaf_page(root_page, bpttd_p, pmm_p))
 	{
-		dam_p->release_writer_lock_on_page(dam_p->context, root_page, FREE_PAGE);
+		dam_p->release_writer_lock_on_page(dam_p->context, root_page.page, FREE_PAGE);
 		return bpttd_p->NULL_PAGE_ID;
 	}
 
-	dam_p->release_writer_lock_on_page(dam_p->context, root_page, WAS_MODIFIED);
-	return root_page_id;
+	dam_p->release_writer_lock_on_page(dam_p->context, root_page.page, WAS_MODIFIED);
+	return root_page.page_id;
 }
 
 int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
