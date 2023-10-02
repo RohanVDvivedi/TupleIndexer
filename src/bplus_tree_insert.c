@@ -95,10 +95,11 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// if it does not already exist then try to insert it
 			uint32_t insertion_point;
 			inserted = insert_to_sorted_packed_page(
-									curr_locked_page.ppage.page, bpttd_p->page_size, 
+									curr_locked_page.ppage, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
 									record, 
-									&insertion_point
+									&insertion_point,
+									pmm_p
 								);
 
 			if(inserted)
@@ -114,10 +115,11 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				run_page_compaction(curr_locked_page.ppage.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
 				inserted = insert_at_in_sorted_packed_page(
-														curr_locked_page.ppage.page, bpttd_p->page_size, 
+														curr_locked_page.ppage, bpttd_p->page_size, 
 														bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
 														record, 
-														insertion_point
+														insertion_point,
+														pmm_p
 													);
 			}
 
@@ -133,18 +135,18 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			if(curr_locked_page.ppage.page_id == root_page_id)
 			{
 				// get a new page to insert between the root and its children
-				uint64_t root_least_keys_child_id;
-				void* root_least_keys_child = dam_p->get_new_page_with_write_lock(dam_p->context, &root_least_keys_child_id);
+				persistent_page root_least_keys_child;
+				root_least_keys_child.page = dam_p->get_new_page_with_write_lock(dam_p->context, &(root_least_keys_child.page_id));
 
 				// clone root page contents into the new root_least_keys_child
-				clone_page(root_least_keys_child, bpttd_p->page_size, &(bpttd_p->record_def->size_def), curr_locked_page.ppage.page);
+				pmm_p->clone_page(pmm_p->context, root_least_keys_child, bpttd_p->page_size, &(bpttd_p->record_def->size_def), curr_locked_page.ppage);
 
 				// re intialize root page as an interior page
-				init_bplus_tree_interior_page(curr_locked_page.ppage.page, ++root_page_level, 1, bpttd_p);
-				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page.ppage.page, root_least_keys_child_id, bpttd_p);
+				init_bplus_tree_interior_page(curr_locked_page.ppage, ++root_page_level, 1, bpttd_p, pmm_p);
+				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page.ppage.page, root_least_keys_child.page_id, bpttd_p);
 
 				// create new locked_page_info for the root_least_keys_child
-				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child, root_least_keys_child_id);
+				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child.page, root_least_keys_child.page_id);
 				root_least_keys_child_info.child_index = curr_locked_page.child_index;
 				curr_locked_page.child_index = -1; // the root page only has a single child at the moment
 
@@ -160,7 +162,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				parent_insert = malloc(largest_index_tuple_size);
 			}
 
-			inserted = split_insert_bplus_tree_leaf_page(curr_locked_page.ppage, record, insertion_point, bpttd_p, dam_p, parent_insert);
+			inserted = split_insert_bplus_tree_leaf_page(curr_locked_page.ppage, record, insertion_point, bpttd_p, dam_p, pmm_p, parent_insert);
 
 			// if an insertion was done (at this point a split was also performed), on this page
 			// then lock on this page should be released with modification
@@ -179,10 +181,11 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			uint32_t insertion_point = curr_locked_page.child_index + 1;
 			parent_tuple_inserted = insert_at_in_sorted_packed_page(
-									curr_locked_page.ppage.page, bpttd_p->page_size, 
+									curr_locked_page.ppage, bpttd_p->page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
 									parent_insert, 
-									insertion_point
+									insertion_point,
+									pmm_p
 								);
 
 			if(parent_tuple_inserted)
@@ -197,10 +200,11 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				run_page_compaction(curr_locked_page.ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 				parent_tuple_inserted = insert_at_in_sorted_packed_page(
-										curr_locked_page.ppage.page, bpttd_p->page_size, 
+										curr_locked_page.ppage, bpttd_p->page_size, 
 										bpttd_p->index_def, NULL, bpttd_p->key_element_count,
 										parent_insert, 
-										insertion_point
+										insertion_point,
+										pmm_p
 									);
 			}
 
@@ -216,18 +220,18 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			if(curr_locked_page.ppage.page_id == root_page_id)
 			{
 				// get a new page to insert between the root and its children
-				uint64_t root_least_keys_child_id;
-				void* root_least_keys_child = dam_p->get_new_page_with_write_lock(dam_p->context, &root_least_keys_child_id);
+				persistent_page root_least_keys_child;
+				root_least_keys_child.page = dam_p->get_new_page_with_write_lock(dam_p->context, &(root_least_keys_child.page_id));
 
 				// clone root page contents into the new root_least_keys_child
-				clone_page(root_least_keys_child, bpttd_p->page_size, &(bpttd_p->index_def->size_def), curr_locked_page.ppage.page);
+				pmm_p->clone_page(pmm_p->context, root_least_keys_child, bpttd_p->page_size, &(bpttd_p->index_def->size_def), curr_locked_page.ppage);
 
 				// re intialize root page as an interior page
-				init_bplus_tree_interior_page(curr_locked_page.ppage.page, ++root_page_level, 1, bpttd_p);
-				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page.ppage.page, root_least_keys_child_id, bpttd_p);
+				init_bplus_tree_interior_page(curr_locked_page.ppage, ++root_page_level, 1, bpttd_p, pmm_p);
+				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page.ppage.page, root_least_keys_child.page_id, bpttd_p);
 
 				// create new locked_page_info for the root_least_keys_child
-				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child, root_least_keys_child_id);
+				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child.page, root_least_keys_child.page_id);
 				root_least_keys_child_info.child_index = curr_locked_page.child_index;
 				curr_locked_page.child_index = -1; // the root page only has a single child at the moment
 
@@ -236,7 +240,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				curr_locked_page = root_least_keys_child_info;
 			}
 
-			parent_tuple_inserted = split_insert_bplus_tree_interior_page(curr_locked_page.ppage, parent_insert, insertion_point, bpttd_p, dam_p, parent_insert);
+			parent_tuple_inserted = split_insert_bplus_tree_interior_page(curr_locked_page.ppage, parent_insert, insertion_point, bpttd_p, dam_p, pmm_p, parent_insert);
 
 			// if an insertion was done (at this point a split was also performed), on this page
 			// then lock on this page should be released with modification
