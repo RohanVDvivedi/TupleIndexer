@@ -87,6 +87,9 @@ int main()
 	// intialize tuple definition
 	tuple_def* def = get_tuple_definition();
 
+	// initialize page_modification_methods
+	pag_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
+
 	// ---------------	DECLARE TEMP variables
 
 	// to build intermediate tuples (only 1 at a time)
@@ -502,7 +505,11 @@ int main()
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
 
+	// delete helper resources
+
 	delete_tuple_def(def);
+
+	delete_unWALed_page_modification_methods(pmm_p);
 	
 	return 0;
 }
