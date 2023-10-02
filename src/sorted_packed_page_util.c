@@ -38,20 +38,24 @@ int compare_tuples_using_comparator_context(const void* context, const void* tup
 typedef struct tuple_accessed_page tuple_accessed_page;
 struct tuple_accessed_page
 {
-	// the actual page pointer
-	void* page;
+	// the actual persistent page
+	persistent_page ppage;
 
 	// the size of the page
 	uint32_t page_size;
 
 	// tuple_def to be used with the page
 	const tuple_def* tpl_def;
+
+	// page_modification_methods allowing you to modify tuples on page
+	// only required for swapping tuples
+	page_modification_methods* pmm_p;
 };
 
 static const void* get_tuple_from_tuple_accessed_page(const void* ds_p, cy_uint index)
 {
 	const tuple_accessed_page* tap_p = ds_p;
-	return get_nth_tuple_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_def->size_def), index);
+	return get_nth_tuple_on_page(tap_p->ppage.page, tap_p->page_size, &(tap_p->tpl_def->size_def), index);
 }
 
 // set functionality will not be provided
@@ -59,16 +63,16 @@ static const void* get_tuple_from_tuple_accessed_page(const void* ds_p, cy_uint 
 static int swap_tuples_in_tuple_accessed_page(void* ds_p, cy_uint i1, cy_uint i2)
 {
 	tuple_accessed_page* tap_p = ds_p;
-	return swap_tuples_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_def->size_def), i1, i2);
+	return tap_p->pmm_p->swap_tuples_on_page(tap_p->pmm_p->context, tap_p->ppage, tap_p->page_size, &(tap_p->tpl_def->size_def), i1, i2);
 }
 
 static cy_uint get_tuple_count_for_tuple_accessed_page(const void* ds_p)
 {
 	const tuple_accessed_page* tap_p = ds_p;
-	return get_tuple_count_on_page(tap_p->page, tap_p->page_size, &(tap_p->tpl_def->size_def));
+	return get_tuple_count_on_page(tap_p->ppage.page, tap_p->page_size, &(tap_p->tpl_def->size_def));
 }
 
-#define get_tuple_accessed_page(page_v, page_size_v, tpl_def_v) ((const tuple_accessed_page){.page = page_v, .page_size = page_size_v, .tpl_def = tpl_def_v})
+#define get_tuple_accessed_page(page_v, page_size_v, tpl_def_v, ppm_p_v) ((const tuple_accessed_page){.page = page_v, .page_size = page_size_v, .tpl_def = tpl_def_v, .pmm_p = pmm_p_val})
 
 index_accessed_interface get_index_accessed_interface_for_sorted_packed_page(tuple_accessed_page* tap_p)
 {
