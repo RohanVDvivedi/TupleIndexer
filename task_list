@@ -1,6 +1,5 @@
 ** PICKED TASKS
  * page_modification_methods
-   * allow only modifying a page only through page_modification_methods, refactor the complete library to use page_layout_unaltered.h instead of page_layout.h
    * build for all page headers api to get_*_header_from_page, and set_*_header_in_page, and use that instead
    * implement structs to represent each of them
    * replace all accesses to headers using get and set functions in to struct accessed
