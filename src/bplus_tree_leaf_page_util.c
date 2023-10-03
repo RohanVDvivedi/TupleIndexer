@@ -14,10 +14,15 @@ int init_bplus_tree_leaf_page(persistent_page ppage, const bplus_tree_tuple_defs
 	int inited = pmm_p->init_page(pmm_p->context, ppage, bpttd_p->page_size, sizeof_LEAF_PAGE_HEADER(bpttd_p), &(bpttd_p->record_def->size_def));
 	if(!inited)
 		return 0;
-	set_type_of_page(ppage.page, BPLUS_TREE_LEAF_PAGE, bpttd_p);
-	set_level_of_bplus_tree_page(ppage.page, 0, bpttd_p);
-	set_prev_page_id_of_bplus_tree_leaf_page(ppage.page, bpttd_p->NULL_PAGE_ID, bpttd_p);
-	set_next_page_id_of_bplus_tree_leaf_page(ppage.page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+
+	// get the header, initialize it and set it back on to the page
+	bplus_tree_leaf_page_header hdr = get_bplus_tree_leaf_page_header(ppage.page, bpttd_p);
+	hdr.parent.parent.type = BPLUS_TREE_LEAF_PAGE;
+	hdr.parent.level = 0;
+	hdr.next_page_id = bpttd_p->NULL_PAGE_ID;
+	hdr.prev_page_id = bpttd_p->NULL_PAGE_ID;
+	set_bplus_tree_leaf_page_header(ppage, &hdr, bpttd_p, pmm_p);
+
 	return 1;
 }
 
