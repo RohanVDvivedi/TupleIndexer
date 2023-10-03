@@ -350,7 +350,16 @@ int split_insert_bplus_tree_interior_page(persistent_page page1, const void* tup
 	uint64_t page2_least_keys_page_id = get_child_page_id_from_index_tuple(first_tuple_page2, bpttd_p);
 
 	// set the least_keys_page_id for page2
-	set_least_keys_page_id_of_bplus_tree_interior_page(page2.page, page2_least_keys_page_id, bpttd_p);
+	{
+		// read page2 header
+		bplus_tree_interior_page_header page2_hdr = get_bplus_tree_interior_page_header(page2.page, bpttd_p);
+
+		// update it's to least_keys_page_id
+		page2_hdr.least_keys_page_id = page2_least_keys_page_id;
+
+		// set page2_hdr back onto the page
+		set_bplus_tree_interior_page_header(page2, &page2_hdr, bpttd_p, pmm_p);
+	}
 
 	// copy all the contents of the first_tuple_page2 to output_parent_insert
 	memory_move(output_parent_insert, first_tuple_page2, size_of_first_tuple_page2);
