@@ -16,10 +16,15 @@ int init_bplus_tree_interior_page(persistent_page ppage, uint32_t level, int is_
 	int inited = pmm_p->init_page(pmm_p->context, ppage, bpttd_p->page_size, sizeof_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def));
 	if(!inited)
 		return 0;
-	set_type_of_page(ppage.page, BPLUS_TREE_INTERIOR_PAGE, bpttd_p);
-	set_level_of_bplus_tree_page(ppage.page, level, bpttd_p);
-	set_least_keys_page_id_of_bplus_tree_interior_page(ppage.page, bpttd_p->NULL_PAGE_ID, bpttd_p);
-	set_is_last_page_of_level_of_bplus_tree_interior_page(ppage.page, is_last_page_of_level, bpttd_p);
+
+	// get the header, initialize it and set it back on to the page
+	bplus_tree_interior_page_header hdr = get_bplus_tree_interior_page_header(ppage.page, bpttd_p);
+	hdr.parent.parent.type = BPLUS_TREE_INTERIOR_PAGE;
+	hdr.parent.level = level;
+	hdr.least_keys_page_id = bpttd_p->NULL_PAGE_ID;
+	hdr.is_last_page_of_level = is_last_page_of_level;
+	set_bplus_tree_interior_page_header(ppage, &hdr, bpttd_p, pmm_p);
+
 	return 1;
 }
 
