@@ -441,7 +441,7 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 	}
 
 	// free page2 and release its lock
-	dam_p->release_writer_lock_on_page(dam_p->context, page2.page, FREE_PAGE);
+	dam_p->release_writer_lock_on_page(dam_p->context, page2.page, FREE_PAGE | WAS_MODIFIED);
 
 	return 1;
 }
