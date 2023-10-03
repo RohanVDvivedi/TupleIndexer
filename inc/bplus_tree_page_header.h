@@ -19,9 +19,7 @@ struct bplus_tree_page_header
 	uint32_t level;
 };
 
-uint32_t get_offset_of_bplus_tree_page_header(const bplus_tree_tuple_defs* bpttd_p);
-
-uint32_t get_size_of_bplus_tree_page_header();
+uint32_t get_offset_to_end_of_bplus_tree_page_header(const bplus_tree_tuple_defs* bpttd_p);
 
 uint32_t get_level_of_bplus_tree_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
 

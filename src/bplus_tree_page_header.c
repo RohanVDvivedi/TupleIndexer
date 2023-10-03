@@ -10,29 +10,10 @@
 // values in range 1 to 4 both inclusive
 #define BYTES_FOR_PAGE_LEVEL 2
 
-uint32_t get_offset_of_bplus_tree_page_header(const bplus_tree_tuple_defs* bpttd_p)
+uint32_t get_offset_to_end_of_bplus_tree_page_header(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_offset_of_common_page_header(bpttd_p) + get_size_of_common_page_header();
+	return get_offset_to_end_of_common_page_header(bpttd_p) + BYTES_FOR_PAGE_LEVEL;
 }
-
-uint32_t get_size_of_bplus_tree_page_header()
-{
-	return BYTES_FOR_PAGE_LEVEL;
-}
-
-/*
-uint32_t get_level_of_bplus_tree_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
-{
-	const void* page_level_header = get_page_header((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_page_level_header(bpttd_p);
-	return read_uint32(page_level_header, BYTES_FOR_PAGE_LEVEL);
-}
-
-void set_level_of_bplus_tree_page(void* page, uint32_t level, const bplus_tree_tuple_defs* bpttd_p)
-{
-	void* page_level_header = get_page_header((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_page_level_header(bpttd_p);
-	write_uint32(page_level_header, BYTES_FOR_PAGE_LEVEL, level);
-}
-*/
 
 uint32_t get_level_of_bplus_tree_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
@@ -44,9 +25,14 @@ int is_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd
 	return get_level_of_bplus_tree_page(page, bpttd_p) == 0;
 }
 
+static inline uint32_t get_offset_to_bplus_tree_page_header_locals(const bplus_tree_tuple_defs* bpttd_p)
+{
+	return get_offset_to_end_of_common_page_header(bpttd_p);
+}
+
 bplus_tree_page_header get_bplus_tree_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	const void* bplus_tree_page_header_serial = get_page_header_ua((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_page_header(bpttd_p);
+	const void* bplus_tree_page_header_serial = get_page_header_ua((void*)page, bpttd_p->page_size) + get_offset_to_bplus_tree_page_header_locals(bpttd_p);
 	return (bplus_tree_page_header){
 		.parent = get_common_page_header(page, bpttd_p),
 		.level = read_uint32(bplus_tree_page_header_serial, BYTES_FOR_PAGE_LEVEL),
@@ -57,7 +43,7 @@ void serialize_bplus_tree_page_header(void* hdr_serial, const bplus_tree_page_he
 {
 	serialize_common_page_header(hdr_serial, &(bptph_p->parent), bpttd_p);
 
-	void* bplus_tree_page_header_serial = hdr_serial + get_offset_of_bplus_tree_page_header(bpttd_p);
+	void* bplus_tree_page_header_serial = hdr_serial + get_offset_to_bplus_tree_page_header_locals(bpttd_p);
 	write_uint32(bplus_tree_page_header_serial, BYTES_FOR_PAGE_LEVEL, bptph_p->level);
 }
 
