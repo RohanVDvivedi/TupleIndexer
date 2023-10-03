@@ -204,23 +204,36 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 	// number of tuples of the page1 that will leave page1 and be moved to page2
 	//uint32_t tuples_leave_page1 = page1_tuple_count - tuples_stay_in_page1;
 
-	// allocate a new page
+	// lock the next page of page1, we call it page3
+	persistent_page page3 = {};
+	page3.page_id = get_next_page_id_of_bplus_tree_leaf_page(page1.page, bpttd_p);
+	if(page3.page_id != bpttd_p->NULL_PAGE_ID)
+	{
+		page3.page = dam_p->acquire_page_with_writer_lock(dam_p->context, page3.page_id);
+
+		// if we could not acquire lock on page3, then fail split_insert
+		if(page3.page == NULL)
+			return 0;
+	}
+
+	// allocate a new page, to place in between page1 and page3, it will accomodate half of the tuples of page1
 	persistent_page page2;
 	page2.page = dam_p->get_new_page_with_write_lock(dam_p->context, &(page2.page_id));
 
 	// return with a split failure if the page2 could not be allocated
 	if(page2.page == NULL)
+	{
+		// on failure, do not forget to release writer lock on page3
+		dam_p->release_writer_lock_on_page(dam_p->context, page3.page, NONE_OPTION);
+
 		return 0;
+	}
 
 	// initialize page2 (as a leaf page)
 	init_bplus_tree_leaf_page(page2, bpttd_p, pmm_p);
 
 	// link page2 in between page1 and the next page of page1
 	{
-		// id of the page that is next to page1 (calling this page3)
-		persistent_page page3;
-		page3.page_id = get_next_page_id_of_bplus_tree_leaf_page(page1.page, bpttd_p);
-
 		// read headers of page1 and page2 inorder to link page2 in between, page1 and page3
 		bplus_tree_leaf_page_header page1_hdr = get_bplus_tree_leaf_page_header(page1.page, bpttd_p);
 		bplus_tree_leaf_page_header page2_hdr = get_bplus_tree_leaf_page_header(page2.page, bpttd_p);
@@ -228,16 +241,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 		// perform pointer manipulations for the linkedlist of leaf pages
 		if(page3.page_id != bpttd_p->NULL_PAGE_ID)
 		{
-			// acquire lock on the next page of the page1 (this page will be called page3)
-			page3.page = dam_p->acquire_page_with_writer_lock(dam_p->context, page3.page_id);
-
-			// return with a split failure if the lock on page3 could not be acquired
-			if(page3.page == NULL)
-			{
-				// make sure you free the page that you acquired
-				dam_p->release_writer_lock_on_page(dam_p->context, page2.page, FREE_PAGE);
-				return 0;
-			}
+			// if page3 exists, then we already have lock on it
 
 			// read page3 header
 			bplus_tree_leaf_page_header page3_hdr = get_bplus_tree_leaf_page_header(page3.page, bpttd_p);
@@ -261,6 +265,8 @@ int split_insert_bplus_tree_leaf_page(persistent_page page1, const void* tuple_t
 			page2_hdr.prev_page_id = page1.page_id;
 			page2_hdr.next_page_id = bpttd_p->NULL_PAGE_ID;
 		}
+
+		// page3 not must not be accessed beyond this point, even if it is in your scope
 
 		// set the page1_hdr and page2_hdr back onto the page
 		set_bplus_tree_leaf_page_header(page1, &page1_hdr, bpttd_p, pmm_p);
