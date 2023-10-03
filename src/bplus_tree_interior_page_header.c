@@ -24,7 +24,20 @@ int is_last_page_of_level_of_bplus_tree_interior_page(const void* page, const bp
 	return get_bplus_tree_interior_page_header(page, bpttd_p).is_last_page_of_level;
 }
 
-bplus_tree_interior_page_header get_bplus_tree_interior_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+static inline uint32_t get_offset_to_bplus_tree_interior_page_header_locals(const bplus_tree_tuple_defs* bpttd_p)
+{
+	return get_offset_to_end_of_bplus_tree_page_header(bpttd_p);
+}
+
+bplus_tree_interior_page_header get_bplus_tree_interior_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+{
+	const void* interior_page_header_serial = get_page_header_ua((void*)page, bpttd_p->page_size) + get_offset_to_bplus_tree_interior_page_header_locals(bpttd_p);
+	return (bplus_tree_interior_page_header){
+		.parent = get_bplus_tree_page_header(page, bpttd_p),
+		.least_keys_page_id = read_uint64(interior_page_header_serial, bpttd_p->page_id_width),
+		.is_last_page_of_level = ((read_int8(interior_page_header_serial + bpttd_p->page_id_width, FLAGS_BYTE_SIZE) >> IS_LAST_PAGE_OF_LEVEL_FLAG_POS) & 1),
+	};
+}
 
 void serialize_bplus_tree_interior_page_header(void* hdr_serial, const bplus_tree_interior_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p);
 
