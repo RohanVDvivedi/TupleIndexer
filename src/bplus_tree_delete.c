@@ -230,7 +230,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				{
 					parent_locked_page->child_index += 1;
 
-					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, FREE_PAGE);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, FREE_PAGE | WAS_MODIFIED);
 				}
 				else // release lock on the page that is not curr_locked_page
 					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, NONE_OPTION);
@@ -252,7 +252,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				// if merged we need to delete entry at child_index in the parent page, and free child_page2
 				if(merged)
 				{
-					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, FREE_PAGE);
+					dam_p->release_writer_lock_on_page(dam_p->context, child_page2.page, FREE_PAGE | WAS_MODIFIED);
 
 					curr_locked_page.ppage = child_page1;
 				}
