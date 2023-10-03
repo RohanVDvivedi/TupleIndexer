@@ -1,21 +1,34 @@
 #ifndef BPLUS_TREE_LEAF_PAGE_HEADER_H
 #define BPLUS_TREE_LEAF_PAGE_HEADER_H
 
-#include<common_page_header.h>
-#include<bplus_tree_common_page_header.h>
+#include<bplus_tree_page_header.h>
 #include<bplus_tree_tuple_definitions.h>
+#include<page_modification_methods.h>
 
-// size of the complete header for a BPLUS_TREE_LEAF_PAGE type
-// this includes default_common_header_size + common_page_header + bplus_tree_level_page_header + leaf_page_header
-uint32_t sizeof_LEAF_PAGE_HEADER(const bplus_tree_tuple_defs* bpttd_p);
+typedef struct bplus_tree_leaf_page_header bplus_tree_leaf_page_header;
+struct bplus_tree_leaf_page_header
+{
+	bplus_tree_page_header parent;
 
-// getter and setter for next_page_id of the page
+	// all leaf pages are doubly linked, with pointers (page_id-s) to next and prev pages
+	uint64_t next_page_id;
+
+	uint32_t prev_page_id;
+};
+
+#define sizeof_LEAF_PAGE_HEADER get_offset_to_end_of_bplus_tree_leaf_page_header
+
+uint32_t get_offset_to_end_of_bplus_tree_leaf_page_header(const bplus_tree_tuple_defs* bpttd_p);
+
 uint64_t get_next_page_id_of_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
-void set_next_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p);
 
-// getter and setter for prev_page_id of the page
 uint64_t get_prev_page_id_of_bplus_tree_leaf_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
-void set_prev_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p);
+
+bplus_tree_leaf_page_header get_bplus_tree_leaf_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+
+void serialize_bplus_tree_leaf_page_header(void* hdr_serial, const bplus_tree_leaf_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p);
+
+void set_bplus_tree_leaf_page_header(persistent_page ppage, const bplus_tree_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
 
 // prints header of bplus_tree leaf page
 void print_bplus_tree_leaf_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
