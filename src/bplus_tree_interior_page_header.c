@@ -39,9 +39,26 @@ bplus_tree_interior_page_header get_bplus_tree_interior_page_header(const void* 
 	};
 }
 
-void serialize_bplus_tree_interior_page_header(void* hdr_serial, const bplus_tree_interior_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p);
+void serialize_bplus_tree_interior_page_header(void* hdr_serial, const bplus_tree_interior_page_header* bptiph_p, const bplus_tree_tuple_defs* bpttd_p);
 
-void set_bplus_tree_interior_page_header(persistent_page ppage, const bplus_tree_interior_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
+void set_bplus_tree_interior_page_header(persistent_page ppage, const bplus_tree_interior_page_header* bptiph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
+{
+	uint32_t page_header_size = get_page_header_size(ppage.page, bpttd_p->page_size);
+
+	// allocate memory, to hold complete page_header
+	void* hdr_serial = malloc(page_header_size);
+
+	// copy the old page_header to it
+	memory_move(hdr_serial, get_page_header_ua(ppage.page, bpttd_p->page_size), page_header_size);
+
+	// serialize bptlph_p on the hdr_serial
+	serialize_bplus_tree_interior_page_header(hdr_serial, bptiph_p, bpttd_p);
+
+	// write hdr_serial to the new header position
+	pmm_p->set_page_header(pmm_p->context, ppage, bpttd_p->page_size, hdr_serial);
+
+	free(hdr_serial);
+}
 
 #include<stdio.h>
 
