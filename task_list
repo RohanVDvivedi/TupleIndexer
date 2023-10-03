@@ -1,4 +1,7 @@
 ** PICKED TASKS
+ * WAS_MODIFIED can accompany, FREE_PAGE flag on data_access_methods
+ * remove -1 assignments to unsigned ints
+ * enable sort ordering on bplus_tree, using the TupleStore's compare_tuples' sort ordering feature
  * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
 
