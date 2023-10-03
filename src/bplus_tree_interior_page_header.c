@@ -47,7 +47,7 @@ void serialize_bplus_tree_interior_page_header(void* hdr_serial, const bplus_tre
 
 	void* bplus_tree_interior_page_header_serial = hdr_serial + get_offset_to_bplus_tree_interior_page_header_locals(bpttd_p);
 	write_uint64(bplus_tree_interior_page_header_serial, bpttd_p->page_id_width, bptiph_p->least_keys_page_id);
-	write_uint64(bplus_tree_interior_page_header_serial + bpttd_p->page_id_width, FLAGS_BYTE_SIZE, (bptiph_p->is_last_page_of_level << IS_LAST_PAGE_OF_LEVEL_FLAG_POS));
+	write_uint64(bplus_tree_interior_page_header_serial + bpttd_p->page_id_width, FLAGS_BYTE_SIZE, ((!!(bptiph_p->is_last_page_of_level)) << IS_LAST_PAGE_OF_LEVEL_FLAG_POS));
 }
 
 void set_bplus_tree_interior_page_header(persistent_page ppage, const bplus_tree_interior_page_header* bptiph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
