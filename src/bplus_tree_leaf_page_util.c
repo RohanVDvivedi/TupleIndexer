@@ -370,6 +370,10 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 		persistent_page page3;
 		page3.page_id = get_next_page_id_of_bplus_tree_leaf_page(page2.page, bpttd_p);
 
+		// read headers of page1 and page2 inorder to unlink page2 from the between of page1 and page3
+		bplus_tree_leaf_page_header page1_hdr = get_bplus_tree_leaf_page_header(page1.page, bpttd_p);
+		bplus_tree_leaf_page_header page2_hdr = get_bplus_tree_leaf_page_header(page2.page, bpttd_p);
+
 		// page3 does exist and page2 is not the last page
 		if(page3.page_id != bpttd_p->NULL_PAGE_ID)
 		{
@@ -384,9 +388,15 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 				return 0;
 			}
 
+			// read page3 header
+			bplus_tree_leaf_page_header page3_hdr = get_bplus_tree_leaf_page_header(page3.page, bpttd_p);
+
 			// perform pointer manipulations to remove page2 from the between of page1 and page3
-			set_next_page_id_of_bplus_tree_leaf_page(page1.page, page3.page_id, bpttd_p);
-			set_prev_page_id_of_bplus_tree_leaf_page(page3.page, page1.page_id, bpttd_p);
+			page1_hdr.next_page_id = page3.page_id;
+			page3_hdr.prev_page_id = page1.page_id;
+
+			// set the page3_hdr back onto the page
+			set_bplus_tree_leaf_page_header(page3, &page3_hdr, bpttd_p, pmm_p);
 
 			// release lock on page3, marking it as modified
 			dam_p->release_writer_lock_on_page(dam_p->context, page3.page, WAS_MODIFIED);
@@ -394,14 +404,18 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 		else // page2 is indeed the last page
 		{
 			// perform pointer manipulations to make page1 as the last page
-			set_next_page_id_of_bplus_tree_leaf_page(page1.page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+			page1_hdr.next_page_id = bpttd_p->NULL_PAGE_ID;
 		}
 
 		// since page2 has been removed from the linkedlist of leaf pages
 		// modify page2 pointers (next and prev) to point NULL_PAGE_ID
 		// this step is not needed
-		set_prev_page_id_of_bplus_tree_leaf_page(page2.page, bpttd_p->NULL_PAGE_ID, bpttd_p);
-		set_next_page_id_of_bplus_tree_leaf_page(page2.page, bpttd_p->NULL_PAGE_ID, bpttd_p);
+		page2_hdr.prev_page_id = bpttd_p->NULL_PAGE_ID;
+		page2_hdr.next_page_id = bpttd_p->NULL_PAGE_ID;
+
+		// set the page1_hdr and page2_hdr back onto the page
+		set_bplus_tree_leaf_page_header(page1, &page1_hdr, bpttd_p, pmm_p);
+		set_bplus_tree_leaf_page_header(page2, &page2_hdr, bpttd_p, pmm_p);
 	}
 
 	// now, we can safely transfer all tuples from page2 to page1
