@@ -414,13 +414,21 @@ int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator
 	// get the size of the separator tuple
 	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
 
-	// check if page2 was the last page of the level
-	int page2_is_last_page_of_level = is_last_page_of_level_of_bplus_tree_interior_page(page2.page, bpttd_p);
-	// if page2 was the last page of the level, then page1 will now inherit that
-	set_is_last_page_of_level_of_bplus_tree_interior_page(page1.page, page2_is_last_page_of_level, bpttd_p);
-	// the 2 steps below are not needed, but it is performed to keep things clean
-	page2_is_last_page_of_level = 0;
-	set_is_last_page_of_level_of_bplus_tree_interior_page(page2.page, page2_is_last_page_of_level, bpttd_p);
+	// check if page2 was the last page of the level, if so page1 is now the last page of the level
+	{
+		// read page1 and page2 header
+		bplus_tree_interior_page_header page1_hdr = get_bplus_tree_interior_page_header(page1.page, bpttd_p);
+		bplus_tree_interior_page_header page2_hdr = get_bplus_tree_interior_page_header(page2.page, bpttd_p);
+
+		// if page2 was the last page of the level, then page1 will now inherit that
+		page1_hdr.is_last_page_of_level = page2_hdr.is_last_page_of_level;
+		// below operation is not needed, as page2 is already going to be freed
+		page2_hdr.is_last_page_of_level = 0;
+
+		// set the page headers back on to the page
+		set_bplus_tree_interior_page_header(page1, &page1_hdr, bpttd_p, pmm_p);
+		set_bplus_tree_interior_page_header(page2, &page2_hdr, bpttd_p, pmm_p);
+	}
 
 	// make sure that there is enough free space on page1 else defragment the page first
 	uint32_t free_space_page1 = get_free_space_on_page(page1.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
