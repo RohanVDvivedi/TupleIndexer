@@ -5,22 +5,6 @@
 
 #include<stdlib.h>
 
-void set_next_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p)
-{
-	void* leaf_page_header = get_page_header((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_leaf_page_header(bpttd_p);
-	void* next_page_id = leaf_page_header + 0;
-	return write_uint64(next_page_id, bpttd_p->page_id_width, page_id);
-}
-
-void set_prev_page_id_of_bplus_tree_leaf_page(void* page, uint64_t page_id, const bplus_tree_tuple_defs* bpttd_p)
-{
-	void* leaf_page_header = get_page_header((void*)page, bpttd_p->page_size) + get_offset_of_bplus_tree_leaf_page_header(bpttd_p);
-	void* prev_page_id = leaf_page_header + bpttd_p->page_id_width;
-	return write_uint64(prev_page_id, bpttd_p->page_id_width, page_id);
-}
-
-// --
-
 uint32_t get_offset_to_end_of_bplus_tree_leaf_page_header(const bplus_tree_tuple_defs* bpttd_p)
 {
 	return get_offset_to_end_of_bplus_tree_page_header(bpttd_p) + (2 * bpttd_p->page_id_width);
@@ -51,7 +35,14 @@ bplus_tree_leaf_page_header get_bplus_tree_leaf_page_header(const void* page, co
 	};
 }
 
-void serialize_bplus_tree_leaf_page_header(void* hdr_serial, const bplus_tree_leaf_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p);
+void serialize_bplus_tree_leaf_page_header(void* hdr_serial, const bplus_tree_leaf_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p)
+{
+	serialize_bplus_tree_page_header(hdr_serial, &(bptlph_p->parent), bpttd_p);
+
+	void* bplus_tree_leaf_page_header_serial = hdr_serial + get_offset_to_bplus_tree_leaf_page_header_locals(bpttd_p);
+	write_uint64(bplus_tree_leaf_page_header_serial, bpttd_p->page_id_width, bptlph_p->next_page_id);
+	write_uint64(bplus_tree_leaf_page_header_serial + bpttd_p->page_id_width, bpttd_p->page_id_width, bptlph_p->prev_page_id);
+}
 
 void set_bplus_tree_leaf_page_header(persistent_page ppage, const bplus_tree_leaf_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
 {
