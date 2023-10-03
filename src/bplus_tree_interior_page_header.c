@@ -11,7 +11,7 @@
 // bit position of is_last_page_of_level
 #define IS_LAST_PAGE_OF_LEVEL_FLAG_POS 0
 
-uint32_t get_offset_to_end_of_bplus_interior_leaf_page_header(const bplus_tree_tuple_defs* bpttd_p)
+uint32_t get_offset_to_end_of_bplus_tree_interior_page_header(const bplus_tree_tuple_defs* bpttd_p)
 {
 	return get_offset_to_end_of_bplus_tree_page_header(bpttd_p) + bpttd_p->page_id_width + 1;
 }

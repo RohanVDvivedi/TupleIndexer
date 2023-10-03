@@ -19,7 +19,7 @@ struct bplus_tree_interior_page_header
 
 #define sizeof_INTERIOR_PAGE_HEADER get_offset_to_end_of_bplus_tree_interior_page_header
 
-uint32_t get_offset_to_end_of_bplus_interior_leaf_page_header(const bplus_tree_tuple_defs* bpttd_p);
+uint32_t get_offset_to_end_of_bplus_tree_interior_page_header(const bplus_tree_tuple_defs* bpttd_p);
 
 uint64_t get_least_keys_page_id_of_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
 
