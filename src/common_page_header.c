@@ -15,14 +15,9 @@ const char* page_type_string[] = {
 // allowed values for size for storing page_type = 1 or 2
 #define BYTES_FOR_PAGE_TYPE 2
 
-uint32_t get_offset_of_common_page_header(const bplus_tree_tuple_defs* bpttd_p)
+uint32_t get_offset_to_end_of_common_page_header(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return bpttd_p->system_header_size;
-}
-
-uint32_t get_size_of_common_page_header()
-{
-	return BYTES_FOR_PAGE_TYPE;
+	return bpttd_p->system_header_size + BYTES_FOR_PAGE_TYPE;
 }
 
 page_type get_type_of_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
@@ -30,9 +25,14 @@ page_type get_type_of_page(const void* page, const bplus_tree_tuple_defs* bpttd_
 	return get_common_page_header(page, bpttd_p).type;
 }
 
+static inline uint32_t get_offset_to_common_page_header_locals(const bplus_tree_tuple_defs* bpttd_p)
+{
+	return bpttd_p->system_header_size;
+}
+
 common_page_header get_common_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p)
 {
-	const void* common_page_header_serial = get_page_header_ua((void*)page, bpttd_p->page_size) + get_offset_of_common_page_header(bpttd_p);
+	const void* common_page_header_serial = get_page_header_ua((void*)page, bpttd_p->page_size) + get_offset_to_common_page_header_locals(bpttd_p);
 	return (common_page_header){
 		.type = (page_type) read_uint16(common_page_header_serial, BYTES_FOR_PAGE_TYPE),
 	};
@@ -40,7 +40,7 @@ common_page_header get_common_page_header(const void* page, const bplus_tree_tup
 
 void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p)
 {
-	void* common_page_header_serial = hdr_serial + get_offset_of_common_page_header(bpttd_p);
+	void* common_page_header_serial = hdr_serial + get_offset_to_common_page_header_locals(bpttd_p);
 	write_uint16(common_page_header_serial, BYTES_FOR_PAGE_TYPE, ((uint16_t)(cph_p->type)));
 }
 
