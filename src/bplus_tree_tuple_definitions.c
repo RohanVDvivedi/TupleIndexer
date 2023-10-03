@@ -29,7 +29,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 	bpttd_p->page_size = page_size;
 	bpttd_p->key_element_count = key_element_count;
 
-	bpttd_p->default_common_header_size = default_common_header_size;
+	bpttd_p->system_header_size = system_header_size;
 
 	if(sizeof_INTERIOR_PAGE_HEADER(bpttd_p) >= page_size || sizeof_LEAF_PAGE_HEADER(bpttd_p) >= page_size)
 		return 0;
