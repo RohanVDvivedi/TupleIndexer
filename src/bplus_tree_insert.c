@@ -121,7 +121,11 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 				// re intialize root page as an interior page
 				init_bplus_tree_interior_page(curr_locked_page.ppage, ++root_page_level, 1, bpttd_p, pmm_p);
-				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page.ppage.page, root_least_keys_child.page_id, bpttd_p);
+
+				// then set its least_keys_page_id to this root_least_keys_child.page_id
+				bplus_tree_interior_page_header root_page_header = get_bplus_tree_interior_page_header(curr_locked_page.ppage.page, bpttd_p);
+				root_page_header.least_keys_page_id = root_least_keys_child.page_id;
+				set_bplus_tree_interior_page_header(curr_locked_page.ppage, &root_page_header, bpttd_p, pmm_p);
 
 				// create new locked_page_info for the root_least_keys_child
 				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child.page, root_least_keys_child.page_id);
@@ -181,7 +185,11 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 				// re intialize root page as an interior page
 				init_bplus_tree_interior_page(curr_locked_page.ppage, ++root_page_level, 1, bpttd_p, pmm_p);
-				set_least_keys_page_id_of_bplus_tree_interior_page(curr_locked_page.ppage.page, root_least_keys_child.page_id, bpttd_p);
+
+				// then set its least_keys_page_id to this root_least_keys_child.page_id
+				bplus_tree_interior_page_header root_page_header = get_bplus_tree_interior_page_header(curr_locked_page.ppage.page, bpttd_p);
+				root_page_header.least_keys_page_id = root_least_keys_child.page_id;
+				set_bplus_tree_interior_page_header(curr_locked_page.ppage, &root_page_header, bpttd_p, pmm_p);
 
 				// create new locked_page_info for the root_least_keys_child
 				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child.page, root_least_keys_child.page_id);
