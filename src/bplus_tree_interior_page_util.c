@@ -275,14 +275,21 @@ int split_insert_bplus_tree_interior_page(persistent_page page1, const void* tup
 	uint32_t level = get_level_of_bplus_tree_page(page1.page, bpttd_p);	// get the level of bplus_tree we are dealing with
 	init_bplus_tree_interior_page(page2, level, 0, bpttd_p, pmm_p);
 
-	// check if page1 is last page of the level
-	int page1_is_last_page_of_level = is_last_page_of_level_of_bplus_tree_interior_page(page1.page, bpttd_p);
+	// check if page1 is last page of the level, if yes then page2 now becomes the last page of the level
+	{
+		// read page1 and page2 header
+		bplus_tree_interior_page_header page1_hdr = get_bplus_tree_interior_page_header(page1.page, bpttd_p);
+		bplus_tree_interior_page_header page2_hdr = get_bplus_tree_interior_page_header(page2.page, bpttd_p);
 
-	// page1 now can not be the last page of the level
-	// page2 will be the last page of the level if page1 was the last page of the level
-	set_is_last_page_of_level_of_bplus_tree_interior_page(page1.page, 0, bpttd_p);
-	set_is_last_page_of_level_of_bplus_tree_interior_page(page2.page, page1_is_last_page_of_level, bpttd_p);
-	page1_is_last_page_of_level = 0;
+		// page1 now can not be the last page of the level
+		// page2 will be the last page of the level if page1 was the last page of the level
+		page2_hdr.is_last_page_of_level = page1_hdr.is_last_page_of_level;
+		page1_hdr.is_last_page_of_level = 0;
+
+		// set the page headers back on to the page
+		set_bplus_tree_interior_page_header(page1, &page1_hdr, bpttd_p, pmm_p);
+		set_bplus_tree_interior_page_header(page2, &page2_hdr, bpttd_p, pmm_p);
+	}
 
 	// while moving tuples, we assume that there will be atleast 1 tuple that will get moved from page1 to page2
 	// we made this sure by all the above conditions
