@@ -56,6 +56,11 @@ static void clone_page_unWALed(void* context, persistent_page ppage, uint32_t pa
 	clone_page(ppage.page, page_size, tpl_sz_d, ppage_src.page);
 }
 
+static void run_page_compaction_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+{
+	run_page_compaction(ppage.page, page_size, tpl_sz_d);
+}
+
 page_modification_methods* get_new_unWALed_page_modification_methods()
 {
 	page_modification_methods* pmm_p = malloc(sizeof(page_modification_methods));
@@ -71,6 +76,7 @@ page_modification_methods* get_new_unWALed_page_modification_methods()
 	pmm_p->discard_trailing_tomb_stones_on_page = discard_trailing_tomb_stones_on_page_unWALed;
 	pmm_p->swap_tuples_on_page = swap_tuples_on_page_unWALed;
 	pmm_p->set_element_in_tuple_in_place_on_page = set_element_in_tuple_in_place_on_page_unWALed;
+	pmm_p->run_page_compaction = run_page_compaction_unWALed;
 	pmm_p->clone_page = clone_page_unWALed;
 
 	pmm_p->context = NULL;

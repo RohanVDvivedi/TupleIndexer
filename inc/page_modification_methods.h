@@ -37,6 +37,9 @@ struct page_modification_methods
 
 	void (*clone_page)(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src);
 
+	// the below function, does not change contents of the page, hence a physiologic log for this operation is not required in most settings
+	void (*run_page_compaction)(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d);
+
 	void* context;
 };
 
