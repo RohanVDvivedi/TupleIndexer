@@ -430,13 +430,6 @@ int merge_bplus_tree_leaf_pages(persistent_page page1, const bplus_tree_tuple_de
 	uint32_t tuple_count_page2 = get_tuple_count_on_page(page2.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 	if(tuple_count_page2 > 0)
 	{
-		uint32_t free_space_page1 = get_free_space_on_page(page1.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-		uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_page(page2.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-
-		// if free space is not enough perform a compaction in advance
-		if(free_space_page1 < space_in_use_page2)
-			run_page_compaction(page1.page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-
 		// only if there are any tuples to move
 		insert_all_from_sorted_packed_page(
 									page1, page2, bpttd_p->page_size, 

@@ -257,7 +257,7 @@ static uint32_t append_tuples_from_page(persistent_page ppage_dest, uint32_t pag
 		if(tup == NULL)
 			continue;
 
-		int res = pmm_p->append_tuple_on_page(pmm_p->context, ppage_dest, page_size, tpl_sz_d, tup);
+		int res = append_tuple_on_page_resiliently(pmm_p, ppage_dest, page_size, tpl_sz_d, tup);
 		if(res == 0)
 			break;
 

@@ -430,13 +430,6 @@ int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator
 		set_bplus_tree_interior_page_header(page2, &page2_hdr, bpttd_p, pmm_p);
 	}
 
-	// make sure that there is enough free space on page1 else defragment the page first
-	uint32_t free_space_page1 = get_free_space_on_page(page1.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_to_be_occupied_by_separator_tuple = separator_tuple_size + get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_page(page2.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	if(free_space_page1 < space_to_be_occupied_by_separator_tuple + space_in_use_page2)
-		run_page_compaction(page1.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-
 	// now we construct a separator tuple and insert it into the page 1
 	void* separator_tuple = malloc(sizeof(char) * separator_tuple_size);
 	memory_move(separator_tuple, separator_parent_tuple, sizeof(char) * separator_tuple_size);
