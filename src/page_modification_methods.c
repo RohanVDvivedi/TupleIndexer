@@ -17,7 +17,7 @@ int append_tuple_on_page_resiliently(const page_modification_methods* pmm_p, per
 		return 0;
 
 	// run_page_compaction, i.e. defragment the page
-	run_page_compaction(ppage.page, page_size, tpl_sz_d);
+	pmm_p->run_page_compaction(pmm_p->context, ppage, page_size, tpl_sz_d);
 
 	// now try to append, this must succeed
 	return pmm_p->append_tuple_on_page(pmm_p->context, ppage, page_size, tpl_sz_d, external_tuple);
@@ -38,7 +38,7 @@ int update_tuple_on_page_resiliently(const page_modification_methods* pmm_p, per
 	// get size of external_tuple
 	uint32_t external_tuple_size = ((external_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(tpl_sz_d, external_tuple));
 
-	// check suggests that there is not enough dpace on page
+	// check suggests that there is not enough space on page
 	if(external_tuple_size > unused_space_on_page + existing_tuple_size)
 		return 0;
 
@@ -46,7 +46,7 @@ int update_tuple_on_page_resiliently(const page_modification_methods* pmm_p, per
 	pmm_p->update_tuple_on_page(pmm_p->context, ppage, page_size, tpl_sz_d, index, NULL);
 
 	// run_page_compaction, i.e. defragment the page
-	run_page_compaction(ppage.page, page_size, tpl_sz_d);
+	pmm_p->run_page_compaction(pmm_p->context, ppage, page_size, tpl_sz_d);
 
 	// then at the end attempt to update the tuple again
 	// this time it must succeed
