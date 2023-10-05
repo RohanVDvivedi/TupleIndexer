@@ -1,15 +1,32 @@
 ** PICKED TASKS
- * use persistent_page in bplus_tree_iterator
- * make persistent_page store WAS_MODIFIED and READ_LOCKED, WRITE_LOCKED parameter
- * make wrapper over page_modification_method functions, store flags for the WAS_MODIFIED bit to persistent_page upon a modification, and exit the process with a failure, if the persistent_page is read_locked
- * add function to get_new_page_with_write_lock/acquire page (with read or write lock, and return the persistent_page), upgrade_lock, downgrade_lock (returning int, and modifying persistent_page* passed with correct lock type), release page lock with flags (taking in persistent_page* and setting it's page_id to NULL_PAGE_ID and page to NULL) - this will make the api simple
+
+B+TREE NEW FEATURE
  * enable sort ordering on bplus_tree, using the TupleStore's compare_tuples' sort ordering feature
 
- * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
- * allow data_access_methods (with a context) to also enable locking only tuples on the page
+PERSISTENT_PAGE REFACTORING
+ * use persistent_page in bplus_tree_iterator
+ * make persistent_page store WAS_MODIFIED and READ_LOCKED, WRITE_LOCKED parameter
+ * add persistent_page methods with page_modification_methods
+   * to all unaltered methods
+   * to all page_modification_methods -> and set the persistent_page's WAS_MODIFIED bit, if a modification to the page was done
+ * add persistent_page methods with data_access_methods
+   * get_new_page_with_write_lock/acquire page (with read or write lock, and return the persistent_page)
+   * upgrade_lock, downgrade_lock (returning int, and modifying persistent_page* passed with correct lock type)
+   * release page lock with flags (returning int and taking in persistent_page* and setting it's page_id to NULL_PAGE_ID and page to NULL)
+ * check if_page_is_NULL
+ * refactor to make the whole project use only the persistent page functions
 
+TRANSACTION_CONTEXT task
+ * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
+
+DATA_ACCESS_METHODS with tuple level locking
+ * allow data_access_methods (with a context) to also enable locking only tuples on the page
+ * function check if a tuple on a page is locked
+
+DUPLICATES ALLOWING FOR INSERTS
  * add a flag as a parameter "fail_on_duplicate_key", that decides to fail an insert if a record being inserted has a duplicate key, else allow duplicates
 
+ERROR HANDLING
  * elaborate error return in bplus_tree functions to acknowledge below
    (SUCCESS | FAILURE), OUT_OF_RESOURCES, ROLLBACK_REQUIRED as an int bit map
 
