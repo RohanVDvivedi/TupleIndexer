@@ -56,9 +56,9 @@ static void clone_page_unWALed(void* context, persistent_page ppage, uint32_t pa
 	clone_page(ppage.page, page_size, tpl_sz_d, ppage_src.page);
 }
 
-static void run_page_compaction_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+static int run_page_compaction_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
 {
-	run_page_compaction(ppage.page, page_size, tpl_sz_d);
+	return run_page_compaction(ppage.page, page_size, tpl_sz_d);
 }
 
 page_modification_methods* get_new_unWALed_page_modification_methods()
