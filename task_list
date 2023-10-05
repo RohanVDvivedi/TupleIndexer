@@ -34,7 +34,6 @@ ERROR HANDLING
 
 ** UTILITY
  * segregate insert and delete both into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
- * locked_page_info may have READ_LOCKED/WRITE_LOCKED and MODIFIED/UN_MODIFIED bit fields to support the above task of segregation
  * build stacked iterator using locked_pages_stack, this can be used to iterate over all the tuples in the b+tree including the interior page and also only index tuples
 
 ** UPDATE FUNCTIONALITY
