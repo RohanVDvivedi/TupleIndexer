@@ -3,6 +3,8 @@
 
 #include<persistent_page.h>
 
+#include<tuple_def.h>
+
 // provides same functionality as page_layout_unaltered, but on a persistent_page
 
 const void* get_page_header_ua_persistent_page(const persistent_page* ppage, uint32_t page_size);
