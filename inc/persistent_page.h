@@ -9,6 +9,12 @@ struct persistent_page
 
 	// page itself
 	void* page;
+
+	// it will basically store WAS_MODIFIED flag
+	int flags;
+
+	// will be set if page is write locked
+	int is_write_locked;
 };
 
 #define get_persistent_page(page_id_v, page_v) ((const persistent_page){.page_id = page_id_v, .page = page_v})
