@@ -21,6 +21,7 @@ struct persistent_page
 #define get_persistent_page(page_id_v, page_v) ((const persistent_page){.page_id = page_id_v, .page = page_v})
 
 // we need dam_p here, because that's what gives us NULL_PAGE_ID
+// a persistent_page is NULL, if it's page = NULL and page_id == NULL_PAGE_ID
 int is_persistent_page_NULL(const persistent_page* ppage, const data_access_methods* dam_p);
 
 // if a persistent_page exists (i.e. is not NULL), then it always will be readable
