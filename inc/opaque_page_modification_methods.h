@@ -1,0 +1,6 @@
+#ifndef OPAQUE_PAGE_MODIFICATION_METHODS_H
+#define OPAQUE_PAGE_MODIFICATION_METHODS_H
+
+typedef struct page_modification_methods page_modification_methods;
+
+#endif
