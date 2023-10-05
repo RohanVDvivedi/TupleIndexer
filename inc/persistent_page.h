@@ -35,4 +35,8 @@ int is_persistent_page_write_locked(const persistent_page* ppage);
 // returns 1, if the WAS_MODIFIED bit in the flags of persistent_page is set
 int was_persistent_page_modified(const persistent_page* ppage);
 
+#include<persistent_page_unaltered.h>
+
+#include<persistent_page_altered.h>
+
 #endif
