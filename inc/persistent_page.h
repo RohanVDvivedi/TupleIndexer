@@ -1,6 +1,10 @@
 #ifndef PERSISTENT_PAGE_H
 #define PERSISTENT_PAGE_H
 
+#include<opaque_data_access_methods.h>
+
+#include<stdint.h>
+
 typedef struct persistent_page persistent_page;
 struct persistent_page
 {
