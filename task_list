@@ -6,6 +6,8 @@ B+TREE NEW FEATURE
 PERSISTENT_PAGE REFACTORING
  * use persistent_page in bplus_tree_iterator
  * make persistent_page store WAS_MODIFIED and READ_LOCKED, WRITE_LOCKED parameter
+ * check if is_persistent_page_NULL, was_persistent_page_modified, is_persistent_page_read_locked is_persistent_page_write_locked
+ * add opaque_paersistent_page_methods.h and opaque_data_access_methods.h, for easy refactoring
  * add persistent_page methods with page_modification_methods
    * to all unaltered methods
    * to all page_modification_methods -> and set the persistent_page's WAS_MODIFIED bit, if a modification to the page was done
@@ -13,8 +15,8 @@ PERSISTENT_PAGE REFACTORING
    * get_new_page_with_write_lock/acquire page (with read or write lock, and return the persistent_page)
    * upgrade_lock, downgrade_lock (returning int, and modifying persistent_page* passed with correct lock type)
    * release page lock with flags (returning int and taking in persistent_page* and setting it's page_id to NULL_PAGE_ID and page to NULL)
- * check if_page_is_NULL
  * refactor to make the whole project use only the persistent page functions
+ * After this refactoring we wouldn't need to remember if the page was modified, and whether it is read or write lock while releasing it. - a lot simpler code
 
 TRANSACTION_CONTEXT task
  * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
