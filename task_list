@@ -3,9 +3,6 @@
 B+TREE NEW FEATURE
  * enable sort ordering on bplus_tree, using the TupleStore's compare_tuples' sort ordering feature
 
-PAGE_MODIFICATION_METHODS
- * run_page_compaction returns int, suggesting if the page was compacted
-
 PERSISTENT_PAGE REFACTORING
  * use persistent_page in bplus_tree_iterator
  * make persistent_page store WAS_MODIFIED and WRITE_LOCKED bits parameter
