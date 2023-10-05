@@ -5,6 +5,8 @@
 
 #include<opaque_page_modification_methods.h>
 
+#include<tuple_def.h>
+
 int init_persistent_page(const page_modification_methods* pmm_p, persistent_page* ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d);
 
 void set_persistent_page_header(const page_modification_methods* pmm_p, persistent_page* ppage, uint32_t page_size, const void* hdr);
