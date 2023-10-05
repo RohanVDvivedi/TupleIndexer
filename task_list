@@ -1,5 +1,10 @@
 ** PICKED TASKS
+ * use persistent_page in bplus_tree_iterator
+ * make persistent_page store WAS_MODIFIED and READ_LOCKED, WRITE_LOCKED parameter
+ * make wrapper over page_modification_method functions, store flags for the WAS_MODIFIED bit to persistent_page upon a modification, and exit the process with a failure, if the persistent_page is read_locked
+ * add function to get_new_page_with_write_lock/acquire page (with read or write lock, and return the persistent_page), upgrade_lock, downgrade_lock (returning int, and modifying persistent_page* passed with correct lock type), release page lock with flags (taking in persistent_page* and setting it's page_id to NULL_PAGE_ID and page to NULL) - this will make the api simple
  * enable sort ordering on bplus_tree, using the TupleStore's compare_tuples' sort ordering feature
+
  * allow transaction_context to be passed around as an input parameter to data_access_methods and page_modification_methods, add struct to call methods on an abort, and commit
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
 
