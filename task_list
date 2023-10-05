@@ -7,7 +7,6 @@ PERSISTENT_PAGE REFACTORING
  * use persistent_page in bplus_tree_iterator
  * make persistent_page store WAS_MODIFIED and WRITE_LOCKED bits parameter
  * check if is_persistent_page_NULL, was_persistent_page_modified, is_persistent_page_write_locked (no need of read locked method, if a persistent_page exists then it is atleast read locked)
- * add opaque_paersistent_page_methods.h and opaque_data_access_methods.h, for easy refactoring
  * add persistent_page methods with page_modification_methods
    * to all unaltered methods -> no dereferences to page of the persistent page required, direct call to corresponding page_layout_unaltered methods
    * to all page_modification_methods -> and set the persistent_page's WAS_MODIFIED bit, if a modification to the page was done
