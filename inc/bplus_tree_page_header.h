@@ -2,7 +2,7 @@
 #define BPLUS_TREE_PAGE_H
 
 #include<bplus_tree_tuple_definitions.h>
-#include<page_modification_methods.h>
+#include<opaque_page_modification_methods.h>
 
 #include<common_page_header.h>
 

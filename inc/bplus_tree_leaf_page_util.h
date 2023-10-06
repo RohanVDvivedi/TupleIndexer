@@ -5,8 +5,8 @@
 
 #include<persistent_page.h>
 #include<bplus_tree_tuple_definitions.h>
-#include<data_access_methods.h>
-#include<page_modification_methods.h>
+#include<opaque_data_access_methods.h>
+#include<opaque_page_modification_methods.h>
 
 int init_bplus_tree_leaf_page(persistent_page ppage, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
 

@@ -1,7 +1,6 @@
 #include<persistent_page_altered.h>
 
 #include<page_modification_methods.h>
-#include<data_access_methods.h>
 
 #include<stdlib.h>
 

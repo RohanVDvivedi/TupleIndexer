@@ -5,8 +5,8 @@
 
 #include<persistent_page.h>
 #include<bplus_tree_tuple_definitions.h>
-#include<data_access_methods.h>
-#include<page_modification_methods.h>
+#include<opaque_data_access_methods.h>
+#include<opaque_page_modification_methods.h>
 
 /*
 *	child index start from (-1) and end at (tuple_count - 1)

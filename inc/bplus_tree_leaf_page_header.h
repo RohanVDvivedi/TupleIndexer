@@ -3,7 +3,7 @@
 
 #include<bplus_tree_page_header.h>
 #include<bplus_tree_tuple_definitions.h>
-#include<page_modification_methods.h>
+#include<opaque_page_modification_methods.h>
 
 typedef struct bplus_tree_leaf_page_header bplus_tree_leaf_page_header;
 struct bplus_tree_leaf_page_header
