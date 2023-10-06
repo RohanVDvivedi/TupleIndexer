@@ -5,7 +5,6 @@ B+TREE NEW FEATURE
 
 PERSISTENT_PAGE REFACTORING
  * use persistent_page in bplus_tree_iterator
- * refactor to make the whole project use only the persistent page functions
 
 TRANSACTION_CONTEXT task
  * pass below two parameters to all the bplus_tree functions, inside a transaction_handle
