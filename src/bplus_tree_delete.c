@@ -97,9 +97,9 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				break;
 			}
 
-			// go ahead with merging only if the page is lesser than half full AND is not root
+			// go ahead with merging only if the page is lesser than or equal to half full AND is not root
 			// i.e. we can not merge a page which is root OR is more than half full
-			if(curr_locked_page.ppage.page_id == root_page_id || is_page_more_than_half_full(curr_locked_page.ppage.page, bpttd_p->page_size, bpttd_p->record_def))
+			if(curr_locked_page.ppage.page_id == root_page_id || is_page_more_than_half_full(&(curr_locked_page.ppage), bpttd_p->page_size, bpttd_p->record_def))
 			{
 				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
@@ -200,7 +200,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			// go ahead with merging only if the page is lesser than half full
 			// i.e. we can not merge a page which is more than half full
-			if(is_page_more_than_half_full(curr_locked_page.ppage.page, bpttd_p->page_size, bpttd_p->index_def))
+			if(is_page_more_than_half_full(&(curr_locked_page.ppage), bpttd_p->page_size, bpttd_p->index_def))
 			{
 				dam_p->release_writer_lock_on_page(dam_p->context, curr_locked_page.ppage.page, WAS_MODIFIED);
 				break;
