@@ -124,7 +124,7 @@ static int insert_at_in_page(
 }
 
 int insert_to_sorted_packed_page(
-									persistent_page ppage, uint32_t page_size, 
+									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t* index,
@@ -132,7 +132,7 @@ int insert_to_sorted_packed_page(
 								)
 {
 	// search for a viable index for the new tuple to insert
-	uint32_t new_index = find_insertion_point_in_sorted_packed_page(ppage.page, page_size, tpl_def, tuple_keys_to_compare, keys_count, tuple);
+	uint32_t new_index = find_insertion_point_in_sorted_packed_page(ppage, page_size, tpl_def, tuple_keys_to_compare, keys_count, tuple);
 
 	// this is the final index for the newly inserted element
 	if(index != NULL)
@@ -143,14 +143,14 @@ int insert_to_sorted_packed_page(
 }
 
 int insert_at_in_sorted_packed_page(
-									persistent_page ppage, uint32_t page_size, 
+									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t index,
 									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the index is not valid we fail the insertion
 	if( !(0 <= index && index <= tuple_count) )
@@ -161,7 +161,7 @@ int insert_at_in_sorted_packed_page(
 	// the tuple compares greater than the tuple at index, we fail
 	if(tuple_count > 0 && index < tuple_count)
 	{
-		const void* ith_tuple = get_nth_tuple_on_page(ppage.page, page_size, &(tpl_def->size_def), index);
+		const void* ith_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), index);
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, ith_tuple, tpl_def, tuple_keys_to_compare, keys_count) > 0)
 			return 0;
 	}
@@ -169,7 +169,7 @@ int insert_at_in_sorted_packed_page(
 	// the tuple compares lesser than the tuple at (index - 1), we fail
 	if(tuple_count > 0 && index > 0)
 	{
-		const void* i_1_th_tuple = get_nth_tuple_on_page(ppage.page, page_size, &(tpl_def->size_def), index - 1);
+		const void* i_1_th_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), index - 1);
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, keys_count) < 0)
 			return 0;
 	}
@@ -179,14 +179,14 @@ int insert_at_in_sorted_packed_page(
 }
 
 int update_at_in_sorted_packed_page(
-									persistent_page ppage, uint32_t page_size, 
+									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t index,
 									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the index is not valid we fail the update
 	if( !(0 <= index && index < tuple_count) )
@@ -197,7 +197,7 @@ int update_at_in_sorted_packed_page(
 	// the tuple compares greater than the tuple at (index + 1), we fail
 	if(tuple_count > 0 && index != tuple_count - 1)
 	{
-		const void* i_1_th_tuple = get_nth_tuple_on_page(ppage.page, page_size, &(tpl_def->size_def), index + 1);
+		const void* i_1_th_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), index + 1);
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, keys_count) > 0)
 			return 0;
 	}
@@ -205,58 +205,58 @@ int update_at_in_sorted_packed_page(
 	// the tuple compares lesser than the tuple at (index - 1), we fail
 	if(tuple_count > 0 && index > 0)
 	{
-		const void* i_1_th_tuple = get_nth_tuple_on_page(ppage.page, page_size, &(tpl_def->size_def), index - 1);
+		const void* i_1_th_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), index - 1);
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, keys_count) < 0)
 			return 0;
 	}
 
-	return update_tuple_on_page_resiliently(pmm_p, ppage, page_size, &(tpl_def->size_def), index, tuple);
+	return update_tuple_on_persistent_page_resiliently(pmm_p, ppage, page_size, &(tpl_def->size_def), index, tuple);
 }
 
 int delete_in_sorted_packed_page(
-									persistent_page ppage, uint32_t page_size, 
+									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def,
 									uint32_t index,
 									const page_modification_methods* pmm_p
 								)
 {
-	return pmm_p->discard_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), index);
+	return discard_tuple_on_persistent_page(pmm_p, ppage, page_size, &(tpl_def->size_def), index);
 }
 
 int delete_all_in_sorted_packed_page(
-									persistent_page ppage, uint32_t page_size, 
+									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, 
 									uint32_t start_index, uint32_t last_index,
 									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
+	uint32_t count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 	if(count == 0 || start_index > last_index || last_index >= count)
 		return 0;
 
 	// if the user wants to discard all tuple, do it quickly using
 	if(start_index == 0 && last_index == count - 1)
 	{
-		pmm_p->discard_all_tuples_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def));
+		discard_all_tuples_on_persistent_page(pmm_p, ppage, page_size, &(tpl_def->size_def));
 		return 1;
 	}
 
 	for(uint32_t i = start_index; i <= last_index; i++)
-		pmm_p->discard_tuple_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), start_index); // a discarded tuple does not leave a slot, hence always discarding at start_index
+		discard_tuple_on_persistent_page(pmm_p, ppage, page_size, &(tpl_def->size_def), start_index); // a discarded tuple does not leave a slot, hence always discarding at start_index
 
 	return 1;
 }
 
-static uint32_t append_tuples_from_page(persistent_page ppage_dest, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src, uint32_t start_index, uint32_t last_index, const page_modification_methods* pmm_p)
+static uint32_t append_tuples_from_page(persistent_page* ppage_dest, uint32_t page_size, const tuple_size_def* tpl_sz_d, const persistent_page* ppage_src, uint32_t start_index, uint32_t last_index, const page_modification_methods* pmm_p)
 {
 	uint32_t appended_count = 0;
 	for(uint32_t i = start_index; i <= last_index; i++)
 	{
-		const void* tup = get_nth_tuple_on_page(ppage_src.page, page_size, tpl_sz_d, i);
+		const void* tup = get_nth_tuple_on_persistent_page(ppage_src, page_size, tpl_sz_d, i);
 		if(tup == NULL)
 			continue;
 
-		int res = append_tuple_on_page_resiliently(pmm_p, ppage_dest, page_size, tpl_sz_d, tup);
+		int res = append_tuple_on_persistent_page_resiliently(pmm_p, ppage_dest, page_size, tpl_sz_d, tup);
 		if(res == 0)
 			break;
 
@@ -267,24 +267,24 @@ static uint32_t append_tuples_from_page(persistent_page ppage_dest, uint32_t pag
 }
 
 uint32_t insert_all_from_sorted_packed_page(
-									persistent_page ppage_dest, persistent_page ppage_src, uint32_t page_size, 
+									persistent_page* ppage_dest, const persistent_page* ppage_src, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									uint32_t start_index, uint32_t last_index,
 									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t src_count = get_tuple_count_on_page(ppage_src.page, page_size, &(tpl_def->size_def));
+	uint32_t src_count = get_tuple_count_on_persistent_page(ppage_src, page_size, &(tpl_def->size_def));
 	if(src_count == 0 || start_index > last_index || last_index >= src_count)
 		return 0;
 
 	// if the dest page is empty, insert all no comparisons needed
-	uint32_t dest_count = get_tuple_count_on_page(ppage_dest.page, page_size, &(tpl_def->size_def));
+	uint32_t dest_count = get_tuple_count_on_persistent_page(ppage_dest, page_size, &(tpl_def->size_def));
 	if(dest_count == 0)
 		return append_tuples_from_page(ppage_dest, page_size, &(tpl_def->size_def), ppage_src, start_index, last_index, pmm_p);
 
 	// compare the last tuple of the dest page and first tuple of the src page
-	const void* last_tuple_dest = get_nth_tuple_on_page(ppage_dest.page, page_size, &(tpl_def->size_def), dest_count - 1);
-	const void* first_tuple_src = get_nth_tuple_on_page(ppage_src.page, page_size, &(tpl_def->size_def), 0);
+	const void* last_tuple_dest = get_nth_tuple_on_persistent_page(ppage_dest, page_size, &(tpl_def->size_def), dest_count - 1);
+	const void* first_tuple_src = get_nth_tuple_on_persistent_page(ppage_src, page_size, &(tpl_def->size_def), 0);
 
 	// if they are in order then perform a direct copy
 	int compare_last_first = compare_tuples(last_tuple_dest, tpl_def, tuple_keys_to_compare, first_tuple_src, tpl_def, tuple_keys_to_compare, keys_count);
@@ -296,7 +296,7 @@ uint32_t insert_all_from_sorted_packed_page(
 	// insert one by one from start_index to last_index
 	for(uint32_t index = start_index; index <= last_index; index++)
 	{
-		const void* tup = get_nth_tuple_on_page(ppage_src.page, page_size, &(tpl_def->size_def), index);
+		const void* tup = get_nth_tuple_on_persistent_page(ppage_src, page_size, &(tpl_def->size_def), index);
 		if(tup == NULL)
 			continue;
 
@@ -311,18 +311,18 @@ uint32_t insert_all_from_sorted_packed_page(
 }
 
 uint32_t find_insertion_point_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
+									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* tuple
 									)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the page is empty insert it at 0
 	if(tuple_count == 0)
 		return 0;
 
-	tuple_accessed_page tap = get_tuple_accessed_page(((persistent_page){.page = ((void*)page)}), page_size, tpl_def, NULL);
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, tpl_def, tuple_keys_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
@@ -330,18 +330,18 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 }
 
 uint32_t find_first_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
+									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the page is empty
 	if(tuple_count == 0)
 		return NO_TUPLE_FOUND;
 
-	tuple_accessed_page tap = get_tuple_accessed_page(((persistent_page){.page = ((void*)page)}), page_size, tpl_def, NULL);
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
@@ -355,18 +355,18 @@ uint32_t find_first_in_sorted_packed_page(
 }
 
 uint32_t find_last_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
+									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the page is empty
 	if(tuple_count == 0)
 		return NO_TUPLE_FOUND;
 
-	tuple_accessed_page tap = get_tuple_accessed_page(((persistent_page){.page = ((void*)page)}), page_size, tpl_def, NULL);
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
@@ -380,18 +380,18 @@ uint32_t find_last_in_sorted_packed_page(
 }
 
 uint32_t find_preceding_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
+									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the page is empty
 	if(tuple_count == 0)
 		return NO_TUPLE_FOUND;
 
-	tuple_accessed_page tap = get_tuple_accessed_page(((persistent_page){.page = ((void*)page)}), page_size, tpl_def, NULL);
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
@@ -405,18 +405,18 @@ uint32_t find_preceding_in_sorted_packed_page(
 }
 
 uint32_t find_preceding_equals_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
+									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the page is empty
 	if(tuple_count == 0)
 		return NO_TUPLE_FOUND;
 
-	tuple_accessed_page tap = get_tuple_accessed_page(((persistent_page){.page = ((void*)page)}), page_size, tpl_def, NULL);
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
@@ -430,18 +430,18 @@ uint32_t find_preceding_equals_in_sorted_packed_page(
 }
 
 uint32_t find_succeeding_equals_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
+									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the page is empty
 	if(tuple_count == 0)
 		return NO_TUPLE_FOUND;
 
-	tuple_accessed_page tap = get_tuple_accessed_page(((persistent_page){.page = ((void*)page)}), page_size, tpl_def, NULL);
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
@@ -455,18 +455,18 @@ uint32_t find_succeeding_equals_in_sorted_packed_page(
 }
 
 uint32_t find_succeeding_in_sorted_packed_page(
-									const void* page, uint32_t page_size, 
+									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the page is empty
 	if(tuple_count == 0)
 		return NO_TUPLE_FOUND;
 
-	tuple_accessed_page tap = get_tuple_accessed_page(((persistent_page){.page = ((void*)page)}), page_size, tpl_def, NULL);
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL);
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, keys_count);
 	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
@@ -480,28 +480,28 @@ uint32_t find_succeeding_in_sorted_packed_page(
 }
 
 void reverse_sort_order_on_sorted_packed_page(
-									persistent_page ppage, uint32_t page_size, 
+									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def,
 									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
+	uint32_t count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 	if(count == 0)
 		return ;
 
 	// swap first and last tuples iteratively
 	for(uint32_t i = 0; i < count / 2; i++)
-		pmm_p->swap_tuples_on_page(pmm_p->context, ppage, page_size, &(tpl_def->size_def), i, count - 1 - i);
+		swap_tuples_on_persistent_page(pmm_p, ppage, page_size, &(tpl_def->size_def), i, count - 1 - i);
 }
 
 // on page quick sort algorithm
 void sort_and_convert_to_sorted_packed_page(
-									persistent_page ppage, uint32_t page_size, 
+									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
 									const page_modification_methods* pmm_p
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(ppage.page, page_size, &(tpl_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
 	// if the page is empty
 	if(tuple_count == 0)
