@@ -34,25 +34,29 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_acc
 
 int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
-	// get lock on the root page of the bplus_tree
-	void* root_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_page_id);
-
-	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p);
-
-	// edge case : if the root itself is a leaf page then free it, no locked_pages_stack required
-	if(is_bplus_tree_leaf_page(root_page, bpttd_p))
-	{
-		dam_p->release_reader_lock_on_page(dam_p->context, root_page, FREE_PAGE);
-		return 1;
-	}
-
-	// create a stack of capacity = levels
+	// create a stack
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
-	initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
 
-	// push the root page onto the stack
-	push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id));
+	{
+		// get lock on the root page of the bplus_tree
+		persistent_page root_page = acquire_persistent_page_with_lock(dam_p, root_page_id, READ_LOCK);
+
+		// pre cache level of the root_page
+		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+
+		// edge case : if the root itself is a leaf page then free it, no locked_pages_stack required
+		if(is_bplus_tree_leaf_page(&root_page, bpttd_p))
+		{
+			release_lock_on_persistent_page(dam_p, &root_page, FREE_PAGE);
+			return 1;
+		}
+
+		// create a stack of capacity = levels
+		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
+
+		// push the root page onto the stack
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
+	}
 
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
@@ -65,42 +69,42 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			// without acquiring lock on this pages
 
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_page(curr_locked_page->ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// free the child leaf page id at index -1
-			uint64_t child_leaf_page_id = find_child_page_id_by_child_index(curr_locked_page->ppage.page, -1, bpttd_p);;
-			dam_p->free_page(dam_p->context, child_leaf_page_id);
+			uint64_t child_leaf_page_id = find_child_page_id_by_child_index(&(curr_locked_page->ppage), -1, bpttd_p);
+			free_persistent_page(dam_p, child_leaf_page_id);
 
 			// free the child leaf page id at index [0, tuple_count)
 			for(uint32_t i = 0; i < tuple_count; i++)
 			{
-				child_leaf_page_id = find_child_page_id_by_child_index(curr_locked_page->ppage.page, i, bpttd_p);;
-				dam_p->free_page(dam_p->context, child_leaf_page_id);
+				child_leaf_page_id = find_child_page_id_by_child_index(curr_locked_page->ppage.page, i, bpttd_p);
+				free_persistent_page(dam_p, child_leaf_page_id);
 			}
 
 			// free it and pop it from the stack
-			dam_p->release_reader_lock_on_page(dam_p->context, curr_locked_page->ppage.page, FREE_PAGE);
+			release_lock_on_persistent_page(dam_p, &(curr_locked_page->ppage), FREE_PAGE);
 			pop_from_locked_pages_stack(locked_pages_stack_p);
 		}
 		// handle free-ing on pages at level >= 2
 		else
 		{
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_page(curr_locked_page->ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// if child index is -1 or lesser than tuple_count
 			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
 			{
 				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
-				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->ppage.page, curr_locked_page->child_index++, bpttd_p);
-				void* child_page = dam_p->acquire_page_with_reader_lock(dam_p->context, child_page_id);
+				uint64_t child_page_id = find_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index++, bpttd_p);
+				persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, READ_LOCK);
 
-				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, child_page_id));
+				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 			}
-			else // we have free all its children, now we free this page
+			else // we have freed all its children, now we can free this page
 			{
 				// free it and pop it from the stack
-				dam_p->release_reader_lock_on_page(dam_p->context, curr_locked_page->ppage.page, FREE_PAGE);
+				release_lock_on_persistent_page(dam_p, &(curr_locked_page->ppage), FREE_PAGE);
 				pop_from_locked_pages_stack(locked_pages_stack_p);
 			}
 		}
@@ -110,7 +114,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-		dam_p->release_reader_lock_on_page(dam_p->context, bottom->ppage.page, NONE_OPTION);
+		release_lock_on_persistent_page(dam_p, &(bottom->ppage), NONE_OPTION);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 
