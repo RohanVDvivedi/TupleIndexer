@@ -25,7 +25,6 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
 
 		// create a stack of capacity = levels
-		locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
 		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
 
 		// push the root page onto the stack
