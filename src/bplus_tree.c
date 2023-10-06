@@ -128,49 +128,53 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	// print the root page id of the bplsu tree
 	printf("\n\nBplus_tree @ root_page_id = %"PRIu64"\n\n", root_page_id);
 
-	// get lock on the root page of the bplus_tree
-	void* root_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_page_id);
-
-	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(root_page, bpttd_p);
-
-	// create a stack of capacity = levels
+	// create a stack
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
-	initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
 
-	// push the root page onto the stack
-	push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, root_page_id));
+	{
+		// get lock on the root page of the bplus_tree
+		persistent_page root_page = acquire_persistent_page_with_lock(dam_p, root_page_id, READ_LOCK);
+
+		// pre cache level of the root_page
+		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+
+		// create a stack of capacity = levels
+		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
+
+		// push the root page onto the stack
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
+	}
 
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// print current page as a leaf page
-		if(is_bplus_tree_leaf_page(curr_locked_page->ppage.page, bpttd_p))
+		if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
 		{
 			// print this page and its page_id
 			printf("page_id : %"PRIu64"\n\n", curr_locked_page->ppage.page_id);
-			print_bplus_tree_leaf_page(curr_locked_page->ppage.page, bpttd_p);
+			print_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p);
 			printf("xxxxxxxxxxxxx\n\n");
 
 			// unlock it and pop it from the stack
-			dam_p->release_reader_lock_on_page(dam_p->context, curr_locked_page->ppage.page, NONE_OPTION);
+			release_lock_on_persistent_page(dam_p, &(curr_locked_page->ppage), NONE_OPTION);
 			pop_from_locked_pages_stack(locked_pages_stack_p);
 		}
 		// print current page as an interior page
 		else
 		{
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_page(curr_locked_page->ppage.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// if child index is -1 or lesser than tuple_count
 			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
 			{
 				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
 				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->ppage.page, curr_locked_page->child_index++, bpttd_p);
-				void* child_page = dam_p->acquire_page_with_reader_lock(dam_p->context, child_page_id);
+				persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, READ_LOCK);
 
-				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, child_page_id));
+				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 			}
 			else // we have printed all its children, now we print this page
 			{
@@ -185,7 +189,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 				}
 
 				// pop it from the stack and unlock it
-				dam_p->release_reader_lock_on_page(dam_p->context, curr_locked_page->ppage.page, NONE_OPTION);
+				release_lock_on_persistent_page(dam_p, &(curr_locked_page->ppage), NONE_OPTION);
 				pop_from_locked_pages_stack(locked_pages_stack_p);
 			}
 		}
@@ -195,7 +199,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-		dam_p->release_reader_lock_on_page(dam_p->context, bottom->ppage.page, NONE_OPTION);
+		release_lock_on_persistent_page(dam_p, &(bottom->ppage), NONE_OPTION);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 
