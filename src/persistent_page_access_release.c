@@ -64,8 +64,22 @@ int downgrade_lock_on_persistent_page(const data_access_methods* dam_p, persiste
 // upgrade reader lock on persistent page to write lock
 int upgrade_to_write_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage);
 
-// releases appropriate lock on page
-int release_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage, int opts); // acceptable options : if write locked then WAS_MODIFIED, FORCE_FLUSH and FREE_PAGE, else only FREE_PAGE option is allowed
+int release_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage, int opts)
+{
+	int res = 0;
+
+	// release lock appropriately
+	if(ppage->is_write_locked)
+		res = dam_p->release_writer_lock_on_page(dam_p->context, ppage->page, opts | ppage->flags);
+	else
+		res = dam_p->release_reader_lock_on_page(dam_p->context, ppage->page, opts | ppage->flags);
+
+	// if successfull in releasing lock, then set ppage to NULL persistent_page
+	if(res)
+		(*ppage) = get_NULL_persistent_page(dam_p);
+
+	return res;
+}
 
 int free_persistent_page(const data_access_methods* dam_p, uint64_t page_id)
 {
