@@ -4,21 +4,21 @@
 #include<bplus_tree_interior_page_header.h>
 #include<bplus_tree_index_tuple_functions_util.h>
 
-#include<page_layout_unaltered.h>
+#include<persistent_page_functions.h>
 #include<tuple.h>
 
 #include<cutlery_stds.h>
 
 #include<stdlib.h>
 
-int init_bplus_tree_interior_page(persistent_page ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
+int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
 {
-	int inited = pmm_p->init_page(pmm_p->context, ppage, bpttd_p->page_size, sizeof_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def));
+	int inited = init_persistent_page(pmm_p, ppage, bpttd_p->page_size, sizeof_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def));
 	if(!inited)
 		return 0;
 
 	// get the header, initialize it and set it back on to the page
-	bplus_tree_interior_page_header hdr = get_bplus_tree_interior_page_header(ppage.page, bpttd_p);
+	bplus_tree_interior_page_header hdr = get_bplus_tree_interior_page_header(ppage, bpttd_p);
 	hdr.parent.parent.type = BPLUS_TREE_INTERIOR_PAGE;
 	hdr.parent.level = level;
 	hdr.least_keys_page_id = bpttd_p->NULL_PAGE_ID;
@@ -28,13 +28,13 @@ int init_bplus_tree_interior_page(persistent_page ppage, uint32_t level, int is_
 	return 1;
 }
 
-void print_bplus_tree_interior_page(const void* page, const bplus_tree_tuple_defs* bpttd_p)
+void print_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
 {
-	print_bplus_tree_interior_page_header(page, bpttd_p);
-	print_page(page, bpttd_p->page_size, bpttd_p->index_def);
+	print_bplus_tree_interior_page_header(ppage, bpttd_p);
+	print_persistent_page(ppage, bpttd_p->page_size, bpttd_p->index_def);
 }
 
-uint32_t find_child_index_for_key(const void* page, const void* key, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
+uint32_t find_child_index_for_key(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
 {
 	switch(type)
 	{
@@ -42,7 +42,7 @@ uint32_t find_child_index_for_key(const void* page, const void* key, uint32_t ke
 		{
 			// find preceding in the interior pages, by comparing against all index entries
 			uint32_t child_index = find_preceding_in_sorted_packed_page(
-										page, bpttd_p->page_size,
+										ppage, bpttd_p->page_size,
 										bpttd_p->index_def, NULL, key_element_count_concerned,
 										key, bpttd_p->key_def, NULL
 									);
@@ -54,7 +54,7 @@ uint32_t find_child_index_for_key(const void* page, const void* key, uint32_t ke
 		{
 			// find preceding equals in the interior pages, by comparing against all index entries
 			uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
-										page, bpttd_p->page_size,
+										ppage, bpttd_p->page_size,
 										bpttd_p->index_def, NULL, key_element_count_concerned,
 										key, bpttd_p->key_def, NULL
 									);
@@ -64,7 +64,7 @@ uint32_t find_child_index_for_key(const void* page, const void* key, uint32_t ke
 	}
 }
 
-uint32_t find_child_index_for_record(const void* page, const void* record, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
+uint32_t find_child_index_for_record(const persistent_page* ppage, const void* record, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p)
 {
 	switch(type)
 	{
@@ -72,7 +72,7 @@ uint32_t find_child_index_for_record(const void* page, const void* record, uint3
 		{
 			// find preceding in the interior pages, by comparing against all index entries
 			uint32_t child_index = find_preceding_in_sorted_packed_page(
-										page, bpttd_p->page_size,
+										ppage, bpttd_p->page_size,
 										bpttd_p->index_def, NULL, key_element_count_concerned,
 										record, bpttd_p->record_def, bpttd_p->key_element_ids
 									);
@@ -84,7 +84,7 @@ uint32_t find_child_index_for_record(const void* page, const void* record, uint3
 		{
 			// find preceding equals in the interior pages, by comparing against all index entries
 			uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
-										page, bpttd_p->page_size,
+										ppage, bpttd_p->page_size,
 										bpttd_p->index_def, NULL, key_element_count_concerned,
 										record, bpttd_p->record_def, bpttd_p->key_element_ids
 									);
@@ -94,14 +94,14 @@ uint32_t find_child_index_for_record(const void* page, const void* record, uint3
 	}
 }
 
-uint64_t find_child_page_id_by_child_index(const void* page, uint32_t index, const bplus_tree_tuple_defs* bpttd_p)
+uint64_t find_child_page_id_by_child_index(const persistent_page* ppage, uint32_t index, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// if the index is -1, return the page_id stored in the header
 	if(index == -1)
-		return get_least_keys_page_id_of_bplus_tree_interior_page(page, bpttd_p);
+		return get_least_keys_page_id_of_bplus_tree_interior_page(ppage, bpttd_p);
 
 	// tuple of the interior page that is at index
-	const void* index_tuple = get_nth_tuple_on_page(page, bpttd_p->page_size, &(bpttd_p->index_def->size_def), index);
+	const void* index_tuple = get_nth_tuple_on_persistent_page(ppage, bpttd_p->page_size, &(bpttd_p->index_def->size_def), index);
 
 	// get child_page_id of the index tuple
 	uint64_t child_page_id = get_child_page_id_from_index_tuple(index_tuple, bpttd_p);
