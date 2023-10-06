@@ -172,7 +172,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
 			{
 				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
-				uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->ppage.page, curr_locked_page->child_index++, bpttd_p);
+				uint64_t child_page_id = find_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index++, bpttd_p);
 				persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, READ_LOCK);
 
 				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
@@ -185,7 +185,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 				{
 					// print this page and its page_id
 					printf("page_id : %"PRIu64"\n\n", curr_locked_page->ppage.page_id);
-					print_bplus_tree_interior_page(curr_locked_page->ppage.page, bpttd_p);
+					print_bplus_tree_interior_page(&(curr_locked_page->ppage), bpttd_p);
 					printf("xxxxxxxxxxxxx\n");
 				}
 
