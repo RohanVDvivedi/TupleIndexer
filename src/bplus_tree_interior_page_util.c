@@ -402,7 +402,7 @@ int can_merge_bplus_tree_interior_pages(const persistent_page* page1, const void
 	return 1;
 }
 
-int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator_parent_tuple, persistent_page page2, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separator_parent_tuple, persistent_page* page2, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// ensure that we can merge
 	if(!can_merge_bplus_tree_interior_pages(page1, separator_parent_tuple, page2, bpttd_p))
@@ -416,8 +416,8 @@ int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator
 	// check if page2 was the last page of the level, if so page1 is now the last page of the level
 	{
 		// read page1 and page2 header
-		bplus_tree_interior_page_header page1_hdr = get_bplus_tree_interior_page_header(page1.page, bpttd_p);
-		bplus_tree_interior_page_header page2_hdr = get_bplus_tree_interior_page_header(page2.page, bpttd_p);
+		bplus_tree_interior_page_header page1_hdr = get_bplus_tree_interior_page_header(page1, bpttd_p);
+		bplus_tree_interior_page_header page2_hdr = get_bplus_tree_interior_page_header(page2, bpttd_p);
 
 		// if page2 was the last page of the level, then page1 will now inherit that
 		page1_hdr.is_last_page_of_level = page2_hdr.is_last_page_of_level;
@@ -434,7 +434,7 @@ int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator
 	memory_move(separator_tuple, separator_parent_tuple, sizeof(char) * separator_tuple_size);
 
 	// update child_page_id of separator_tuple with the value from least_keys_page_id
-	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2.page, bpttd_p);
+	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
 	set_child_page_id_in_index_tuple(separator_tuple, separator_tuple_child_page_id, bpttd_p);
 
 	// insert separator tuple in the page1, at the end
@@ -442,7 +442,7 @@ int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator
 									page1, bpttd_p->page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
 									separator_tuple, 
-									get_tuple_count_on_page(page1.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def)),
+									get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)),
 									pmm_p
 								);
 
@@ -452,7 +452,7 @@ int merge_bplus_tree_interior_pages(persistent_page page1, const void* separator
 	// now, we can safely transfer all tuples from page2 to page1
 
 	// only if there are any tuples to move from page2
-	uint32_t tuple_count_page2 = get_tuple_count_on_page(page2.page, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t tuple_count_page2 = get_tuple_count_on_persistent_page(page2, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 	if(tuple_count_page2 > 0)
 		// only if there are any tuples to move
 		insert_all_from_sorted_packed_page(
