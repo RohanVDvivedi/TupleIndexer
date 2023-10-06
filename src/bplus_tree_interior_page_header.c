@@ -71,7 +71,7 @@ void set_bplus_tree_interior_page_header(persistent_page* ppage, const bplus_tre
 
 #include<stdio.h>
 
-void print_bplus_tree_interior_page_header(const persistent_page* page, const bplus_tree_tuple_defs* bpttd_p)
+void print_bplus_tree_interior_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
 {
 	print_bplus_tree_page_header(ppage, bpttd_p);
 	printf("least_keys_page_id : %"PRIu64"\n", get_least_keys_page_id_of_bplus_tree_interior_page(ppage, bpttd_p));
