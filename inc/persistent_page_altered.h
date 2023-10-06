@@ -1,9 +1,7 @@
 #ifndef PERSISTENT_PAGE_ALTERED_H
 #define PERSISTENT_PAGE_ALTERED_H
 
-#include<persistent_page.h>
-
-#include<opaque_page_modification_methods.h>
+#include<persistent_page_functions.h>
 
 #include<tuple_def.h>
 

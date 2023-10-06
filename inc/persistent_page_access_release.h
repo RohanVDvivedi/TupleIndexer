@@ -1,9 +1,7 @@
 #ifndef PERSISTENT_PAGE_ACCESS_RELEASE_H
 #define PERSISTENT_PAGE_ACCESS_RELEASE_H
 
-#include<opaque_data_access_methods.h>
-
-#include<persistent_page.h>
+#include<persistent_page_functions.h>
 
 #define WRITE_LOCK 1
 #define READ_LOCK  0

@@ -1,4 +1,4 @@
-#include<persistent_page.h>
+#include<persistent_page_functions.h>
 
 #include<data_access_methods.h>
 

@@ -1,7 +1,7 @@
 #ifndef PERSISTENT_PAGE_UNALTERED_H
 #define PERSISTENT_PAGE_UNALTERED_H
 
-#include<persistent_page.h>
+#include<persistent_page_functions.h>
 
 #include<tuple_def.h>
 
