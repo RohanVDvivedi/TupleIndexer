@@ -136,7 +136,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 				// make the previous of curr_locked_page as the curr_locked_page
 				{
-					uint32_t prev_child_page_id = find_child_page_id_by_child_index(&(parent_locked_page->ppage), parent_locked_page->child_index - 1, bpttd_p);
+					uint64_t prev_child_page_id = find_child_page_id_by_child_index(&(parent_locked_page->ppage), parent_locked_page->child_index - 1, bpttd_p);
 					persistent_page prev_child_page = acquire_persistent_page_with_lock(dam_p, prev_child_page_id, WRITE_LOCK);
 					curr_locked_page = INIT_LOCKED_PAGE_INFO(prev_child_page);
 				}
@@ -155,7 +155,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			}
 
 			// release lock on the curr_locked_page, if not released yet
-			if(is_persistent_page_NULL(&(curr_locked_page.ppage), dam_p))
+			if(!is_persistent_page_NULL(&(curr_locked_page.ppage), dam_p))
 				release_lock_on_persistent_page(dam_p, &(curr_locked_page.ppage), NONE_OPTION);
 
 			if(!merged)
