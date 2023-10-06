@@ -3,6 +3,9 @@
 B+TREE NEW FEATURE
  * enable sort ordering on bplus_tree, using the TupleStore's compare_tuples' sort ordering feature
 
+VALIDATING WAS_MODIFIED BIT
+ * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
+
 TRANSACTION_CONTEXT task
  * pass below two parameters to all the bplus_tree functions, inside a transaction_handle
  * struct transaction_handle {void* transaction_id t_id; transaction_abort_methods* abort_methods}
@@ -38,7 +41,6 @@ ERROR HANDLING
  * see how this can be accomodated in the delete and update functions available at that point in future
 
 ** NECESSARY BUT DELAYED UNTIL ACTUAL REQUIREMENTS ARE FULFILLED
- * implement an error handling strategy to check the was_modified parameter, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set OR if page was not modified and was_modified was set
  * go through the project and implemnt better error handling for failures of malloc and data_access_methods
  * write multi-threaded test cases to insert a large csv in to b+tree, measure performance difference
 
