@@ -151,7 +151,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 	}
 
-	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(curr_page.page, curr_page.page_id, curr_tuple_index, bpttd_p, dam_p);
+	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(curr_page, curr_tuple_index, bpttd_p, dam_p);
 
 	// iterate next or previous in bplus_tree_iterator, based on the f_type
 	// this is not required for MIN_TUPLE and MAX_TUPLE
