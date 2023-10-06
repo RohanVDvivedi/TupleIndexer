@@ -22,6 +22,8 @@ int was_persistent_page_modified(const persistent_page* ppage);
 
 #include<persistent_page_altered.h>
 
+#include<persistent_page_altered_util.h>
+
 #include<persistent_page_access_release.h>
 
 #endif

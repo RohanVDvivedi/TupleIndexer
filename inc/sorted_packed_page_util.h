@@ -9,7 +9,8 @@
 */
 
 #include<tuple_def.h>
-#include<page_modification_methods.h>
+#include<persistent_page_functions.h>
+#include<opaque_page_modification_methods.h>
 
 // returns index at which a new tuple may be inserted
 // returns an index in range from (0 to tuple_count) where the tuple can be inserted, keeping the sorted page sorted
