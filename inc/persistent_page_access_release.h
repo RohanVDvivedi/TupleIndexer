@@ -17,7 +17,7 @@ persistent_page get_new_persistent_page_with_write_lock(const data_access_method
 persistent_page acquire_persistent_page_with_lock(const data_access_methods* dam_p, uint64_t page_id, int lock_type);
 
 // downgrade writer lock on persistent page to reader lock
-int downgrade_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage, int opts); // acceptable options : WAS_MODIFIED and FORCE_FLUSH
+int downgrade_to_reader_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage, int opts); // acceptable options : WAS_MODIFIED and FORCE_FLUSH
 
 // upgrade reader lock on persistent page to write lock
 int upgrade_to_write_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage);
