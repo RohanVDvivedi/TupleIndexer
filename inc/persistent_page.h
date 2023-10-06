@@ -19,7 +19,4 @@ struct persistent_page
 	int is_write_locked;
 };
 
-// TODO - to be removed
-#define get_persistent_page(page_id_v, page_v) ((const persistent_page){.page_id = page_id_v, .page = page_v})
-
 #endif

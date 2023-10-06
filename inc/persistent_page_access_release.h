@@ -3,6 +3,8 @@
 
 #include<persistent_page_functions.h>
 
+#include<data_access_methods_options.h>
+
 #define WRITE_LOCK 1
 #define READ_LOCK  0
 

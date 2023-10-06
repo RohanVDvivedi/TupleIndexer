@@ -13,10 +13,12 @@
 */
 
 // below are the options that can go with the functions below
-#define NONE_OPTION  0b000
-#define FREE_PAGE    0b001
-#define FORCE_FLUSH  0b010
-#define WAS_MODIFIED 0b100
+//#define NONE_OPTION  0b000
+//#define FREE_PAGE    0b001
+//#define FORCE_FLUSH  0b010
+//#define WAS_MODIFIED 0b100
+// moved to data_access_methods_options.h
+#include<data_access_methods_options.h>
 
 typedef struct data_access_methods data_access_methods;
 struct data_access_methods

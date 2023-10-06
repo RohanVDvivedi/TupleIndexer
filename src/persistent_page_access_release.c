@@ -4,11 +4,6 @@
 
 #include<stdlib.h>
 
-static persistent_page get_NULL_persistent_page(const data_access_methods* dam_p)
-{
-	return (persistent_page){.page = NULL, .page_id = dam_p->NULL_PAGE_ID};
-}
-
 persistent_page get_new_persistent_page_with_write_lock(const data_access_methods* dam_p)
 {
 	persistent_page ppage = {};

@@ -11,6 +11,9 @@
 // a persistent_page is NULL, if it's page = NULL and page_id == NULL_PAGE_ID
 int is_persistent_page_NULL(const persistent_page* ppage, const data_access_methods* dam_p);
 
+// to get a NULL persistent_page i.e. persistent_page with its .page = NULL and .page_id = NULL_PAGE_ID
+persistent_page get_NULL_persistent_page(const data_access_methods* dam_p);
+
 // if a persistent_page exists (i.e. is not NULL), then it always will be readable
 // but the below function allows you to check if it is writable
 int is_persistent_page_write_locked(const persistent_page* ppage);
