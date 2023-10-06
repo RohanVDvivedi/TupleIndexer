@@ -29,11 +29,11 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint
 int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	// if the page itself is invalid, then quit
-	if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
+	if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->dam_p))
 		return 0;
 
 	// increment the current tuple count, if the next tuple we point to will be on this page
-	if(bpi_p->curr_tuple_index + 1 < get_tuple_count_on_page(bpi_p->curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
+	if(bpi_p->curr_tuple_index + 1 < get_tuple_count_on_persistent_page(&(bpi_p->curr_page), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 	{
 		bpi_p->curr_tuple_index++;
 		return 1;
@@ -43,23 +43,22 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 	while(1)
 	{
 		// get reader lock on the next page
-		uint64_t next_page_id = get_next_page_id_of_bplus_tree_leaf_page(bpi_p->curr_page, bpi_p->bpttd_p);
+		uint64_t next_page_id = get_next_page_id_of_bplus_tree_leaf_page(&(bpi_p->curr_page), bpi_p->bpttd_p);
 
-		void* next_page = NULL;
+		persistent_page next_page = get_NULL_persistent_page(bpi_p->dam_p);
 		if(next_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
-			next_page = bpi_p->dam_p->acquire_page_with_reader_lock(bpi_p->dam_p->context, next_page_id);
+			next_page = acquire_persistent_page_with_lock(bpi_p->dam_p, next_page_id, READ_LOCK);
 
 		// release lock on the curr_page
-		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page, NONE_OPTION);
+		release_lock_on_persistent_page(bpi_p->dam_p, &(bpi_p->curr_page), NONE_OPTION);
 
 		bpi_p->curr_page = next_page;
-		bpi_p->curr_page_id = next_page_id;
 
 		// a valid next_page may be a NULL page or a page that has atleast a tuple
-		if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
+		if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->dam_p))
 			break;
 
-		uint32_t curr_page_tuple_count = get_tuple_count_on_page(bpi_p->curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
+		uint32_t curr_page_tuple_count = get_tuple_count_on_persistent_page(&(bpi_p->curr_page), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
 		// or a valid page has atleast a tuple
 		if(curr_page_tuple_count > 0)
@@ -74,7 +73,7 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 
 const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
-	if(is_persistent_page_NULL(&(bpi_p->curr_page), dam_p) || 
+	if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->dam_p) || 
 		bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(&(bpi_p->curr_page), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 		return NULL;
 	return get_nth_tuple_on_persistent_page(&(bpi_p->curr_page), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def), bpi_p->curr_tuple_index);
@@ -83,7 +82,7 @@ const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	// if the page itself is invalid, then quit
-	if(bpi_p->curr_page == NULL || bpi_p->curr_page_id == bpi_p->bpttd_p->NULL_PAGE_ID)
+	if(is_persistent_page_NULL(&(bpi_p->curr_page), dam_p))
 		return 0;
 
 	// increment the current tuple count, if the tuple that we are pointing to is not the first tuple on the page
@@ -136,6 +135,6 @@ int error_occurred_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	if(bpi_p->curr_page_id != bpi_p->bpttd_p->NULL_PAGE_ID && bpi_p->curr_page != NULL)
-		bpi_p->dam_p->release_reader_lock_on_page(bpi_p->dam_p->context, bpi_p->curr_page, NONE_OPTION);
+		release_lock_on_persistent_page(bpi_p->dam_p, &(bpi_p->curr_page), NONE_OPTION);
 	free(bpi_p);
 }
