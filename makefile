@@ -55,8 +55,8 @@ ${LIB_DIR} :
 # generic rule to make a library
 #${LIB_DIR}/${LIBRARY} : ${OBJECTS} | ${LIB_DIR}
 #	${AR} $@ ${OBJECTS}
-${LIB_DIR}/${LIBRARY} : ./obj/sorted_packed_page_util.o | ${LIB_DIR}
-	${AR} $@ ./obj/sorted_packed_page_util.o
+${LIB_DIR}/${LIBRARY} : ./obj/sorted_packed_page_util.o ./obj/persistent_page_functions.o ./obj/persistent_page_unaltered.o ./obj/persistent_page_altered.o ./obj/persistent_page_altered_util.o ./obj/unWALed_page_modification_methods.o  | ${LIB_DIR}
+	${AR} $@ ./obj/sorted_packed_page_util.o ./obj/persistent_page_functions.o ./obj/persistent_page_unaltered.o ./obj/persistent_page_altered.o ./obj/persistent_page_altered_util.o ./obj/unWALed_page_modification_methods.o
 
 # rule to make the directory for storing binaries, that we create
 ${BIN_DIR} :
