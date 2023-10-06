@@ -2,7 +2,7 @@
 
 #include<tuple.h>
 
-int append_tuple_on_page_resiliently(const page_modification_methods* pmm_p, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple)
+int append_tuple_on_persistent_page_resiliently(const page_modification_methods* pmm_p, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple)
 {
 	// try simply appending, first
 	if(append_tuple_on_persistent_page(pmm_p, ppage, page_size, tpl_sz_d, external_tuple))
