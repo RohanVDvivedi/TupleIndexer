@@ -2,6 +2,8 @@
 
 #include<tuple.h>
 
+#include<persistent_page_functions.h>
+
 #include<index_accessed_interface.h>
 #include<index_accessed_search_sort.h>
 

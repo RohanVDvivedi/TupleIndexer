@@ -1,7 +1,7 @@
 #ifndef STORAGE_CAPACITY_PAGE_UTIL_H
 #define STORAGE_CAPACITY_PAGE_UTIL_H
 
-#include<persistent_page_functions.h>
+#include<persistent_page.h>
 #include<tuple_def.h>
 
 // The below functions only read the page provided and must not and will not modify the page

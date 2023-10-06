@@ -9,7 +9,7 @@
 */
 
 #include<tuple_def.h>
-#include<persistent_page_functions.h>
+#include<persistent_page.h>
 #include<opaque_page_modification_methods.h>
 
 // returns index at which a new tuple may be inserted
