@@ -7,6 +7,7 @@
 #include<bplus_tree_leaf_page_header.h>
 #include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
+#include<persistent_page_functions.h>
 
 #include<tuple.h>
 
@@ -43,11 +44,11 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 			// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 			uint64_t child_page_id = find_child_page_id_by_child_index(curr_locked_page->ppage.page, curr_locked_page->child_index, bpttd_p);
-			void* child_page = dam_p->acquire_page_with_writer_lock(dam_p->context, child_page_id);
+			persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
 
 			// if child page will not require a split, then release locks on all the parent pages
-			if( ( is_bplus_tree_leaf_page(child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(child_page, bpttd_p->page_size, bpttd_p->record_def))
-			||  (!is_bplus_tree_leaf_page(child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(child_page, bpttd_p->page_size, bpttd_p->index_def )) )
+			if( ( is_bplus_tree_leaf_page(child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->record_def))
+			||  (!is_bplus_tree_leaf_page(child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->index_def )) )
 			{
 				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 				{
@@ -58,7 +59,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			}
 
 			// push this child page onto the stack
-			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, child_page_id));
+			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 		}
 		else // break this loop on reaching a leaf page
 			break;
