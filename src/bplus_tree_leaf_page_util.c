@@ -377,7 +377,7 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 	// but we need lock on the next page of the page2 to change its previous page pointer
 	// we are calling the page next to page2 as page 3
 	{
-		uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(page2.page, bpttd_p);
+		uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(&page2, bpttd_p);
 
 		// read headers of page1 and page2 inorder to unlink page2 from the between of page1 and page3
 		bplus_tree_leaf_page_header page1_hdr = get_bplus_tree_leaf_page_header(page1, bpttd_p);
