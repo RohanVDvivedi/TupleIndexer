@@ -24,6 +24,9 @@ ERROR HANDLING
  * elaborate error return in bplus_tree functions to acknowledge below
    (SUCCESS | FAILURE), OUT_OF_RESOURCES, ROLLBACK_REQUIRED as an int bit map
 
+ERROR RETURN CODES
+ * suggesting reson of a failure of data_access_method functions
+
 ** UTILITY
  * segregate insert and delete both into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
  * build stacked iterator using locked_pages_stack, this can be used to iterate over all the tuples in the b+tree including the interior page and also only index tuples
