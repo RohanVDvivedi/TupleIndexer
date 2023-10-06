@@ -3,6 +3,7 @@
 
 #include<stdint.h>
 
+#include<persistent_page.h>
 #include<opaque_data_access_methods.h>
 #include<bplus_tree_tuple_definitions.h>
 
@@ -11,10 +12,7 @@
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 struct bplus_tree_iterator
 {
-	void* curr_page;
-
-	// page_id of the current page
-	uint64_t curr_page_id;
+	persistent_page curr_page;
 
 	// curr_tuple_index is the index of the tuple, that the iterator points
 	// in the curr_page (a bplus_tree_leaf page)
@@ -29,7 +27,7 @@ struct bplus_tree_iterator
 
 // if the current page is NULL then a lock is acquired by the iterator's get_new function
 // curr_tuple_index if UINT32_MAX then the iterator will point to the last 
-bplus_tree_iterator* get_new_bplus_tree_iterator(void* curr_page, uint64_t curr_page_id, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 // it moves the cursor forward by a tuple
 // returns 1 for success, it returns 0, if there are no records to move to
