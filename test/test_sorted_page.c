@@ -93,7 +93,7 @@ int main()
 	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
 
 	// build persistent page reference, referring to page
-	persistent_page* ppage = &((persistent_page){.page = page});
+	persistent_page* ppage = &((persistent_page){.page = page, .is_write_locked = 1});
 
 	// ---------------	DECLARE TEMP variables
 
