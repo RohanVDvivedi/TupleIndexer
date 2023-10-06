@@ -109,9 +109,9 @@ uint64_t find_child_page_id_by_child_index(const persistent_page* ppage, uint32_
 	return child_page_id;
 }
 
-static uint32_t calculate_final_tuple_count_of_page_to_be_split(const void* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
+static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
 {
-	uint32_t tuple_count = get_tuple_count_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 	if(is_fixed_sized_tuple_def(bpttd_p->index_def))
 	{
@@ -124,10 +124,10 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(const void* page
 	else
 	{
 		// pre calculate the space that will be occupied by the new tuple
-		uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+		uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 		// this is the total space available to you to store the tuples
-		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 		// this is the result number of tuple that should stay on this page
 		uint32_t result = 0;
@@ -152,7 +152,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(const void* page
 				}
 
 				// process the ith tuple
-				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def), i, i);
+				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def), i, i);
 				space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
 				if(space_occupied_until <= limit)
 					result++;
@@ -186,7 +186,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(const void* page
 				}
 
 				// process the ith tuple
-				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def), i, i);
+				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def), i, i);
 				space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
 				result++;
 				if(space_occupied_until > limit)
