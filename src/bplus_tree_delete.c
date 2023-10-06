@@ -98,6 +98,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			if(!deleted) // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
+				// ABORT
 				release_lock_on_persistent_page(dam_p, &(curr_locked_page.ppage), NONE_OPTION);
 				break;
 			}
@@ -146,12 +147,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				// if merged we need to delete entry at child_index in the parent page
 
 				if(!merged)
-				{
 					release_lock_on_persistent_page(dam_p, &(curr_locked_page.ppage), NONE_OPTION);
-
-					// mark curr_locked_page as empty / locks already released
-					curr_locked_page = INIT_LOCKED_PAGE_INFO(get_NULL_persistent_page(dam_p));
-				}
 			}
 
 			// release lock on the curr_locked_page, if not released yet
@@ -173,6 +169,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 			if(!deleted) // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
+				// ABORT
 				release_lock_on_persistent_page(dam_p, &(curr_locked_page.ppage), NONE_OPTION);
 				break;
 			}

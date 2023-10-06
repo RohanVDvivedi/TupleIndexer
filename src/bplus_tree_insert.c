@@ -149,6 +149,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				release_lock_on_persistent_page(dam_p, &(curr_locked_page.ppage), NONE_OPTION);
 			else // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
+				// ABORT
 				release_lock_on_persistent_page(dam_p, &(curr_locked_page.ppage), NONE_OPTION);
 				break;
 			}
@@ -210,6 +211,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 				release_lock_on_persistent_page(dam_p, &(curr_locked_page.ppage), NONE_OPTION);
 			else // THIS IS AN ERR, WE CANT RECOVER FROM
 			{
+				// ABORT
 				release_lock_on_persistent_page(dam_p, &(curr_locked_page.ppage), NONE_OPTION);
 				break;
 			}
