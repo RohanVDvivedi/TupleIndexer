@@ -256,7 +256,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 			// set the page3_hdr back onto the page
 			set_bplus_tree_leaf_page_header(&page3, &page3_hdr, bpttd_p, pmm_p);
 
-			// release writer lock on page3, mark it as modified
+			// release writer lock on page3
 			release_lock_on_persistent_page(dam_p, &page3, NONE_OPTION);
 		}
 		else
@@ -324,7 +324,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	// rebuild parent insert tuple using the first record of the page2 and the child_page_id = page2_id
 	build_index_entry_from_record_tuple(bpttd_p, first_tuple_page2, page2.page_id, output_parent_insert);
 
-	// release lock on the page2, and mark it as modified
+	// release lock on the page2
 	release_lock_on_persistent_page(dam_p, &page2, NONE_OPTION);
 
 	// return success
@@ -392,7 +392,7 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 			// could not acquire lock on page3, so can not perform a merge
 			if(is_persistent_page_NULL(&page3, dam_p))
 			{
-				// on error, we release writer lock on page2, suggesting it was not modified
+				// on error, we release writer lock on page2
 				release_lock_on_persistent_page(dam_p, &page2, NONE_OPTION);
 				return 0;
 			}
@@ -407,7 +407,7 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 			// set the page3_hdr back onto the page
 			set_bplus_tree_leaf_page_header(&page3, &page3_hdr, bpttd_p, pmm_p);
 
-			// release lock on page3, marking it as modified
+			// release lock on page3
 			release_lock_on_persistent_page(dam_p, &page3, NONE_OPTION);
 		}
 		else // page2 is indeed the last page
