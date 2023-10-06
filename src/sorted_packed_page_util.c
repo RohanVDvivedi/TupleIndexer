@@ -1,7 +1,7 @@
 #include<sorted_packed_page_util.h>
 
 #include<tuple.h>
-#include<page_layout_unaltered.h>
+#include<persistent_page_functions.h>
 
 #include<index_accessed_interface.h>
 #include<index_accessed_search_sort.h>
@@ -39,7 +39,7 @@ typedef struct tuple_accessed_page tuple_accessed_page;
 struct tuple_accessed_page
 {
 	// the actual persistent page
-	persistent_page ppage;
+	persistent_page* ppage;
 
 	// the size of the page
 	uint32_t page_size;
@@ -55,7 +55,7 @@ struct tuple_accessed_page
 static const void* get_tuple_from_tuple_accessed_page(const void* ds_p, cy_uint index)
 {
 	const tuple_accessed_page* tap_p = ds_p;
-	return get_nth_tuple_on_page(tap_p->ppage.page, tap_p->page_size, &(tap_p->tpl_def->size_def), index);
+	return get_nth_tuple_on_persistent_page(tap_p->ppage, tap_p->page_size, &(tap_p->tpl_def->size_def), index);
 }
 
 // set functionality will not be provided
@@ -63,13 +63,13 @@ static const void* get_tuple_from_tuple_accessed_page(const void* ds_p, cy_uint 
 static int swap_tuples_in_tuple_accessed_page(void* ds_p, cy_uint i1, cy_uint i2)
 {
 	tuple_accessed_page* tap_p = ds_p;
-	return tap_p->pmm_p->swap_tuples_on_page(tap_p->pmm_p->context, tap_p->ppage, tap_p->page_size, &(tap_p->tpl_def->size_def), i1, i2);
+	return swap_tuples_on_persistent_page(tap_p->pmm_p, tap_p->ppage, tap_p->page_size, &(tap_p->tpl_def->size_def), i1, i2);
 }
 
 static cy_uint get_tuple_count_for_tuple_accessed_page(const void* ds_p)
 {
 	const tuple_accessed_page* tap_p = ds_p;
-	return get_tuple_count_on_page(tap_p->ppage.page, tap_p->page_size, &(tap_p->tpl_def->size_def));
+	return get_tuple_count_on_persistent_page(tap_p->ppage, tap_p->page_size, &(tap_p->tpl_def->size_def));
 }
 
 #define get_tuple_accessed_page(ppage_v, page_size_v, tpl_def_v, pmm_p_v) ((const tuple_accessed_page){.ppage = ppage_v, .page_size = page_size_v, .tpl_def = tpl_def_v, .pmm_p = pmm_p_v})
