@@ -4,6 +4,8 @@
 #include<bplus_tree_tuple_definitions.h>
 #include<opaque_page_modification_methods.h>
 
+#include<persistent_page.h>
+
 #include<stdint.h>
 
 typedef enum page_type page_type;
@@ -27,14 +29,14 @@ struct common_page_header
 
 uint32_t get_offset_to_end_of_common_page_header(const bplus_tree_tuple_defs* bpttd_p);
 
-page_type get_type_of_page(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+page_type get_type_of_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
-common_page_header get_common_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+common_page_header get_common_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
 void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p);
 
-void set_common_page_header(persistent_page ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
+void set_common_page_header(persistent_page* ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
 
-void print_common_page_header(const void* page, const bplus_tree_tuple_defs* bpttd_p);
+void print_common_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
 #endif
