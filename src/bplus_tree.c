@@ -8,24 +8,27 @@
 #include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
 
-#include<page_layout_unaltered.h>
+#include<persistent_page_functions.h>
 #include<tuple.h>
 
 #include<stdlib.h>
 
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
-	persistent_page root_page;
-	root_page.page = dam_p->get_new_page_with_write_lock(dam_p->context, &(root_page.page_id));
+	persistent_page root_page = get_new_persistent_page_with_write_lock(dam_p);
+
+	// failure to acquire a new page
+	if(is_persistent_page_NULL(&root_page, dam_p))
+		return bpttd_p->NULL_PAGE_ID;
 
 	// if init_page fails
-	if(!init_bplus_tree_leaf_page(root_page, bpttd_p, pmm_p))
+	if(!init_bplus_tree_leaf_page(&root_page, bpttd_p, pmm_p))
 	{
-		dam_p->release_writer_lock_on_page(dam_p->context, root_page.page, FREE_PAGE);
+		release_lock_on_persistent_page(dam_p, &root_page, FREE_PAGE);
 		return bpttd_p->NULL_PAGE_ID;
 	}
 
-	dam_p->release_writer_lock_on_page(dam_p->context, root_page.page, WAS_MODIFIED);
+	release_lock_on_persistent_page(dam_p, &root_page, NONE_OPTION);
 	return root_page.page_id;
 }
 
