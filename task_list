@@ -3,9 +3,6 @@
 B+TREE NEW FEATURE
  * enable sort ordering on bplus_tree, using the TupleStore's compare_tuples' sort ordering feature
 
-PERSISTENT_PAGE REFACTORING
- * use persistent_page in bplus_tree_iterator
-
 TRANSACTION_CONTEXT task
  * pass below two parameters to all the bplus_tree functions, inside a transaction_handle
  * struct transaction_handle {void* transaction_id t_id; transaction_abort_methods* abort_methods}
