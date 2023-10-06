@@ -28,8 +28,9 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_acc
 		return bpttd_p->NULL_PAGE_ID;
 	}
 
+	uint64_t res = root_page.page_id;
 	release_lock_on_persistent_page(dam_p, &root_page, NONE_OPTION);
-	return root_page.page_id;
+	return res;
 }
 
 int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
