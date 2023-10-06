@@ -10,7 +10,7 @@ int init_persistent_page(const page_modification_methods* pmm_p, persistent_page
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -28,7 +28,7 @@ void set_persistent_page_header(const page_modification_methods* pmm_p, persiste
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -43,7 +43,7 @@ int append_tuple_on_persistent_page(const page_modification_methods* pmm_p, pers
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -61,7 +61,7 @@ int update_tuple_on_persistent_page(const page_modification_methods* pmm_p, pers
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -79,7 +79,7 @@ int discard_tuple_on_persistent_page(const page_modification_methods* pmm_p, per
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -97,7 +97,7 @@ void discard_all_tuples_on_persistent_page(const page_modification_methods* pmm_
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -112,7 +112,7 @@ uint32_t discard_trailing_tomb_stones_on_persistent_page(const page_modification
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -130,7 +130,7 @@ int swap_tuples_on_persistent_page(const page_modification_methods* pmm_p, persi
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -148,7 +148,7 @@ int set_element_in_tuple_in_place_on_persistent_page(const page_modification_met
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -166,7 +166,7 @@ void clone_persistent_page(const page_modification_methods* pmm_p, persistent_pa
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 
@@ -181,7 +181,7 @@ int run_persistent_page_compaction(const page_modification_methods* pmm_p, persi
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to write to read locked page\n");
+		printf("BUG :: attempting to write to read locked page\n");
 		exit(-1);
 	}
 

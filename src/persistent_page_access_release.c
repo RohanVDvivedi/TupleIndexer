@@ -62,9 +62,9 @@ persistent_page acquire_persistent_page_with_lock(const data_access_methods* dam
 
 int downgrade_to_reader_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage, int opts)
 {
-	if(!(ppage->is_write_locked))
+	if(!is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to downgrade a reader lock on page\n");
+		printf("BUG :: attempting to downgrade a reader lock on page\n");
 		exit(-1);
 	}
 
@@ -81,9 +81,9 @@ int downgrade_to_reader_lock_on_persistent_page(const data_access_methods* dam_p
 
 int upgrade_to_write_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage)
 {
-	if(ppage->is_write_locked)
+	if(is_persistent_page_write_locked(ppage))
 	{
-		printf("attempting to upgrade a write lock on page\n");
+		printf("BUG :: attempting to upgrade a write lock on page\n");
 		exit(-1);
 	}
 
@@ -103,7 +103,7 @@ int release_lock_on_persistent_page(const data_access_methods* dam_p, persistent
 	int res = 0;
 
 	// release lock appropriately
-	if(ppage->is_write_locked)
+	if(is_persistent_page_write_locked(ppage))
 		res = dam_p->release_writer_lock_on_page(dam_p->context, ppage->page, opts | ppage->flags);
 	else
 		res = dam_p->release_reader_lock_on_page(dam_p->context, ppage->page, opts | ppage->flags);
