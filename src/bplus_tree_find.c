@@ -6,7 +6,7 @@
 #include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
 
-#include<page_layout_unaltered.h>
+#include<persistent_page_functions.h>
 #include<tuple.h>
 
 #include<stdint.h>
@@ -40,10 +40,9 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		f_type = LESSER_THAN_KEY + (find_pos - LESSER_THAN);
 
 	// get lock on the root page of the bplus_tree
-	uint64_t curr_page_id = root_page_id;
-	void* curr_page = dam_p->acquire_page_with_reader_lock(dam_p->context, root_page_id);
+	persistent_page curr_page = acquire_persistent_page_with_lock(dam_p, root_page_id, READ_LOCK);
 
-	while(!is_bplus_tree_leaf_page(curr_page, bpttd_p))
+	while(!is_bplus_tree_leaf_page(&curr_page, bpttd_p))
 	{
 		uint32_t child_index = 0;
 
@@ -57,39 +56,38 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			}
 			case LESSER_THAN_KEY :
 			{
-				child_index = find_child_index_for_key(curr_page, key, key_element_count_concerned, TOWARDS_FIRST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, TOWARDS_FIRST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case LESSER_THAN_EQUALS_KEY :
 			{
-				child_index = find_child_index_for_key(curr_page, key, key_element_count_concerned, TOWARDS_LAST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, TOWARDS_LAST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case GREATER_THAN_EQUALS_KEY :
 			{
-				child_index = find_child_index_for_key(curr_page, key, key_element_count_concerned, TOWARDS_FIRST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, TOWARDS_FIRST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case GREATER_THAN_KEY :
 			{
-				child_index = find_child_index_for_key(curr_page, key, key_element_count_concerned, TOWARDS_LAST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, TOWARDS_LAST_WITH_KEY, bpttd_p);
 				break;
 			}
 			case MAX_TUPLE :
 			{
-				child_index = get_tuple_count_on_page(curr_page, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
+				child_index = get_tuple_count_on_persistent_page(&curr_page, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
 				break;
 			}
 		}
 
-		uint64_t next_page_id = find_child_page_id_by_child_index(curr_page, child_index, bpttd_p);
-		void* next_page = dam_p->acquire_page_with_reader_lock(dam_p->context, next_page_id);
+		uint64_t next_page_id = find_child_page_id_by_child_index(&curr_page, child_index, bpttd_p);
+		persistent_page next_page = acquire_persistent_page_with_lock(dam_p, next_page_id, READ_LOCK);
 
 		// release lock on the curr_page and 
 		// make the next_page as the curr_page
-		dam_p->release_reader_lock_on_page(dam_p->context, curr_page, NONE_OPTION);
+		release_lock_on_persistent_page(dam_p, &curr_page, NONE_OPTION);
 		curr_page = next_page;
-		curr_page_id = next_page_id;
 	}
 
 	// find the curr_tuple_index for the iterator to start with
@@ -105,7 +103,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case LESSER_THAN_KEY :
 		{
 			curr_tuple_index = find_preceding_in_sorted_packed_page(
-									curr_page, bpttd_p->page_size, 
+									&curr_page, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -116,7 +114,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case LESSER_THAN_EQUALS_KEY :
 		{
 			curr_tuple_index = find_preceding_equals_in_sorted_packed_page(
-									curr_page, bpttd_p->page_size, 
+									&curr_page, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -127,7 +125,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case GREATER_THAN_EQUALS_KEY :
 		{
 			curr_tuple_index = find_succeeding_equals_in_sorted_packed_page(
-									curr_page, bpttd_p->page_size, 
+									&curr_page, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -138,7 +136,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case GREATER_THAN_KEY :
 		{
 			curr_tuple_index = find_succeeding_in_sorted_packed_page(
-									curr_page, bpttd_p->page_size, 
+									&curr_page, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -153,7 +151,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 	}
 
-	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(curr_page, curr_page_id, curr_tuple_index, bpttd_p, dam_p);
+	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(curr_page.page, curr_page.page_id, curr_tuple_index, bpttd_p, dam_p);
 
 	// iterate next or previous in bplus_tree_iterator, based on the f_type
 	// this is not required for MIN_TUPLE and MAX_TUPLE
