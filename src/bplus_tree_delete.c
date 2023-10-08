@@ -77,7 +77,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			// find index of last record that has the given key on the page
 			uint32_t found_index = find_last_in_sorted_packed_page(
 												&(curr_locked_page.ppage), bpttd_p->page_size,
-												bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+												bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 												key, bpttd_p->key_def, NULL
 											);
 
