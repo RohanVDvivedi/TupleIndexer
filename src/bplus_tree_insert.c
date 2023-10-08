@@ -83,7 +83,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			// check if the record already exists in this leaf page
 			int found = (NO_TUPLE_FOUND != find_last_in_sorted_packed_page(
 												&(curr_locked_page.ppage), bpttd_p->page_size, 
-												bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+												bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 												record, bpttd_p->record_def, bpttd_p->key_element_ids
 											));
 
@@ -97,7 +97,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			uint32_t insertion_point;
 			inserted = insert_to_sorted_packed_page(
 									&(curr_locked_page.ppage), bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									record, 
 									&insertion_point,
 									pmm_p
@@ -161,7 +161,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 			uint32_t insertion_point = curr_locked_page.child_index + 1;
 			parent_tuple_inserted = insert_at_in_sorted_packed_page(
 									&(curr_locked_page.ppage), bpttd_p->page_size, 
-									bpttd_p->index_def, NULL, bpttd_p->key_element_count,
+									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									parent_insert, 
 									insertion_point,
 									pmm_p
