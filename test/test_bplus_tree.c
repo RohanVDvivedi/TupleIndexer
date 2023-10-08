@@ -24,15 +24,19 @@
 #if defined KEY_NAME_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){1,4}
+	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #elif defined KEY_INDEX_PHONE
 	#define KEY_ELEMENTS_COUNT			2
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){0,5}
+	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #elif defined KEY_PHONE_SCORE
 	#define KEY_ELEMENTS_COUNT			2
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){5,6}
+	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #elif defined KEY_EMAIL_AGE_SEX
 	#define KEY_ELEMENTS_COUNT			3
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){4,2,3}
+	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC,ASC}
 #endif
 
 #define DEFAULT_COMMON_PAGE_HEADER_SIZE 3
@@ -397,7 +401,7 @@ int main()
 
 	// construct tuple definitions for bplus_tree
 	bplus_tree_tuple_defs bpttd;
-	init_bplus_tree_tuple_definitions(&bpttd, DEFAULT_COMMON_PAGE_HEADER_SIZE, record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_COUNT, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
+	init_bplus_tree_tuple_definitions(&bpttd, DEFAULT_COMMON_PAGE_HEADER_SIZE, record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
 
 	// print the generated bplus tree tuple defs
 	print_bplus_tree_tuple_definitions(&bpttd);
