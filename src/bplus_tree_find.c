@@ -104,7 +104,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		{
 			curr_tuple_index = find_preceding_in_sorted_packed_page(
 									&curr_page, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
 
@@ -115,7 +115,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		{
 			curr_tuple_index = find_preceding_equals_in_sorted_packed_page(
 									&curr_page, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
 
@@ -126,7 +126,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		{
 			curr_tuple_index = find_succeeding_equals_in_sorted_packed_page(
 									&curr_page, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
 
@@ -137,7 +137,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		{
 			curr_tuple_index = find_succeeding_in_sorted_packed_page(
 									&curr_page, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
 
@@ -160,7 +160,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case LESSER_THAN_KEY :
 		{
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
-			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, key_element_count_concerned) >= 0)
+			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) >= 0)
 			{
 				prev_bplus_tree_iterator(bpi_p);
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
@@ -170,7 +170,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case LESSER_THAN_EQUALS_KEY :
 		{
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
-			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, key_element_count_concerned) > 0)
+			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
 			{
 				prev_bplus_tree_iterator(bpi_p);
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
@@ -180,7 +180,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case GREATER_THAN_EQUALS_KEY :
 		{
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
-			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, key_element_count_concerned) < 0)
+			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) < 0)
 			{
 				next_bplus_tree_iterator(bpi_p);
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
@@ -190,7 +190,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case GREATER_THAN_KEY :
 		{
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
-			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, key_element_count_concerned) <= 0)
+			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) <= 0)
 			{
 				next_bplus_tree_iterator(bpi_p);
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
