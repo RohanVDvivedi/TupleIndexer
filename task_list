@@ -4,11 +4,20 @@ VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
 TRANSACTION_CONTEXT task
- * pass below two parameters to all the bplus_tree functions, inside a transaction_handle
- * struct transaction_handle {void* transaction_id t_id; transaction_abort_methods* abort_methods}
- * void* transaction_id;
- * struct transaction_abort_methods { void* context, is_aborted(void* context, void* transaction_id); abort(void* context, void* transaction_id) };
- * after each dam or pmm methods check if the, transaction is aborted, if aborted, do not release any locks and quit
+ * struct transaction_abort_handler {
+    const void* transaction_id; // user defined type to represent the transaction_id
+    const transaction_abort_handler_methods tah_p;
+ };
+ struct transaction_abort_handler_methods{
+    const void* context;
+    int is_aborted(const void* transaction_id, const void* context); // returns 0 if not aborted, else returns reason for the abort
+    void mark_aborted(const void* transaction_id, const void* context, int reason); // abort the transaction, with a reason for abort
+ };
+ * make an opaque_structs for both of the above and use only below methods in the TupleIndexer project
+ *  int is_aborted(const transaction_abort_handler* tah_p);
+    void mark_aborted(const transaction_abort_handler* tah_p, int reason);
+ * for an aborted transaction anywhere in TupleIndexer, release all persistent_page locks using dam_p and exit, undo operation has to be taken care of by the user
+ * after each call to dam method wrappers for persistent_page, check if the transaction is aborted, if so release all locks and exit.
 
 DATA_ACCESS_METHODS with tuple level locking
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
