@@ -12,7 +12,7 @@
 #include<in_memory_data_store.h>
 #include<unWALed_page_modification_methods.h>
 
-// un comment based on the keys that you want to test with
+// uncomment based on the keys that you want to test with
 #define KEY_NAME_EMAIL
 //#define KEY_INDEX_PHONE
 //#define KEY_PHONE_SCORE
