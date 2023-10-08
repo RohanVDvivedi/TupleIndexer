@@ -84,6 +84,8 @@ void build_tuple_from_row_struct(const tuple_def* def, void* tuple, const row* r
 	printf("\n\n");
 }
 
+#define KEY_SORT_DIRECTION ((compare_direction[]){ASC, ASC})
+
 int main()
 {
 	// intialize tuple definition
@@ -116,7 +118,7 @@ int main()
 
 	r = &(row){5, "Rohan", "Son of Vipul"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, 0, pmm_p);
+	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, 0, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -128,7 +130,7 @@ int main()
 
 	r = &(row){5, "Zohan", "YOU DONT MESS WITH ZOHAN"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, 1, pmm_p);
+	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, 1, pmm_p);
 	printf("Insert_at : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -140,7 +142,7 @@ int main()
 
 	r = &(row){2, "Devashree", "Daughter of Rupa"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -152,7 +154,7 @@ int main()
 
 	r = &(row){2, "Devashree", "Wife of Manan"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -164,7 +166,7 @@ int main()
 
 	r = &(row){2, "Devashree", "Daughter of Vipul"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -176,7 +178,7 @@ int main()
 
 	r = &(row){5, "Rohan", "Son of Rupa"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -188,7 +190,7 @@ int main()
 
 	r = &(row){17, "Adam", "First man"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -200,7 +202,7 @@ int main()
 
 	r = &(row){10, "Eve", "First woman"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -212,7 +214,7 @@ int main()
 
 	r = &(row){10, "Eve", "exclaimed Eeeewwwweeehhh"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -224,7 +226,7 @@ int main()
 
 	r = &(row){17, "Adam", "exclaimed OOOOOOooooohhhhhh"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -236,7 +238,7 @@ int main()
 
 	r = &(row){5, "Rohan", "created this project"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -248,7 +250,7 @@ int main()
 
 	r = &(row){2, "Devashre", "sister of Rohan"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -260,7 +262,7 @@ int main()
 
 	r = &(row){6, "Rupa", "wife of Vipul"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -272,7 +274,7 @@ int main()
 
 	r = &(row){23, "Jumbo", "not just a squirrel"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -284,7 +286,7 @@ int main()
 
 	r = &(row){11, "Vipul", "husband of Rupa"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -296,7 +298,7 @@ int main()
 
 	r = &(row){6, "Rupa", "can also be called Roopa"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -308,7 +310,7 @@ int main()
 
 	r = &(row){14, "Sai", "not just a tortoise"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -320,7 +322,7 @@ int main()
 
 	r = &(row){14, "Sai", "species: Indian Star Tortoise"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -332,7 +334,7 @@ int main()
 
 	r = &(row){11, "Vipul", "can also be called Milan"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -344,7 +346,7 @@ int main()
 
 	r = &(row){23, "Jumbo", "eats dried nuts"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -356,7 +358,7 @@ int main()
 
 	r = &(row){14, "Sai", "eats green veggies"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -368,7 +370,7 @@ int main()
 
 	r = &(row){11, "Vipul", "has adam's apple"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -380,7 +382,7 @@ int main()
 
 	r = &(row){20, "Mithu", "means sweet and can be anyone's nick name"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, NULL, pmm_p);
+	res = insert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, NULL, pmm_p);
 	printf("Insert : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
@@ -416,13 +418,13 @@ int main()
 
 		uint32_t index;
 
-		index = find_first_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
+		index = find_first_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("FIND FIRST = %s\n", "NO_TUPLE_FOUND");
 		else
 			printf("FIND FIRST = %u\n", index);
 
-		index = find_last_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
+		index = find_last_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("FIND LAST = %s\n", "NO_TUPLE_FOUND");
 		else
@@ -430,13 +432,13 @@ int main()
 
 		printf("\n");
 
-		index = find_preceding_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
+		index = find_preceding_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("PRECEDING = %s\n", "NO_TUPLE_FOUND");
 		else
 			printf("PRECEDING = %u\n", index);
 
-		index = find_preceding_equals_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
+		index = find_preceding_equals_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("PRECEDING EQUALS = %s\n", "NO_TUPLE_FOUND");
 		else
@@ -444,13 +446,13 @@ int main()
 
 		printf("\n");
 
-		index = find_succeeding_equals_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
+		index = find_succeeding_equals_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("SUCCEEDING EQUALS = %s\n", "NO_TUPLE_FOUND");
 		else
 			printf("SUCCEEDING EQUALS = %u\n", index);
 
-		index = find_succeeding_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 1, tuple_cache, key_def, NULL);
+		index = find_succeeding_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 1, tuple_cache, key_def, NULL);
 		if(index == NO_TUPLE_FOUND)
 			printf("SUCCEEDING = %s\n", "NO_TUPLE_FOUND");
 		else
@@ -470,7 +472,7 @@ int main()
 
 	// ----------------  CONVERT IT BACK TO SORTED PACKED PAGE
 
-	sort_and_convert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, pmm_p);
+	sort_and_convert_to_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, pmm_p);
 	print_page(page, PAGE_SIZE, def);
 	printf("\n\n");
 
@@ -478,21 +480,21 @@ int main()
 
 	r = &(row){16, "insert_at", "failed 1"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, 20, pmm_p);
+	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, 20, pmm_p);
 	printf("Insert_at : %d\n\n\n", res);
 
 	// ---------------	INSERT
 
 	r = &(row){21, "insert_at", "failed 2"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, 20, pmm_p);
+	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, 20, pmm_p);
 	printf("Insert_at : %d\n\n\n", res);
 
 	// ---------------	INSERT
 
 	r = &(row){20, "Ainsert_at", "passed"};
 	build_tuple_from_row_struct(def, tuple_cache, r);
-	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, 2, tuple_cache, 20, pmm_p);
+	res = insert_at_in_sorted_packed_page(ppage, PAGE_SIZE, def, NULL, KEY_SORT_DIRECTION, 2, tuple_cache, 20, pmm_p);
 	printf("Insert_at : %d\n\n\n", res);
 
 	// ----------------  PRINT PAGE
