@@ -8,7 +8,7 @@
 *	3. page may or may not be fragmented
 */
 
-#include<tuple_def.h>
+#include<tuple.h>
 #include<persistent_page.h>
 #include<opaque_page_modification_methods.h>
 
@@ -18,7 +18,7 @@
 // than the index returns is right after these tuples that compare equals to the "tuple" parameter
 uint32_t find_insertion_point_in_sorted_packed_page(
 									const persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* tuple
 								);
 
@@ -27,7 +27,7 @@ uint32_t find_insertion_point_in_sorted_packed_page(
 // returns the index the new tuple is inserted on
 int insert_to_sorted_packed_page(
 									persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t* index,
 									const page_modification_methods* pmm_p
@@ -37,7 +37,7 @@ int insert_to_sorted_packed_page(
 // returns 1, if tuple was inserted
 int insert_at_in_sorted_packed_page(
 									persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t index,
 									const page_modification_methods* pmm_p
@@ -47,7 +47,7 @@ int insert_at_in_sorted_packed_page(
 // returns 1, if tuple was updated
 int update_at_in_sorted_packed_page(
 									persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* tuple, 
 									uint32_t index,
 									const page_modification_methods* pmm_p
@@ -66,7 +66,7 @@ int delete_in_sorted_packed_page(
 // returns the number of tuples inserted
 uint32_t insert_all_from_sorted_packed_page(
 									persistent_page* ppage_dest, const persistent_page* ppage_src, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									uint32_t start_index, uint32_t last_index,
 									const page_modification_methods* pmm_p
 								);
@@ -85,21 +85,21 @@ int delete_all_in_sorted_packed_page(
 // returns index of the tuple found
 uint32_t find_first_in_sorted_packed_page(
 									const persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								);
 
 // returns index of the tuple found
 uint32_t find_last_in_sorted_packed_page(
 									const persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								);
 
 // returns index of the tuple found at the greatest index that is lesser than the key
 uint32_t find_preceding_in_sorted_packed_page(
 									const persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								);
 
@@ -107,7 +107,7 @@ uint32_t find_preceding_in_sorted_packed_page(
 // if there are tuples that compare equal to the key, then the last index of the tuple that compare equal to the key is returned
 uint32_t find_preceding_equals_in_sorted_packed_page(
 									const persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								);
 
@@ -115,14 +115,14 @@ uint32_t find_preceding_equals_in_sorted_packed_page(
 // if there are tuples that compare equal to the key, then the first index of the tuple that compare equal to the key is returned
 uint32_t find_succeeding_equals_in_sorted_packed_page(
 									const persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								);
 
 // returns index of the tuple found at the least index that is greater than the key
 uint32_t find_succeeding_in_sorted_packed_page(
 									const persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* key, const tuple_def* key_def, const uint32_t* key_elements_to_compare
 								);
 
@@ -136,7 +136,7 @@ void reverse_sort_order_on_sorted_packed_page(
 // creates a page into its sorted_packed_page form
 void sort_and_convert_to_sorted_packed_page(
 									persistent_page* ppage, uint32_t page_size, 
-									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, uint32_t keys_count,
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const page_modification_methods* pmm_p
 								);
 

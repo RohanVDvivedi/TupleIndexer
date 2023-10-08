@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_TUPLE_DEFINITIONS_H
 #define BPLUS_TREE_TUPLE_DEFINITIONS_H
 
-#include<tuple_def.h>
+#include<tuple.h>
 #include<inttypes.h>
 
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
@@ -28,7 +28,7 @@ struct bplus_tree_tuple_defs
 	// element ids of the keys (as per their element_ids in record_def) in the order as you want them to be ordered
 	uint32_t* key_element_ids;
 
-	// compare direction for the keys, ASC or DESC
+	// compare direction for the keys, array of ASC/DESC
 	const compare_direction* key_compare_direction;
 
 	// ith element_def in index_def has the same type, name and size as the key_element_ids[i] th element_def in record_def

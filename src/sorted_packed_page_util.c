@@ -24,6 +24,9 @@ struct tuple_on_page_compare_context
 	// keys of the key tuple, this must equal tuple_keys_to_compare when not in use
 	const uint32_t* key_elements_to_compare;
 
+	// direction to compare keys, array of ASC/DESC
+	const compare_direction* key_compare_direction;
+
 	// number of elements in tuple_keys_to_compare and key_elements_to_compare
 	uint32_t keys_count;
 };
