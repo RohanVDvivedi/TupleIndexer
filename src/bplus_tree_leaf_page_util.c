@@ -36,7 +36,7 @@ uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const persistent_page*
 {
 	return find_succeeding_equals_in_sorted_packed_page(
 									ppage, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									key, bpttd_p->key_def, NULL
 								);
 }
@@ -45,7 +45,7 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const persistent_page* 
 {
 	return find_preceding_equals_in_sorted_packed_page(
 									ppage, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									key, bpttd_p->key_def, NULL
 								);
 }
@@ -175,7 +175,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	if(tuple_to_insert_at == NO_TUPLE_FOUND)
 		tuple_to_insert_at = find_insertion_point_in_sorted_packed_page(
 									page1, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuple_to_insert
 								);
 
@@ -281,7 +281,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	// copy all required tuples from the page1 to page2
 	insert_all_from_sorted_packed_page(
 									&page2, page1, bpttd_p->page_size,
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuples_stay_in_page1, page1_tuple_count - 1,
 									pmm_p
 								);
@@ -300,7 +300,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page1
 		insert_at_in_sorted_packed_page(
 									page1, bpttd_p->page_size,
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuple_to_insert, 
 									tuple_to_insert_at,
 									pmm_p
@@ -311,7 +311,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page2
 		insert_at_in_sorted_packed_page(
 									&page2, bpttd_p->page_size,
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuple_to_insert,
 									tuple_to_insert_at - tuples_stay_in_page1,
 									pmm_p
@@ -436,7 +436,7 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 		// only if there are any tuples to move
 		insert_all_from_sorted_packed_page(
 									page1, &page2, bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									0, tuple_count_page2 - 1,
 									pmm_p
 								);

@@ -29,7 +29,7 @@ struct bplus_tree_tuple_defs
 	uint32_t* key_element_ids;
 
 	// compare direction for the keys, array of ASC/DESC
-	const compare_direction* key_compare_direction;
+	compare_direction* key_compare_direction;
 
 	// ith element_def in index_def has the same type, name and size as the key_element_ids[i] th element_def in record_def
 
