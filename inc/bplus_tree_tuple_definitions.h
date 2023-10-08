@@ -28,6 +28,9 @@ struct bplus_tree_tuple_defs
 	// element ids of the keys (as per their element_ids in record_def) in the order as you want them to be ordered
 	uint32_t* key_element_ids;
 
+	// compare direction for the keys, ASC or DESC
+	const compare_direction* key_compare_direction;
+
 	// ith element_def in index_def has the same type, name and size as the key_element_ids[i] th element_def in record_def
 
 	// tuple definition of the leaf pages in the bplus_tree
@@ -52,7 +55,7 @@ struct bplus_tree_tuple_defs
 // returns 1 for success, it fails with 0, if the record_def has element_count 0 OR key_element_count == 0 OR key_elements == NULL OR if any of the key_element_ids is out of bounds
 // it may also fail if the system_header size makes it impossible to store any tuples in the page
 // page_id_width is bytes required for storing page_id, it can be 1,2,4 or 8
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t system_header_size, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID);
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t system_header_size, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID);
 
 // checks to see if a record_tuple can be inserted into a bplus_tree
 int check_if_record_can_be_inserted_into_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple);
