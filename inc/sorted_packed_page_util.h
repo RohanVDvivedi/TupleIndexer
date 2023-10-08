@@ -31,6 +31,12 @@
 **	void*                 key                             -> we need to find a tuple on the ppage, with respect to this key
 **	tuple_def*            key_def                         -> tuple definition of the key, provided
 **	uint32_t*             key_elements_to_compare         -> the element ids on the key, that correspond to the tuple_keys_to_compare, in the order of comparison, its length will be same as keys_count parameter
+**
+** NOTE: length of the arrays tuple_keys_to_compare, tuple_keys_compare_direction and key_elements_to_compare, must be atleast keys_count
+** NOTE: if the sorted_packed ppage is lets say sorted on tuple_keys_to_compare = {7 , 3, 1} element ids,
+**			then ONLY find functions are allowed to use shorter tuple_keys_to_compare,
+**				i.e. for ONLY the find function you may either pass {7} or {7,3} or {7,3,1} as tuple_keys_to_compare
+**
 */
 
 // returns index at which a new tuple may be inserted
