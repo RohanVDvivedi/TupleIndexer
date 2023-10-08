@@ -12,6 +12,27 @@
 #include<persistent_page.h>
 #include<opaque_page_modification_methods.h>
 
+/*
+** Generic definitions of the parameter to be passed to the functions in sorted packed page
+**	persistent_page       ppage                           -> the actual persistent page to work on
+**	uint32_t              page_size                       -> the size of the page in bytes
+**	tuple_def*            tpl_def                         -> the definition of each tuple on the ppage
+**	uint32_t*             tuple_keys_to_compare           -> the indices of the element_defs in the tpl_def, that ppage is sorted on, (for find operations you may provide lesser number of keys)
+**	compare_direction*    tuple_keys_compare_direction    -> the sort direction of each of the elements as in tuple_keys_to_compare, in the order of comparison
+**	uint32_t              keys_count                      -> the number of elements in tuple_keys_to_compare and tuple_keys_to_compare_direction
+**
+** above attributes define what is there on the page
+**
+**  void*                 tuple                           -> tuple to be inserted/updated
+**	uint32_t              index                           -> the index to the tuple on the page to work with
+**
+** below are the attributes required by the find functions on the sorted_packed_page
+**
+**	void*                 key                             -> we need to find a tuple on the ppage, with respect to this key
+**	tuple_def*            key_def                         -> tuple definition of the key, provided
+**	uint32_t*             key_elements_to_compare         -> the element ids on the key, that correspond to the tuple_keys_to_compare, in the order of comparison, its length will be same as keys_count parameter
+*/
+
 // returns index at which a new tuple may be inserted
 // returns an index in range from (0 to tuple_count) where the tuple can be inserted, keeping the sorted page sorted
 // if a tuple/tuples with the given key as in "tuple" parameter exists
