@@ -31,12 +31,12 @@ struct tuple_on_page_compare_context
 	uint32_t keys_count;
 };
 
-#define get_tuple_on_page_compare_context(tpl_def_v, tuple_keys_to_compare_v, key_def_v, key_elements_to_compare_v, keys_count_v) ((const tuple_on_page_compare_context){.tpl_def = tpl_def_v, .tuple_keys_to_compare = tuple_keys_to_compare_v, .key_def = key_def_v, .key_elements_to_compare = key_elements_to_compare_v, .keys_count = keys_count_v})
+#define get_tuple_on_page_compare_context(tpl_def_v, tuple_keys_to_compare_v, key_def_v, key_elements_to_compare_v, key_compare_direction_v, keys_count_v) ((const tuple_on_page_compare_context){.tpl_def = tpl_def_v, .tuple_keys_to_compare = tuple_keys_to_compare_v, .key_def = key_def_v, .key_elements_to_compare = key_elements_to_compare_v, .key_compare_direction = key_compare_direction_v, .keys_count = keys_count_v})
 
 int compare_tuples_using_comparator_context(const void* context, const void* tuple1, const void* tuple2)
 {
 	const tuple_on_page_compare_context* context_p = context;
-	return compare_tuples(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, tuple2, context_p->key_def, context_p->key_elements_to_compare, context_p->keys_count);
+	return compare_tuples(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, tuple2, context_p->key_def, context_p->key_elements_to_compare, context_p->key_compare_direction, context_p->keys_count);
 }
 
 typedef struct tuple_accessed_page tuple_accessed_page;
