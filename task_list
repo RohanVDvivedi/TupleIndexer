@@ -5,14 +5,18 @@ VALIDATING WAS_MODIFIED BIT
 
 TRANSACTION_CONTEXT task
  * struct transaction_abort_handler {
-    const void* transaction_id; // user defined type to represent the transaction_id
-    const transaction_abort_handler_methods tah_p;
+    const void* transaction_handle; // user defined type to represent the transaction
+    const transaction_abort_handler_methods* tah_p;
  };
  struct transaction_abort_handler_methods{
     const void* context;
     int is_aborted(const void* transaction_id, const void* context); // returns 0 if not aborted, else returns reason for the abort
     void mark_aborted(const void* transaction_id, const void* context, int reason); // abort the transaction, with a reason for abort
  };
+ * mark_aborted appends a abort log entry and flushes the WAL
+ * make all pmm methods to take transaction_handle as input
+ * make all dam methods to take transaction_abort_handler as the input parameter
+ * make all persistent_page methods (that are wrappers to pmm and dam) to take transaction_abort_handler as input parameter, and pass respective parameter down
  * make an opaque_structs for both of the above and use only below methods in the TupleIndexer project
  *  int is_aborted(const transaction_abort_handler* tah_p);
     void mark_aborted(const transaction_abort_handler* tah_p, int reason);
