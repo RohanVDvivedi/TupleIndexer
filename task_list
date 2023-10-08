@@ -22,7 +22,8 @@ ERROR HANDLING
    (SUCCESS | FAILURE), OUT_OF_RESOURCES, ROLLBACK_REQUIRED as an int bit map
 
 ERROR RETURN CODES
- * suggesting reson of a failure of data_access_method functions
+ * suggesting reason of a failure of data_access_method functions
+ * reasons being DEADLOCK_HANDLED, CAN_T_LOCK_FREE_PAGE, OUT_OF_DISK_SPACE, OUT_OF_FREE_BUFFERS
 
 ** UTILITY
  * segregate insert and delete both into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
