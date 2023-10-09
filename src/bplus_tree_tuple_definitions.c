@@ -103,7 +103,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 		uint32_t min_index_record_tuple_count = 2;
 		uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 		uint32_t total_available_space_in_interior_page_per_min_tuple_count = total_available_space_in_interior_page / min_index_record_tuple_count;
-		bpttd_p->max_index_record_size = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - bpttd_p->page_id_width; 
+		bpttd_p->max_index_record_size = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 	}
 
 	if(bpttd_p->max_record_size < get_minimum_tuple_size(bpttd_p->record_def) ||
