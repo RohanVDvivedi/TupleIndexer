@@ -73,3 +73,5 @@ ERROR RETURN CODES
  * allow key common_suffix truncation in the keys in the interior pages
    * i.e. if 2 adjacent index entries are 1,"RohanAEBDV", some_page_id1 and 1,"RohanABC", then they can be sored as 1, "RohanAE", some_page_id1 and 1, "RohanAB", some_page_id2. OR for index entries 1,"RohanAEBDV", some_page_id1 and 2,"RohanABC", some_page_id2 -> we can truncate it to 1, "", some_page_id1 and 2, "", some_page_id2.
    * i.e. we only need a part of key in the index entry in the interior pages, the perfic part which sets it apart form the adjacent entries it is being inserted between
+ * utility header function that reads page_type from common_page_header and helps get and set the next_page_id and prev_page_id
+   * this can be used to build a generic iterator over linked list, bplus_tree leaf pages and interior pages
