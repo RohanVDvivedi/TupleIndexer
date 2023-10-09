@@ -66,12 +66,14 @@ ERROR RETURN CODES
  * all inserts to linked_page_list have a flag to PRESERVE_ROOT_PAGE_ID
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
  * sort that can be called on a linked_page_list or a hash_table
+ * utility header function that reads page_type from common_page_header and helps get and set the next_page_id and prev_page_id
+   * this can be used to build a generic iterator over linked list, bplus_tree leaf pages and interior pages
  * building a b+tree using a sorted linked_page_list, layer by layer
-   * for this we need next_page_id pointers in the headers of interior_pages instead of is_last_page_of_level flag, this next_page_id pointer will do the same task, i.e. if next_page_id pointer is NULL_PAGE_ID then, it is the last_page of the level -> since we are only maintaining next_page_id, we do not need any additional locking on the other pages of the level while performing splits and merges
    * we will first ask for the sorted page double linked list, then build the bplus_tree level by level (level 0 being leaf page)
      * for building ith level of interior page, we copy the first tuple's key of all the lower level (i-1 level) pages, and build a singly linkedlist of interior pages composed of each index record pointing to the lower level page, we maintain only the heads of the 2 adjacent levels and a write iterator to the upper level and read iterator of the lower level.
+     * since in the initial phase we are not storing the least_keys_page_id in the interior pages, we can use this interior page header field to link all pages in the same level as a singly linkedlist
+     * for this we need to define an union {all_least_keys_page_id next_page_id}, to use the utility iterator to work.
  * allow key common_suffix truncation in the keys in the interior pages
    * i.e. if 2 adjacent index entries are 1,"RohanAEBDV", some_page_id1 and 1,"RohanABC", then they can be sored as 1, "RohanAE", some_page_id1 and 1, "RohanAB", some_page_id2. OR for index entries 1,"RohanAEBDV", some_page_id1 and 2,"RohanABC", some_page_id2 -> we can truncate it to 1, "", some_page_id1 and 2, "", some_page_id2.
    * i.e. we only need a part of key in the index entry in the interior pages, the perfic part which sets it apart form the adjacent entries it is being inserted between
- * utility header function that reads page_type from common_page_header and helps get and set the next_page_id and prev_page_id
-   * this can be used to build a generic iterator over linked list, bplus_tree leaf pages and interior pages
+ * prefix key compression -> if the index entry (record on interior page) we are looking at is NULL, then copy its contents from the first index entry, while comparing the index entry
