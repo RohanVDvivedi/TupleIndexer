@@ -66,4 +66,7 @@ ERROR RETURN CODES
  * all inserts to linked_page_list have a flag to PRESERVE_ROOT_PAGE_ID
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
  * sort that can be called on a linked_page_list or a hash_table
- * building a b+tree using a sorted linked_page_list, layer by layer - think how to get it done without having first index entries of child interior pages
+ * building a b+tree using a sorted linked_page_list, layer by layer
+   * for this we need next_page_id pointers in the headers of interior_pages instead of is_last_page_of_level flag, this next_page_id pointer will do the same task, i.e. if next_page_id pointer is NULL_PAGE_ID then, it is the last_page of the level -> since we are only maintaining next_page_id, we do not need any additional locking on the other pages of the level while performing splits and merges
+   * we will first ask for the sorted page double linked list, then build the bplus_tree level by level (level 0 being leaf page)
+     * for building ith level of interior page, we copy the first tuple's key of all the lower level (i-1 level) pages, and build a singly linkedlist of interior pages composed of each index record pointing to the lower level page, we maintain only the heads of the 2 adjacent levels and a write iterator to the upper level and read iterator of the lower level.
