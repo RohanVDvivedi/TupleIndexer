@@ -1,5 +1,9 @@
 ** PICKED TASKS
 
+BPLUSTREE tuple_defs modification
+ * compute max key_record_size => max_index_entry_size - page_id_width, before returning 1
+ * build_index_entry and extract_key to return 0, in a failure, if the record of index_entry are larger than max_record_size and max_index_record_size
+
 VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
