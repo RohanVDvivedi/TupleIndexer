@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
 BPLUSTREE tuple_defs modification
- * compute max key_record_size => max_index_entry_size - page_id_width, before returning 1
  * build_index_entry and extract_key to return 0, in a failure, if the record of index_entry are larger than max_record_size and max_index_record_size
 
 VALIDATING WAS_MODIFIED BIT
