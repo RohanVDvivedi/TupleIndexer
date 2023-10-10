@@ -62,6 +62,7 @@ ERROR RETURN CODES
  * write multi-threaded test cases to insert a large csv in to b+tree, measure performance difference
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * introduce concept of temporary page, any changes to temporary pages are not logges to WAL except for the WAL logging for its allocate and free calls, their last updated log sequence number is set to their allocated log_sequence_number, and they are meant to be discarded soon after the transaction ends, on abort they are to be freed, their contents are not to be persisted, they are to be used as intermediate query results. there has to be a bit in persistent_page stating they they are temporary pages. AGAIN no changes to these pages are not to be logged logged to WAL, but they are allowed to be persisted to disk.
  * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
  * all inserts to linked_page_list have a flag to PRESERVE_ROOT_PAGE_ID
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
