@@ -122,50 +122,64 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 	return 1;
 }
 
-void extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key)
+int extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key)
 {
 	// init the key tuple
 	init_tuple(bpttd_p->key_def, key);
 
 	// copy all the elements from record into the key tuple
-	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
-		set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+	int res = 1;
+	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
+		res = set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+
+	return res;
 }
 
-void extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key)
+int extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key)
 {
 	// init the key tuple
 	init_tuple(bpttd_p->key_def, key);
 
 	// copy all the elements from index_entry into the key tuple
-	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
-		set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->index_def, i, index_entry);
+	int res = 1;
+	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
+		res = set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->index_def, i, index_entry);
+
+	return res;
 }
 
-void build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, uint64_t child_page_id, void* index_entry)
+int build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, uint64_t child_page_id, void* index_entry)
 {
 	// init the index_entry
 	init_tuple(bpttd_p->index_def, index_entry);
 
 	// copy all the elements from record to the index_tuple, except for the child_page_id
-	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
-		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+	int res = 1;
+	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
+		res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
 
 	// copy the child_page_id to the last element in the index entry
-	set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((const user_value){.uint_value = child_page_id}));
+	if(res == 1)
+		res = set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((const user_value){.uint_value = child_page_id}));
+
+	return res;
 }
 
-void build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry)
+int build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry)
 {
 	// init the index_entry
 	init_tuple(bpttd_p->index_def, index_entry);
 
 	// copy all the elements from key to the index_tuple
-	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
-		set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->key_def, i, key);
+	int res = 1;
+	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
+		res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->key_def, i, key);
 
 	// copy the child_page_id to the last element in the index entry
-	set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((user_value){.uint_value = child_page_id}));
+	if(res == 1)
+		set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((user_value){.uint_value = child_page_id}));
+
+	return res;
 }
 
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)

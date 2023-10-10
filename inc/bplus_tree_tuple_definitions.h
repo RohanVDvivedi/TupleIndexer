@@ -61,16 +61,16 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 int check_if_record_can_be_inserted_into_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple);
 
 // copy all the key elements from the record_tuple to make the key
-void extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key);
+int extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key);
 
 // copy all the key elements from the index_entry to make the key
-void extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key);
+int extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key);
 
 // builds an index_entry from record_tuple and a child_page_id
-void build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, uint64_t child_page_id, void* index_entry);
+int build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, uint64_t child_page_id, void* index_entry);
 
 // builds an index_entry from key and a child_page_id
-void build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry);
+int build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry);
 
 // it deallocates the index_def and
 // then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0
