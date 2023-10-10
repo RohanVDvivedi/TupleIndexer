@@ -8,7 +8,7 @@ then
 	then
 		sudo time -v ./test_$1.out
 	else
-		./test_$1.out
+		./test_$1.out > $2
+		echo "output saved to $2"
 	fi
-	echo $2
 fi
