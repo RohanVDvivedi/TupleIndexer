@@ -10,6 +10,8 @@
 ** This functions act as a middleware allowing you to intercept the functions that modify the page using TupleStore's methods
 ** It allows you to Write Ahead Log the operations while modifying the page
 ** Note :: They must be backed by the corresponding functions from TupleStore ONLY
+** All the functions here take in persistent_page by value, this is a design choice, so as you not allow the implementer of page_modification_methods to modify the persistent_page
+** You may or may not choose to WAL log the operation, its up to you, the persistent_page given to these functions will always be .is_write_locked = 1, this library will ensure that
 */
 
 // All the functions of page_modification_methods are analogous to their corresponding counterparts in page_layout.h
