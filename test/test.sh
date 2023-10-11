@@ -7,8 +7,11 @@ then
 	elif [ "$2" = "time" ]
 	then
 		sudo time -v ./test_$1.out
-	else
+	elif [ ! -z $2 ]
+	then
 		./test_$1.out > $2
 		echo "output saved to $2"
+	else
+		./test_$1.out
 	fi
 fi
