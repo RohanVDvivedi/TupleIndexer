@@ -165,6 +165,71 @@ int must_split_for_insert_bplus_tree_leaf_page(const persistent_page* page1, con
 	return 1;
 }
 
+// it is assumed, that last_tuple_page1 <= first_tuple_page2
+static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const bplus_tree_tuple_defs* bpttd_p, const void* last_tuple_page1, const void* first_tuple_page2, uint64_t child_page_id, void* index_entry)
+{
+	// init the index_entry
+	init_tuple(bpttd_p->index_def, index_entry);
+
+	// copy all the elements from record to the index_tuple, except for the child_page_id
+	int res = 1;
+	int cmp = 0; // result of comparison
+	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1 && cmp == 0; i++)
+	{
+		const element_def* ele_def = get_element_def_by_id(bpttd_p->index_def, i);
+
+		// cache the comparison result
+		cmp = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+
+		// if the corresponding elements in the record tuples are equal OR
+		// if the elements are not VAR_STRING or VAR_BLOB, then proceed as usual
+		if(0 == cmp || (ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB))
+		{
+			res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+			continue;
+		}
+		else // we can only suffix truncate VAR_STRING or VAR_BLOB
+		{
+			uin32_t match_lengths = 0;
+
+			user_value last_tuple_page1_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
+			user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+
+			// compute the number of characters matched
+			for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && last_tuple_page1_element.data[match_lengths] == first_tuple_page2_element.data[match_lengths]; match_lengths++);
+
+			switch(bpttd_p->key_compare_direction[i])
+			{
+				case ASC:
+				{
+					first_tuple_page2_element.data_size = match_lengths + 1;
+					set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element);
+					break;
+				}
+				case DESC :
+				{
+					if(match_lengths + 1 < last_tuple_page1_element.data_size) // to ensure that index_entry does not become equal to last_tuple_page1's index representation
+					{
+						last_tuple_page1_element.data_size = match_lengths + 1;
+						set_element_in_tuple(bpttd_p->index_def, i, index_entry, &last_tuple_page1_element);
+					}
+					else // bad edge case, no truncation can be done now
+					{
+						set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element);
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	// copy the child_page_id to the last element in the index entry
+	if(res == 1)
+		res = set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((const user_value){.uint_value = child_page_id}));
+
+	return res;
+}
+
 int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, void* output_parent_insert)
 {
 	// check if a page must split to accomodate the new tuple
