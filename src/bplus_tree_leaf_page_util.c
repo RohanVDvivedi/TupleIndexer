@@ -176,7 +176,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 	int cmp = 0; // result of comparison
 	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1 && cmp == 0; i++)
 	{
-		const element_def* ele_def = get_element_def_by_id(bpttd_p->index_def, i);
+		const element_def* ele_d = get_element_def_by_id(bpttd_p->index_def, i);
 
 		// cache the comparison result
 		cmp = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
@@ -185,18 +185,17 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		// if the elements are not VAR_STRING or VAR_BLOB, then proceed as usual
 		if(0 == cmp || (ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB))
 		{
-			res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
-			continue;
+			res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 		}
 		else // we can only suffix truncate VAR_STRING or VAR_BLOB
 		{
-			uin32_t match_lengths = 0;
+			uint32_t match_lengths = 0;
 
 			user_value last_tuple_page1_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
 			user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 			// compute the number of characters matched
-			for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && last_tuple_page1_element.data[match_lengths] == first_tuple_page2_element.data[match_lengths]; match_lengths++);
+			for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && ((const char*)(last_tuple_page1_element.data))[match_lengths] == ((const char*)(first_tuple_page2_element.data))[match_lengths]; match_lengths++);
 
 			switch(bpttd_p->key_compare_direction[i])
 			{
@@ -384,10 +383,10 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	}
 
 	// create tuple to be returned, this tuple needs to be inserted into the parent page, after the child_index
+	const void* last_tuple_page1 = get_nth_tuple_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def), get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def)) - 1);
 	const void* first_tuple_page2 = get_nth_tuple_on_persistent_page(&page2, bpttd_p->page_size, &(bpttd_p->record_def->size_def), 0);
 
-	// rebuild parent insert tuple using the first record of the page2 and the child_page_id = page2_id
-	build_index_entry_from_record_tuple(bpttd_p, first_tuple_page2, page2.page_id, output_parent_insert);
+	build_suffix_truncated_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
 
 	// release lock on the page2
 	release_lock_on_persistent_page(dam_p, &page2, NONE_OPTION);
