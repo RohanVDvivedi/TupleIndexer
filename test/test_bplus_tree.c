@@ -190,7 +190,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 
 	// print bplus tree
 	if(print_tree_on_completion)
-		print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
+		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p);
 
 	// close the file
 	fclose(f);
