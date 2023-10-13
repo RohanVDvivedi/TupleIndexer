@@ -80,4 +80,43 @@ ERROR RETURN CODES
      * for building ith level of interior page, we copy the first tuple's key of all the lower level (i-1 level) pages, and build a singly linkedlist of interior pages composed of each index record pointing to the lower level page, we maintain only the heads of the 2 adjacent levels and a write iterator to the upper level and read iterator of the lower level.
      * since in the initial phase we are not storing the least_keys_page_id in the interior pages, we can use this interior page header field to link all pages in the same level as a singly linkedlist
      * for this we need to define an union {all_least_keys_page_id next_page_id}, to use the utility iterator to work.
- * prefix key compression -> if the index entry (record on interior page) we are looking at is NULL, then copy its contents from the first index entry, while comparing the index entry
+ * prefix key compression -> store prefix compression for var_strings (for internal nodes only), working in the following ways
+    0  ->  "ABCD"            "ABCD"
+    1  ->  "ABDEF"           "2DEF"
+    2  ->  "ABDFG"           "3FG"
+    3  ->  "ABDH"       ->   "3H"
+    4  ->  "ADEA"            "1DEA"
+    5  ->  "ADEF"            "3F"
+    6  ->  "ADEGH"           "3GH"
+    each var string except the first 1 stores itself OR its difference from the (same column) var string in the previous row
+    the difference is stores as a number (suggesting the common characters from the previous var string) followed by the characters that are different.
+
+    to differentiate the prefix number from the other characters, we will always store them in element_def's size_specifier_prefix_size number of bytes after an invalid unicode character "0xFF 0xFF".
+
+    Algorithm to construct the string at ith index
+    compute the length of the var string, that is 3 + "G" 1 + "H" 1 = 5
+    bytes_to_read = 5 stack = ""
+    now start iterating until bytes_to_read > 0
+    i == 6 -> bytes_to_read = 3 stack = "HG"
+    i == 5 -> bytes_to_read = 3 stack = "HG"
+    i == 4 -> bytes_to_read = 1 stack = "HGED"
+    i == 3 -> bytes_to_read = 1 stack = "HGED"
+    i == 2 -> bytes_to_read = 1 stack = "HGED"
+    i == 1 -> bytes_to_read = 1 stack = "HGED"
+    i == 0 -> bytes_to_read = 0 stack = "HGEDA" -> reverse "ADEGH"
+
+    stack = ""
+    bytes_to_read = 5
+    i = 6
+    while(bytes_to_read > 0)
+    {
+      common_char_count, rest_of_string = get_column_from_ith_row(i);
+      new_bytes_to_read = min(bytes_to_read, common_char_count);
+      if(new_bytes_to_read > bytes_to_read)
+      {
+        for(int i = (new_bytes_to_read - bytes_to_read) - 1; i >= 0; i--)
+          stack.push(rest_of_string[i]);
+      }
+      bytes_to_read = new_bytes_to_read;
+    }
+    return stack.reverse();
