@@ -27,31 +27,20 @@ DATA_ACCESS_METHODS with tuple level locking
  * allow data_access_methods (with a context) to also enable locking only tuples on the page
  * function check if a tuple on a page is locked
 
-DUPLICATES ALLOWING FOR INSERTS
- * add a flag as a parameter "fail_on_duplicate_key", that decides to fail an insert if a record being inserted has a duplicate key, else allow duplicates
-
-ERROR HANDLING
- * elaborate error return in bplus_tree functions to acknowledge below
-   (SUCCESS | FAILURE), OUT_OF_RESOURCES, ROLLBACK_REQUIRED as an int bit map
-
-ERROR RETURN CODES
+ERROR RETURN CODES for DATA_ACCESS_METHODS
  * suggesting reason of a failure of data_access_method functions
  * reasons being DEADLOCK_HANDLED, CAN_T_LOCK_FREE_PAGE, OUT_OF_DISK_SPACE, OUT_OF_FREE_BUFFERS
 
-** UTILITY
- * segregate insert and delete both into 2 functions, to reuse code, provide implementations to split_insert function call and merge_if_possible
- * build stacked iterator using locked_pages_stack, this can be used to iterate over all the tuples in the b+tree including the interior page and also only index tuples
+ALLOWING DUPLICATES
+ * berkeley DB like architecture, BPLUS_TREE_OVERFLOW_PAGE storing tuple of only same type, and only first page of such a list is indexed in the interior page
 
-** UPDATE FUNCTIONALITY
- * implement update which split or merges depending on the size of the record being updated.
- * implement in_place_update, to update a record in place, when all the element_def's of the record_def except for the key_element-s are fixed_sized. i.e. the value-s of the record (corresponding to key-s of the record) are fixed length types.
-   * in the above algorithm, the key_def and index_dex of bpttd may be variable_sized.
-   * in the above algorithm you just need to latch crab like a find operation (get lock on the next on the lower level and leave lacth on the current level, also read locking all the interior pages, and write locking only the leaf page), to reach the leaf page and if the record i found update the record in place.
- * update by key (updates the last 1) or update by record (updates an exact match record -> here we will already know if it will be a merge or a split)
-
-** ADDITIONAL DELETE FUNCTIONALITY
- * implement delete range, deleting an entire sub tree if it falls into the range (parameter key1 and key2, (key1 <= key2) and flags that suggest whether key1 and key2 are inclusive or not)
- * implement delete record, to delete a specific record from b+tree
+BPLUS_TREE_ITERATOR REVAMP
+ * build, iterator like the berkeley DB architecture, that is a simple reader, until you call insert, delete or update
+ * check if insert/update is valid -> for update the key must be identical, and for insert it must be between current and next position of iterator
+ * on calling those, the reader lock is upgraded to writer lock
+ * try the operation, and then if you need splits or merges, initialize a stack inside walk down to the desired tuple
+ * perform splits and merged going up, downgrade lock on the page you have your iterator on, do not release that lock
+ * and return
 
 ** OPTIMIZATION
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
