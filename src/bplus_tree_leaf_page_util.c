@@ -17,8 +17,7 @@ int init_bplus_tree_leaf_page(persistent_page* ppage, const bplus_tree_tuple_def
 
 	// get the header, initialize it and set it back on to the page
 	bplus_tree_leaf_page_header hdr = get_bplus_tree_leaf_page_header(ppage, bpttd_p);
-	hdr.parent.parent.type = BPLUS_TREE_LEAF_PAGE;
-	hdr.parent.level = 0;
+	hdr.parent.type = BPLUS_TREE_LEAF_PAGE;
 	hdr.next_page_id = bpttd_p->NULL_PAGE_ID;
 	hdr.prev_page_id = bpttd_p->NULL_PAGE_ID;
 	set_bplus_tree_leaf_page_header(ppage, &hdr, bpttd_p, pmm_p);

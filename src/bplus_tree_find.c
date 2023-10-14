@@ -2,6 +2,7 @@
 
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
+#include<bplus_tree_page_header.h>
 #include<bplus_tree_leaf_page_header.h>
 #include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>

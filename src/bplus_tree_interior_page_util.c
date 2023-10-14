@@ -19,8 +19,8 @@ int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is
 
 	// get the header, initialize it and set it back on to the page
 	bplus_tree_interior_page_header hdr = get_bplus_tree_interior_page_header(ppage, bpttd_p);
-	hdr.parent.parent.type = BPLUS_TREE_INTERIOR_PAGE;
-	hdr.parent.level = level;
+	hdr.parent.type = BPLUS_TREE_INTERIOR_PAGE;
+	hdr.level = level;
 	hdr.least_keys_page_id = bpttd_p->NULL_PAGE_ID;
 	hdr.is_last_page_of_level = is_last_page_of_level;
 	set_bplus_tree_interior_page_header(ppage, &hdr, bpttd_p, pmm_p);
@@ -271,7 +271,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 		return 0;
 
 	// initialize page2 (as an interior page)
-	uint32_t level = get_level_of_bplus_tree_page(page1, bpttd_p);	// get the level of bplus_tree we are dealing with
+	uint32_t level = get_level_of_bplus_tree_interior_page(page1, bpttd_p);	// get the level of bplus_tree we are dealing with
 	init_bplus_tree_interior_page(&page2, level, 0, bpttd_p, pmm_p);
 
 	// check if page1 is last page of the level, if yes then page2 now becomes the last page of the level
