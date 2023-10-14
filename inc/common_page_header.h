@@ -31,9 +31,6 @@ uint32_t get_offset_to_end_of_common_page_header(const bplus_tree_tuple_defs* bp
 
 page_type get_type_of_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
-// explicit check for bplus_tree leaf page header
-int is_bplus_tree_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
-
 common_page_header get_common_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
 void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p);

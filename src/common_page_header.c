@@ -25,11 +25,6 @@ page_type get_type_of_page(const persistent_page* ppage, const bplus_tree_tuple_
 	return get_common_page_header(ppage, bpttd_p).type;
 }
 
-int is_bplus_tree_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
-{
-	return get_common_page_header(ppage, bpttd_p).type == BPLUS_TREE_LEAF_PAGE;
-}
-
 static inline uint32_t get_offset_to_common_page_header_locals(const bplus_tree_tuple_defs* bpttd_p)
 {
 	return bpttd_p->system_header_size;
