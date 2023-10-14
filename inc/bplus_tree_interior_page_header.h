@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_INTERIOR_PAGE_HEADER_H
 #define BPLUS_TREE_INTERIOR_PAGE_HEADER_H
 
-#include<bplus_tree_page_header.h>
+#include<common_page_header.h>
 #include<bplus_tree_tuple_definitions.h>
 #include<opaque_page_modification_methods.h>
 #include<persistent_page.h>
@@ -9,7 +9,12 @@
 typedef struct bplus_tree_interior_page_header bplus_tree_interior_page_header;
 struct bplus_tree_interior_page_header
 {
-	bplus_tree_page_header parent;
+	common_page_header parent;
+
+	// level of the page in bplus_tree,
+	// always > 0 interior page
+	// 1 -> interior page level right above the leaf page
+	uint32_t level;
 
 	// all leaf pages are doubly linked, with pointers (page_id-s) to next and prev pages
 	uint64_t least_keys_page_id;
@@ -21,6 +26,8 @@ struct bplus_tree_interior_page_header
 #define sizeof_INTERIOR_PAGE_HEADER get_offset_to_end_of_bplus_tree_interior_page_header
 
 uint32_t get_offset_to_end_of_bplus_tree_interior_page_header(const bplus_tree_tuple_defs* bpttd_p);
+
+uint32_t get_level_of_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
 uint64_t get_least_keys_page_id_of_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 

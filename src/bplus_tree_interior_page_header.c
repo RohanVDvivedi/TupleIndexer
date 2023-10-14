@@ -11,9 +11,19 @@
 // bit position of is_last_page_of_level
 #define IS_LAST_PAGE_OF_LEVEL_FLAG_POS 0
 
+// number of bytes to store level of the page
+// 2 is more than enough for curent computer systems, and allows us to store large amount of data
+// values in range 1 to 4 both inclusive
+#define BYTES_FOR_PAGE_LEVEL 2
+
 uint32_t get_offset_to_end_of_bplus_tree_interior_page_header(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_offset_to_end_of_bplus_tree_page_header(bpttd_p) + bpttd_p->page_id_width + 1;
+	return get_offset_to_end_of_common_page_header(bpttd_p) + BYTES_FOR_PAGE_LEVEL + bpttd_p->page_id_width + FLAGS_BYTE_SIZE;
+}
+
+uint32_t get_level_of_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
+{
+	return get_bplus_tree_interior_page_header(ppage, bpttd_p).level;
 }
 
 uint64_t get_least_keys_page_id_of_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
@@ -28,26 +38,28 @@ int is_last_page_of_level_of_bplus_tree_interior_page(const persistent_page* ppa
 
 static inline uint32_t get_offset_to_bplus_tree_interior_page_header_locals(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_offset_to_end_of_bplus_tree_page_header(bpttd_p);
+	return get_offset_to_end_of_common_page_header(bpttd_p);
 }
 
 bplus_tree_interior_page_header get_bplus_tree_interior_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
 {
 	const void* interior_page_header_serial = get_page_header_ua_persistent_page(ppage, bpttd_p->page_size) + get_offset_to_bplus_tree_interior_page_header_locals(bpttd_p);
 	return (bplus_tree_interior_page_header){
-		.parent = get_bplus_tree_page_header(ppage, bpttd_p),
-		.least_keys_page_id = read_uint64(interior_page_header_serial, bpttd_p->page_id_width),
-		.is_last_page_of_level = ((read_int8(interior_page_header_serial + bpttd_p->page_id_width, FLAGS_BYTE_SIZE) >> IS_LAST_PAGE_OF_LEVEL_FLAG_POS) & 1),
+		.parent = get_common_page_header(ppage, bpttd_p),
+		.level = read_uint32(interior_page_header_serial, BYTES_FOR_PAGE_LEVEL),
+		.least_keys_page_id = read_uint64(interior_page_header_serial + BYTES_FOR_PAGE_LEVEL, bpttd_p->page_id_width),
+		.is_last_page_of_level = ((read_int8(interior_page_header_serial + BYTES_FOR_PAGE_LEVEL + bpttd_p->page_id_width, FLAGS_BYTE_SIZE) >> IS_LAST_PAGE_OF_LEVEL_FLAG_POS) & 1),
 	};
 }
 
 void serialize_bplus_tree_interior_page_header(void* hdr_serial, const bplus_tree_interior_page_header* bptiph_p, const bplus_tree_tuple_defs* bpttd_p)
 {
-	serialize_bplus_tree_page_header(hdr_serial, &(bptiph_p->parent), bpttd_p);
+	serialize_common_page_header(hdr_serial, &(bptiph_p->parent), bpttd_p);
 
 	void* bplus_tree_interior_page_header_serial = hdr_serial + get_offset_to_bplus_tree_interior_page_header_locals(bpttd_p);
-	write_uint64(bplus_tree_interior_page_header_serial, bpttd_p->page_id_width, bptiph_p->least_keys_page_id);
-	write_uint64(bplus_tree_interior_page_header_serial + bpttd_p->page_id_width, FLAGS_BYTE_SIZE, ((!!(bptiph_p->is_last_page_of_level)) << IS_LAST_PAGE_OF_LEVEL_FLAG_POS));
+	write_uint32(bplus_tree_interior_page_header_serial, BYTES_FOR_PAGE_LEVEL, bptiph_p->level);
+	write_uint64(bplus_tree_interior_page_header_serial + BYTES_FOR_PAGE_LEVEL, bpttd_p->page_id_width, bptiph_p->least_keys_page_id);
+	write_uint64(bplus_tree_interior_page_header_serial + BYTES_FOR_PAGE_LEVEL + bpttd_p->page_id_width, FLAGS_BYTE_SIZE, ((!!(bptiph_p->is_last_page_of_level)) << IS_LAST_PAGE_OF_LEVEL_FLAG_POS));
 }
 
 void set_bplus_tree_interior_page_header(persistent_page* ppage, const bplus_tree_interior_page_header* bptiph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
@@ -73,7 +85,8 @@ void set_bplus_tree_interior_page_header(persistent_page* ppage, const bplus_tre
 
 void print_bplus_tree_interior_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
 {
-	print_bplus_tree_page_header(ppage, bpttd_p);
+	print_common_page_header(ppage, bpttd_p);
+	printf("level : %"PRIu32"\n", get_level_of_bplus_tree_interior_page(ppage, bpttd_p));
 	printf("least_keys_page_id : %"PRIu64"\n", get_least_keys_page_id_of_bplus_tree_interior_page(ppage, bpttd_p));
 	printf("is_last_page_of_level : %d\n", is_last_page_of_level_of_bplus_tree_interior_page(ppage, bpttd_p));
 }
