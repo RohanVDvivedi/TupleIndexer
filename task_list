@@ -39,8 +39,9 @@ BPLUS_TREE_ITERATOR REVAMP
  * check if insert/update is valid -> for update the key must be identical, and for insert it must be between current and next position of iterator
  * on calling those, the reader lock is upgraded to writer lock
  * try the operation, and then if you need splits or merges, initialize a stack inside walk down to the desired tuple
- * perform splits and merged going up, downgrade lock on the page you have your iterator on, do not release that lock
- * and return
+ * perform splits and merged going up, downgrade lock on the page you have your iterator on, do not release that lock and return
+ * this will support all types of accesses, including range updates and range deletes
+ * the original insert and delete function will be kept as relics
 
 ** OPTIMIZATION
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
