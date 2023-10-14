@@ -20,6 +20,7 @@ struct bplus_tree_tuple_defs
 	// this is the additional page header space left out by the library for your use
 	// any page that will be used by the library for the bplus_tree will have page_header size of this plus the ones additionally required by the specific page type
 	// this many number of bytes will be left in the preface of the page_header and will be left untouched
+	// this part of the header can be used for storing pageLSN (latest log_sequence_number that modified the page) and checksum (lets say crc32 of the whole page) for integrity
 	uint32_t system_header_size;
 
 	// number of elements considered as keys
