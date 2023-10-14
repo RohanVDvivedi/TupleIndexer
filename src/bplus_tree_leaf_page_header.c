@@ -7,7 +7,7 @@
 
 uint32_t get_offset_to_end_of_bplus_tree_leaf_page_header(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_offset_to_end_of_bplus_tree_page_header(bpttd_p) + (2 * bpttd_p->page_id_width);
+	return get_offset_to_end_of_common_page_header(bpttd_p) + (2 * bpttd_p->page_id_width);
 }
 
 uint64_t get_next_page_id_of_bplus_tree_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
@@ -22,14 +22,14 @@ uint64_t get_prev_page_id_of_bplus_tree_leaf_page(const persistent_page* ppage, 
 
 static inline uint32_t get_offset_to_bplus_tree_leaf_page_header_locals(const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_offset_to_end_of_bplus_tree_page_header(bpttd_p);
+	return get_offset_to_end_of_common_page_header(bpttd_p);
 }
 
 bplus_tree_leaf_page_header get_bplus_tree_leaf_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
 {
 	const void* leaf_page_header_serial = get_page_header_ua_persistent_page(ppage, bpttd_p->page_size) + get_offset_to_bplus_tree_leaf_page_header_locals(bpttd_p);
 	return (bplus_tree_leaf_page_header){
-		.parent = get_bplus_tree_page_header(ppage, bpttd_p),
+		.parent = get_common_page_header(ppage, bpttd_p),
 		.next_page_id = read_uint64(leaf_page_header_serial, bpttd_p->page_id_width),
 		.prev_page_id = read_uint64(leaf_page_header_serial + bpttd_p->page_id_width, bpttd_p->page_id_width),
 	};
@@ -37,7 +37,7 @@ bplus_tree_leaf_page_header get_bplus_tree_leaf_page_header(const persistent_pag
 
 void serialize_bplus_tree_leaf_page_header(void* hdr_serial, const bplus_tree_leaf_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p)
 {
-	serialize_bplus_tree_page_header(hdr_serial, &(bptlph_p->parent), bpttd_p);
+	serialize_common_page_header(hdr_serial, &(bptlph_p->parent), bpttd_p);
 
 	void* bplus_tree_leaf_page_header_serial = hdr_serial + get_offset_to_bplus_tree_leaf_page_header_locals(bpttd_p);
 	write_uint64(bplus_tree_leaf_page_header_serial, bpttd_p->page_id_width, bptlph_p->next_page_id);
@@ -67,7 +67,7 @@ void set_bplus_tree_leaf_page_header(persistent_page* ppage, const bplus_tree_le
 
 void print_bplus_tree_leaf_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
 {
-	print_bplus_tree_page_header(ppage, bpttd_p);
+	print_common_page_header(ppage, bpttd_p);
 	printf("next_page_id : %"PRIu64"\n", get_next_page_id_of_bplus_tree_leaf_page(ppage, bpttd_p));
 	printf("prev_page_id : %"PRIu64"\n", get_prev_page_id_of_bplus_tree_leaf_page(ppage, bpttd_p));
 }

@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_LEAF_PAGE_HEADER_H
 #define BPLUS_TREE_LEAF_PAGE_HEADER_H
 
-#include<bplus_tree_page_header.h>
+#include<common_page_header.h>
 #include<bplus_tree_tuple_definitions.h>
 #include<opaque_page_modification_methods.h>
 #include<persistent_page.h>
@@ -9,7 +9,7 @@
 typedef struct bplus_tree_leaf_page_header bplus_tree_leaf_page_header;
 struct bplus_tree_leaf_page_header
 {
-	bplus_tree_page_header parent;
+	common_page_header parent;
 
 	// all leaf pages are doubly linked, with pointers (page_id-s) to next and prev pages
 	uint64_t next_page_id;
