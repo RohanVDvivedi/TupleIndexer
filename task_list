@@ -73,9 +73,6 @@ ERROR RETURN CODES
    * we will also let data structure's in-memeory structs (like bpttd for bplus_tree) store whether the pages it allocates are temporary or not.
    * additionally a lock manager is responsible to free them upon a commit or abort
  * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
-   * make level 0 of bplus_tree as a linkedlist of pages, store level only in the interior page header, since common_page_header already stores the types of the page, we can use that to check if the page is leaf page (same as a linkedlist page) or not
-   * this will also free some memory (2 bytes) from the leaf page, which stores level (which is redundant), this will also make the page header hierarchy less complex.
-   * this will allow building a bplus_tree directly on a sorted page linkedlist
  * all inserts to linked_page_list have a flag to PRESERVE_ROOT_PAGE_ID
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
  * sort that can be called on a linked_page_list or a hash_table
