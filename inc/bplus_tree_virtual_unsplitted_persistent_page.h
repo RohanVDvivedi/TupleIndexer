@@ -49,8 +49,11 @@ uint32_t get_space_occupied_by_tuples_on_persistent_page(const virtual_unsplitte
 
 /*
 **	FUTURE :: You will also need to add 
-**	get_index_accessed_interface_for_virtual_unsplitted_persistent_page
-**	comparator_function_for_virtual_unsplitted_persistent_page that is to be used like this ()
+**
+**	index_accessed_interface get_index_accessed_interface_for_virtual_unsplitted_persistent_page(const virtual_unsplitted_persistent_page* vupp_p)
+**
+**	int compare_tuples_for_virtual_unsplitted_persistent_page(const void* context, const void* tuple1, const void* tuple2);
+**	that is to be used like this &contexted_comparator(&vupp_p, compare_tuples_for_virtual_unsplitted_persistent_page) with the search functions of index_accessed_interface of cutlery
 */
 
 #endif
