@@ -19,10 +19,9 @@ TRANSACTION_CONTEXT task
  *  int is_aborted(const transaction_abort_manager* tamm_p);
     void mark_aborted(const transaction_abort_manager* tamm_p, int reason);
  * mark_aborted appends a abort log entry and flushes the WAL
- * make all pmm methods to take transaction_handle as input
- * make all dam methods to take transaction_abort_manager as the input parameter
+ * make all pmm, dam methods to take transaction_abort_manager as the input parameter (pmm may fail, if the system is out of memeory i.e. when malloc fails, WAL log is considered unfailable, if WAL fails then you don't even have a database, just exit the process in your pmm function implementations)
  * make all persistent_page methods (that are wrappers to pmm and dam) to take transaction_abort_manager as input parameter, and pass respective parameter down, to wrapped methods
- * for an aborted transaction anywhere in TupleIndexer, release all persistent_page locks using dam_p and exit, undo operation has to be taken care of by the user
+ * for an aborted transaction anywhere in TupleIndexer, latches will be released by the TupleIndexer using the dam, but locks must be released after transaction completes
  * after each call to dam method wrappers for persistent_page, check if the transaction is aborted, if so release all locks and exit.
 
 DATA_ACCESS_METHODS with tuple level locking
