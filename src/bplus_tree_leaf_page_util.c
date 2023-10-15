@@ -5,6 +5,7 @@
 #include<bplus_tree_index_tuple_functions_util.h>
 
 #include<persistent_page_functions.h>
+#include<bplus_tree_virtual_unsplitted_persistent_page.h>
 #include<tuple.h>
 
 #include<stdlib.h>
@@ -52,21 +53,22 @@ uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const persistent_page* 
 // this will the tuples that will remain in the page_info after after the complete split operation
 static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
 {
-	uint32_t tuple_count = get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+	// construct a virtual unsplitted persistent page to work on
+	virtual_unsplitted_persistent_page vupp = get_virtual_unsplitted_persistent_page(page1, bpttd_p->page_size, tuple_to_insert, tuple_to_insert_at, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count);
+
+	// get total tuple count that we would be dealing with
+	uint32_t total_tuple_count = get_tuple_count_on_virtual_unsplitted_persistent_page(&vupp);
 
 	if(is_fixed_sized_tuple_def(bpttd_p->record_def))
 	{
 		// if the new tuple is to be inserted after the last tuple in the last leaf page
-		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == tuple_count)
-			return tuple_count;	// i.e. only 1 tuple goes to the new page
-		else // else
-			return (tuple_count + 1) / 2;	// equal split
+		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == total_tuple_count-1)
+			return total_tuple_count - 1;
+		else // else equal split
+			return total_tuple_count / 2;
 	}
 	else
 	{
-		// pre calculate the space that will be occupied by the new tuple
-		uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-
 		// this is the total space available to you to store the tuples
 		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
 
@@ -74,39 +76,21 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent
 		uint32_t result = 0;
 
 		// if new tuple is to be inserted after the last tuple in the last leaf page => split it such that it is almost full
-		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == tuple_count)
+		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == total_tuple_count-1)
 		{
 			uint32_t limit = space_allotted_to_tuples;
 
 			uint32_t space_occupied_until = 0;
 
-			for(uint32_t i = 0; i < tuple_count; i++)
+			for(uint32_t i = 0; i < total_tuple_count; i++)
 			{
-				// if the new tuple is suppossed to be inserted at i then process it first
-				if(i == tuple_to_insert_at)
-				{
-					space_occupied_until = space_occupied_by_new_tuple + space_occupied_until;
-					if(space_occupied_until <= limit)
-						result++;
-					if(space_occupied_until >= limit)
-						break;
-				}
-
 				// process the ith tuple
-				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def), i, i);
+				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(&vupp, i, i);
 				space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
 				if(space_occupied_until <= limit)
 					result++;
 				if(space_occupied_until >= limit)
 					break;
-			}
-
-			if(space_occupied_until < limit && tuple_count == tuple_to_insert_at && result == tuple_count)
-			{
-				// if the new tuple is suppossed to be inserted at the end then append its occupied size to the end
-				space_occupied_until = space_occupied_by_new_tuple + space_occupied_until;
-				if(space_occupied_until <= limit)
-					result++;
 			}
 		}
 		else // else => result is the number of tuples that will take the page occupancy just above or equal to 50%
@@ -115,30 +99,14 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent
 
 			uint32_t space_occupied_until = 0;
 
-			for(uint32_t i = 0; i < tuple_count; i++)
+			for(uint32_t i = 0; i < total_tuple_count; i++)
 			{
-				// if the new tuple is suppossed to be inserted at i then process it first
-				if(i == tuple_to_insert_at)
-				{
-					space_occupied_until = space_occupied_by_new_tuple + space_occupied_until;
-					result++;
-					if(space_occupied_until > limit)
-						break;
-				}
-
 				// process the ith tuple
-				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->record_def->size_def), i, i);
+				uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(&vupp, i, i);
 				space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
 				result++;
 				if(space_occupied_until > limit)
 					break;
-			}
-
-			if(space_occupied_until <= limit && tuple_count == tuple_to_insert_at && result == tuple_count)
-			{
-				// if the new tuple is suppossed to be inserted at the end then append its occupied size to the end
-				space_occupied_until = space_occupied_by_new_tuple + space_occupied_until;
-				result++;
 			}
 		}
 

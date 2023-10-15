@@ -29,7 +29,7 @@ const void* get_nth_tuple_on_virtual_unsplitted_persistent_page(const virtual_un
 		return get_nth_tuple_on_persistent_page(vupp_p->ppage, vupp_p->page_size, vupp_p->tpl_d->tpl_sz_d, index-1);
 }
 
-uint32_t get_space_occupied_by_tuples_on_persistent_page(const virtual_unsplitted_persistent_page* vupp_p, uint32_t start_index, uint32_t last_index)
+uint32_t get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(const virtual_unsplitted_persistent_page* vupp_p, uint32_t start_index, uint32_t last_index)
 {
 	// invalid parameters, check
 	if(start_index > last_index || last_index >= get_tuple_count_on_virtual_unsplitted_persistent_page(vupp_p))

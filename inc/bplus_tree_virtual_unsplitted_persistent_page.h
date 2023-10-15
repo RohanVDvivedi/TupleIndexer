@@ -1,4 +1,4 @@
-#define BPLUS_TREE_VIRTUAL_UNSPLITTED_PERSISTENT_PAGE_H
+#ifndef BPLUS_TREE_VIRTUAL_UNSPLITTED_PERSISTENT_PAGE_H
 #define BPLUS_TREE_VIRTUAL_UNSPLITTED_PERSISTENT_PAGE_H
 
 /*
@@ -55,7 +55,7 @@ const void* get_nth_tuple_on_virtual_unsplitted_persistent_page(const virtual_un
 
 // this can be higher than the get_space_allotted_to_all_tuples_on_persistent_page, for a given persistent_page
 // because this is a virtual page, remember!!
-uint32_t get_space_occupied_by_tuples_on_persistent_page(const virtual_unsplitted_persistent_page* vupp_p, uint32_t start_index, uint32_t last_index);
+uint32_t get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(const virtual_unsplitted_persistent_page* vupp_p, uint32_t start_index, uint32_t last_index);
 
 /*
 **	FUTURE :: You will also need to add 
