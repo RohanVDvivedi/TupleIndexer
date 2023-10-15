@@ -32,12 +32,15 @@ ERROR RETURN CODES for DATA_ACCESS_METHODS
  * reasons being DEADLOCK_HANDLED, CAN_T_LOCK_FREE_PAGE, OUT_OF_DISK_SPACE, OUT_OF_FREE_BUFFERS
 
 ALLOWING DUPLICATES
- * berkeley DB like architecture, BPLUS_TREE_OVERFLOW_PAGE storing tuple of only same type, and only first page of such a list is indexed in the interior page
+ * berkeley DB like architecture, BPLUS_TREE_OVERFLOW_PAGE storing tuple of only same type, and only first page of such a list is indexed in the interior page, interior pages will only contain unique entries, any page with more than 33% duplicates (counted by occupied space and not tuple count) must be split even after a successful insert
  * some important findings :: allowing duplicates for bplus_tree
    * change min_tuple_count in bpttd for bplustree's index and leaf pages, to 3, this will allow us to have atleast 33% duplicate space on the page
    * split_insert function for leaf page, to split a page when the number of duplicates on the page crosses, even if the tuple can still fit the tuple on the page
    * for fixed length tuples always split at the start and end of the duplicate list, with larger chunk of them (upper or lower tuples) in new page
    * yet to decide when to split, how to split leaves, and how to merge leaves, how to let only 1 type of duplicate keys per page, etc
+ * chnages required only in leaf page level util functions
+   * changes required in must_split, to check if the page has more than 30% duplicate tuples for the record being inserted, and split if so
+   * changes required in can_merge, to merge duplicate keys page, only if the other page is empty, OR id both the pages have the same duplicate keys
 
 BPLUS_TREE_ITERATOR REVAMP
  * build, iterator like the berkeley DB architecture, that is a simple reader, until you call insert, delete or update
