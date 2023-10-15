@@ -10,7 +10,7 @@
 */
 
 #include<persistent_page_functions.h>
-#include<tuple_def.h>
+#include<tuple.h>
 
 typedef struct virtual_unsplitted_persistent_page virtual_unsplitted_persistent_page;
 struct virtual_unsplitted_persistent_page
