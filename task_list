@@ -34,6 +34,7 @@ ERROR RETURN CODES for DATA_ACCESS_METHODS
 
 ALLOWING DUPLICATES
  * in insert function, check only for interior pages if it may split, may_split can not be evaluated for leaf pages, when there would be duplicates -> conceptually it will be simple to what bplud_tree_delete.c does in its prefix
+ * since interior pages will only store unique entries, the interior pages guide the search always using preceeding equals -> remove preceeding support
  * berkeley DB like architecture, BPLUS_TREE_OVERFLOW_PAGE storing tuple of only same type, and only first page of such a list is indexed in the interior page, interior pages will only contain unique entries, any page with more than 33% duplicates (counted by occupied space and not tuple count) must be split even after a successful insert
  * some important findings :: allowing duplicates for bplus_tree
    * change min_tuple_count in bpttd for bplustree's index and leaf pages, to 3, this will allow us to have atleast 33% duplicate space on the page
