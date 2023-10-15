@@ -63,7 +63,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent
 	{
 		// if the new tuple is to be inserted after the last tuple in the last leaf page
 		if(get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p) == bpttd_p->NULL_PAGE_ID && tuple_to_insert_at == total_tuple_count-1)
-			return total_tuple_count - 1;
+			return total_tuple_count - 1;	// i.e. only 1 tuple goes to the new page
 		else // else equal split
 			return total_tuple_count / 2;
 	}
