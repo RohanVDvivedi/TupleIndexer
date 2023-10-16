@@ -3,8 +3,34 @@
 VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
+UPDATE-INSERT
+ * insert method supports both update and insert
+ * insert method first read couples to the bottom of the tree, and write locks only the leaf page
+ * it searches the page for a record that compares equal to the new_record (both having same key value)
+ * struct insert_inspect {
+    const void* context;
+    int (*inspect_insertion)(const void* context, const void* old_record, void** new_record);
+    // old_record will be NULL, if not found
+    // you can use the above function, to even modify the new_record based on the values of the old_record
+    // setting the new_record to NULL, will delete the old_record
+ };
+ * once we have the write lock on the leaf page, we inspect it, using the above structure
+ * if return value is 1
+ * then we again match the key of old_record and new_record (if both new_record and old_record exist), to confirm that they match, the user could have made a mistake, while inspecting the new_record
+ * if the old_record is NULL and new_record is NULL -> Do nothing by default
+   if the old_record is not NULL and new_record is NULL -> Delete
+   if the old_record is NULL and new_record is not NULL -> Insert
+   if the old_record is not NULL and new_record is not NULL -> Update
+ * then we check if the operation can be performed without splits and merges, if so do it and leave
+ * for delete -> delete the old row, we only need to merge, so walk down take locks appropriately, perform merge loop function
+ * for insert -> we only need to split, pass the new_tuple to split loop function
+ * for update -> old_record  size == new_record size -> do nohing,
+ -> old_record size < new_record size, delete old_record, try to insert the new_record, if split required, call split loop,
+ -> old_record size > new_record_size, delete old_record, insert new_record, if the page is less than half full, call merge loop
+ * for this we need separate functions to use the locked_pages stack to split and merge
+
 TRANSACTION_CONTEXT task
- * locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must be wait
+ * locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must wait
  * this struct must be thread safe, using locks internally, while marking and reading abort related situation
  * struct transaction_abort_manager {
     void* transaction_handle; // user defined type to represent the transaction
@@ -32,38 +58,6 @@ ERROR RETURN CODES for DATA_ACCESS_METHODS
  * suggesting reason of a failure of data_access_method functions
  * reasons being DEADLOCK_HANDLED, CAN_T_LOCK_FREE_PAGE, OUT_OF_DISK_SPACE, OUT_OF_FREE_BUFFERS
 
-ALLOWING DUPLICATES
- * in insert function, check only for interior pages if it may split, may_split can not be evaluated for leaf pages, when there would be duplicates -> conceptually it will be simple to what bplud_tree_delete.c does in its prefix
- * since interior pages will only store unique entries, the interior pages guide the search always using preceeding equals -> remove preceeding support
- * some important findings :: allowing duplicates for bplus_tree
-   * change min_tuple_count in bpttd for bplustree's index and leaf pages, to 3, this will allow us to have atleast 33% duplicate space on the page
-   * split_insert function for leaf page, to split a page when the number of duplicates on the page crosses, even if the tuple can still fit the tuple on the page
-   * for fixed length tuples always split at the start and end of the duplicate list, with larger chunk of them (upper or lower tuples) in new page
-   * yet to decide when to split, how to split leaves, and how to merge leaves, how to let only 1 type of duplicate keys per page, etc
- * each leaf page stores a header flag to check if it has a parent, if there are successive pure pages in b plus tree, only the first one has a parent
- * changes required only in leaf page level util functions
-   * changes required in must_split, to check if the page has more than 30% duplicate tuples for the record being inserted, and split if so
-   * must_split for leaf pages must be called before performing an insert directly
-   * refactor must_split, to construct vupp and if for the tuple being inserted, if the tuple can not fit on page OR if the duplicates occupy more than 33% of the page size, then return true.
-   * never split at a duplicate record, if so move up or down the split point to put all duplicates and the keys after them (or before if splitting is after the duplicates) in a new page
-   * changes required in can_merge, to merge duplicate keys page, only if the other page is empty, OR id both the pages have the same duplicate keys
-   * an empty page (tuple_count == 0) can merge with any of the previous or next page
-   * a pure duplicate page (from here on referred to as pure page) is a leaf page with atleast 2 records and both having the same key and are more than 33% full (i.e. occupying more than 1/3 of the allotted space on page). considering the largest record tuple being p/3 in size, if it is alone on a page it is not considered a pure page
-   * a pure page can only merge with another pure page with the same key
-   * if a pure page becomes unpure, it first repeatedly merges and borrows records from other pure pages with the same key until it is more than half full, once that is not enough, it becomes un pure and can merge with other leaf pages
-   * a regular leaf page can not merge with another pure page
-   * rules have been defined to put all duplicate records, occupying more than 33% (1/3 rd) page space on a new page.
-   * i.e. duplicate keys with more than 33% 
-
-BPLUS_TREE_ITERATOR REVAMP
- * build, iterator like the berkeley DB architecture, that is a simple reader, until you call insert, delete or update
- * check if insert/update is valid -> for update the key must be identical, and for insert it must be between current and next position of iterator
- * on calling those, the reader lock is upgraded to writer lock
- * try the operation, and then if you need splits or merges, initialize a stack inside walk down to the desired tuple
- * perform splits and merged going up, downgrade lock on the page you have your iterator on, do not release that lock and return
- * this will support all types of accesses, including range updates and range deletes
- * the original insert and delete function will be kept as relics
-
 ** OPTIMIZATION
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
  * see how this can be accomodated in the delete and update functions available at that point in future
@@ -74,7 +68,7 @@ BPLUS_TREE_ITERATOR REVAMP
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * introduce concept of temporary page, any changes to temporary pages are not logges to WAL except for the WAL logging for its allocate and free calls, their last updated log sequence number is set to their allocated log_sequence_number, and they are meant to be discarded soon after the transaction ends done and tracked by you during the transaction, on abort they are only to be freed as an undo operation, their contents are not to be persisted, they are to be used as intermediate query results. there has to be a bit in persistent_page stating they they are temporary pages. AGAIN no changes to these pages are not to be logged logged to WAL, but they are allowed to be persisted to disk. Since these pages are intermediate result pages, we dont care if their contents are lost upon a crash, in that case we abort the on going transaction on reboot, and then we are only required to free them, as written in WAL. In this case we are assuming a bit map based memeory allocator, that does not store any information on the page regarding its allocation state (like what a free list would do).
-   * only WAL logs to allocate and deallocate a page are persisted to the WAL
+   * only WAL logs to allocate and deallocate a temporary page are persisted to the WAL
    * new idea, lets allow dam to allocate page with a transaction local flag, and allow it to free the pages in case we forget to. There would already be a lock manager who can take care of it.
    * we will also let data structure's in-memeory structs (like bpttd for bplus_tree) store whether the pages it allocates are temporary or not.
    * additionally a lock manager is responsible to free them upon a commit or abort
