@@ -43,7 +43,17 @@ ALLOWING DUPLICATES
    * yet to decide when to split, how to split leaves, and how to merge leaves, how to let only 1 type of duplicate keys per page, etc
  * chnages required only in leaf page level util functions
    * changes required in must_split, to check if the page has more than 30% duplicate tuples for the record being inserted, and split if so
+   * must_split for leaf pages must be called before performing an insert directly
+   * refactor must_split, to construct vupp and if for the tuple being inserted, if the tuple can not fit on page OR if the duplicates occupy more than 33% of the page size, then return true.
+   * never split at a duplicate record, if so move up or down the split point to put all duplicates and the keys after them (or before if splitting is after the duplicates) in a new page
    * changes required in can_merge, to merge duplicate keys page, only if the other page is empty, OR id both the pages have the same duplicate keys
+   * an empty page (tuple_count == 0) can merge with any of the previous or next page
+   * a pure duplicate page (from here on referred to as pure page) is a leaf page with atleast 2 records and both having the same key and are more than 33% full (i.e. occupying more than 1/3 of the allotted space on page). considering the largest record tuple being p/3 in size, if it is alone on a page it is not considered a pure page
+   * a pure page can only merge with another pure page with the same key
+   * if a pure page becomes unpure, it first repeatedly merges and borrows records from other pure pages with the same key until it is more than half full, once that is not enough, it becomes un pure and can merge with other leaf pages
+   * a regular leaf page can not merge with another pure page
+   * rules have been defined to put all duplicate records, occupying more than 33% (1/3 rd) page space on a new page.
+   * i.e. duplicate keys with more than 33% 
 
 BPLUS_TREE_ITERATOR REVAMP
  * build, iterator like the berkeley DB architecture, that is a simple reader, until you call insert, delete or update
