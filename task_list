@@ -4,7 +4,8 @@ VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
 UPDATE-INSERT
- * insert method supports both update and insert
+ * first attempt is to segregate insert and delete into functions that can be easily reused
+ * build single read_modify_update method supports both update and insert
  * insert method first read couples to the bottom of the tree, and write locks only the leaf page
  * it searches the page for a record that compares equal to the new_record (both having same key value)
  * struct insert_inspect {
@@ -27,7 +28,7 @@ UPDATE-INSERT
  * for update -> old_record  size == new_record size -> do nohing,
  -> old_record size < new_record size, delete old_record, try to insert the new_record, if split required, call split loop,
  -> old_record size > new_record_size, delete old_record, insert new_record, if the page is less than half full, call merge loop
- * for this we need separate functions to use the locked_pages stack to split and merge
+ * for this we need separate functions to use the locked_pages stack to split and merge, up the tree
 
 TRANSACTION_CONTEXT task
  * locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must wait
