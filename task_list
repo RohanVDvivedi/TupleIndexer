@@ -41,7 +41,8 @@ ALLOWING DUPLICATES
    * split_insert function for leaf page, to split a page when the number of duplicates on the page crosses, even if the tuple can still fit the tuple on the page
    * for fixed length tuples always split at the start and end of the duplicate list, with larger chunk of them (upper or lower tuples) in new page
    * yet to decide when to split, how to split leaves, and how to merge leaves, how to let only 1 type of duplicate keys per page, etc
- * chnages required only in leaf page level util functions
+ * each leaf page stores a header flag to check if it has a parent, if there are successive pure pages in b plus tree, only the first one has a parent
+ * changes required only in leaf page level util functions
    * changes required in must_split, to check if the page has more than 30% duplicate tuples for the record being inserted, and split if so
    * must_split for leaf pages must be called before performing an insert directly
    * refactor must_split, to construct vupp and if for the tuple being inserted, if the tuple can not fit on page OR if the duplicates occupy more than 33% of the page size, then return true.
