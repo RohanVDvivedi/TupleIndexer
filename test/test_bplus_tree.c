@@ -204,7 +204,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
-int update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record)
+int updater_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record)
 {
 	user_value update_data = get_value_from_element_from_tuple(record_def, 7, old_record);
 	char update_value[64] = {};
@@ -222,10 +222,21 @@ int update_inspect(const void* context, const tuple_def* record_def, const void*
 
 update_inspector ui = {
 	.context = NULL,
-	.update_inspect = update_inspect,
+	.update_inspect = updater_update_inspect,
 };
 
-result update_in_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+int deletor_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record)
+{
+	(*new_record) = NULL;
+	return 1;
+}
+
+update_inspector di = {
+	.context = NULL,
+	.update_inspect = deletor_update_inspect,
+};
+
+result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -260,7 +271,7 @@ result update_in_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += inspected_update_in_bplus_tree(root_page_id, record_tuple, &ui, bpttd_p, dam_p, pmm_p);
+		res.operations_succeeded += inspected_update_in_bplus_tree(root_page_id, record_tuple, ui, bpttd_p, dam_p, pmm_p);
 
 		// print bplus tree
 		if(print_tree_after_each)
@@ -583,7 +594,7 @@ int main()
 	// again insert all from TEST_DATA_RANDOM_FILE -> lesser than 62 failures
 	/* INSERTIONS SARTED */
 
-	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -592,30 +603,33 @@ int main()
 
 	/* UPDATES */
 
-	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 1, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 1, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 3, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 3, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 15, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 15, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 31, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 31, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
+	res = update_in_file(root_page_id, &di, TEST_DATA_FILE, 0, 179, 1, 0, 1, &bpttd, dam_p, pmm_p);
+
+	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 
 	// delete all
