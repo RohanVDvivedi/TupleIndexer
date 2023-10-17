@@ -8,6 +8,9 @@
 
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
+	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, record))
+		return 0;
+
 	// create a stack of capacity = levels
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
 	uint32_t root_page_level;
