@@ -3,9 +3,6 @@
 VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
-UPDATE-INSERT
- * test functionality, with a bigger test case
-
 TRANSACTION_CONTEXT task
  * locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must wait
  * this struct must be thread safe, using locks internally, while marking and reading abort related situation
