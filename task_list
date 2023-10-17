@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
 ERROR HANDLING
+ * all of persistent_page_functions, take in int* error as last parameter, and set it
  * go through the project and add parameters to return global error codes, instead of 0 and 1
  * or add parameter int* error, and pass all of it down the call stack
 
