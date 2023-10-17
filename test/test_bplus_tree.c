@@ -48,24 +48,26 @@
 typedef struct record record;
 struct record
 {
-	int32_t index;  // 0
-	char name[64];  // 1
-	uint8_t age;    // 2
-	char sex[8];    // 3 -> Female = 0 or Male = 1
-	char email[64]; // 4
-	char phone[64]; // 5
-	uint8_t score;  // 6
+	int32_t index;   // 0
+	char name[64];   // 1
+	uint8_t age;     // 2
+	char sex[8];     // 3 -> Female = 0 or Male = 1
+	char email[64];  // 4
+	char phone[64];  // 5
+	uint8_t score;   // 6
+	char update[64]; // 7
 };
 
 void read_record_from_file(record* r, FILE* f)
 {
+	memset(r->update, 0, 64);
 	fscanf(f,"%u,%[^,],%hhu,%[^,],%[^,],%[^,],%hhu\n", &(r->index), r->name, &(r->age), r->sex, r->email, r->phone, &(r->score));
 }
 
 void print_record(record* r)
 {
-	printf("record (index = %u, name = %s, age = %u, sex = %s, email = %s, phone = %s, score = %u)\n",
-		r->index, r->name, r->age, r->sex, r->email, r->phone, r->score);
+	printf("record (index = %u, name = %s, age = %u, sex = %s, email = %s, phone = %s, score = %u, update = %s)\n",
+		r->index, r->name, r->age, r->sex, r->email, r->phone, r->score, r->update);
 }
 
 tuple_def* get_tuple_definition()
@@ -80,6 +82,7 @@ tuple_def* get_tuple_definition()
 	insert_element_def(def, "email", VAR_STRING, 1, 0, NULL_USER_VALUE);
 	insert_element_def(def, "phone", STRING, 14, 0, NULL_USER_VALUE);
 	insert_element_def(def, "score", UINT, 1, 0, NULL_USER_VALUE);
+	insert_element_def(def, "update", VAR_STRING, 1, 0, NULL_USER_VALUE);
 
 	finalize_tuple_def(def);
 
@@ -105,6 +108,7 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 	set_element_in_tuple(def, 4, tuple, &((user_value){.data = r->email, .data_size = strlen(r->email)}));
 	set_element_in_tuple(def, 5, tuple, &((user_value){.data = r->phone, .data_size = strlen(r->phone)}));
 	set_element_in_tuple(def, 6, tuple, &((user_value){.uint_value = r->score}));
+	set_element_in_tuple(def, 7, tuple, &((user_value){.data = r->update, .data_size = strlen(r->update)}));
 }
 
 void build_key_tuple_from_record_struct(const bplus_tree_tuple_defs* bpttd_p, void* key_tuple, const record* r)
@@ -130,6 +134,8 @@ void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 	user_value phone_data = get_value_from_element_from_tuple(tpl_d, 5, tupl);
 	strncpy(r->phone, phone_data.data, phone_data.data_size);
 	r->score = get_value_from_element_from_tuple(tpl_d, 6, tupl).uint_value;
+	user_value update_data = get_value_from_element_from_tuple(tpl_d, 7, tupl);
+	strncpy(r->name, update_data.data, update_data.data_size);
 }
 
 typedef struct result result;
