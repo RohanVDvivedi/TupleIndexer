@@ -1,9 +1,17 @@
 ** PICKED TASKS
 
-VALIDATING WAS_MODIFIED BIT
+ERROR HANDLING
+ * go through the project and add parameters to return global error codes, instead of 0 and 1
+ * or add parameter int* error, and pass all of it down the call stack
+
+  ERROR RETURN CODES for DATA_ACCESS_METHODS
+ * suggesting reason of a failure of data_access_method functions
+ * reasons being DEADLOCK_HANDLED, CAN_T_LOCK_FREE_PAGE, OUT_OF_DISK_SPACE, OUT_OF_FREE_BUFFERS, etc
+
+  VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
-TRANSACTION_CONTEXT task
+  TRANSACTION_CONTEXT task
  * locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must wait
  * this struct must be thread safe, using locks internally, while marking and reading abort related situation
  * struct transaction_abort_manager {
@@ -19,26 +27,10 @@ TRANSACTION_CONTEXT task
  *  int is_aborted(const transaction_abort_manager* tamm_p);
     void mark_aborted(const transaction_abort_manager* tamm_p, int reason);
  * mark_aborted appends a abort log entry and flushes the WAL
- * make all pmm, dam methods to take transaction_abort_manager as the input parameter (pmm may fail, if the system is out of memeory i.e. when malloc fails, WAL log is considered unfailable, if WAL fails then you don't even have a database, just exit the process in your pmm function implementations)
+ * make all pmm, dam methods to take transaction_abort_manager as the input parameter (pmm may fail, if the system is out of memory i.e. when malloc fails, WAL log is considered unfailable, if WAL fails then you don't even have a database, just exit the process in your pmm function implementations)
  * make all persistent_page methods (that are wrappers to pmm and dam) to take transaction_abort_manager as input parameter, and pass respective parameter down, to wrapped methods
  * for an aborted transaction anywhere in TupleIndexer, latches will be released by the TupleIndexer using the dam, but locks must be released after transaction completes
  * after each call to dam method wrappers for persistent_page, check if the transaction is aborted, if so release all locks and exit.
-
-DATA_ACCESS_METHODS with tuple level locking
- * allow data_access_methods (with a context) to also enable locking only tuples on the page
- * function check if a tuple on a page is locked
-
-ERROR RETURN CODES for DATA_ACCESS_METHODS
- * suggesting reason of a failure of data_access_method functions
- * reasons being DEADLOCK_HANDLED, CAN_T_LOCK_FREE_PAGE, OUT_OF_DISK_SPACE, OUT_OF_FREE_BUFFERS
-
-** OPTIMIZATION
- * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
- * see how this can be accomodated in the delete and update functions available at that point in future
-
-** NECESSARY BUT DELAYED UNTIL ACTUAL REQUIREMENTS ARE FULFILLED
- * go through the project and implemnt better error handling for failures of malloc and data_access_methods
- * write multi-threaded test cases to insert a large csv in to b+tree, measure performance difference
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * introduce concept of temporary page, any changes to temporary pages are not logges to WAL except for the WAL logging for its allocate and free calls, their last updated log sequence number is set to their allocated log_sequence_number, and they are meant to be discarded soon after the transaction ends done and tracked by you during the transaction, on abort they are only to be freed as an undo operation, their contents are not to be persisted, they are to be used as intermediate query results. there has to be a bit in persistent_page stating they they are temporary pages. AGAIN no changes to these pages are not to be logged logged to WAL, but they are allowed to be persisted to disk. Since these pages are intermediate result pages, we dont care if their contents are lost upon a crash, in that case we abort the on going transaction on reboot, and then we are only required to free them, as written in WAL. In this case we are assuming a bit map based memeory allocator, that does not store any information on the page regarding its allocation state (like what a free list would do).
@@ -98,3 +90,11 @@ ERROR RETURN CODES for DATA_ACCESS_METHODS
       bytes_to_read = new_bytes_to_read;
     }
     return stack.reverse();
+
+DATA_ACCESS_METHODS with tuple level locking
+ * allow data_access_methods (with a context) to also enable locking only tuples on the page
+ * function check if a tuple on a page is locked
+
+** OPTIMIZATION
+ * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
+ * see how this can be accomodated in the delete and update functions available at that point in future
