@@ -42,10 +42,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		if(!is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
 		{
 			// figure out which child page to go to next
-			curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), record, bpttd_p->key_element_count, TOWARDS_LAST_WITH_KEY, bpttd_p);
+			curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), record, bpttd_p->key_element_count, bpttd_p);
 
 			// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
-			uint64_t child_page_id = find_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
+			uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
 			persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
 
 			// if child page will not require a split, then release locks on all the parent pages

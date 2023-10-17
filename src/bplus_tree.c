@@ -74,13 +74,13 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// free the child leaf page id at index -1
-			uint64_t child_leaf_page_id = find_child_page_id_by_child_index(&(curr_locked_page->ppage), -1, bpttd_p);
+			uint64_t child_leaf_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), -1, bpttd_p);
 			free_persistent_page(dam_p, child_leaf_page_id);
 
 			// free the child leaf page id at index [0, tuple_count)
 			for(uint32_t i = 0; i < tuple_count; i++)
 			{
-				child_leaf_page_id = find_child_page_id_by_child_index(curr_locked_page->ppage.page, i, bpttd_p);
+				child_leaf_page_id = get_child_page_id_by_child_index(curr_locked_page->ppage.page, i, bpttd_p);
 				free_persistent_page(dam_p, child_leaf_page_id);
 			}
 
@@ -98,7 +98,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
 			{
 				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
-				uint64_t child_page_id = find_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index++, bpttd_p);
+				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index++, bpttd_p);
 				persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, READ_LOCK);
 
 				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
@@ -173,7 +173,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
 			{
 				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
-				uint64_t child_page_id = find_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index++, bpttd_p);
+				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index++, bpttd_p);
 				persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, READ_LOCK);
 
 				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));

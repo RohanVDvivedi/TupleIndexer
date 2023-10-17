@@ -40,7 +40,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		if(!is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p)) // is not a leaf page
 		{
 			// figure out which child page to go to next
-			curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key, bpttd_p->key_element_count, TOWARDS_LAST_WITH_KEY, bpttd_p);
+			curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key, bpttd_p->key_element_count, bpttd_p);
 
 			// check if a merge happens at child_index of this curr_locked_page, will this page be required to be merged aswell
 			if(curr_locked_page->ppage.page_id != root_page_id && !may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(&(curr_locked_page->ppage), bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )
@@ -55,7 +55,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			}
 
 			// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
-			uint64_t child_page_id = find_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
+			uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
 			persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
 
 			// push this child page onto the stack
@@ -138,7 +138,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 				// make the previous of curr_locked_page as the curr_locked_page
 				{
-					uint64_t prev_child_page_id = find_child_page_id_by_child_index(&(parent_locked_page->ppage), parent_locked_page->child_index - 1, bpttd_p);
+					uint64_t prev_child_page_id = get_child_page_id_by_child_index(&(parent_locked_page->ppage), parent_locked_page->child_index - 1, bpttd_p);
 					persistent_page prev_child_page = acquire_persistent_page_with_lock(dam_p, prev_child_page_id, WRITE_LOCK);
 					curr_locked_page = INIT_LOCKED_PAGE_INFO(prev_child_page);
 				}
@@ -182,7 +182,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 				// we can do this only if the root is an interior page i.e. root_page_level > 0
 				while(root_page_level > 0 && get_tuple_count_on_persistent_page(&(curr_locked_page.ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def)) == 0)
 				{
-					uint64_t only_child_page_id = find_child_page_id_by_child_index(&(curr_locked_page.ppage), -1, bpttd_p);
+					uint64_t only_child_page_id = get_child_page_id_by_child_index(&(curr_locked_page.ppage), -1, bpttd_p);
 					persistent_page only_child_page = acquire_persistent_page_with_lock(dam_p, only_child_page_id, READ_LOCK);
 
 					// clone the only_child_page in to the curr_locked_page
@@ -221,7 +221,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			{
 				persistent_page* child_page1 = &(curr_locked_page.ppage);
 
-				uint64_t child_page2_page_id = find_child_page_id_by_child_index(&(parent_locked_page->ppage), parent_locked_page->child_index + 1, bpttd_p);
+				uint64_t child_page2_page_id = get_child_page_id_by_child_index(&(parent_locked_page->ppage), parent_locked_page->child_index + 1, bpttd_p);
 				persistent_page child_page2 = acquire_persistent_page_with_lock(dam_p, child_page2_page_id, WRITE_LOCK);
 
 				const void* separator_parent_tuple = get_nth_tuple_on_persistent_page(&(parent_locked_page->ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def), parent_locked_page->child_index + 1);
@@ -244,7 +244,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			{
 				persistent_page* child_page2 = &(curr_locked_page.ppage);
 
-				uint64_t child_page1_page_id = find_child_page_id_by_child_index(&(parent_locked_page->ppage), parent_locked_page->child_index - 1, bpttd_p);
+				uint64_t child_page1_page_id = get_child_page_id_by_child_index(&(parent_locked_page->ppage), parent_locked_page->child_index - 1, bpttd_p);
 				persistent_page child_page1 = acquire_persistent_page_with_lock(dam_p, child_page1_page_id, WRITE_LOCK);
 
 				const void* separator_parent_tuple = get_nth_tuple_on_persistent_page(&(parent_locked_page->ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def), parent_locked_page->child_index);

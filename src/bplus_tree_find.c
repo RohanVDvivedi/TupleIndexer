@@ -56,23 +56,11 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 				break;
 			}
 			case LESSER_THAN_KEY :
-			{
-				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, TOWARDS_FIRST_WITH_KEY, bpttd_p);
-				break;
-			}
 			case LESSER_THAN_EQUALS_KEY :
-			{
-				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, TOWARDS_LAST_WITH_KEY, bpttd_p);
-				break;
-			}
 			case GREATER_THAN_EQUALS_KEY :
-			{
-				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, TOWARDS_FIRST_WITH_KEY, bpttd_p);
-				break;
-			}
 			case GREATER_THAN_KEY :
 			{
-				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, TOWARDS_LAST_WITH_KEY, bpttd_p);
+				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case MAX_TUPLE :
@@ -82,7 +70,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			}
 		}
 
-		uint64_t next_page_id = find_child_page_id_by_child_index(&curr_page, child_index, bpttd_p);
+		uint64_t next_page_id = get_child_page_id_by_child_index(&curr_page, child_index, bpttd_p);
 		persistent_page next_page = acquire_persistent_page_with_lock(dam_p, next_page_id, READ_LOCK);
 
 		// release lock on the curr_page and 
