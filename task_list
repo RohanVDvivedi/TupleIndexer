@@ -4,17 +4,9 @@ VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
 UPDATE-INSERT
- * first attempt is to segregate insert and delete into functions that can be easily reused
- * build single find_and_modify method supports all of inserr, update and delete
+ * build single find_and_modify method supports all of insert, update and delete
  * insert method first read couples to the bottom of the tree, and write locks only the leaf page
  * it searches the page for a record that compares equal to the new_record (both having same key value)
- * struct insert_inspect {
-    const void* context;
-    int (*inspect_insertion)(const void* context, const void* old_record, void** new_record);
-    // old_record will be NULL, if not found
-    // you can use the above function, to even modify the new_record based on the values of the old_record
-    // setting the new_record to NULL, will delete the old_record
- };
  * once we have the write lock on the leaf page, we inspect it, using the above structure
  * if return value is 1
  * then we again match the key of old_record and new_record (if both new_record and old_record exist), to confirm that they match, the user could have made a mistake, while inspecting the new_record
