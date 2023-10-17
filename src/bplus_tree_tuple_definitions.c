@@ -192,6 +192,8 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 		delete_tuple_def(bpttd_p->key_def);
 	if(bpttd_p->key_element_ids)
 		free(bpttd_p->key_element_ids);
+	if(bpttd_p->key_compare_direction)
+		free(bpttd_p->key_compare_direction);
 
 	bpttd_p->NULL_PAGE_ID = 0;
 	bpttd_p->page_id_width = 0;

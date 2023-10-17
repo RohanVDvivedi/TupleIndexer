@@ -8,6 +8,9 @@
 
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
+	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, record))
+		return 0;
+
 	// create a stack of capacity = levels
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
 	uint32_t root_page_level;
@@ -26,7 +29,8 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
 	}
 
-	walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, locked_pages_stack_p, record, bpttd_p, dam_p);
+	// walk down taking locks until you reach leaf page level = 0
+	walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, 0, locked_pages_stack_p, record, bpttd_p, dam_p);
 
 	int inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, record, bpttd_p, dam_p, pmm_p);
 

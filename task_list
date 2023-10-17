@@ -3,25 +3,6 @@
 VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
-UPDATE-INSERT
- * build single find_and_modify method supports all of insert, update and delete
- * insert method first read couples to the bottom of the tree, and write locks only the leaf page
- * it searches the page for a record that compares equal to the new_record (both having same key value)
- * once we have the write lock on the leaf page, we inspect it, using the above structure
- * if return value is 1
- * then we again match the key of old_record and new_record (if both new_record and old_record exist), to confirm that they match, the user could have made a mistake, while inspecting the new_record
- * if the old_record is NULL and new_record is NULL -> Do nothing by default
-   if the old_record is not NULL and new_record is NULL -> Delete
-   if the old_record is NULL and new_record is not NULL -> Insert
-   if the old_record is not NULL and new_record is not NULL -> Update
- * then we check if the operation can be performed without splits and merges, if so do it and leave
- * for delete -> delete the old row, we only need to merge, so walk down take locks appropriately, perform merge loop function
- * for insert -> we only need to split, pass the new_tuple to split loop function
- * for update -> old_record  size == new_record size -> do nohing,
- -> old_record size < new_record size, delete old_record, try to insert the new_record, if split required, call split loop,
- -> old_record size > new_record_size, delete old_record, insert new_record, if the page is less than half full, call merge loop
- * for this we need separate functions to use the locked_pages stack to split and merge, up the tree
-
 TRANSACTION_CONTEXT task
  * locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must wait
  * this struct must be thread safe, using locks internally, while marking and reading abort related situation

@@ -14,7 +14,7 @@
 
 #include<stdlib.h>
 
-int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
 	while(1)
@@ -27,6 +27,10 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 
 		// figure out which child page to go to next
 		curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), record, bpttd_p->key_element_count, bpttd_p);
+
+		// if an until_level is reached, the break out
+		if(get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p) == until_level)
+			break;
 
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);

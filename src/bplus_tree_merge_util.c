@@ -12,7 +12,7 @@
 #include<persistent_page_functions.h>
 #include<tuple.h>
 
-int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
 	while(1)
@@ -40,6 +40,10 @@ int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, lo
 			}
 		}
 
+		// if an until_level is reached, the break out
+		if(get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p) == until_level)
+			break;
+
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
 		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
@@ -51,7 +55,7 @@ int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, lo
 	return 1;
 }
 
-int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
 	while(1)
@@ -78,6 +82,10 @@ int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id,
 				pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 			}
 		}
+
+		// if an until_level is reached, the break out
+		if(get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p) == until_level)
+			break;
 
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
