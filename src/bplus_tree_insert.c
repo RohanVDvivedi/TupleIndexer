@@ -28,7 +28,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 
 	walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, locked_pages_stack_p, record, bpttd_p, dam_p);
 
-	int inserted = split_insert_unlock_pages_up(root_page_id, locked_pages_stack_p, record, bpttd_p, dam_p, pmm_p);
+	int inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, record, bpttd_p, dam_p, pmm_p);
 
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
 

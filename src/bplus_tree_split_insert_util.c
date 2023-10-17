@@ -51,7 +51,7 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 	return 1;
 }
 
-int split_insert_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// inserted will be set if the record, was inserted
 	int inserted = 0;

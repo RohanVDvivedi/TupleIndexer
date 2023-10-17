@@ -69,7 +69,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			goto EXIT;
 		}
 		else
-			merge_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p);
+			merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p);
 	}
 
 	EXIT:;
@@ -85,7 +85,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	return deleted;
 }
 
-int merge_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
