@@ -39,6 +39,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	int deleted = 0;
 
 	// this has to be a leaf page
+	// we access it using pointer, so that upon deleting, its was modified bit get's set
 	locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 	// if this check fails, then you are not using the utilities rightly
