@@ -135,7 +135,7 @@ void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 	strncpy(r->phone, phone_data.data, phone_data.data_size);
 	r->score = get_value_from_element_from_tuple(tpl_d, 6, tupl).uint_value;
 	user_value update_data = get_value_from_element_from_tuple(tpl_d, 7, tupl);
-	strncpy(r->name, update_data.data, update_data.data_size);
+	strncpy(r->update, update_data.data, update_data.data_size);
 }
 
 typedef struct result result;
@@ -146,6 +146,82 @@ struct result
 };
 
 result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+{
+	// open test data file
+	FILE* f = fopen(file_name, "r");
+
+	result res = {};
+
+	uint32_t records_seen = 0;
+	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
+	{
+		// read a record from the file
+		record r;
+		read_record_from_file(&r, f);
+
+		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
+		{
+			records_seen++;
+			continue;
+		}
+		else
+			records_seen++;
+
+		// print the record we read
+		//print_record(&r);
+
+		// construct tuple from this record
+		char record_tuple[PAGE_SIZE];
+		build_tuple_from_record_struct(bpttd_p->record_def, record_tuple, &r);
+
+		// printing built tuple
+		//char print_buffer[PAGE_SIZE];
+		//sprint_tuple(print_buffer, record_tuple, record_def);
+		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
+
+		// insert the record_tuple in the bplus_tree rooted at root_page_id
+		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p, pmm_p);
+
+		// print bplus tree
+		if(print_tree_after_each)
+		{
+			printf("---------------------------------------------------------------------------------------------------------\n");
+			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
+			printf("---------------------------------------------------------------------------------------------------------\n\n");
+		}
+
+		// increment the tuples_processed count
+		res.records_processed++;
+	}
+
+	// print bplus tree
+	if(print_tree_on_completion)
+		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p);
+
+	// close the file
+	fclose(f);
+
+	return res;
+}
+
+int update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record)
+{
+	user_value update_data = get_value_from_element_from_tuple(record_def, 7, old_record);
+	char update_value[64] = {};
+	strncpy(update_value, update_data.data, update_data.data_size);
+	if(strlen(update_value) == 0)
+		update_value[0] = 'A';
+	else
+		update_value[strlen(update_value)] = update_value[strlen(update_value)-1] + 1;
+	set_element_in_tuple(record_def, 7, new_record, &((user_value){.data = update_value, .data_size = strlen(update_value)}));
+}
+
+update_inspector ui = {
+	.context = NULL,
+	.update_inspect = update_inspect,
+};
+
+result update_in_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
