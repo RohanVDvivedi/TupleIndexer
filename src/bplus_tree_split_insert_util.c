@@ -14,7 +14,6 @@
 
 #include<stdlib.h>
 
-// you must lock the parent page, in the locked_pages_stack_p, before calling this function
 int walk_down_locking_parent_pages_for_split_insert(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
