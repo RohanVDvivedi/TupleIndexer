@@ -214,6 +214,8 @@ int update_inspect(const void* context, const tuple_def* record_def, const void*
 	else
 		update_value[strlen(update_value)] = update_value[strlen(update_value)-1] + 1;
 	set_element_in_tuple(record_def, 7, *new_record, &((user_value){.data = update_value, .data_size = strlen(update_value)}));
+
+	return 1;
 }
 
 update_inspector ui = {
