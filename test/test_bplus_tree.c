@@ -627,7 +627,7 @@ int main()
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, &di, TEST_DATA_FILE, 0, 179, 1, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &di, TEST_DATA_FILE, 179, 0, 1, 0, 1, &bpttd, dam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
