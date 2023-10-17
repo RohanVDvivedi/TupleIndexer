@@ -211,6 +211,8 @@ int update_inspect(const void* context, const tuple_def* record_def, const void*
 	strncpy(update_value, update_data.data, update_data.data_size);
 	if(strlen(update_value) == 0)
 		update_value[0] = 'A';
+	else if(strlen(update_value) == 3)
+		strcpy(update_value, "R");
 	else
 		update_value[strlen(update_value)] = update_value[strlen(update_value)-1] + 1;
 	set_element_in_tuple(record_def, 7, *new_record, &((user_value){.data = update_value, .data_size = strlen(update_value)}));
@@ -591,6 +593,26 @@ int main()
 	/* UPDATES */
 
 	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p, pmm_p);
+
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 1, 256, 0, 1, &bpttd, dam_p, pmm_p);
+
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 3, 256, 0, 1, &bpttd, dam_p, pmm_p);
+
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 1, &bpttd, dam_p, pmm_p);
+
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 15, 256, 0, 1, &bpttd, dam_p, pmm_p);
+
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+	res = update_in_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 31, 256, 0, 1, &bpttd, dam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
