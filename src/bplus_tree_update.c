@@ -36,9 +36,9 @@ static int walk_down_and_split_insert_util(uint64_t root_page_id, persistent_pag
 		// walk down taking locks until you reach leaf page level = 0
 		walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, 1, locked_pages_stack_p, new_record, bpttd_p, dam_p);
 	}
-	else
-		// the concerned_leaf is the root, so just push it to the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(*concerned_leaf));
+
+	// push the concerned_leaf to the stack
+	push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(*concerned_leaf));
 
 	// perform split insert
 	int inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p);
@@ -71,6 +71,9 @@ static int walk_down_and_merge_util(uint64_t root_page_id, persistent_page* conc
 	}
 
 	walk_down_locking_parent_pages_for_merge_using_record(root_page_id, 1, locked_pages_stack_p, old_record, bpttd_p, dam_p);
+
+	// push the concerned_leaf to the stack
+	push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(*concerned_leaf));
 
 	merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p);
 
