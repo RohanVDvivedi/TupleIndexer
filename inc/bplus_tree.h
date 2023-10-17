@@ -41,7 +41,7 @@ struct update_inspector
 	// else if(old_record != NULL && *new_record == NULL) -> do delete of the old_record
 	// else if(old_record == NULL && *new_record != NULL) -> do insert for the new_record
 	// else if(old_record != NULL && *new_record != NULL) -> do update old_record with the new_record
-	int update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record);
+	int (*update_inspect)(const void* context, const tuple_def* record_def, const void* old_record, void** new_record);
 };
 
 // to find and read a record, then inspect it with the ui_p, and then proceed to update it
