@@ -173,7 +173,10 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 
 		// check again if the new_record is small enough to be inserted on the page
 		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
+		{
+			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
 			return 0;
+		}
 
 		// compute the size of the new record
 		uint32_t new_record_size = get_tuple_size(bpttd_p->record_def, new_record);
@@ -210,9 +213,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			{
 				// this must be true here, how can small record can't fit in a bigger one's space
 				if(updated && concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
-				{
 					walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p);
-				}
 				else
 					release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
 			}
