@@ -44,7 +44,9 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		// figure out which child page to go to next
 		curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key, bpttd_p->key_element_count, bpttd_p);
 
-		// check if a merge happens at child_index of this curr_locked_page, will this page be required to be merged aswell
+		// if the interior page index record, at child_index in curr_locked_page if deleted, will the curr_locked_page require merging
+		// if not then release all locks above curr_locked_page
+		// mind well we still need lock on curr_locked_page, as merge on its child will require us to delete corresponding 1 index entry from curr_locked_page
 		if(curr_locked_page->ppage.page_id != root_page_id && !may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(&(curr_locked_page->ppage), bpttd_p->page_size, bpttd_p->index_def, curr_locked_page->child_index) )
 		{
 			// release locks on all the pages in stack except for the the curr_locked_page
