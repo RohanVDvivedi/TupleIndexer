@@ -8,6 +8,44 @@
 #include<sorted_packed_page_util.h>
 #include<storage_capacity_page_util.h>
 
+static int walk_down_and_split_insert_util(uint64_t root_page_id, persistent_page* concerned_leaf, const void* new_record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+{
+	// create a stack of capacity = levels
+	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
+
+	if(concerned_leaf->page_id != root_page_id)
+	{
+		uint32_t root_page_level;
+
+		{
+			// get lock on the root page of the bplus_tree
+			persistent_page root_page = acquire_persistent_page_with_lock(dam_p, root_page_id, WRITE_LOCK);
+
+			// pre cache level of the root_page
+			root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+
+			// create a stack of capacity = levels
+			initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
+
+			// push the root page onto the stack
+			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
+		}
+
+		// walk down taking locks until you reach leaf page level = 0
+		walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, 1, locked_pages_stack_p, new_record, bpttd_p, dam_p);
+	}
+	else
+		// the concerned_leaf is the root, so just push it to the stack
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(*concerned_leaf));
+
+	// perform split insert
+	int inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p);
+
+	deinitialize_locked_pages_stack(locked_pages_stack_p);
+
+	return inserted;
+}
+
 int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
@@ -75,39 +113,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		}
 
 		// else we split insert
-
-		// create a stack of capacity = levels
-		locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
-
-		if(concerned_leaf.page_id != root_page_id)
-		{
-			uint32_t root_page_level;
-
-			{
-				// get lock on the root page of the bplus_tree
-				persistent_page root_page = acquire_persistent_page_with_lock(dam_p, root_page_id, WRITE_LOCK);
-
-				// pre cache level of the root_page
-				root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
-
-				// create a stack of capacity = levels
-				initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
-
-				// push the root page onto the stack
-				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
-			}
-
-			// walk down taking locks until you reach leaf page level = 0
-			walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, 1, locked_pages_stack_p, old_record, bpttd_p, dam_p);
-		}
-		else
-			// the concerned_leaf is the root, so just push it to the stack
-			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(concerned_leaf));
-
-		// perform split insert
-		inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p);
-
-		deinitialize_locked_pages_stack(locked_pages_stack_p);
+		inserted = walk_down_and_split_insert_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p);
 
 		return inserted;
 	}
