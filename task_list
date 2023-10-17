@@ -4,7 +4,6 @@ VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
 UPDATE-INSERT
- * discard all infra structure that was built to allow duplicates in the bplus_tree, there must only be preceeding_equals to get a child in interior page, no TOWARDS_FIRST and LAST allowed
  * first attempt is to segregate insert and delete into functions that can be easily reused
  * build single find_and_modify method supports all of inserr, update and delete
  * insert method first read couples to the bottom of the tree, and write locks only the leaf page
