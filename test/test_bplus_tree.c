@@ -256,7 +256,7 @@ result update_in_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p, pmm_p);
+		res.operations_succeeded += inspected_update_in_bplus_tree(root_page_id, record_tuple, &ui, bpttd_p, dam_p, pmm_p);
 
 		// print bplus tree
 		if(print_tree_after_each)
