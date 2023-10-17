@@ -3,6 +3,7 @@
 #include<bplus_tree_split_insert_util.h>
 #include<bplus_tree_merge_util.h>
 #include<bplus_tree_find_util.h>
+#include<bplus_tree_page_header.h>
 #include<persistent_page_functions.h>
 #include<sorted_packed_page_util.h>
 
@@ -36,6 +37,13 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		return 0;
 	}
 
+	// fail if the keys of old_record and new_record, do not match then quit
+	if(0 != compare_tuples(old_record, bpttd_p->record_def, bpttd_p->key_element_ids, new_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count))
+	{
+		release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+		return 0;
+	}
+
 	// if old_record did not exist and the new_record is set to NULL (i.e. a request for deletion, the do nothing)
 	if(old_record == NULL && new_record == NULL)
 	{
@@ -47,6 +55,60 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		// check again if the new_record is small enough to be inserted on the page
 		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
 			return 0;
+
+		// try to insert
+		uint32_t insertion_point;
+		int inserted = insert_to_sorted_packed_page(
+									&(concerned_leaf), bpttd_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
+									new_record, 
+									&insertion_point,
+									pmm_p
+								);
+
+		// if inserted, we are done
+		if(inserted)
+		{
+			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+			return 1;
+		}
+
+		// else we split insert
+
+		// create a stack of capacity = levels
+		locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
+
+		if(concerned_leaf.page_id != root_page_id)
+		{
+			uint32_t root_page_level;
+
+			{
+				// get lock on the root page of the bplus_tree
+				persistent_page root_page = acquire_persistent_page_with_lock(dam_p, root_page_id, WRITE_LOCK);
+
+				// pre cache level of the root_page
+				root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+
+				// create a stack of capacity = levels
+				initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
+
+				// push the root page onto the stack
+				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
+			}
+
+			// walk down taking locks until you reach leaf page level = 0
+			walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, 1, locked_pages_stack_p, old_record, bpttd_p, dam_p);
+		}
+		else
+			// the concerned_leaf is the root, so just push it to the stack
+			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(concerned_leaf));
+
+		// perform split insert
+		inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p);
+
+		deinitialize_locked_pages_stack(locked_pages_stack_p);
+
+		return inserted;
 	}
 	else if(old_record != NULL && new_record == NULL) // delete case
 	{
