@@ -173,5 +173,42 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 
 		// compute the size of the new record
 		uint32_t new_record_size = get_tuple_size(bpttd_p->record_def, new_record);
+
+		int updated = update_at_in_sorted_packed_page(
+									&concerned_leaf, bpttd_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
+									new_record, 
+									found_index,
+									pmm_p
+								);
+
+		if(new_record_size != old_record_size) // inplace update
+		{
+			if(new_record_size > old_record_size) // may require split
+			{
+				if(!updated) // then this leaf must split
+				{
+					// first perform a delete and then a split insert
+					// this function may not fail, because our found index is valid
+					delete_in_sorted_packed_page(
+							&(concerned_leaf), bpttd_p->page_size,
+							bpttd_p->record_def,
+							found_index,
+							pmm_p
+						);
+
+					updated = walk_down_and_split_insert_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p);
+				}
+			}
+			else // new_record_size < old_record_size -> may require merge
+			{
+				if(updated) // this must be true here, how can small record can't fit in a bigger one's space
+				{
+					walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p);
+				}
+			}
+		}
+
+		return updated;
 	}
 }
