@@ -39,32 +39,31 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	{
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
-		if(!is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
-		{
-			// figure out which child page to go to next
-			curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), record, bpttd_p->key_element_count, bpttd_p);
-
-			// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
-			uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
-			persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
-
-			// if child page will not require a split, then release locks on all the parent pages
-			if( ( is_bplus_tree_leaf_page(&child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->record_def))
-			||  (!is_bplus_tree_leaf_page(&child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->index_def )) )
-			{
-				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
-				{
-					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-					release_lock_on_persistent_page(dam_p, &(bottom->ppage), NONE_OPTION);
-					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
-				}
-			}
-
-			// push this child page onto the stack
-			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
-		}
-		else // break this loop on reaching a leaf page
+		// break out of this loop on reaching a leaf page
+		if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
 			break;
+
+		// figure out which child page to go to next
+		curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), record, bpttd_p->key_element_count, bpttd_p);
+
+		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
+		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
+		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
+
+		// if child page will not require a split, then release locks on all the parent pages
+		if( ( is_bplus_tree_leaf_page(&child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->record_def))
+		||  (!is_bplus_tree_leaf_page(&child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->index_def )) )
+		{
+			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+			{
+				locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+				release_lock_on_persistent_page(dam_p, &(bottom->ppage), NONE_OPTION);
+				pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+			}
+		}
+
+		// push this child page onto the stack
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 	}
 
 	// inserted will be set if the record, was inserted
