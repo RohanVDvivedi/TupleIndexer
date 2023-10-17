@@ -39,13 +39,14 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	int deleted = 0;
 
 	// this has to be a leaf page
-	locked_page_info curr_locked_page = *get_top_of_locked_pages_stack(locked_pages_stack_p);
+	locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
-	if(is_bplus_tree_leaf_page(&(curr_locked_page.ppage), bpttd_p)) // is a leaf page, perform delete in the leaf page
+	// if this check fails, then you are not using the utilities rightly
+	if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
 	{
 		// find index of last record that has the given key on the page
 		uint32_t found_index = find_last_in_sorted_packed_page(
-											&(curr_locked_page.ppage), bpttd_p->page_size,
+											&(curr_locked_page->ppage), bpttd_p->page_size,
 											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 											key, bpttd_p->key_def, NULL
 										);
@@ -56,7 +57,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 
 		// perform a delete operation on the found index in this page
 		deleted = delete_in_sorted_packed_page(
-							&(curr_locked_page.ppage), bpttd_p->page_size,
+							&(curr_locked_page->ppage), bpttd_p->page_size,
 							bpttd_p->record_def,
 							found_index,
 							pmm_p
@@ -70,6 +71,11 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		}
 		else
 			merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p);
+	}
+	else
+	{
+		// you must never arrive here
+		goto EXIT;
 	}
 
 	EXIT:;
