@@ -45,7 +45,7 @@ struct update_inspector
 };
 
 // to find and read a record, then inspect it with the ui_p, and then proceed to update it
-int inspected_update_in_bplus_tree(uint64_t root_page_id, const void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
+int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
 
 // insert record in bplus_tree
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
