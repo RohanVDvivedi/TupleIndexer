@@ -19,27 +19,20 @@ int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is
 // prints of bplus_tree interior page
 void print_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
-typedef enum find_child_index_type find_child_index_type;
-enum find_child_index_type
-{
-	TOWARDS_FIRST_WITH_KEY, // takes you towards a record that is lesser than the key or the first record that equals key
-	TOWARDS_LAST_WITH_KEY,  // takes you towards a record that is greater than the key or the last record that equals key
-};
+// this the index of the tuple in the interior page that you should follow
+// you may cache this, it may help in case of a split
+// the constrained parameter key_element_count_concerned <= bpttd_p->bpttd_p->key_element_count
+// allows you to consider lesser number of key columns for your operation
+uint32_t find_child_index_for_key(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
 
 // this the index of the tuple in the interior page that you should follow
 // you may cache this, it may help in case of a split
 // the constrained parameter key_element_count_concerned <= bpttd_p->bpttd_p->key_element_count
 // allows you to consider lesser number of key columns for your operation
-uint32_t find_child_index_for_key(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p);
-
-// this the index of the tuple in the interior page that you should follow
-// you may cache this, it may help in case of a split
-// the constrained parameter key_element_count_concerned <= bpttd_p->bpttd_p->key_element_count
-// allows you to consider lesser number of key columns for your operation
-uint32_t find_child_index_for_record(const persistent_page* ppage, const void* record, uint32_t key_element_count_concerned, find_child_index_type type, const bplus_tree_tuple_defs* bpttd_p);
+uint32_t find_child_index_for_record(const persistent_page* ppage, const void* record, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
 
 // returns the page_id stored with the corresponding tuple at index, in its attribute "child_page_id" 
-uint64_t find_child_page_id_by_child_index(const persistent_page* ppage, uint32_t index, const bplus_tree_tuple_defs* bpttd_p);
+uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t index, const bplus_tree_tuple_defs* bpttd_p);
 
 // check if a bplus tree interior page must split for an insertion of a tuple
 int must_split_for_insert_bplus_tree_interior_page(const persistent_page* page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p);
