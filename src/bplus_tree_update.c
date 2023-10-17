@@ -110,13 +110,6 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		return 0;
 	}
 
-	// fail if the keys of old_record and new_record, do not match then quit
-	if(0 != compare_tuples(old_record, bpttd_p->record_def, bpttd_p->key_element_ids, new_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count))
-	{
-		release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
-		return 0;
-	}
-
 	// if old_record did not exist and the new_record is set to NULL (i.e. a request for deletion, the do nothing)
 	if(old_record == NULL && new_record == NULL)
 	{
@@ -171,6 +164,13 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	}
 	else // update
 	{
+		// fail if the keys of old_record and new_record, do not match then quit
+		if(0 != compare_tuples(old_record, bpttd_p->record_def, bpttd_p->key_element_ids, new_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count))
+		{
+			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+			return 0;
+		}
+
 		// check again if the new_record is small enough to be inserted on the page
 		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
 			return 0;
