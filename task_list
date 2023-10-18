@@ -1,18 +1,15 @@
 ** PICKED TASKS
 
-ERROR HANDLING
- * all of persistent_page_functions, take in int* error as last parameter, and set it
- * go through the project and add parameters to return global error codes, instead of 0 and 1
- * or add parameter int* error, and pass all of it down the call stack
-
-  ERROR RETURN CODES for DATA_ACCESS_METHODS
- * suggesting reason of a failure of data_access_method functions
- * reasons being DEADLOCK_HANDLED, CAN_T_LOCK_FREE_PAGE, OUT_OF_DISK_SPACE, OUT_OF_FREE_BUFFERS, etc
-
-  VALIDATING WAS_MODIFIED BIT
+VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
-  TRANSACTION_CONTEXT task
+ERROR HANDLING
+ * all of bplus_tree functions take int* error as parameter and pass it to functions underneath, allowing to pass error between call stacks transparently
+ * all of persistent_page_functions, take in int* error as last parameter, and set it
+ * all of dam functions take int* error and return it
+   * reasons being DEADLOCK_HANDLED, CAN_T_LOCK_FREE_PAGE, OUT_OF_DISK_SPACE, OUT_OF_FREE_BUFFERS, etc
+
+TRANSACTION_CONTEXT task
  * locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must wait
  * this struct must be thread safe, using locks internally, while marking and reading abort related situation
  * struct transaction_abort_manager {
