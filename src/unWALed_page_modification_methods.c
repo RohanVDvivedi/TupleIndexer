@@ -58,7 +58,8 @@ static void clone_page_unWALed(void* context, persistent_page ppage, uint32_t pa
 
 static int run_page_compaction_unWALed(void* context, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
 {
-	return run_page_compaction(ppage.page, page_size, tpl_sz_d);
+	int memory_allocation_error = 0; // error to be returned to user
+	return run_page_compaction(ppage.page, page_size, tpl_sz_d, &memory_allocation_error);
 }
 
 page_modification_methods* get_new_unWALed_page_modification_methods()
