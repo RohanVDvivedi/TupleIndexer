@@ -6,9 +6,18 @@
 #include<bplus_tree_tuple_definitions.h>
 #include<opaque_data_access_methods.h>
 #include<opaque_page_modification_methods.h>
+#include<opaque_transaction_abort_manager.h>
+
+// errors returned by the bplus_tree functions
+#define NO_ERROR					0 // no error
+#define RECORD_NOT_FOUND			1 // on an delete call
+#define RECORD_TOO_BIG				2 // on an insert/update call
+#define RECORD_EXISTS				3 // on an insert call
+#define FALSE_ON_UPDATE_INSPECTOR 	4 // when an update fails, because update_inspector returned 0
+#define TRANSACTION_ABORT			5 // signifies transaction is aborted
 
 // returns pointer to the root page of the bplus_tree
-uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
+uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const transaction_abort_manager* tam_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
 
 // order of the enum values in find_position must remain the same
 typedef enum find_position find_position;
@@ -27,7 +36,7 @@ enum find_position
 // here the key_element_count_concerned suggests the number of elements of the key that would be considered for find operation
 // the key == NULL and find_pos == GREATER_THAN, then the iterator will point to the first tuple of the bplus_tree
 // the key == NULL and find_pos == LESSER_THAN, then the iterator will point to the last tuple of the bplus_tree
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const transaction_abort_manager* tam_p, const data_access_methods* dam_p);
 
 typedef struct update_inspector update_inspector;
 struct update_inspector
@@ -45,18 +54,18 @@ struct update_inspector
 };
 
 // to find and read a record, then inspect it with the ui_p, and then proceed to update it
-int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
+int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const transaction_abort_manager* tam_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
 
 // insert record in bplus_tree
-int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
+int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const transaction_abort_manager* tam_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
 
 // delete a record given by key
-int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
+int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const transaction_abort_manager* tam_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p);
 
 // frees all the pages occupied by the bplus_tree
-int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const transaction_abort_manager* tam_p, const data_access_methods* dam_p);
 
 // prints all the pages in the bplus_tree
-void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const transaction_abort_manager* tam_p, const data_access_methods* dam_p);
 
 #endif
