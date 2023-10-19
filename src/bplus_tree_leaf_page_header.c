@@ -50,6 +50,8 @@ void set_bplus_tree_leaf_page_header(persistent_page* ppage, const bplus_tree_le
 
 	// allocate memory, to hold complete page_header
 	void* hdr_serial = malloc(page_header_size);
+	if(hdr_serial == NULL)
+		exit(-1);
 
 	// copy the old page_header to it
 	memory_move(hdr_serial, get_page_header_ua_persistent_page(ppage, bpttd_p->page_size), page_header_size);
