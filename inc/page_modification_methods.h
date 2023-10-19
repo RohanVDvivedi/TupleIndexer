@@ -16,6 +16,15 @@
 
 // All the functions of page_modification_methods are analogous to their corresponding counterparts in page_layout.h
 
+/*
+**	These functions either modify the page OR they dont, It is never expected of them, to give an error, that would case a transaction to abort
+**	Except for 1 case, when a transaction for some reason is not able to put a WAL log entry for the correspoinding operation on the page
+**	In such a case, I want you to kill the application using exit().
+**	A database is not a database at all without its WAL, even if you fail to allocate memory to create a WAL record, I want you to exit()
+**	These methods have the sole purpose to intercept the page modification and WAL (Write Ahead Log) it.
+**	If for some reason you can not do it, just kill the application, it is as simple as that.
+*/
+
 typedef struct page_modification_methods page_modification_methods;
 struct page_modification_methods
 {
