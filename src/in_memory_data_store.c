@@ -219,7 +219,7 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 	return freed;
 }
 
-static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_returned)
+static void* get_new_page_with_write_lock(void* context, const void* transaction_id, uint64_t* page_id_returned, int* error)
 {
 	memory_store_context* cntxt = context;
 
@@ -284,7 +284,7 @@ static void* get_new_page_with_write_lock(void* context, uint64_t* page_id_retur
 	return page_ptr;
 }
 
-static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
+static void* acquire_page_with_reader_lock(void* context, const void* transaction_id, uint64_t page_id, int* error)
 {
 	memory_store_context* cntxt = context;
 
@@ -318,7 +318,7 @@ static void* acquire_page_with_reader_lock(void* context, uint64_t page_id)
 	return page_ptr;
 }
 
-static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
+static void* acquire_page_with_writer_lock(void* context, const void* transaction_id, uint64_t page_id, int* error)
 {
 	memory_store_context* cntxt = context;
 
@@ -352,7 +352,7 @@ static void* acquire_page_with_writer_lock(void* context, uint64_t page_id)
 	return page_ptr;
 }
 
-static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_ptr, int opts)
+static int downgrade_writer_lock_to_reader_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error)
 {
 	memory_store_context* cntxt = context;
 
@@ -370,7 +370,7 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, void* pg_
 	return lock_downgraded;
 }
 
-static int upgrade_reader_lock_to_writer_lock_on_page(void* context, void* pg_ptr)
+static int upgrade_reader_lock_to_writer_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int* error)
 {
 	memory_store_context* cntxt = context;
 
@@ -388,7 +388,7 @@ static int upgrade_reader_lock_to_writer_lock_on_page(void* context, void* pg_pt
 	return lock_upgraded;
 }
 
-static int release_writer_lock_on_page(void* context, void* pg_ptr, int opts)
+static int release_writer_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error)
 {
 	memory_store_context* cntxt = context;
 
@@ -411,7 +411,7 @@ static int release_writer_lock_on_page(void* context, void* pg_ptr, int opts)
 	return lock_released;
 }
 
-static int release_reader_lock_on_page(void* context, void* pg_ptr, int opts)
+static int release_reader_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error)
 {
 	memory_store_context* cntxt = context;
 
@@ -434,7 +434,7 @@ static int release_reader_lock_on_page(void* context, void* pg_ptr, int opts)
 	return lock_released;
 }
 
-static int free_page(void* context, uint64_t page_id)
+static int free_page(void* context, const void* transaction_id, uint64_t page_id, int* error)
 {
 	memory_store_context* cntxt = context;
 
