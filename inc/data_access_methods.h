@@ -12,6 +12,8 @@
 **  0 or NULL impiles an error/a failure with the corresponding operation
 **	a failure to data_access_methods function calls must accompany with an error
 **	this the same error that transaction abort manager will be marked aborted with
+**	any error returned, is expected to abort the transaction
+**	In case of a failure to allocate more memeory for your needs, do not through an error, just call exit() and kill the application
 */
 
 // below are the options that can go with the functions below
@@ -29,19 +31,19 @@ struct data_access_methods
 
 	// a request method to get a new blank page from the page manager with write lock on the page
 	// the page_id_returned is set with the page_id of the new_page
-	void* (*get_new_page_with_write_lock)(void* context, uint64_t* page_id_returned, int* error);
+	void* (*get_new_page_with_write_lock)(void* context, const void* transaction_id, uint64_t* page_id_returned, int* error);
 
 	// locks a page for read or write, if successfull must return pointer to the in-memory of the page
-	void* (*acquire_page_with_reader_lock)(void* context, uint64_t page_id, int* error);
-	void* (*acquire_page_with_writer_lock)(void* context, uint64_t page_id, int* error);
+	void* (*acquire_page_with_reader_lock)(void* context, const void* transaction_id, uint64_t page_id, int* error);
+	void* (*acquire_page_with_writer_lock)(void* context, const void* transaction_id, uint64_t page_id, int* error);
 
 	// downgrade a writer lock to a reader lock
-	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, void* pg_ptr, int opts, int* error); // acceptable options : WAS_MODIFIED and FORCE_FLUSH
-	int (*upgrade_reader_lock_to_writer_lock_on_page)(void* context, void* pg_ptr, int* error);
+	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error); // acceptable options : WAS_MODIFIED and FORCE_FLUSH
+	int (*upgrade_reader_lock_to_writer_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int* error);
 
 	// releases lock on the page, accordingly, free_page flag will free the page, after releasing the lock
-	int (*release_reader_lock_on_page)(void* context, void* pg_ptr, int opts, int* error); // acceptable options : FREE_PAGE
-	int (*release_writer_lock_on_page)(void* context, void* pg_ptr, int opts, int* error); // acceptable options : WAS_MODIFIED, FORCE_FLUSH and FREE_PAGE
+	int (*release_reader_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error); // acceptable options : FREE_PAGE
+	int (*release_writer_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error); // acceptable options : WAS_MODIFIED, FORCE_FLUSH and FREE_PAGE
 
 	// the was_modified parameter suggests that the page that we had a writer lock on was modified,
 	// and any disk based system is suppossed to mark this page dirty now and possibly persist this new version of page to disk,
@@ -49,7 +51,7 @@ struct data_access_methods
 
 	// make a page free, you may call this function, even if you don't have lock on the page
 	// fails only if the page is already free
-	int (*free_page)(void* context, uint64_t page_id, int* error);
+	int (*free_page)(void* context, const void* transaction_id, uint64_t page_id, int* error);
 
 	int (*close_data_file)(void* context);
 
