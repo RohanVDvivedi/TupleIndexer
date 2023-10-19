@@ -7,14 +7,15 @@ struct transaction_abort_manager_methods
 	const void* context;
 
 	// returns 0 if not aborted, else returns non zero reason for the abort
-	int is_aborted(const void* transaction_id, const void* context);
+	int (*is_aborted)(const void* transaction_id, const void* context);
 
 	// abort the transaction, with a reason for abort
-	// this function must also put a abort log for the transaction, and mark the trasaction as aborted in your context
-	void mark_aborted(const void* transaction_id, const void* context, int reason);
+	// this functions first marks the trasaction as aborted in your context
+	// then it must also put a abort log for the transaction
+	void (*mark_aborted)(const void* transaction_id, const void* context, int reason);
 };
 
-typedef struct transaction_abort_manager transaction_abort_namager;
+typedef struct transaction_abort_manager transaction_abort_manager;
 struct transaction_abort_manager
 {
 	// transaction_id is of the transaction in progress
