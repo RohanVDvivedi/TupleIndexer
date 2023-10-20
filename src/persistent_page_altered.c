@@ -13,6 +13,13 @@ int init_persistent_page(const page_modification_methods* pmm_p, const void* tra
 		exit(-1);
 	}
 
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
+		exit(-1);
+	}
+
 	int res = pmm_p->init_page(pmm_p->context, transaction_id, *ppage, page_size, page_header_size, tpl_sz_d, abort_error);
 
 	// if the page was inited, then set the WAS_MODIFIED bit of the ppage flag
@@ -31,6 +38,13 @@ void set_persistent_page_header(const page_modification_methods* pmm_p, const vo
 		exit(-1);
 	}
 
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
+		exit(-1);
+	}
+
 	pmm_p->set_page_header(pmm_p->context, transaction_id, *ppage, page_size, hdr, abort_error);
 
 	// always assumed to be modified
@@ -44,6 +58,13 @@ int append_tuple_on_persistent_page(const page_modification_methods* pmm_p, cons
 	if(!is_persistent_page_write_locked(ppage))
 	{
 		printf("BUG :: attempting to write to read locked page\n");
+		exit(-1);
+	}
+
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
 		exit(-1);
 	}
 
@@ -65,6 +86,13 @@ int update_tuple_on_persistent_page(const page_modification_methods* pmm_p, cons
 		exit(-1);
 	}
 
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
+		exit(-1);
+	}
+
 	int res = pmm_p->update_tuple_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, index, external_tuple, abort_error);
 
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
@@ -80,6 +108,13 @@ int discard_tuple_on_persistent_page(const page_modification_methods* pmm_p, con
 	if(!is_persistent_page_write_locked(ppage))
 	{
 		printf("BUG :: attempting to write to read locked page\n");
+		exit(-1);
+	}
+
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
 		exit(-1);
 	}
 
@@ -101,6 +136,13 @@ void discard_all_tuples_on_persistent_page(const page_modification_methods* pmm_
 		exit(-1);
 	}
 
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
+		exit(-1);
+	}
+
 	pmm_p->discard_all_tuples_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, abort_error);
 
 	// always assumed to be modified
@@ -114,6 +156,13 @@ uint32_t discard_trailing_tomb_stones_on_persistent_page(const page_modification
 	if(!is_persistent_page_write_locked(ppage))
 	{
 		printf("BUG :: attempting to write to read locked page\n");
+		exit(-1);
+	}
+
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
 		exit(-1);
 	}
 
@@ -132,6 +181,13 @@ int swap_tuples_on_persistent_page(const page_modification_methods* pmm_p, const
 	if(!is_persistent_page_write_locked(ppage))
 	{
 		printf("BUG :: attempting to write to read locked page\n");
+		exit(-1);
+	}
+
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
 		exit(-1);
 	}
 
@@ -157,6 +213,13 @@ int set_element_in_tuple_in_place_on_persistent_page(const page_modification_met
 		exit(-1);
 	}
 
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
+		exit(-1);
+	}
+
 	int res = pmm_p->set_element_in_tuple_in_place_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_d, tuple_index, element_index, value, abort_error);
 
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
@@ -175,6 +238,13 @@ void clone_persistent_page(const page_modification_methods* pmm_p, const void* t
 		exit(-1);
 	}
 
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
+		exit(-1);
+	}
+
 	pmm_p->clone_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, *ppage_src, abort_error);
 
 	// always assumed to be modified
@@ -188,6 +258,13 @@ int run_persistent_page_compaction(const page_modification_methods* pmm_p, const
 	if(!is_persistent_page_write_locked(ppage))
 	{
 		printf("BUG :: attempting to write to read locked page\n");
+		exit(-1);
+	}
+
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
 		exit(-1);
 	}
 
