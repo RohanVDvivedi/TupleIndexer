@@ -11,10 +11,11 @@
 **	All operations must return 1 or Non NULL when they have succeeded
 **  0 or NULL impiles an abort_error/a failure with the corresponding operation
 **	a failure to data_access_methods function calls must accompany with an abort_error
-**	this the same error that transaction abort manager will be marked aborted with
-**	any error returned, is expected to abort the transaction, and must be returned with abort_error
-**	In case of a failure to allocate more memeory for your needs, do not throw an abort_error, just call exit() and kill the application
-**	Additionally ensure that no new page locks are granted once a transaction is aborted
+**	this the same error that transaction abort manager will be marked aborted with.
+**	Any error returned, is expected to have aborted the transaction, and its reason must be returned in abort_error
+**	In case of a failure to allocate more memory for your needs, do not throw an abort_error, just call exit() and kill the application
+**	Additionally ensure that no new page locks are granted once a transaction is aborted.
+**	In such a case, when a transaction is already aborted, just return its reason for abort in the abort_error, that will suffice.
 */
 
 /*
@@ -25,6 +26,9 @@
 **
 **	In situation, when you are handed an aborted transaction, to get some operation done with the below functions
 **	All you need to do is set the abort_error with the reason of abort and return
+**
+**	When you are throwing an abort error, from within of any of these functions, it is you who needs to mark it aborted, with the reason of abort, so that other threads can see it
+**	!! Noone else is responsible to abort a transaction for you, you need to do it yourself !!
 */
 
 // below are the options that can go with the functions below
