@@ -4,10 +4,10 @@
 
 #include<stdlib.h>
 
-persistent_page get_new_persistent_page_with_write_lock(const data_access_methods* dam_p)
+persistent_page get_new_persistent_page_with_write_lock(const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	persistent_page ppage = {};
-	ppage.page = dam_p->get_new_page_with_write_lock(dam_p->context, &(ppage.page_id));
+	ppage.page = dam_p->get_new_page_with_write_lock(dam_p->context, transaction_id, &(ppage.page_id), abort_error);
 
 	// if could not allocate a page on disk then just return a NULL persistent page
 	if(ppage.page == NULL)
@@ -20,7 +20,7 @@ persistent_page get_new_persistent_page_with_write_lock(const data_access_method
 	return ppage;
 }
 
-persistent_page acquire_persistent_page_with_lock(const data_access_methods* dam_p, uint64_t page_id, int lock_type)
+persistent_page acquire_persistent_page_with_lock(const data_access_methods* dam_p, const void* transaction_id, uint64_t page_id, int lock_type, int* abort_error)
 {
 	persistent_page ppage = {.page_id = page_id};
 
@@ -28,7 +28,7 @@ persistent_page acquire_persistent_page_with_lock(const data_access_methods* dam
 	{
 		case READ_LOCK :
 		{
-			ppage.page = dam_p->acquire_page_with_reader_lock(dam_p->context, ppage.page_id);
+			ppage.page = dam_p->acquire_page_with_reader_lock(dam_p->context, transaction_id, ppage.page_id, abort_error);
 
 			if(ppage.page == NULL)
 				return get_NULL_persistent_page(dam_p);
@@ -40,13 +40,13 @@ persistent_page acquire_persistent_page_with_lock(const data_access_methods* dam
 		}
 		case WRITE_LOCK :
 		{
-			ppage.page = dam_p->acquire_page_with_writer_lock(dam_p->context, ppage.page_id);
+			ppage.page = dam_p->acquire_page_with_writer_lock(dam_p->context, transaction_id, ppage.page_id, abort_error);
 
 			if(ppage.page == NULL)
 				ppage = get_NULL_persistent_page(dam_p);
 
 			ppage.flags = 0;
-			ppage.is_write_locked = 1;				
+			ppage.is_write_locked = 1;
 
 			break;
 		}
@@ -55,7 +55,7 @@ persistent_page acquire_persistent_page_with_lock(const data_access_methods* dam
 	return ppage;
 }
 
-int downgrade_to_reader_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage, int opts)
+int downgrade_to_reader_lock_on_persistent_page(const data_access_methods* dam_p, const void* transaction_id, persistent_page* ppage, int opts, int* abort_error)
 {
 	if(!is_persistent_page_write_locked(ppage))
 	{
@@ -63,7 +63,7 @@ int downgrade_to_reader_lock_on_persistent_page(const data_access_methods* dam_p
 		exit(-1);
 	}
 
-	int res = dam_p->downgrade_writer_lock_to_reader_lock_on_page(dam_p->context, ppage->page, opts | ppage->flags);
+	int res = dam_p->downgrade_writer_lock_to_reader_lock_on_page(dam_p->context, transaction_id, ppage->page, opts | ppage->flags, abort_error);
 
 	if(res)
 	{
@@ -74,7 +74,7 @@ int downgrade_to_reader_lock_on_persistent_page(const data_access_methods* dam_p
 	return res;
 }
 
-int upgrade_to_write_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage)
+int upgrade_to_write_lock_on_persistent_page(const data_access_methods* dam_p, const void* transaction_id, persistent_page* ppage, int* abort_error)
 {
 	if(is_persistent_page_write_locked(ppage))
 	{
@@ -82,7 +82,7 @@ int upgrade_to_write_lock_on_persistent_page(const data_access_methods* dam_p, p
 		exit(-1);
 	}
 
-	int res = dam_p->upgrade_reader_lock_to_writer_lock_on_page(dam_p->context, ppage->page);
+	int res = dam_p->upgrade_reader_lock_to_writer_lock_on_page(dam_p->context, transaction_id, ppage->page, abort_error);
 
 	if(res)
 	{
@@ -93,15 +93,15 @@ int upgrade_to_write_lock_on_persistent_page(const data_access_methods* dam_p, p
 	return res;
 }
 
-int release_lock_on_persistent_page(const data_access_methods* dam_p, persistent_page* ppage, int opts)
+int release_lock_on_persistent_page(const data_access_methods* dam_p, const void* transaction_id, persistent_page* ppage, int opts, int* abort_error)
 {
 	int res = 0;
 
 	// release lock appropriately
 	if(is_persistent_page_write_locked(ppage))
-		res = dam_p->release_writer_lock_on_page(dam_p->context, ppage->page, opts | ppage->flags);
+		res = dam_p->release_writer_lock_on_page(dam_p->context, transaction_id, ppage->page, opts | ppage->flags, abort_error);
 	else
-		res = dam_p->release_reader_lock_on_page(dam_p->context, ppage->page, opts | ppage->flags);
+		res = dam_p->release_reader_lock_on_page(dam_p->context, transaction_id, ppage->page, opts | ppage->flags, abort_error);
 
 	// if successfull in releasing lock, then set ppage to NULL persistent_page
 	if(res)
@@ -110,7 +110,7 @@ int release_lock_on_persistent_page(const data_access_methods* dam_p, persistent
 	return res;
 }
 
-int free_persistent_page(const data_access_methods* dam_p, uint64_t page_id)
+int free_persistent_page(const data_access_methods* dam_p, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
-	return dam_p->free_page(dam_p->context, page_id);
+	return dam_p->free_page(dam_p->context, transaction_id, page_id, abort_error);
 }
