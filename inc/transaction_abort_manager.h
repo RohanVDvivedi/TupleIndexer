@@ -6,6 +6,10 @@
 **	You must protect the transaction's is_abort flag and its reason for abort in a shared/exclusive lock
 **	allowing multiple threads to grab shared lock, read and ensure that the transaction is not aborted, while they work on something
 **	while let only 1 thread to mark a transaction as aborted.
+**
+**	Additionally, your transaction object must be reference counted, such that the last thread that decrements it does the following
+**	1. on abort undo's all its changes and releases all the locks
+**	2. on commit, installs all the changes and releases all the locks
 */ 
 
 typedef struct transaction_abort_manager_methods transaction_abort_manager_methods;
