@@ -31,6 +31,24 @@
 **	!! Noone else is responsible to abort a transaction for you, you need to do it yourself !!
 */
 
+/*
+**	The below functions may be termed as acquire_lock and release_lock, but these are in-effect latches,
+**	For instance when the page is first accessed, you may latch and lock it.
+**	On any subsequent calls, you should only latch the page, and not lock it, I hope you get it.
+**	latching a page is equivalent to pinning it in bufferpool (for read or write respectively), releasing a latch may put that page out of bufferpool's cache
+**	but it should still remain locked for the intireity of the transaction. (Just as you may have learned it in 2-phase commit).
+**
+**	All in call TupleIndexer will call data_access_methods only to instruct what it wants latched and for what (reading or writing) and upgrade and downgrade latches
+**	or finally to release latches.
+**
+**	You need to handle locks on your own using these functions given below.
+*/
+
+/*
+**	Once a transaction is known to be aborted by a thread, no new acquire_lock, free_page, downgrade_lock or upgrade_lock calls will be made by TupleIndexer.
+**	Only release_lock calls will be made (with only WAS_MODIFIED bit set, if the page was modified), and abort_error set to indicate that the TupleIndexer's thread is aware of the transaction being aborted
+*/
+
 // below are the options that can go with the functions below
 //#define NONE_OPTION  0b000
 //#define FREE_PAGE    0b001
