@@ -4,64 +4,65 @@
 
 #include<stdlib.h>
 
-static int init_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d)
+static int init_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
 	return init_page(ppage.page, page_size, page_header_size, tpl_sz_d);
 }
 
-static void set_page_header_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const void* hdr)
+static void set_page_header_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const void* hdr, int* abort_error)
 {
 	void* pg_hdr = get_page_header(ppage.page, page_size);
 	uint32_t pg_hdr_size = get_page_header_size(ppage.page, page_size);
 	memory_move(pg_hdr, hdr, pg_hdr_size);
 }
 
-static int append_tuple_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple)
+static int append_tuple_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple, int* abort_error)
 {
 	return append_tuple_on_page(ppage.page, page_size, tpl_sz_d, external_tuple);
 }
 
-static int update_tuple_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple)
+static int update_tuple_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
 {
 	return update_tuple_on_page(ppage.page, page_size, tpl_sz_d, index, external_tuple);
 }
 
-static int discard_tuple_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index)
+static int discard_tuple_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, int* abort_error)
 {
 	return discard_tuple_on_page(ppage.page, page_size, tpl_sz_d, index);
 }
 
-static void discard_all_tuples_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+static void discard_all_tuples_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
 	discard_all_tuples_on_page(ppage.page, page_size, tpl_sz_d);
 }
 
-static uint32_t discard_trailing_tomb_stones_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+static uint32_t discard_trailing_tomb_stones_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
 	return discard_trailing_tomb_stones_on_page(ppage.page, page_size, tpl_sz_d);
 }
 
-static int swap_tuples_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2)
+static int swap_tuples_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2, int* abort_error)
 {
 	return swap_tuples_on_page(ppage.page, page_size, tpl_sz_d, i1, i2);
 }
 
-static int set_element_in_tuple_in_place_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, uint32_t element_index, const user_value* value)
+static int set_element_in_tuple_in_place_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, uint32_t element_index, const user_value* value, int* abort_error)
 {
 	return set_element_in_tuple_in_place_on_page(ppage.page, page_size, tpl_d, tuple_index, element_index, value);
 }
 
-static void clone_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src)
+static void clone_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src, int* abort_error)
 {
 	clone_page(ppage.page, page_size, tpl_sz_d, ppage_src.page);
 }
 
-static int run_page_compaction_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+static int run_page_compaction_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
 	int memory_allocation_error = 0; // error to be returned to user
 	int res = run_page_compaction(ppage.page, page_size, tpl_sz_d, &memory_allocation_error);
 
 	// just like how we do here, in case of an allocation error in pmm, exit()
+	// as you see here, a failure to malloc causes us to exit() instead of an abort_error !!
 	if(memory_allocation_error)
 		exit(-1);
 

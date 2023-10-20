@@ -219,7 +219,7 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 	return freed;
 }
 
-static void* get_new_page_with_write_lock(void* context, const void* transaction_id, uint64_t* page_id_returned, int* error)
+static void* get_new_page_with_write_lock(void* context, const void* transaction_id, uint64_t* page_id_returned, int* abort_error)
 {
 	memory_store_context* cntxt = context;
 
@@ -282,13 +282,13 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	// set error if returning failure
-	if(pg_ptr == NULL)
-		(*error) = 1;
+	if(page_ptr == NULL)
+		(*abort_error) = 1;
 
 	return page_ptr;
 }
 
-static void* acquire_page_with_reader_lock(void* context, const void* transaction_id, uint64_t page_id, int* error)
+static void* acquire_page_with_reader_lock(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
 	memory_store_context* cntxt = context;
 
@@ -320,13 +320,13 @@ static void* acquire_page_with_reader_lock(void* context, const void* transactio
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	// set error if returning failure
-	if(pg_ptr == NULL)
-		(*error) = 1;
+	if(page_ptr == NULL)
+		(*abort_error) = 1;
 
 	return page_ptr;
 }
 
-static void* acquire_page_with_writer_lock(void* context, const void* transaction_id, uint64_t page_id, int* error)
+static void* acquire_page_with_writer_lock(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
 	memory_store_context* cntxt = context;
 
@@ -358,13 +358,13 @@ static void* acquire_page_with_writer_lock(void* context, const void* transactio
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	// set error if returning failure
-	if(pg_ptr == NULL)
-		(*error) = 1;
+	if(page_ptr == NULL)
+		(*abort_error) = 1;
 
 	return page_ptr;
 }
 
-static int downgrade_writer_lock_to_reader_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error)
+static int downgrade_writer_lock_to_reader_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
 	memory_store_context* cntxt = context;
 
@@ -381,12 +381,12 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, const voi
 
 	// set error if returning failure
 	if(lock_downgraded == 0)
-		(*error) = 1;
+		(*abort_error) = 1;
 
 	return lock_downgraded;
 }
 
-static int upgrade_reader_lock_to_writer_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int* error)
+static int upgrade_reader_lock_to_writer_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int* abort_error)
 {
 	memory_store_context* cntxt = context;
 
@@ -403,12 +403,12 @@ static int upgrade_reader_lock_to_writer_lock_on_page(void* context, const void*
 
 	// set error if returning failure
 	if(lock_upgraded == 0)
-		(*error) = 1;
+		(*abort_error) = 1;
 
 	return lock_upgraded;
 }
 
-static int release_writer_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error)
+static int release_writer_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
 	memory_store_context* cntxt = context;
 
@@ -430,12 +430,12 @@ static int release_writer_lock_on_page(void* context, const void* transaction_id
 
 	// set error if returning failure
 	if(lock_released == 0)
-		(*error) = 1;
+		(*abort_error) = 1;
 
 	return lock_released;
 }
 
-static int release_reader_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* error)
+static int release_reader_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
 	memory_store_context* cntxt = context;
 
@@ -457,12 +457,12 @@ static int release_reader_lock_on_page(void* context, const void* transaction_id
 
 	// set error if returning failure
 	if(lock_released == 0)
-		(*error) = 1;
+		(*abort_error) = 1;
 
 	return lock_released;
 }
 
-static int free_page(void* context, const void* transaction_id, uint64_t page_id, int* error)
+static int free_page(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
 	memory_store_context* cntxt = context;
 
@@ -481,7 +481,7 @@ static int free_page(void* context, const void* transaction_id, uint64_t page_id
 
 	// set error if returning failure
 	if(is_freed == 0)
-		(*error) = 1;
+		(*abort_error) = 1;
 
 	return is_freed;
 }
