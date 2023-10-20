@@ -9,7 +9,7 @@ persistent_page get_new_persistent_page_with_write_lock(const data_access_method
 	// no new locks can be issued, or modified, once a transaction is aborted
 	if(*(abort_error))
 	{
-		printf("BUG :: attempting to acquire new page with a lock after an abort\n");
+		printf("BUG :: attempting to acquire new page with a write lock, after an abort\n");
 		exit(-1);
 	}
 
@@ -32,7 +32,7 @@ persistent_page acquire_persistent_page_with_lock(const data_access_methods* dam
 	// no new locks can be issued, or modified, once a transaction is aborted
 	if(*(abort_error))
 	{
-		printf("BUG :: attempting to acquire page lock after an abort\n");
+		printf("BUG :: attempting to acquire page lock, after an abort\n");
 		exit(-1);
 	}
 
@@ -74,7 +74,7 @@ int downgrade_to_reader_lock_on_persistent_page(const data_access_methods* dam_p
 	// no new locks can be issued, or modified, once a transaction is aborted
 	if(*(abort_error))
 	{
-		printf("BUG :: attempting to downgrade page lock after an abort\n");
+		printf("BUG :: attempting to downgrade page lock, after an abort\n");
 		exit(-1);
 	}
 
@@ -126,7 +126,7 @@ int release_lock_on_persistent_page(const data_access_methods* dam_p, const void
 	// a page can not be freed, once a transaction is aborted
 	if(*(abort_error))
 	{
-		if(opts | FREE_PAGE)
+		if((ppage->flags | opts) & FREE_PAGE)
 		{
 			printf("BUG :: attempting to free a page, while releasing a lock, after an abort\n");
 			exit(-1);
