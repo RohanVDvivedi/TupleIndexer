@@ -33,6 +33,8 @@
 **	On any subsequent calls, you should only latch the page, and not lock it, I hope you get it.
 **	latching a page is equivalent to pinning it in bufferpool (for read or write respectively), releasing a latch may put that page out of bufferpool's cache
 **	but it should still remain locked for the entirity of the transaction. (Just as you may have learned it in 2-phase lock).
+**	From concurrency point of view, locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must wait
+**	Because if you allow 2 threads of the same transaction to have write latches, then they may write at once to the same page and corrupt it
 **
 **	TupleIndexer will call data_access_methods only to instruct what it wants latched and for what (reading or writing) and upgrade and downgrade latches
 **	or finally to release latches.
