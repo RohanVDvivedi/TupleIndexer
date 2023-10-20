@@ -44,7 +44,7 @@ void serialize_bplus_tree_leaf_page_header(void* hdr_serial, const bplus_tree_le
 	write_uint64(bplus_tree_leaf_page_header_serial + bpttd_p->page_id_width, bpttd_p->page_id_width, bptlph_p->prev_page_id);
 }
 
-void set_bplus_tree_leaf_page_header(persistent_page* ppage, const bplus_tree_leaf_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
+void set_bplus_tree_leaf_page_header(persistent_page* ppage, const bplus_tree_leaf_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	uint32_t page_header_size = get_page_header_size_persistent_page(ppage, bpttd_p->page_size);
 
@@ -60,8 +60,9 @@ void set_bplus_tree_leaf_page_header(persistent_page* ppage, const bplus_tree_le
 	serialize_bplus_tree_leaf_page_header(hdr_serial, bptlph_p, bpttd_p);
 
 	// write hdr_serial to the new header position
-	set_persistent_page_header(pmm_p, ppage, bpttd_p->page_size, hdr_serial);
+	set_persistent_page_header(pmm_p, transaction_id, ppage, bpttd_p->page_size, hdr_serial, abort_error);
 
+	// we need to free hdr_serial, even on an abort_error
 	free(hdr_serial);
 }
 

@@ -62,7 +62,7 @@ void serialize_bplus_tree_interior_page_header(void* hdr_serial, const bplus_tre
 	write_uint64(bplus_tree_interior_page_header_serial + BYTES_FOR_PAGE_LEVEL + bpttd_p->page_id_width, FLAGS_BYTE_SIZE, ((!!(bptiph_p->is_last_page_of_level)) << IS_LAST_PAGE_OF_LEVEL_FLAG_POS));
 }
 
-void set_bplus_tree_interior_page_header(persistent_page* ppage, const bplus_tree_interior_page_header* bptiph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
+void set_bplus_tree_interior_page_header(persistent_page* ppage, const bplus_tree_interior_page_header* bptiph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	uint32_t page_header_size = get_page_header_size_persistent_page(ppage, bpttd_p->page_size);
 
@@ -78,8 +78,9 @@ void set_bplus_tree_interior_page_header(persistent_page* ppage, const bplus_tre
 	serialize_bplus_tree_interior_page_header(hdr_serial, bptiph_p, bpttd_p);
 
 	// write hdr_serial to the new header position
-	set_persistent_page_header(pmm_p, ppage, bpttd_p->page_size, hdr_serial);
+	set_persistent_page_header(pmm_p, transaction_id, ppage, bpttd_p->page_size, hdr_serial, abort_error);
 
+	// we need to free hdr_serial, even on an abort_error
 	free(hdr_serial);
 }
 

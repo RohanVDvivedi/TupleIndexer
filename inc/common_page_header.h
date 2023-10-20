@@ -27,7 +27,7 @@ common_page_header get_common_page_header(const persistent_page* ppage, const bp
 
 void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p);
 
-void set_common_page_header(persistent_page* ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
+void set_common_page_header(persistent_page* ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 void print_common_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
