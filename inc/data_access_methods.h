@@ -5,48 +5,42 @@
 
 /*
 **	This structure defines functions that provide page level access methods to the storage model to access the database in pages of fixed size
-*/
-
-/*
+**
 **	All operations must return 1 or Non NULL when they have succeeded
 **  0 or NULL impiles an abort_error/a failure with the corresponding operation
-**	a failure to data_access_methods function calls must accompany with an abort_error
-**	this the same error that transaction abort manager will be marked aborted with.
+**	a failure to data_access_methods function calls must accompany with a non-zero abort_error
+**	this the same error that you should mark the transaction with in your transaction manager
 **	Any error returned, is expected to have aborted the transaction, and its reason must be returned in abort_error
+**
 **	In case of a failure to allocate more memory for your needs, do not throw an abort_error, just call exit() and kill the application
-**	Additionally ensure that no new page locks are granted once a transaction is aborted.
+**	Additionally ensure that no new page locks are granted, to any thread working on the transaction, once a transaction is aborted.
 **	In such a case, when a transaction is already aborted, just return its reason for abort in the abort_error, that will suffice.
-*/
-
-/*
-**	Your design may include a shared lock on the transaction's is_aborted bit and its reason for abort, allowing multiple threads to ensure that the transaction is not aborted while you write a log record for one of its changes
+**
+**	Your design may include a shared lock on the transaction's is_aborted bit and its reason for abort
+**	allowing multiple threads to take this shared lock, to ensure that the transaction is not aborted while you work on fulfilling the request
 **	And take an exclusive lock to mark it aborted
 **
-**	As discussed above, the following functions may just ensure that the transaction is not aborted, AND mark it aborted if the corresponding function fails
+**	As discussed above, the following functions must ensure that the transaction is not aborted, AND mark it aborted if the corresponding function fails
 **
 **	In situation, when you are handed an aborted transaction, to get some operation done with the below functions
-**	All you need to do is set the abort_error with the reason of abort and return
+**	All you need to do is set the abort_error with the reason of abort and return, (except for release_*_lock_on_page functions -> explained later)
 **
 **	When you are throwing an abort error, from within of any of these functions, it is you who needs to mark it aborted, with the reason of abort, so that other threads can see it
 **	!! Noone else is responsible to abort a transaction for you, you need to do it yourself !!
-*/
-
-/*
+**
 **	The below functions may be termed as acquire_lock and release_lock, but these are in-effect latches,
 **	For instance when the page is first accessed, you may latch and lock it.
 **	On any subsequent calls, you should only latch the page, and not lock it, I hope you get it.
 **	latching a page is equivalent to pinning it in bufferpool (for read or write respectively), releasing a latch may put that page out of bufferpool's cache
-**	but it should still remain locked for the intireity of the transaction. (Just as you may have learned it in 2-phase commit).
+**	but it should still remain locked for the entirity of the transaction. (Just as you may have learned it in 2-phase lock).
 **
-**	All in call TupleIndexer will call data_access_methods only to instruct what it wants latched and for what (reading or writing) and upgrade and downgrade latches
+**	TupleIndexer will call data_access_methods only to instruct what it wants latched and for what (reading or writing) and upgrade and downgrade latches
 **	or finally to release latches.
 **
 **	You need to handle locks on your own using these functions given below.
-*/
-
-/*
+**
 **	Once a transaction is known to be aborted by a thread, no new acquire_lock, free_page, downgrade_lock or upgrade_lock calls will be made by TupleIndexer.
-**	Only release_lock calls will be made (with only WAS_MODIFIED bit set, if the page was modified), and abort_error set to indicate that the TupleIndexer's thread is aware of the transaction being aborted
+**	Only release_lock calls will be made (without FREE_PAGE bit set in the opts), and abort_error will set to indicate that the TupleIndexer's thread is already aware of the transaction being aborted
 */
 
 // below are the options that can go with the functions below
