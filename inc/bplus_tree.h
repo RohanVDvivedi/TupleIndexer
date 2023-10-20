@@ -8,14 +8,6 @@
 #include<opaque_page_modification_methods.h>
 #include<opaque_transaction_abort_manager.h>
 
-// errors returned by the bplus_tree functions
-#define NO_ERROR					0 // no error
-#define RECORD_NOT_FOUND			1 // on an delete call
-#define RECORD_TOO_BIG				2 // on an insert/update call
-#define RECORD_EXISTS				3 // on an insert call
-#define FALSE_ON_UPDATE_INSPECTOR 	4 // when an update fails, because update_inspector returned 0
-#define TRANSACTION_ABORT			5 // signifies transaction is aborted
-
 // returns pointer to the root page of the bplus_tree
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
