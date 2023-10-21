@@ -257,14 +257,22 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	// return with a split failure if the page2 could not be allocated
 	if(*abort_error)
 	{
-		// on failure, do not forget to release writer lock on page3
-		release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
-
+		// on failure, do not forget to release writer lock on page3, if you had it
+		if(!is_persistent_page_NULL(&page3))
+			release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
 		return 0;
 	}
 
 	// initialize page2 (as a leaf page)
 	init_bplus_tree_leaf_page(&page2, bpttd_p, pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+	{
+		// on failure, do not forget to release writer lock on page3 (if you had it) and page2
+		if(!is_persistent_page_NULL(&page3))
+			release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		return 0;
+	}
 
 	// link page2 in between page1 and the next page of page1
 	{
