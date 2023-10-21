@@ -35,8 +35,11 @@ int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, ui
 			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1)
 			{
 				locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-				release_lock_on_persistent_page(dam_p, &(bottom->ppage), NONE_OPTION);
+				release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 				pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+				if(*abort_error)
+					goto ABORT_ERROR;
 			}
 		}
 
@@ -46,13 +49,27 @@ int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, ui
 
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
-		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
+		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
 
 		// push this child page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 	}
 
 	return 1;
+
+	ABORT_ERROR :;
+	// on an abort_error release locks on all the pages, we had locks on until now
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
+
+	return 0;
 }
 
 int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
@@ -78,8 +95,11 @@ int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id,
 			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1)
 			{
 				locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-				release_lock_on_persistent_page(dam_p, &(bottom->ppage), NONE_OPTION);
+				release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 				pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+				if(*abort_error)
+					goto ABORT_ERROR;
 			}
 		}
 
@@ -89,13 +109,27 @@ int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id,
 
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
-		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
+		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
 
 		// push this child page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 	}
 
 	return 1;
+
+	ABORT_ERROR :;
+	// on an abort_error release locks on all the pages, we had locks on until now
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
+
+	return 0;
 }
 
 int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
