@@ -246,7 +246,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 			page3 = acquire_persistent_page_with_lock(dam_p, transaction_id, page3_id, WRITE_LOCK, abort_error);
 
 			// if we could not acquire lock on page3, then fail split_insert
-			if((*abort_error) || is_persistent_page_NULL(&page3, dam_p))
+			if(*abort_error)
 				return 0;
 		}
 	}
@@ -255,7 +255,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	persistent_page page2 = get_new_persistent_page_with_write_lock(dam_p, transaction_id, abort_error);
 
 	// return with a split failure if the page2 could not be allocated
-	if((*abort_error) || is_persistent_page_NULL(&page2, dam_p))
+	if(*abort_error)
 	{
 		// on failure, do not forget to release writer lock on page3
 		release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
@@ -445,7 +445,7 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 			page2 = acquire_persistent_page_with_lock(dam_p, transaction_id, page2_id, WRITE_LOCK, abort_error);
 
 			// failed acquiring lock on this page, return 0 (failure)
-			if((*abort_error) || is_persistent_page_NULL(&page2, dam_p))
+			if(*abort_error)
 				return 0;
 		}
 		else // no page to merge page1 with
@@ -480,7 +480,7 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 			persistent_page page3 = acquire_persistent_page_with_lock(dam_p, transaction_id, page3_id, WRITE_LOCK, abort_error);
 
 			// could not acquire lock on page3, so can not perform a merge
-			if((*abort_error) || is_persistent_page_NULL(&page3, dam_p))
+			if(*abort_error)
 			{
 				// on error, we release writer lock on page2
 				release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
