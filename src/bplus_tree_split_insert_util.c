@@ -34,7 +34,10 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
-		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, WRITE_LOCK);
+		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
 
 		// if child page will not require a split, then release locks on all the parent pages
 		if( ( is_bplus_tree_leaf_page(&child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->record_def))
@@ -43,8 +46,11 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 			{
 				locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-				release_lock_on_persistent_page(dam_p, &(bottom->ppage), NONE_OPTION);
+				release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 				pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+				if(*abort_error)
+					goto ABORT_ERROR;
 			}
 		}
 
@@ -53,6 +59,17 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 	}
 
 	return 1;
+
+	ABORT_ERROR:;
+	// release locks on all the pages, we had locks on until now
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
+
+	return 0;
 }
 
 int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
