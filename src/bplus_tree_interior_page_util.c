@@ -426,12 +426,18 @@ int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separato
 		page2_hdr.is_last_page_of_level = 0;
 
 		// set the page headers back on to the page
-		set_bplus_tree_interior_page_header(page1, &page1_hdr, bpttd_p, pmm_p);
-		set_bplus_tree_interior_page_header(page2, &page2_hdr, bpttd_p, pmm_p);
+		set_bplus_tree_interior_page_header(page1, &page1_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+		set_bplus_tree_interior_page_header(page2, &page2_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
 	}
 
 	// now we construct a separator tuple and insert it into the page 1
 	void* separator_tuple = malloc(sizeof(char) * separator_tuple_size);
+	if(separator_tuple == NULL)
+		exit(-1);
 	memory_move(separator_tuple, separator_parent_tuple, sizeof(char) * separator_tuple_size);
 
 	// update child_page_id of separator_tuple with the value from least_keys_page_id
@@ -444,24 +450,36 @@ int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separato
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									separator_tuple, 
 									get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)),
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
 
 	// free memory allocated for separator_tuple
 	free(separator_tuple);
+
+	if(*abort_error)
+		return 0;
 
 	// now, we can safely transfer all tuples from page2 to page1
 
 	// only if there are any tuples to move from page2
 	uint32_t tuple_count_page2 = get_tuple_count_on_persistent_page(page2, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
 	if(tuple_count_page2 > 0)
+	{
 		// only if there are any tuples to move
 		insert_all_from_sorted_packed_page(
 									page1, page2, bpttd_p->page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									0, tuple_count_page2 - 1,
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
+
+		if(*abort_error)
+			return 0;
+	}
 
 	return 1;
 }
