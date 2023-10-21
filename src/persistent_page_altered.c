@@ -26,6 +26,10 @@ int init_persistent_page(const page_modification_methods* pmm_p, const void* tra
 	if(res && (!(*abort_error)))
 		ppage->flags |= WAS_MODIFIED;
 
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
+
 	return res;
 }
 
@@ -74,6 +78,10 @@ int append_tuple_on_persistent_page(const page_modification_methods* pmm_p, cons
 	if(res && (!(*abort_error)))
 		ppage->flags |= WAS_MODIFIED;
 
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
+
 	return res;
 }
 
@@ -99,6 +107,10 @@ int update_tuple_on_persistent_page(const page_modification_methods* pmm_p, cons
 	if(res && (!(*abort_error)))
 		ppage->flags |= WAS_MODIFIED;
 
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
+
 	return res;
 }
 
@@ -123,6 +135,10 @@ int discard_tuple_on_persistent_page(const page_modification_methods* pmm_p, con
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
 		ppage->flags |= WAS_MODIFIED;
+
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
 
 	return res;
 }
@@ -172,6 +188,10 @@ uint32_t discard_trailing_tomb_stones_on_persistent_page(const page_modification
 	if(res && (!(*abort_error)))
 		ppage->flags |= WAS_MODIFIED;
 
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
+
 	return res;
 }
 
@@ -201,6 +221,10 @@ int swap_tuples_on_persistent_page(const page_modification_methods* pmm_p, const
 	if(res && (!(*abort_error)))
 		ppage->flags |= WAS_MODIFIED;
 
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
+
 	return res;
 }
 
@@ -225,6 +249,10 @@ int set_element_in_tuple_in_place_on_persistent_page(const page_modification_met
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
 		ppage->flags |= WAS_MODIFIED;
+
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
 
 	return res;
 }
@@ -273,6 +301,10 @@ int run_persistent_page_compaction(const page_modification_methods* pmm_p, const
 	// if the page was compacted, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
 		ppage->flags |= WAS_MODIFIED;
+
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
 
 	return res;
 }
