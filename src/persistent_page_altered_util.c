@@ -5,7 +5,10 @@
 int append_tuple_on_persistent_page_resiliently(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple, int* abort_error)
 {
 	// try simply appending, first
-	if(append_tuple_on_persistent_page(pmm_p, transaction_id, ppage, page_size, tpl_sz_d, external_tuple, abort_error) && (!(*abort_error)))
+	int res = append_tuple_on_persistent_page(pmm_p, transaction_id, ppage, page_size, tpl_sz_d, external_tuple, abort_error);
+	if((*abort_error))
+		return 0;
+	else if(res)
 		return 1;
 
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
