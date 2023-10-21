@@ -12,7 +12,7 @@
 #include<persistent_page_functions.h>
 #include<tuple.h>
 
-int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
 	while(1)
@@ -55,7 +55,7 @@ int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, ui
 	return 1;
 }
 
-int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
 	while(1)
@@ -98,7 +98,7 @@ int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id,
 	return 1;
 }
 
-int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
