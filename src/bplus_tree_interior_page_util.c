@@ -12,10 +12,10 @@
 
 #include<stdlib.h>
 
-int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p)
+int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	int inited = init_persistent_page(pmm_p, ppage, bpttd_p->page_size, sizeof_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def));
-	if(!inited)
+	int inited = init_persistent_page(pmm_p, transaction_id, ppage, bpttd_p->page_size, sizeof_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def), abort_error);
+	if((*abort_error) || !inited)
 		return 0;
 
 	// get the header, initialize it and set it back on to the page
@@ -24,7 +24,9 @@ int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is
 	hdr.level = level;
 	hdr.least_keys_page_id = bpttd_p->NULL_PAGE_ID;
 	hdr.is_last_page_of_level = is_last_page_of_level;
-	set_bplus_tree_interior_page_header(ppage, &hdr, bpttd_p, pmm_p);
+	set_bplus_tree_interior_page_header(ppage, &hdr, bpttd_p, pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
 
 	return 1;
 }
@@ -155,7 +157,7 @@ int must_split_for_insert_bplus_tree_interior_page(const persistent_page* page1,
 	return 1;
 }
 
-int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, void* output_parent_insert)
+int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
 {
 	// check if a page must split to accomodate the new tuple
 	if(!must_split_for_insert_bplus_tree_interior_page(page1, tuple_to_insert, bpttd_p))
@@ -196,15 +198,22 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 	//uint32_t tuples_leave_page1 = page1_tuple_count - tuples_stay_in_page1;
 
 	// allocate a new page
-	persistent_page page2 = get_new_persistent_page_with_write_lock(dam_p);
+	persistent_page page2 = get_new_persistent_page_with_write_lock(dam_p, transaction_id, abort_error);
 
 	// return with a split failure if the page2 could not be allocated
-	if(is_persistent_page_NULL(&page2, dam_p))
+	if(*abort_error)
 		return 0;
 
 	// initialize page2 (as an interior page)
 	uint32_t level = get_level_of_bplus_tree_interior_page(page1, bpttd_p);	// get the level of bplus_tree we are dealing with
-	init_bplus_tree_interior_page(&page2, level, 0, bpttd_p, pmm_p);
+	init_bplus_tree_interior_page(&page2, level, 0, bpttd_p, pmm_p, transaction_id, abort_error);
+
+	// if the bplus_tree interior page could not be inited, release lock and fail
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		return 0;
+	}
 
 	// check if page1 is last page of the level, if yes then page2 now becomes the last page of the level
 	{
@@ -218,8 +227,18 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 		page1_hdr.is_last_page_of_level = 0;
 
 		// set the page headers back on to the page
-		set_bplus_tree_interior_page_header(page1, &page1_hdr, bpttd_p, pmm_p);
-		set_bplus_tree_interior_page_header(&page2, &page2_hdr, bpttd_p, pmm_p);
+		set_bplus_tree_interior_page_header(page1, &page1_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			return 0;
+		}
+		set_bplus_tree_interior_page_header(&page2, &page2_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			return 0;
+		}
 	}
 
 	// while moving tuples, we assume that there will be atleast 1 tuple that will get moved from page1 to page2
@@ -231,16 +250,32 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 									&page2, page1, bpttd_p->page_size,
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuples_stay_in_page1, page1_tuple_count - 1,
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
+
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		return 0;
+	}
 
 	// delete the corresponding (copied) tuples in the page1
 	delete_all_in_sorted_packed_page(
 									page1, bpttd_p->page_size,
 									bpttd_p->index_def,
 									tuples_stay_in_page1, page1_tuple_count - 1,
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
+
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		return 0;
+	}
 
 	// insert the new tuple (tuple_to_insert) to page1 or page2 based on "new_tuple_goes_to_page1", as calculated earlier
 	if(new_tuple_goes_to_page1)
@@ -251,8 +286,16 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuple_to_insert,
 									tuple_to_insert_at,
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
+
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			return 0;
+		}
 	}
 	else
 	{
@@ -262,8 +305,16 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuple_to_insert,
 									tuple_to_insert_at - tuples_stay_in_page1,
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
+
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			return 0;
+		}
 	}
 
 	// now the page2 contains all the other tuples discarded from the page1, (due to the split)
@@ -289,7 +340,13 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 		page2_hdr.least_keys_page_id = page2_least_keys_page_id;
 
 		// set page2_hdr back onto the page
-		set_bplus_tree_interior_page_header(&page2, &page2_hdr, bpttd_p, pmm_p);
+		set_bplus_tree_interior_page_header(&page2, &page2_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
+
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			return 0;
+		}
 	}
 
 	// copy all the contents of the first_tuple_page2 to output_parent_insert
@@ -303,11 +360,23 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 									&page2, bpttd_p->page_size, 
 									bpttd_p->index_def,
 									0,
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
 
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		return 0;
+	}
+
 	// release lock on the page2, and mark it as modified
-	release_lock_on_persistent_page(dam_p, &page2, NONE_OPTION);
+	release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+
+	// on abort, return 0
+	if(*abort_error)
+		return 0;
 
 	// return success
 	return 1;
@@ -334,7 +403,7 @@ int can_merge_bplus_tree_interior_pages(const persistent_page* page1, const void
 	return 1;
 }
 
-int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separator_parent_tuple, persistent_page* page2, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separator_parent_tuple, persistent_page* page2, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// ensure that we can merge
 	if(!can_merge_bplus_tree_interior_pages(page1, separator_parent_tuple, page2, bpttd_p))
