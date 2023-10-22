@@ -35,7 +35,10 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	// walk down taking locks until you reach leaf page level = 0
 	walk_down_locking_parent_pages_for_merge_using_key(root_page_id, 0, locked_pages_stack_p, key, bpttd_p, dam_p, transaction_id, abort_error);
 	if(*abort_error)
+	{
+		deinitialize_locked_pages_stack(locked_pages_stack_p);
 		return 0;
+	}
 
 	// deleted will be set if the record, was deleted
 	int deleted = 0;
@@ -78,12 +81,15 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		{
 			merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 			if(*abort_error)
+			{
+				deinitialize_locked_pages_stack(locked_pages_stack_p);
 				return 0;
+			}
 		}
 	}
 	else
 	{
-		// you must never arrive here
+		// you must never arieve here
 		goto EXIT;
 	}
 
