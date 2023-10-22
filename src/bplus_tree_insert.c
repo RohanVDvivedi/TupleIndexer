@@ -21,10 +21,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		// get lock on the root page of the bplus_tree
 		persistent_page root_page = acquire_persistent_page_with_lock(dam_p, transaction_id, root_page_id, WRITE_LOCK, abort_error);
 		if(*abort_error)
-		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
 			return 0;
-		}
 
 		// pre cache level of the root_page
 		root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
