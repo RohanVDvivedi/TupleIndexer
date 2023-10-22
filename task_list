@@ -7,6 +7,7 @@ ERROR HANDLING
  * refactor all of bplus_tree functions take int* abort_error as parameter and pass it to functions underneath, allowing to pass abort_error between call stacks transparently
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * update_inspected allowed to throw an abort_error
  * separate logic to allow allocating and freeing pages given by page count, discard FREE_PAGE opts, but let there be a get_new_page_with_writer_lock. uint64_t allocate_new_page(page_count), returning first page id of the allocated pages, and int free_pages(uint64_t first_page_id, uint64_t page_count)
     * dicard FREE_PAGE and FORCE_FLUSH from dam options, keeping only WAS_MODIFIED bit
  * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
