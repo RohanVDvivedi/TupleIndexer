@@ -4,12 +4,14 @@
 #include<bplus_tree_page_header.h>
 #include<persistent_page_functions.h>
 
-int read_couple_locks_until_leaf_using_key(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, int lock_type, persistent_page* locked_leaf, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int read_couple_locks_until_leaf_using_key(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, int lock_type, persistent_page* locked_leaf, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// get lock on the root page of the bplus_tree
 	// root_page may be a leaf page (we can not know its level without locking the page first), so we always lock it with lock_type
 	// this will frustratingly kill the performance but, I have no idea how to do better
-	persistent_page curr_page = acquire_persistent_page_with_lock(dam_p, root_page_id, lock_type);
+	persistent_page curr_page = acquire_persistent_page_with_lock(dam_p, transaction_id, root_page_id, lock_type, abort_error);
+	if(*abort_error)
+		return 0;
 
 	while(!is_bplus_tree_leaf_page(&curr_page, bpttd_p))
 	{
@@ -23,11 +25,16 @@ int read_couple_locks_until_leaf_using_key(uint64_t root_page_id, const void* ke
 
 		// the next_page would be a leaf page, if the curr_page_level == 1
 		// if so, lock the next_page with the lock_type instead of READ_LOCK
-		persistent_page next_page = acquire_persistent_page_with_lock(dam_p, next_page_id, (curr_page_level == 1) ? lock_type : READ_LOCK);
+		persistent_page next_page = acquire_persistent_page_with_lock(dam_p, transaction_id, next_page_id, (curr_page_level == 1) ? lock_type : READ_LOCK, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+			return 0;
+		}
 
 		// release lock on the curr_page and 
 		// make the next_page as the curr_page
-		release_lock_on_persistent_page(dam_p, &curr_page, NONE_OPTION);
+		release_lock_on_persistent_page(dam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
 		curr_page = next_page;
 	}
 
@@ -37,12 +44,14 @@ int read_couple_locks_until_leaf_using_key(uint64_t root_page_id, const void* ke
 	return 1;
 }
 
-int read_couple_locks_until_leaf_using_record(uint64_t root_page_id, const void* record, uint32_t key_element_count_concerned, int lock_type, persistent_page* locked_leaf, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int read_couple_locks_until_leaf_using_record(uint64_t root_page_id, const void* record, uint32_t key_element_count_concerned, int lock_type, persistent_page* locked_leaf, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// get lock on the root page of the bplus_tree
 	// root_page may be a leaf page (we can not know its level without locking the page first), so we always lock it with lock_type
 	// this will frustratingly kill the performance but, I have no idea how to do better
-	persistent_page curr_page = acquire_persistent_page_with_lock(dam_p, root_page_id, lock_type);
+	persistent_page curr_page = acquire_persistent_page_with_lock(dam_p, transaction_id, root_page_id, lock_type, abort_error);
+	if(*abort_error)
+		return 0;
 
 	while(!is_bplus_tree_leaf_page(&curr_page, bpttd_p))
 	{
@@ -56,11 +65,16 @@ int read_couple_locks_until_leaf_using_record(uint64_t root_page_id, const void*
 
 		// the next_page would be a leaf page, if the curr_page_level == 1
 		// if so, lock the next_page with the lock_type instead of READ_LOCK
-		persistent_page next_page = acquire_persistent_page_with_lock(dam_p, next_page_id, (curr_page_level == 1) ? lock_type : READ_LOCK);
+		persistent_page next_page = acquire_persistent_page_with_lock(dam_p, transaction_id, next_page_id, (curr_page_level == 1) ? lock_type : READ_LOCK, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+			return 0;
+		}
 
 		// release lock on the curr_page and 
 		// make the next_page as the curr_page
-		release_lock_on_persistent_page(dam_p, &curr_page, NONE_OPTION);
+		release_lock_on_persistent_page(dam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
 		curr_page = next_page;
 	}
 
