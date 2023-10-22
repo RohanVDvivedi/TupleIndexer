@@ -130,7 +130,9 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		return 0;
 	
 	persistent_page concerned_leaf = get_NULL_persistent_page(dam_p);
-	read_couple_locks_until_leaf_using_record(root_page_id, new_record, bpttd_p->key_element_count, WRITE_LOCK, &concerned_leaf, bpttd_p, dam_p);
+	read_couple_locks_until_leaf_using_record(root_page_id, new_record, bpttd_p->key_element_count, WRITE_LOCK, &concerned_leaf, bpttd_p, dam_p, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
 
 	// find index of last record that compared equal to the new_record
 	uint32_t found_index = find_last_in_sorted_packed_page(
@@ -150,15 +152,17 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 
 	if(ui_p->update_inspect(ui_p->context, bpttd_p->record_def, old_record, &new_record) == 0)
 	{
-		release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+		release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
 		return 0;
 	}
 
 	// if old_record did not exist and the new_record is set to NULL (i.e. a request for deletion, the do nothing)
 	if(old_record == NULL && new_record == NULL)
 	{
-		release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
-		return 0;
+		release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+		if(*abort_error)
+			return 0;
+		return 1;
 	}
 	else if(old_record == NULL && new_record != NULL) // insert case
 	{
@@ -173,52 +177,78 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									new_record, 
 									&insertion_point,
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
+
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			return 0;
+		}
 
 		// if inserted, we are done
 		if(inserted)
 		{
-			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			if(*abort_error)
+				return 0;
 			return 1;
 		}
 
 		// else we split insert
-		inserted = walk_down_and_split_insert_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p);
+		inserted = walk_down_and_split_insert_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
 
 		return inserted;
 	}
 	else if(old_record != NULL && new_record == NULL) // delete case
 	{
 		// perform a delete operation on the found index in this page
-		int deleted = delete_in_sorted_packed_page(
+		delete_in_sorted_packed_page(
 							&(concerned_leaf), bpttd_p->page_size,
 							bpttd_p->record_def,
 							found_index,
-							pmm_p
+							pmm_p,
+							transaction_id,
+							abort_error
 						);
 
 		// we need to merge it, if it is not root and is lesser than half full
-		if(deleted && concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
-			walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p);
+		if(concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
+		{
+			walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				return 0;
+		}
 		else
-			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			if(*abort_error)
+				return 0;
+		}
 
-		return deleted;
+		return 1;
 	}
 	else // update
 	{
 		// fail if the keys of old_record and new_record, do not match then quit
 		if(0 != compare_tuples(old_record, bpttd_p->record_def, bpttd_p->key_element_ids, new_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count))
 		{
-			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			if(*abort_error)
+				return 0;
 			return 0;
 		}
 
 		// check again if the new_record is small enough to be inserted on the page
 		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
 		{
-			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			if(*abort_error)
+				return 0;
 			return 0;
 		}
 
@@ -230,8 +260,15 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									new_record, 
 									found_index,
-									pmm_p
+									pmm_p,
+									transaction_id,
+									abort_error
 								);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			return 0;
+		}
 
 		if(new_record_size != old_record_size) // inplace update
 		{
@@ -245,25 +282,49 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 							&(concerned_leaf), bpttd_p->page_size,
 							bpttd_p->record_def,
 							found_index,
-							pmm_p
+							pmm_p,
+							transaction_id,
+							abort_error
 						);
+					if(*abort_error)
+					{
+						release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+						return 0;
+					}
 
-					updated = walk_down_and_split_insert_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p);
+					updated = walk_down_and_split_insert_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+					if(*abort_error)
+						return 0;
 				}
 				else
-					release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+				{
+					release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+					if(*abort_error)
+						return 0;
+				}
 			}
-			else // new_record_size < old_record_size -> may require merge
+			else // new_record_size < old_record_size -> may require merge -> but it is assumed to be true that updated = 1
 			{
-				// this must be true here, how can small record can't fit in a bigger one's space
-				if(updated && concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
-					walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p);
+				if(concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
+				{
+					walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+					if(*abort_error)
+						return 0;
+				}
 				else
-					release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+				{
+					release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+					if(*abort_error)
+						return 0;
+				}
 			}
 		}
 		else
-			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			if(*abort_error)
+				return 0;
+		}
 
 		return updated;
 	}
