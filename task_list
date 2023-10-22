@@ -4,10 +4,7 @@ VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
 ERROR HANDLING
- * all of bplus_tree functions take int* abort_error as parameter and pass it to functions underneath, allowing to pass abort_error between call stacks transparently
- * return reasons for failure of public api bplus_tree functions
- * refactor sorted_packed_page and util and public api functions to use the new api with transaction_id and abort_error
- * remove sorted packed page from public api headers
+ * refactor all of bplus_tree functions take int* abort_error as parameter and pass it to functions underneath, allowing to pass abort_error between call stacks transparently
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
