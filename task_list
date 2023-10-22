@@ -62,10 +62,6 @@ ERROR HANDLING
     }
     return stack.reverse();
 
-DATA_ACCESS_METHODS with tuple level locking
- * allow data_access_methods (with a context) to also enable locking only tuples on the page
- * function check if a tuple on a page is locked
-
 ** OPTIMIZATION
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
  * see how this can be accomodated in the delete and update functions available at that point in future
