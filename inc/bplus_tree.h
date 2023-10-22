@@ -6,7 +6,6 @@
 #include<bplus_tree_tuple_definitions.h>
 #include<opaque_data_access_methods.h>
 #include<opaque_page_modification_methods.h>
-#include<opaque_transaction_abort_manager.h>
 
 // returns pointer to the root page of the bplus_tree
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
