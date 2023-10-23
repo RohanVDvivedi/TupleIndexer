@@ -3,9 +3,6 @@
 VALIDATING WAS_MODIFIED BIT
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
-ERROR HANDLING
- * refactor all of bplus_tree functions take int* abort_error as parameter and pass it to functions underneath, allowing to pass abort_error between call stacks transparently
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * update_inspected allowed to throw an abort_error
  * separate logic to allow allocating and freeing pages given by page count, discard FREE_PAGE opts, but let there be a get_new_page_with_writer_lock. uint64_t allocate_contiguous_pages(page_count), returning first page id of the allocated pages, and int free_contiguous_pages(uint64_t first_page_id, uint64_t page_count)
