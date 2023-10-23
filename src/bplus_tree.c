@@ -14,23 +14,27 @@
 
 #include<stdlib.h>
 
-uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	persistent_page root_page = get_new_persistent_page_with_write_lock(dam_p);
+	persistent_page root_page = get_new_persistent_page_with_write_lock(dam_p, transaction_id, abort_error);
 
 	// failure to acquire a new page
-	if(is_persistent_page_NULL(&root_page, dam_p))
+	if(*abort_error)
 		return bpttd_p->NULL_PAGE_ID;
 
 	// if init_page fails
-	if(!init_bplus_tree_leaf_page(&root_page, bpttd_p, pmm_p))
+	init_bplus_tree_leaf_page(&root_page, bpttd_p, pmm_p, transaction_id, abort_error);
+	if(*abort_error)
 	{
-		release_lock_on_persistent_page(dam_p, &root_page, FREE_PAGE);
+		release_lock_on_persistent_page(dam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
 		return bpttd_p->NULL_PAGE_ID;
 	}
 
 	uint64_t res = root_page.page_id;
-	release_lock_on_persistent_page(dam_p, &root_page, NONE_OPTION);
+	release_lock_on_persistent_page(dam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+	if(*abort_error)
+		return bpttd_p->NULL_PAGE_ID;
+
 	return res;
 }
 
