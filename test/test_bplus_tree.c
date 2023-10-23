@@ -45,6 +45,10 @@
 
 #define PAGE_ID_WIDTH 3
 
+// initialize transaction_id and abort_error
+const void* transaction_id = NULL;
+int abort_error = 0;
+
 typedef struct record record;
 struct record
 {
@@ -180,13 +184,23 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p, pmm_p);
+		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
 
 		// print bplus tree
 		if(print_tree_after_each)
 		{
 			printf("---------------------------------------------------------------------------------------------------------\n");
-			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
+			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
 			printf("---------------------------------------------------------------------------------------------------------\n\n");
 		}
 
@@ -196,7 +210,14 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 
 	// print bplus tree
 	if(print_tree_on_completion)
-		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p);
+	{
+		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
 
 	// close the file
 	fclose(f);
@@ -271,13 +292,23 @@ result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* f
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += inspected_update_in_bplus_tree(root_page_id, record_tuple, ui, bpttd_p, dam_p, pmm_p);
+		res.operations_succeeded += inspected_update_in_bplus_tree(root_page_id, record_tuple, ui, bpttd_p, dam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
 
 		// print bplus tree
 		if(print_tree_after_each)
 		{
 			printf("---------------------------------------------------------------------------------------------------------\n");
-			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
+			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
 			printf("---------------------------------------------------------------------------------------------------------\n\n");
 		}
 
@@ -287,7 +318,14 @@ result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* f
 
 	// print bplus tree
 	if(print_tree_on_completion)
-		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p);
+	{
+		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
 
 	// close the file
 	fclose(f);
@@ -330,13 +368,23 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
 
 		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += delete_from_bplus_tree(root_page_id, key_tuple, bpttd_p, dam_p, pmm_p);
+		res.operations_succeeded += delete_from_bplus_tree(root_page_id, key_tuple, bpttd_p, dam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
 
 		// print bplus tree
 		if(print_tree_after_each)
 		{
 			printf("---------------------------------------------------------------------------------------------------------\n");
-			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p);
+			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
 			printf("---------------------------------------------------------------------------------------------------------\n\n");
 		}
 
@@ -346,7 +394,14 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 
 	// print bplus tree
 	if(print_tree_on_completion)
-		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p);
+	{
+		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
 
 	// close the file
 	fclose(f);
@@ -363,7 +418,12 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 
 	printf("printing the first 4 tuples\n");
 
-	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, bpttd_p, dam_p);
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, bpttd_p, dam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 
 	const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	uint32_t tuples_to_print = 0;
@@ -371,16 +431,31 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	{
 		print_tuple(tuple_to_print, bpttd_p->record_def);
 		tuples_to_print++;
-		next_bplus_tree_iterator(bpi_p);
+		next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
 		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	}
 
-	delete_bplus_tree_iterator(bpi_p);
+	delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 	printf("\n");
 
 	printf("printing the last 4 tuples\n");
 
-	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, bpttd_p, dam_p);
+	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, bpttd_p, dam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 
 	tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	tuples_to_print = 0;
@@ -388,11 +463,21 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	{
 		print_tuple(tuple_to_print, bpttd_p->record_def);
 		tuples_to_print++;
-		prev_bplus_tree_iterator(bpi_p);
+		prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
 		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	}
 
-	delete_bplus_tree_iterator(bpi_p);
+	delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 	printf("\n");
 
 	uint32_t records_seen = 0;
@@ -442,7 +527,12 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			}
 		}
 
-		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, bpttd_p, dam_p);
+		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, bpttd_p, dam_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
 
 		const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 		uint32_t tuples_to_print = 0;
@@ -455,20 +545,35 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 				case LESSER_THAN :
 				case LESSER_THAN_EQUALS :
 				{
-					prev_bplus_tree_iterator(bpi_p);
+					prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+					if(abort_error)
+					{
+						printf("ABORTED\n");
+						exit(-1);
+					}
 					break;
 				}
 				case GREATER_THAN_EQUALS :
 				case GREATER_THAN :
 				{
-					next_bplus_tree_iterator(bpi_p);
+					next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+					if(abort_error)
+					{
+						printf("ABORTED\n");
+						exit(-1);
+					}
 					break;
 				}
 			}
 			tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 		}
 
-		delete_bplus_tree_iterator(bpi_p);
+		delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
 		printf("\n");
 		printf("----------------\n\n");
 
@@ -504,7 +609,12 @@ int main()
 	print_bplus_tree_tuple_definitions(&bpttd);
 
 	// create a bplus tree and get its root
-	uint64_t root_page_id = get_new_bplus_tree(&bpttd, dam_p, pmm_p);
+	uint64_t root_page_id = get_new_bplus_tree(&bpttd, dam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 
 	// variable to test insert and delete operations
 	result res;
@@ -646,7 +756,12 @@ int main()
 	/* CLEANUP */
 
 	// destroy bplus tree
-	destroy_bplus_tree(root_page_id, &bpttd, dam_p);
+	destroy_bplus_tree(root_page_id, &bpttd, dam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 
 	// close the in-memory data store
 	close_and_destroy_in_memory_data_store(dam_p);

@@ -5,16 +5,10 @@
 #include<opaque_page_modification_methods.h>
 
 #include<persistent_page.h>
+#include<page_type.h>
 
 #include<stdint.h>
 
-typedef enum page_type page_type;
-enum page_type
-{
-	BPLUS_TREE_LEAF_PAGE,
-	BPLUS_TREE_INTERIOR_PAGE,
-	// add more page_types as you wish at most ((2^16) - 1) page_types can be supported
-};
 
 typedef struct common_page_header common_page_header;
 struct common_page_header
@@ -29,13 +23,11 @@ struct common_page_header
 
 uint32_t get_offset_to_end_of_common_page_header(const bplus_tree_tuple_defs* bpttd_p);
 
-page_type get_type_of_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
-
 common_page_header get_common_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
 void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p);
 
-void set_common_page_header(persistent_page* ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p);
+void set_common_page_header(persistent_page* ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 void print_common_page_header(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
