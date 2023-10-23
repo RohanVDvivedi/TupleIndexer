@@ -6,10 +6,12 @@
 
  * update_inspected allowed to throw an abort_error
 
- * separate logic to allow allocating and freeing pages given by page count, discard FREE_PAGE opts, but let there be a get_new_page_with_writer_lock. uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
+ * dam in release_lock(FREE_PAGE) -> allow the operation only if there is exactly only 1 thread, with reader and writer lock on the page
+ * you are allowed to release lock on the page and free it simultaneously, if you are the only 1 who has lock on it
+ * dam functions add functionality to allow allocating and freeing pages given by page count, uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
  * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
- * free_page must fail with an abort, if there are concurrent readers OR writers to the page, i.e. if a page is read or write locked, while freeing a page.
- * discard FREE_PAGE and FORCE_FLUSH from dam options, keeping only WAS_MODIFIED bit
+ * free_page must fail with an abort, if there are concurrent readers OR writers to the page, i.e. if a page is read or write locked (allow only 1 locker for the calling thread if FREE_PAGE is set for release_lock), while freeing a page.
+ * discard FORCE_FLUSH from dam options
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
