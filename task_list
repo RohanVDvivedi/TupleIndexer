@@ -8,6 +8,7 @@
 
  * separate logic to allow allocating and freeing pages given by page count, discard FREE_PAGE opts, but let there be a get_new_page_with_writer_lock. uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
  * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count) -> to free n contiguous pages.
+ * Think about this again, how to free a page if it is being read by other threads, do we need to explicitly write lock a page to free it???
  * discard FREE_PAGE and FORCE_FLUSH from dam options, keeping only WAS_MODIFIED bit
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
