@@ -31,7 +31,7 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint
 
 // it moves the cursor forward by a tuple
 // returns 1 for success, it returns 0, if there are no records to move to
-int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
 
 // returns pointer to the current tuple that the cursor points to
 // it returns NULL, if the page that it points to is empty (0 tuples), ** this must not happen in a bplus_tree
@@ -41,12 +41,9 @@ const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 
 // it moves the cursor backward by a tuple
 // returns 1 for success, it returns 0, if there are no records to move to
-int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
-
-// check if an error occurred after a next_* or a prev_* call on a bplus_tree_iterator
-int error_occurred_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
 
 // all locks held by the iterator will be released before, the iterator is destroyed/deleted
-void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
 
 #endif
