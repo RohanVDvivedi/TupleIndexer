@@ -258,7 +258,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	if(*abort_error)
 	{
 		// on failure, do not forget to release writer lock on page3, if you had it
-		if(!is_persistent_page_NULL(&page3))
+		if(!is_persistent_page_NULL(&page3, dam_p))
 			release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
 		return 0;
 	}
@@ -268,7 +268,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	if(*abort_error)
 	{
 		// on failure, do not forget to release writer lock on page3 (if you had it) and page2
-		if(!is_persistent_page_NULL(&page3))
+		if(!is_persistent_page_NULL(&page3, dam_p))
 			release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
 		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
