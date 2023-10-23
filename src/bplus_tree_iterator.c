@@ -69,6 +69,10 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 
 		bpi_p->curr_page = next_page;
 
+		// if we reached the end of the scan, quit with 0
+		if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->dam_p))
+			return 0;
+
 		uint32_t curr_page_tuple_count = get_tuple_count_on_persistent_page(&(bpi_p->curr_page), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
 		// or a valid page has atleast a tuple
@@ -129,6 +133,10 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 		}
 
 		bpi_p->curr_page = prev_page;
+
+		// if we reached the end of the scan, quit with 0
+		if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->dam_p))
+			return 0;
 
 		uint32_t curr_page_tuple_count = get_tuple_count_on_persistent_page(&(bpi_p->curr_page), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
