@@ -142,11 +142,11 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 										);
 
 	// get the reference to the old_record
-	const void* old_record = NULL;
+	void* old_record = NULL;
 	uint32_t old_record_size = 0;
 	if(NO_TUPLE_FOUND != found_index)
 	{
-		old_record = get_nth_tuple_on_persistent_page(&concerned_leaf, bpttd_p->page_size, &(bpttd_p->record_def->size_def), found_index);
+		old_record = (void*) get_nth_tuple_on_persistent_page(&concerned_leaf, bpttd_p->page_size, &(bpttd_p->record_def->size_def), found_index);
 		old_record_size = get_tuple_size(bpttd_p->record_def, old_record);
 	}
 
@@ -168,7 +168,12 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	{
 		// check again if the new_record is small enough to be inserted on the page
 		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			if(*abort_error)
+				return 0;
 			return 0;
+		}
 
 		// try to insert
 		uint32_t insertion_point;
@@ -206,6 +211,15 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	}
 	else if(old_record != NULL && new_record == NULL) // delete case
 	{
+		// make a local copy of the old_record
+		{
+			const void* temp = old_record;
+			old_record = malloc(old_record_size);
+			if(old_record == NULL)
+				exit(-1);
+			memory_move(old_record, temp, old_record_size);
+		}
+
 		// perform a delete operation on the found index in this page
 		delete_in_sorted_packed_page(
 							&(concerned_leaf), bpttd_p->page_size,
@@ -219,17 +233,25 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		// we need to merge it, if it is not root and is lesser than half full
 		if(concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
 		{
+			// here the duplicate of the old_record will allow us to walk_down_and_merge at correct position
 			walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 			if(*abort_error)
+			{
+				free(old_record);
 				return 0;
+			}
 		}
 		else
 		{
 			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
 			if(*abort_error)
+			{
+				free(old_record);
 				return 0;
+			}
 		}
 
+		free(old_record);
 		return 1;
 	}
 	else // update
@@ -307,7 +329,8 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			{
 				if(concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
 				{
-					walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+					// new_record has the same key contents as the old_record, hence we can merge at the position corresponding to the new_record
+					walk_down_and_merge_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 					if(*abort_error)
 						return 0;
 				}
