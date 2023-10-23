@@ -8,7 +8,7 @@
 #include<sorted_packed_page_util.h>
 #include<storage_capacity_page_util.h>
 
-#include<stdio.h>
+#include<stdlib.h>
 
 static int walk_down_and_split_insert_util(uint64_t root_page_id, persistent_page* concerned_leaf, const void* new_record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
@@ -96,11 +96,11 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 										);
 
 	// get the reference to the old_record
-	const void* old_record = NULL;
+	void* old_record = NULL;
 	uint32_t old_record_size = 0;
 	if(NO_TUPLE_FOUND != found_index)
 	{
-		old_record = get_nth_tuple_on_persistent_page(&concerned_leaf, bpttd_p->page_size, &(bpttd_p->record_def->size_def), found_index);
+		old_record = (void*) get_nth_tuple_on_persistent_page(&concerned_leaf, bpttd_p->page_size, &(bpttd_p->record_def->size_def), found_index);
 		old_record_size = get_tuple_size(bpttd_p->record_def, old_record);
 	}
 
@@ -146,6 +146,14 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	}
 	else if(old_record != NULL && new_record == NULL) // delete case
 	{
+		{
+			void* old_record_cached = old_record;
+			old_record = malloc(old_record_size);
+			if(old_record == NULL)
+				exit(-1);
+			memory_move(old_record, old_record_cached, old_record_size);
+		}
+
 		// perform a delete operation on the found index in this page
 		int deleted = delete_in_sorted_packed_page(
 							&(concerned_leaf), bpttd_p->page_size,
@@ -159,6 +167,8 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p);
 		else
 			release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
+
+		free(old_record);
 
 		return deleted;
 	}
@@ -213,7 +223,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			{
 				// this must be true here, how can small record can't fit in a bigger one's space
 				if(updated && concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
-					walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p);
+					walk_down_and_merge_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p);
 				else
 					release_lock_on_persistent_page(dam_p, &concerned_leaf, NONE_OPTION);
 			}
