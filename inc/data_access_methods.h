@@ -45,6 +45,13 @@
 **	Only release_lock calls will be made (without FREE_PAGE bit set in the opts), and abort_error will set to indicate that the TupleIndexer's thread is already aware of the transaction being aborted
 */
 
+/*
+**	conditions for usage of FREE_PAGE, and free_page
+**	fail with an abort, if the user tries to acquire lock on a free page,
+**	Allowing freeing of a page, with release lock function, only if there is only 1 thread having reader or writer lock on the page
+**	free_page function must succeed only if no locks are acquired on the page
+*/
+
 // below are the options that can go with the functions below
 //#define NONE_OPTION  0b000	// dummy for setting no options
 //#define FREE_PAGE    0b001	// will be used only while releasing the page lock
