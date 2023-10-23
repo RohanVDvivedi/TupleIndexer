@@ -24,7 +24,7 @@ enum find_type
 	MAX_TUPLE,
 };
 
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// if the user wants to consider all the key elements then
 	// set key_element_count_concerned to bpttd_p->key_element_count
@@ -41,7 +41,9 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		f_type = LESSER_THAN_KEY + (find_pos - LESSER_THAN);
 
 	// get lock on the root page of the bplus_tree
-	persistent_page curr_page = acquire_persistent_page_with_lock(dam_p, root_page_id, READ_LOCK);
+	persistent_page curr_page = acquire_persistent_page_with_lock(dam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
+	if(*abort_error)
+		return NULL;
 
 	while(!is_bplus_tree_leaf_page(&curr_page, bpttd_p))
 	{
@@ -71,11 +73,21 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 
 		uint64_t next_page_id = get_child_page_id_by_child_index(&curr_page, child_index, bpttd_p);
-		persistent_page next_page = acquire_persistent_page_with_lock(dam_p, next_page_id, READ_LOCK);
+		persistent_page next_page = acquire_persistent_page_with_lock(dam_p, transaction_id, next_page_id, READ_LOCK, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+			return NULL;
+		}
 
 		// release lock on the curr_page and 
 		// make the next_page as the curr_page
-		release_lock_on_persistent_page(dam_p, &curr_page, NONE_OPTION);
+		release_lock_on_persistent_page(dam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+			return NULL;
+		}
 		curr_page = next_page;
 	}
 
@@ -151,7 +163,12 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) >= 0)
 			{
-				prev_bplus_tree_iterator(bpi_p);
+				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+					return NULL;
+				}
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
@@ -161,7 +178,12 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
 			{
-				prev_bplus_tree_iterator(bpi_p);
+				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+					return NULL;
+				}
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
@@ -171,7 +193,12 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) < 0)
 			{
-				next_bplus_tree_iterator(bpi_p);
+				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+					return NULL;
+				}
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
@@ -181,7 +208,12 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) <= 0)
 			{
-				next_bplus_tree_iterator(bpi_p);
+				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+					return NULL;
+				}
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
