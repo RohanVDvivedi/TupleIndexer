@@ -38,14 +38,16 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_acc
 	return res;
 }
 
-int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// create a stack
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
 
 	{
 		// get lock on the root page of the bplus_tree
-		persistent_page root_page = acquire_persistent_page_with_lock(dam_p, root_page_id, READ_LOCK);
+		persistent_page root_page = acquire_persistent_page_with_lock(dam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
+		if(*abort_error)
+			return 0;
 
 		// pre cache level of the root_page
 		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
@@ -53,7 +55,12 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 		// edge case : if the root itself is a leaf page then free it, no locked_pages_stack required
 		if(is_bplus_tree_leaf_page(&root_page, bpttd_p))
 		{
-			release_lock_on_persistent_page(dam_p, &root_page, FREE_PAGE);
+			release_lock_on_persistent_page(dam_p, transaction_id, &root_page, FREE_PAGE, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(dam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+				return 0;
+			}
 			return 1;
 		}
 
@@ -79,17 +86,23 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 
 			// free the child leaf page id at index -1
 			uint64_t child_leaf_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), -1, bpttd_p);
-			free_persistent_page(dam_p, child_leaf_page_id);
+			free_persistent_page(dam_p, transaction_id, child_leaf_page_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
 
 			// free the child leaf page id at index [0, tuple_count)
 			for(uint32_t i = 0; i < tuple_count; i++)
 			{
 				child_leaf_page_id = get_child_page_id_by_child_index(curr_locked_page->ppage.page, i, bpttd_p);
-				free_persistent_page(dam_p, child_leaf_page_id);
+				free_persistent_page(dam_p, transaction_id, child_leaf_page_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
 			}
 
 			// free it and pop it from the stack
-			release_lock_on_persistent_page(dam_p, &(curr_locked_page->ppage), FREE_PAGE);
+			release_lock_on_persistent_page(dam_p, transaction_id, &(curr_locked_page->ppage), FREE_PAGE, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
 			pop_from_locked_pages_stack(locked_pages_stack_p);
 		}
 		// handle free-ing on pages at level >= 2
@@ -103,24 +116,29 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			{
 				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
 				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index++, bpttd_p);
-				persistent_page child_page = acquire_persistent_page_with_lock(dam_p, child_page_id, READ_LOCK);
+				persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
 
 				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 			}
 			else // we have freed all its children, now we can free this page
 			{
 				// free it and pop it from the stack
-				release_lock_on_persistent_page(dam_p, &(curr_locked_page->ppage), FREE_PAGE);
+				release_lock_on_persistent_page(dam_p, transaction_id, &(curr_locked_page->ppage), FREE_PAGE, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
 				pop_from_locked_pages_stack(locked_pages_stack_p);
 			}
 		}
 	}
 
+	ABORT_ERROR:;
 	// release locks on all the pages, we had locks on until now
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-		release_lock_on_persistent_page(dam_p, &(bottom->ppage), NONE_OPTION);
+		release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 
