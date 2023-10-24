@@ -139,13 +139,15 @@ int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_
 		locked_page_info curr_locked_page = *get_top_of_locked_pages_stack(locked_pages_stack_p);
 		pop_from_locked_pages_stack(locked_pages_stack_p);
 
-		if(is_bplus_tree_leaf_page(&(curr_locked_page.ppage), bpttd_p)) // is a leaf page, perform delete in the leaf page
+		if(is_bplus_tree_leaf_page(&(curr_locked_page.ppage), bpttd_p))
 		{
 			// go ahead with merging only if the page is lesser than or equal to half full AND is not root
 			// i.e. we can not merge a page which is root OR is more than half full
 			if(curr_locked_page.ppage.page_id == root_page_id || is_page_more_than_half_full(&(curr_locked_page.ppage), bpttd_p->page_size, bpttd_p->record_def))
 			{
 				release_lock_on_persistent_page(dam_p, transaction_id, &(curr_locked_page.ppage), NONE_OPTION, abort_error);
+				//if(*abort_error) // -> we need to do the same thing even on an abort
+				//	break;
 				break;
 			}
 
@@ -157,7 +159,7 @@ int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_
 			// will be set if the page has been merged
 			int merged = 0;
 
-			// attempt a merge with next page of curr_locked_page, if it has a next page with same parent
+			// attempt a merge with next page of curr_locked_page, if it has a next page addressed in the same parent
 			if(!merged && parent_locked_page->child_index + 1 < parent_tuple_count)
 			{
 				merged = merge_bplus_tree_leaf_pages(&(curr_locked_page.ppage), bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
