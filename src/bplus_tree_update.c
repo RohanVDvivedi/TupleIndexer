@@ -156,7 +156,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		return 0;
 	}
 
-	// if old_record did not exist and the new_record is set to NULL (i.e. a request for deletion, the do nothing)
+	// if old_record did not exist and the new_record is set to NULL (i.e. a request for deletion, then do nothing)
 	if(old_record == NULL && new_record == NULL)
 	{
 		release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
@@ -186,7 +186,6 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 									transaction_id,
 									abort_error
 								);
-
 		if(*abort_error)
 		{
 			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
@@ -229,6 +228,11 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 							transaction_id,
 							abort_error
 						);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
+			return 0;
+		}
 
 		// we need to merge it, if it is not root and is lesser than half full
 		if(concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
