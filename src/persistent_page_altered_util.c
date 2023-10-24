@@ -14,17 +14,16 @@ int append_tuple_on_persistent_page_resiliently(const page_modification_methods*
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
 	uint32_t space_required_by_external_tuple = ((external_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(tpl_sz_d, external_tuple)) + get_additional_space_overhead_per_tuple_on_persistent_page(page_size, tpl_sz_d);
 
-	// check suggests that there is not enough dpace on page
+	// check suggests that there is not enough space on page
 	if(space_required_by_external_tuple > unused_space_on_page)
 		return 0;
 
 	// run_page_compaction, i.e. defragment the page
 	run_persistent_page_compaction(pmm_p, transaction_id, ppage, page_size, tpl_sz_d, abort_error);
-
 	if((*abort_error))
 		return 0;
 
-	// now try to append, this must succeed
+	// now try to append, this must succeed, unless for an abort_error
 	return append_tuple_on_persistent_page(pmm_p, transaction_id, ppage, page_size, tpl_sz_d, external_tuple, abort_error);
 }
 
@@ -61,6 +60,6 @@ int update_tuple_on_persistent_page_resiliently(const page_modification_methods*
 		return 0;
 
 	// then at the end attempt to update the tuple again
-	// this time it must succeed
+	// this time it must succeed, unless for an abort_error
 	return update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, page_size, tpl_sz_d, index, external_tuple, abort_error);
 }
