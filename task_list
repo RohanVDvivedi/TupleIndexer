@@ -4,6 +4,8 @@
  * discard FORCE_FLUSH from dam options, tuple indexer will never ask you to force flush
  * rename in_memory_data_store to unWALed_in_memory_data_store
 
+ * Avoid malloc call, while merging interior pages, instead of duplicating the separator_tuple, insert separator tuple, and then update its child_page_id, this will avoid 1 malloc altogether
+
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
  * dam in release_lock(FREE_PAGE) -> allow the operation only if there is exactly only 1 thread, with reader and writer lock on the page
