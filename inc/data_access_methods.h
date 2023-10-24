@@ -48,8 +48,10 @@
 /*
 **	conditions for usage of FREE_PAGE, and free_page
 **	fail with an abort, if the user tries to acquire lock on a free page,
-**	Allowing freeing of a page, with release lock function, only if there is only 1 thread having reader or writer lock on the page
+**	allow freeing of a page, with release lock function, only if there is only 1 thread having reader or writer lock on the page
 **	free_page function must succeed only if no locks are acquired on the page
+**	in case when release_lock_*() function is passed with a FREE_PAGE flag, and if the operation stands aborted, then the latch/lock on the page is not to be release, until latr when TupleIndexer calls to release_lock() without the option of FREE_PAGE
+**	an abort on a release_lock_*(FREE_PAGE), is always followed by a call to release_lock_*() (called without FREE_PAGE option), so that your data_access_methods will release the acquired latch
 */
 
 // below are the options that can go with the functions below
