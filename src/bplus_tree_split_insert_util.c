@@ -28,7 +28,7 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 		// figure out which child page to go to next
 		curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), record, bpttd_p->key_element_count, bpttd_p);
 
-		// if an until_level is reached, the break out
+		// if an until_level is reached, then break out
 		if(get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p) == until_level)
 			break;
 
@@ -173,7 +173,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 				curr_locked_page = root_least_keys_child_info;
 			}
 
-			// make parent_insert hold enough memeory to build any interior page record possible by this bplus_tree
+			// make parent_insert hold enough memory to build any interior page record possible by this bplus_tree
 			parent_insert = malloc(bpttd_p->max_index_record_size);
 			if(parent_insert == NULL)
 				exit(-1);
@@ -274,10 +274,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 
 			release_lock_on_persistent_page(dam_p, transaction_id, &(curr_locked_page.ppage), NONE_OPTION, abort_error);
 			if(*abort_error)
-			{
-				release_lock_on_persistent_page(dam_p, transaction_id, &(curr_locked_page.ppage), NONE_OPTION, abort_error);
 				break;
-			}
 		}
 	}
 

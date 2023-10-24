@@ -43,7 +43,7 @@ int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, ui
 			}
 		}
 
-		// if an until_level is reached, the break out
+		// if an until_level is reached, then break out
 		if(get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p) == until_level)
 			break;
 
@@ -103,7 +103,7 @@ int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id,
 			}
 		}
 
-		// if an until_level is reached, the break out
+		// if an until_level is reached, then break out
 		if(get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p) == until_level)
 			break;
 
