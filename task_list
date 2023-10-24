@@ -1,6 +1,6 @@
 ** PICKED TASKS
 
- * update_inspected allowed to throw an abort_error
+ * update_inspector allowed to throw an abort_error
  * discard FORCE_FLUSH from dam options, tuple indexer will never ask you to force flush
  * rename in_memory_data_store to unWALed_in_memory_data_store
  * after an abort, all release_lock calls without FREE_PAGE option must pass, if it fails, printf("BUG :: release_lock failed after an abort"); and exit
