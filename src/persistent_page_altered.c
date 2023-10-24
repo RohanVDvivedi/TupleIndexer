@@ -212,6 +212,7 @@ int swap_tuples_on_persistent_page(const page_modification_methods* pmm_p, const
 	}
 
 	// swapping a tuple with itself is a NO-OP
+	// the i1 and i2 are expected to be within bounds of the tuple_count on the page
 	if(i1 == i2)
 		return 1;
 
