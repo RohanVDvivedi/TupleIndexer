@@ -82,6 +82,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 			{
+				// on a abort_error here, the corresponding locks to the pages in the locked_pages_stack would have aleady been released by merge_and_unlock_pages_up
 				deinitialize_locked_pages_stack(locked_pages_stack_p);
 				return 0;
 			}
@@ -89,7 +90,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 	}
 	else
 	{
-		// you must never arieve here
+		// you must never arrive here
 		goto EXIT;
 	}
 
