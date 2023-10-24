@@ -15,7 +15,13 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint
 		return NULL;
 
 	if(curr_tuple_index == LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE)
-		curr_tuple_index = get_tuple_count_on_persistent_page(&curr_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def)) - 1;
+	{
+		uint32_t tuple_count_on_curr_page = get_tuple_count_on_persistent_page(&curr_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+		if(tuple_count_on_curr_page == 0)
+			curr_tuple_index = 0;
+		else
+			curr_tuple_index = tuple_count_on_curr_page - 1;
+	}
 
 	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
 	if(bpi_p == NULL)
