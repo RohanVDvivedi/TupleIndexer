@@ -35,6 +35,11 @@ int read_couple_locks_until_leaf_using_key(uint64_t root_page_id, const void* ke
 		// release lock on the curr_page and 
 		// make the next_page as the curr_page
 		release_lock_on_persistent_page(dam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+		if(*abort_error) // on an abort error, release lock on the next_page and exit
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+			return 0;
+		}
 		curr_page = next_page;
 	}
 
@@ -75,6 +80,11 @@ int read_couple_locks_until_leaf_using_record(uint64_t root_page_id, const void*
 		// release lock on the curr_page and 
 		// make the next_page as the curr_page
 		release_lock_on_persistent_page(dam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+		if(*abort_error) // on an abort error, release lock on the next_page and exit
+		{
+			release_lock_on_persistent_page(dam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+			return 0;
+		}
 		curr_page = next_page;
 	}
 
