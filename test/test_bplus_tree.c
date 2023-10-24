@@ -741,6 +741,14 @@ int main()
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
+	/* DELETE USING UPDATE FUNCTIONALITY */
+#define TEST_DELETE_USING_UPDATE
+
+#ifdef TEST_DELETE_USING_UPDATE
+	res = update_in_file(root_page_id, &di, TEST_DATA_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p, pmm_p);
+
+	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+#endif
 
 	// delete all
 	/* DELETIONS STARTED */
