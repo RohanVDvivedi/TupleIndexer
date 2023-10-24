@@ -371,7 +371,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 		return 0;
 	}
 
-	// release lock on the page2, and mark it as modified
+	// release lock on the page2
 	release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 
 	// on abort, return 0
