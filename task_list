@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
- * Avoid malloc call, while merging interior pages, instead of duplicating the separator_tuple, insert separator tuple, and then update its child_page_id, this will avoid 1 malloc altogether
-
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
 
  * print locks active count, on the close call of unWALed_in_memory_data_store
