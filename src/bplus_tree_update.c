@@ -150,7 +150,8 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		old_record_size = get_tuple_size(bpttd_p->record_def, old_record);
 	}
 
-	if(ui_p->update_inspect(ui_p->context, bpttd_p->record_def, old_record, &new_record) == 0)
+	int ui_res = ui_p->update_inspect(ui_p->context, bpttd_p->record_def, old_record, &new_record, transaction_id, abort_error);
+	if((*abort_error) || ui_res == 0)
 	{
 		release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
 		return 0;
