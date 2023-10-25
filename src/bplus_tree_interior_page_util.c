@@ -411,9 +411,6 @@ int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separato
 
 	// now we can be sure that a merge can be performed on page1 and page2
 
-	// get the size of the separator tuple
-	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
-
 	// check if page2 was the last page of the level, if so page1 is now the last page of the level
 	{
 		// read page1 and page2 header
@@ -434,30 +431,28 @@ int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separato
 			return 0;
 	}
 
-	// now we construct a separator tuple and insert it into the page 1
-	void* separator_tuple = malloc(sizeof(char) * separator_tuple_size);
-	if(separator_tuple == NULL)
-		exit(-1);
-	memory_move(separator_tuple, separator_parent_tuple, sizeof(char) * separator_tuple_size);
-
-	// update child_page_id of separator_tuple with the value from least_keys_page_id
-	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
-	set_child_page_id_in_index_tuple(separator_tuple, separator_tuple_child_page_id, bpttd_p);
-
-	// insert separator tuple in the page1, at the end
+	// insert separator_parent_tuple in the page1, at the end, we will call this separator_tuple
 	insert_at_in_sorted_packed_page(
 									page1, bpttd_p->page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
-									separator_tuple, 
+									separator_parent_tuple, 
 									get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)),
 									pmm_p,
 									transaction_id,
 									abort_error
 								);
+	if(*abort_error)
+		return 0;
 
-	// free memory allocated for separator_tuple
-	free(separator_tuple);
+	// update child_page_id of separator_tuple with the value from least_keys_page_id
+	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
 
+	// since this update is to a fixed_length UINT type, it must either end in success OR in abort_error
+	set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, page1, bpttd_p->page_size, bpttd_p->index_def,
+												get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - 1,
+												get_element_def_count_tuple_def(bpttd_p->index_def) - 1,
+												&((const user_value){.uint_value = separator_tuple_child_page_id}),
+												abort_error);
 	if(*abort_error)
 		return 0;
 
