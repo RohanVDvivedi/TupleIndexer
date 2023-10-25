@@ -133,6 +133,9 @@ int release_lock_on_persistent_page(const data_access_methods* dam_p, const void
 		}
 	}
 
+	// cache the old_abort_error
+	int old_abort_error = (*abort_error);
+
 	int res = 0;
 
 	// release lock appropriately
@@ -140,6 +143,14 @@ int release_lock_on_persistent_page(const data_access_methods* dam_p, const void
 		res = dam_p->release_writer_lock_on_page(dam_p->context, transaction_id, ppage->page, opts | ppage->flags, abort_error);
 	else
 		res = dam_p->release_reader_lock_on_page(dam_p->context, transaction_id, ppage->page, opts | ppage->flags, abort_error);
+
+	// this means, we failed to release a lock on a page, after the abort
+	// this must not happen, unless there is a double free bug in TupleIndexer OR faulty dam implementation
+	if(old_abort_error && !res)
+	{
+		printf("BUG :: release_*_lock_on_page() (without FREE_PAGE flag) failed after an abort, (possible double free in TupleIndexer OR faulty dam implementation)\n");
+		exit(-1);
+	}
 
 	// if successfull in releasing lock, then set ppage to NULL persistent_page
 	if(res)
