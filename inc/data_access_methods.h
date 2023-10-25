@@ -57,8 +57,7 @@
 // below are the options that can go with the functions below
 //#define NONE_OPTION  0b000	// dummy for setting no options
 //#define FREE_PAGE    0b001	// will be used only while releasing the page lock
-//#define FORCE_FLUSH  0b010	// this option is a request, it is not required to fulfil it
-//#define WAS_MODIFIED 0b100	// this suggests that the page has been modified, allowing you bitwise OR it with your dirty bit
+//#define WAS_MODIFIED 0b010	// this suggests that the page has been modified, allowing you bitwise OR it with your dirty bit
 // moved to data_access_methods_options.h
 #include<data_access_methods_options.h>
 
