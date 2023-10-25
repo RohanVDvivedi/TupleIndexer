@@ -135,19 +135,6 @@ struct memory_store_context
 
 #define MIN_BUCKET_COUNT 128
 
-static int open_data_file(void* context)
-{
-	memory_store_context* cntxt = context;
-
-	pthread_mutex_init(&(cntxt->global_lock), NULL);
-	cntxt->free_pages_count = 0;
-	initialize_bst(&(cntxt->free_page_descs), RED_BLACK_TREE, &simple_comparator(compare_page_descs_by_page_ids), offsetof(page_descriptor, free_page_descs_node));
-	initialize_hashmap(&(cntxt->page_id_map), ELEMENTS_AS_LINKEDLIST_INSERT_AT_HEAD, MIN_BUCKET_COUNT, &simple_hasher(hash_on_page_id), &simple_comparator(compare_page_descs_by_page_ids), offsetof(page_descriptor, page_id_map_node));
-	initialize_hashmap(&(cntxt->page_memory_map), ELEMENTS_AS_LINKEDLIST_INSERT_AT_HEAD, MIN_BUCKET_COUNT, &simple_hasher(hash_on_page_memory), &simple_comparator(compare_page_descs_by_page_memories), offsetof(page_descriptor, page_memory_map_node));
-
-	return 1;
-}
-
 static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 {
 	int page_count_shrunk = 0;
@@ -486,27 +473,6 @@ static int free_page(void* context, const void* transaction_id, uint64_t page_id
 	return is_freed;
 }
 
-static void delete_notified_page_descriptor(void* resource_p, const void* data)
-{
-	if(((page_descriptor*)(data))->page_memory != NULL)
-		deallocate_page(((page_descriptor*)(data))->page_memory);
-	delete_page_descriptor(((page_descriptor*)(data)));
-}
-
-static int close_data_file(void* context)
-{
-	memory_store_context* cntxt = context;
-
-	remove_all_from_hashmap(&(cntxt->page_id_map), &((notifier_interface){NULL, delete_notified_page_descriptor}));
-	deinitialize_hashmap(&(cntxt->page_id_map));
-	deinitialize_hashmap(&(cntxt->page_memory_map));
-	pthread_mutex_destroy(&(cntxt->global_lock));
-
-	cntxt->free_pages_count = 0;
-
-	return 1;
-}
-
 data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, uint8_t page_id_width)
 {
 	// check for invalud page_width
@@ -517,7 +483,6 @@ data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, ui
 	if(dam_p == NULL)
 		return NULL;
 
-	dam_p->open_data_file = open_data_file;
 	dam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
 	dam_p->acquire_page_with_reader_lock = acquire_page_with_reader_lock;
 	dam_p->acquire_page_with_writer_lock = acquire_page_with_writer_lock;
@@ -526,7 +491,6 @@ data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, ui
 	dam_p->release_reader_lock_on_page = release_reader_lock_on_page;
 	dam_p->release_writer_lock_on_page = release_writer_lock_on_page;
 	dam_p->free_page = free_page;
-	dam_p->close_data_file = close_data_file;
 
 	dam_p->page_size = page_size;
 	dam_p->page_id_width = page_id_width;
@@ -544,20 +508,44 @@ data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, ui
 	((memory_store_context*)(dam_p->context))->MAX_PAGE_COUNT = dam_p->NULL_PAGE_ID;
 
 	// on success return the data access methods
-	if(dam_p->open_data_file(dam_p->context))
-		return dam_p;
-	else
+
+	memory_store_context* cntxt = dam_p->context;
+
+	pthread_mutex_init(&(cntxt->global_lock), NULL);
+	cntxt->free_pages_count = 0;
+	initialize_bst(&(cntxt->free_page_descs), RED_BLACK_TREE, &simple_comparator(compare_page_descs_by_page_ids), offsetof(page_descriptor, free_page_descs_node));
+	if(!initialize_hashmap(&(cntxt->page_id_map), ELEMENTS_AS_LINKEDLIST_INSERT_AT_HEAD, MIN_BUCKET_COUNT, &simple_hasher(hash_on_page_id), &simple_comparator(compare_page_descs_by_page_ids), offsetof(page_descriptor, page_id_map_node)))
 	{
 		free(dam_p->context);
 		free(dam_p);
 		return NULL;
 	}
+	if(!initialize_hashmap(&(cntxt->page_memory_map), ELEMENTS_AS_LINKEDLIST_INSERT_AT_HEAD, MIN_BUCKET_COUNT, &simple_hasher(hash_on_page_memory), &simple_comparator(compare_page_descs_by_page_memories), offsetof(page_descriptor, page_memory_map_node)))
+	{
+		deinitialize_hashmap(&(cntxt->page_id_map));
+		free(dam_p->context);
+		free(dam_p);
+		return NULL;
+	}
+	return dam_p;
+}
+
+static void delete_notified_page_descriptor(void* resource_p, const void* data)
+{
+	if(((page_descriptor*)(data))->page_memory != NULL)
+		deallocate_page(((page_descriptor*)(data))->page_memory);
+	delete_page_descriptor(((page_descriptor*)(data)));
 }
 
 int close_and_destroy_unWALed_in_memory_data_store(data_access_methods* dam_p)
 {
-	int result = dam_p->close_data_file(dam_p->context);
+	memory_store_context* cntxt = dam_p->context;
+	remove_all_from_hashmap(&(cntxt->page_id_map), &((notifier_interface){NULL, delete_notified_page_descriptor}));
+	deinitialize_hashmap(&(cntxt->page_id_map));
+	deinitialize_hashmap(&(cntxt->page_memory_map));
+	pthread_mutex_destroy(&(cntxt->global_lock));
+	cntxt->free_pages_count = 0;
 	free(dam_p->context);
 	free(dam_p);
-	return result;
+	return 1;
 }
