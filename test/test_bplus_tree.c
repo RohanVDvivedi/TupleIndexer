@@ -593,7 +593,7 @@ int main()
 	/* SETUP STARTED */
 
 	// construct an in-memory data store
-	data_access_methods* dam_p = get_new_in_memory_data_store(PAGE_SIZE, PAGE_ID_WIDTH);
+	data_access_methods* dam_p = get_new_unWALed_in_memory_data_store(PAGE_SIZE, PAGE_ID_WIDTH);
 
 	// construct unWALed page_modification_methods
 	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
@@ -772,7 +772,7 @@ int main()
 	}
 
 	// close the in-memory data store
-	close_and_destroy_in_memory_data_store(dam_p);
+	close_and_destroy_unWALed_in_memory_data_store(dam_p);
 
 	// destroy bplus_tree_tuple_definitions
 	deinit_bplus_tree_tuple_definitions(&bpttd);
