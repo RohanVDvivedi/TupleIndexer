@@ -225,7 +225,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
-int updater_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record)
+int updater_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, const void* transaction_id, int* abort_error)
 {
 	user_value update_data = get_value_from_element_from_tuple(record_def, 7, old_record);
 	char update_value[64] = {};
@@ -246,7 +246,7 @@ update_inspector ui = {
 	.update_inspect = updater_update_inspect,
 };
 
-int deletor_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record)
+int deletor_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, const void* transaction_id, int* abort_error)
 {
 	(*new_record) = NULL;
 	return 1;
