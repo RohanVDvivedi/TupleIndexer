@@ -64,8 +64,6 @@
 typedef struct data_access_methods data_access_methods;
 struct data_access_methods
 {
-	int (*open_data_file)(void* context);
-
 	// a request method to get a new blank page from the page manager with write lock on the page
 	// the page_id_returned is set with the page_id of the new_page
 	void* (*get_new_page_with_write_lock)(void* context, const void* transaction_id, uint64_t* page_id_returned, int* abort_error);
@@ -89,8 +87,6 @@ struct data_access_methods
 	// make a page free, you may call this function, even if you don't have lock on the page
 	// fails only if the page is already free
 	int (*free_page)(void* context, const void* transaction_id, uint64_t page_id, int* abort_error);
-
-	int (*close_data_file)(void* context);
 
 	// size of page in bytes
 	uint32_t page_size;
