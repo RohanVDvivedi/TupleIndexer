@@ -507,7 +507,7 @@ static int close_data_file(void* context)
 	return 1;
 }
 
-data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t page_id_width)
+data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, uint8_t page_id_width)
 {
 	// check for invalud page_width
 	if(page_id_width == 0 || page_id_width > sizeof(uint64_t))
@@ -554,7 +554,7 @@ data_access_methods* get_new_in_memory_data_store(uint32_t page_size, uint8_t pa
 	}
 }
 
-int close_and_destroy_in_memory_data_store(data_access_methods* dam_p)
+int close_and_destroy_unWALed_in_memory_data_store(data_access_methods* dam_p)
 {
 	int result = dam_p->close_data_file(dam_p->context);
 	free(dam_p->context);
