@@ -10,9 +10,21 @@
  * free_page must fail with an abort, if there are concurrent readers OR writers to the page, i.e. if a page is read or write locked (allow only 1 locker for the calling thread if FREE_PAGE is set for release_lock), while freeing a page.
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
+   * each has table has 2 types of pages, HASH_ARRAY_PAGE and BUCKET_PAGE
+   * BUCKET_PAGE are the ones that contain data, original tuples, with key and value (duplicate keys allowed)
+   * HASH_ARRAY_PAGE are structured as tree, starting with level 0, and then on, like bplus tree
+   * each entry in HASH_ARRAY_PAGE contain list of page_ids, each of page_id_width, pointing to another HASH_ARRAY_PAGE (when its level > 0) OR a BUCKET_PAGE (when its level = 0), all HASH_ARRAY_PAGE are identical.
+   * root of the HASH_ARRAY_PAGE is never moved, root always stays at the same page, even on resizing.
+   * If there are E entries in each of the HASH_ARRAY_PAGE, if the root page has level = n, then the hash table has E^(n+1) buckets.
+   * If the root has only 1 entry at its first index, then the hash_table shrinks, by moving the contents of its new child to the root.
+   * If any HASH_ARRAY_PAGE becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the hash_table up the chain
+   * HASH_ARRAY_PAGE for the children of other HASH_ARRAY_PAGE page are allocated, as and when required.
+   * BUCKET_PAGE are organized as linkedlist, pointed to by the leaves (level 0) of HASH_ARRAY_PAGE.
+   * Original data tuples on BUCKET_PAGE are never moved, allowing to build heap organized tables, on top of hash_table
+   * when a BUCKET_PAGE is all empty it is freed, if it is the last page in the BUCKET_PAGE linkedlist, then a NULL is written at the corresponding entry of the HASH_ARRAY_PAGE
  * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
  * all inserts to linked_page_list have a flag to PRESERVE_ROOT_PAGE_ID
- * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
  * sort that can be called on a linked_page_list or a hash_table
  * utility header function that reads page_type from common_page_header and helps get and set the next_page_id and prev_page_id
    * this can be used to build a generic iterator over linked list, bplus_tree leaf pages and interior pages
