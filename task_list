@@ -20,9 +20,12 @@
    * If the root has only 1 entry at its first index, then the hash_table shrinks, by moving the contents of its new child to the root.
    * If any HASH_ARRAY_PAGE becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the hash_table up the chain
    * HASH_ARRAY_PAGE for the children of other HASH_ARRAY_PAGE page are allocated, as and when required.
+   * if the root HASH_ARRAY_PAGE if at level 0, yet is never to be disacrded, i.e. the capacity of hash_table has minimum value of E
    * BUCKET_PAGE are organized as doubly linkedlist, head of which is pointed to by the leaves (level 0) of HASH_ARRAY_PAGE.
    * Original data tuples on BUCKET_PAGE are never moved, allowing to build heap organized tables, on top of hash_table
    * when a BUCKET_PAGE is all empty it is freed, and removed from the linkedlist, if it is the last page in the BUCKET_PAGE linkedlist, then a NULL is written at the corresponding entry of the HASH_ARRAY_PAGE
+   * tuples on BUCKET_PAGE can not move to different slots or other pages, once written they remain at the fixed slots, BUCKET_PAGE is reclaimed to be free, only when it becomes empty, on delete, we update the tuple with 0, and then discard_trailing_tomb_stones.
+   * new tuples can be inserted at old slots.
  * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
  * all inserts to linked_page_list have a flag to PRESERVE_ROOT_PAGE_ID
  * sort that can be called on a linked_page_list or a hash_table
