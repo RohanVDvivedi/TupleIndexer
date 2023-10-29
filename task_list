@@ -9,6 +9,9 @@
   * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
  * free_page must fail with an abort, if there are concurrent readers OR writers to the page, i.e. if a page is read or write locked (allow only 1 locker for the calling thread if FREE_PAGE is set for release_lock), while freeing a page.
 
+ * deadlock free logic for inspected_update, implement a walk_down function, to write lock pages, from root while noting the count of pages not required either for split, and merge conditions, then depending on whether you split or merge unlock pages prior to operation
+ * discard redundant find code, that is used in update
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
    * each has table has 2 types of pages, HASH_ARRAY_PAGE and BUCKET_PAGE
