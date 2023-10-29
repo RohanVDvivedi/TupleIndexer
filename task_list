@@ -13,6 +13,8 @@
  * discard redundant find code, that is used in update
  * allow downgrading internal locks taking internal_context, transaction_id and abort_error
 
+ * allow innodb starting a iterator with writer lock, to allow inplace updates of fixed width columns
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
    * each has table has 2 types of pages, HASH_ARRAY_PAGE and BUCKET_PAGE
