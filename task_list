@@ -11,6 +11,7 @@
 
  * deadlock free logic for inspected_update, implement a walk_down function, to write lock pages, from root while noting the count of pages not required either for split, and merge conditions, then depending on whether you split or merge unlock pages prior to operation
  * discard redundant find code, that is used in update
+ * allow downgrading internal locks taking internal_context, transaction_id and abort_error
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
