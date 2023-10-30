@@ -8,6 +8,7 @@ Note:
 ## Setup instructions
 **Install dependencies :**
  * [Cutlery](https://github.com/RohanVDvivedi/Cutlery)
+ * [SerializableInteger](https://github.com/RohanVDvivedi/SerializableInteger)
  * [TupleStore](https://github.com/RohanVDvivedi/TupleStore)
  * [BoomPar](https://github.com/RohanVDvivedi/BoomPar)
  * [ReaderWriterLock](https://github.com/RohanVDvivedi/ReaderWriterLock)
@@ -25,11 +26,14 @@ Note:
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-ltupleindexer -ltuplestore -rwlock -lbufferpool -lcutlery` linker flag, while compiling your application
+ * add `-ltupleindexer -ltuplestore -rwlock -lserint -lcutlery` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `#include<bplus_tree.h>`
    * `#include<data_access_methods.h>`
-   * `#include<in_memory_data_store.h>`
+   * `#include<page_modification_methods.h>`
+ * for testing you may need :
+   * `#include<unWALed_in_memory_data_store.h>`
+   * `#include<unWALed_page_modification_methods.h>`
 
 ## Instructions for uninstalling library
 
