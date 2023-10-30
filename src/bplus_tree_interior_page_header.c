@@ -1,7 +1,8 @@
 #include<bplus_tree_interior_page_header.h>
 
 #include<persistent_page_functions.h>
-#include<int_accesses.h>
+
+#include<serial_int.h>
 
 #include<stdlib.h>
 
@@ -46,9 +47,9 @@ bplus_tree_interior_page_header get_bplus_tree_interior_page_header(const persis
 	const void* interior_page_header_serial = get_page_header_ua_persistent_page(ppage, bpttd_p->page_size) + get_offset_to_bplus_tree_interior_page_header_locals(bpttd_p);
 	return (bplus_tree_interior_page_header){
 		.parent = get_common_page_header(ppage, bpttd_p),
-		.level = read_uint32(interior_page_header_serial, BYTES_FOR_PAGE_LEVEL),
-		.least_keys_page_id = read_uint64(interior_page_header_serial + BYTES_FOR_PAGE_LEVEL, bpttd_p->page_id_width),
-		.is_last_page_of_level = ((read_int8(interior_page_header_serial + BYTES_FOR_PAGE_LEVEL + bpttd_p->page_id_width, FLAGS_BYTE_SIZE) >> IS_LAST_PAGE_OF_LEVEL_FLAG_POS) & 1),
+		.level = deserialize_uint32(interior_page_header_serial, BYTES_FOR_PAGE_LEVEL),
+		.least_keys_page_id = deserialize_uint64(interior_page_header_serial + BYTES_FOR_PAGE_LEVEL, bpttd_p->page_id_width),
+		.is_last_page_of_level = ((deserialize_int8(interior_page_header_serial + BYTES_FOR_PAGE_LEVEL + bpttd_p->page_id_width, FLAGS_BYTE_SIZE) >> IS_LAST_PAGE_OF_LEVEL_FLAG_POS) & 1),
 	};
 }
 
@@ -57,9 +58,9 @@ void serialize_bplus_tree_interior_page_header(void* hdr_serial, const bplus_tre
 	serialize_common_page_header(hdr_serial, &(bptiph_p->parent), bpttd_p);
 
 	void* bplus_tree_interior_page_header_serial = hdr_serial + get_offset_to_bplus_tree_interior_page_header_locals(bpttd_p);
-	write_uint32(bplus_tree_interior_page_header_serial, BYTES_FOR_PAGE_LEVEL, bptiph_p->level);
-	write_uint64(bplus_tree_interior_page_header_serial + BYTES_FOR_PAGE_LEVEL, bpttd_p->page_id_width, bptiph_p->least_keys_page_id);
-	write_uint64(bplus_tree_interior_page_header_serial + BYTES_FOR_PAGE_LEVEL + bpttd_p->page_id_width, FLAGS_BYTE_SIZE, ((!!(bptiph_p->is_last_page_of_level)) << IS_LAST_PAGE_OF_LEVEL_FLAG_POS));
+	serialize_uint32(bplus_tree_interior_page_header_serial, BYTES_FOR_PAGE_LEVEL, bptiph_p->level);
+	serialize_uint64(bplus_tree_interior_page_header_serial + BYTES_FOR_PAGE_LEVEL, bpttd_p->page_id_width, bptiph_p->least_keys_page_id);
+	serialize_uint64(bplus_tree_interior_page_header_serial + BYTES_FOR_PAGE_LEVEL + bpttd_p->page_id_width, FLAGS_BYTE_SIZE, ((!!(bptiph_p->is_last_page_of_level)) << IS_LAST_PAGE_OF_LEVEL_FLAG_POS));
 }
 
 void set_bplus_tree_interior_page_header(persistent_page* ppage, const bplus_tree_interior_page_header* bptiph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)

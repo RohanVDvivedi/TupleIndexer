@@ -1,7 +1,8 @@
 #include<common_page_header.h>
 
 #include<persistent_page_functions.h>
-#include<int_accesses.h>
+
+#include<serial_int.h>
 
 #include<cutlery_stds.h>
 
@@ -34,14 +35,14 @@ common_page_header get_common_page_header(const persistent_page* ppage, const bp
 {
 	const void* common_page_header_serial = get_page_header_ua_persistent_page(ppage, bpttd_p->page_size) + get_offset_to_common_page_header_locals(bpttd_p);
 	return (common_page_header){
-		.type = (page_type) read_uint16(common_page_header_serial, BYTES_FOR_PAGE_TYPE),
+		.type = (page_type) deserialize_uint16(common_page_header_serial, BYTES_FOR_PAGE_TYPE),
 	};
 }
 
 void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p)
 {
 	void* common_page_header_serial = hdr_serial + get_offset_to_common_page_header_locals(bpttd_p);
-	write_uint16(common_page_header_serial, BYTES_FOR_PAGE_TYPE, ((uint16_t)(cph_p->type)));
+	serialize_uint16(common_page_header_serial, BYTES_FOR_PAGE_TYPE, ((uint16_t)(cph_p->type)));
 }
 
 void set_common_page_header(persistent_page* ppage, const common_page_header* cph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)

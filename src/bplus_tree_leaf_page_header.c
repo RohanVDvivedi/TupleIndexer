@@ -1,7 +1,8 @@
 #include<bplus_tree_leaf_page_header.h>
 
 #include<persistent_page_functions.h>
-#include<int_accesses.h>
+
+#include<serial_int.h>
 
 #include<stdlib.h>
 
@@ -30,8 +31,8 @@ bplus_tree_leaf_page_header get_bplus_tree_leaf_page_header(const persistent_pag
 	const void* leaf_page_header_serial = get_page_header_ua_persistent_page(ppage, bpttd_p->page_size) + get_offset_to_bplus_tree_leaf_page_header_locals(bpttd_p);
 	return (bplus_tree_leaf_page_header){
 		.parent = get_common_page_header(ppage, bpttd_p),
-		.next_page_id = read_uint64(leaf_page_header_serial, bpttd_p->page_id_width),
-		.prev_page_id = read_uint64(leaf_page_header_serial + bpttd_p->page_id_width, bpttd_p->page_id_width),
+		.next_page_id = deserialize_uint64(leaf_page_header_serial, bpttd_p->page_id_width),
+		.prev_page_id = deserialize_uint64(leaf_page_header_serial + bpttd_p->page_id_width, bpttd_p->page_id_width),
 	};
 }
 
@@ -40,8 +41,8 @@ void serialize_bplus_tree_leaf_page_header(void* hdr_serial, const bplus_tree_le
 	serialize_common_page_header(hdr_serial, &(bptlph_p->parent), bpttd_p);
 
 	void* bplus_tree_leaf_page_header_serial = hdr_serial + get_offset_to_bplus_tree_leaf_page_header_locals(bpttd_p);
-	write_uint64(bplus_tree_leaf_page_header_serial, bpttd_p->page_id_width, bptlph_p->next_page_id);
-	write_uint64(bplus_tree_leaf_page_header_serial + bpttd_p->page_id_width, bpttd_p->page_id_width, bptlph_p->prev_page_id);
+	serialize_uint64(bplus_tree_leaf_page_header_serial, bpttd_p->page_id_width, bptlph_p->next_page_id);
+	serialize_uint64(bplus_tree_leaf_page_header_serial + bpttd_p->page_id_width, bpttd_p->page_id_width, bptlph_p->prev_page_id);
 }
 
 void set_bplus_tree_leaf_page_header(persistent_page* ppage, const bplus_tree_leaf_page_header* bptlph_p, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
