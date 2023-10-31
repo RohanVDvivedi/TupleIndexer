@@ -34,8 +34,8 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
 	}
 
-	// walk down taking locks until you reach leaf page level = 0
-	walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, 0, locked_pages_stack_p, record, bpttd_p, dam_p, transaction_id, abort_error);
+	// walk down taking locks until you reach leaf page level
+	walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, locked_pages_stack_p, record, bpttd_p, dam_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		deinitialize_locked_pages_stack(locked_pages_stack_p);
