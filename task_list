@@ -1,15 +1,7 @@
 ** PICKED TASKS
 
- * normalize logic of walk_down for merge_util and split_insert_util
-   -> in split_insert, check the logic for only the curr_locked_page, to release locks on all the parents
-   -> in split_insert, then, outside the loop check if the insert to leaf (for the given record) can accomodate the new tuple, if yes then release locks on all parents
-   -> in split_insert, do not check child page
-   -> in merge, come out of the loop and check if the delete to leaf page will cause a merge, if not, then release lock on all parents
- * while inspected_updating, we have no idea what tuple will we insert, so check only if the leaf page is less than or equal to half full there for insert, and the deletion of the tuple, that compares equal and unlock only the common pages of what unlock_split_insert and unlock_merge says
  * deadlock free logic for inspected_update, implement a walk_down function, to write lock pages, from root while noting the count of pages not required either for split, and merge conditions, then depending on whether you split or merge unlock pages prior to operation
- * discard redundant find code, that is used in update
  * allow cancel_update using a callback function, to release locks taking cancel_update_context, transaction_id and abort_error -> this will release all locks on the locked_pages_stack and downgrade read lock, on the leaf page
- * walk_down functions, remove until_level parameter -> walking down until middle of the bplus tree will not be allowed
 
  * allow starting a bplus_tree_iterator with writer lock, to allow inplace updates of fixed width columns
  * build a stacked iterator, to lock pages all the way from root to leaf and then when going to next or prev page, release lock on the leaf and go to next using the parent entry, to retrieve the next page
