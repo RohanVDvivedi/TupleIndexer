@@ -54,6 +54,11 @@ int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, lo
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 	}
 
+	// if we reach here, then the top page in the locked_pages_stack_p is likely the leaf page
+
+	// here, we can still perform a find to locate the leaf record that we might be delete (given the key) and check if leaf page then will require merging,
+	// but I suspect that is just an overkill, instead let the caller to just perform the delete and run the merge_and_unlock_pages_up
+
 	return 1;
 
 	ABORT_ERROR :;
@@ -109,6 +114,11 @@ int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id,
 		// push this child page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 	}
+
+	// if we reach here, then the top page in the locked_pages_stack_p is likely the leaf page
+
+	// here, we can still perform a find to locate the leaf record that we might be delete (given the key) and check if leaf page then will require merging,
+	// but I suspect that is just an overkill, instead let the caller to just perform the delete and run the merge_and_unlock_pages_up
 
 	return 1;
 
