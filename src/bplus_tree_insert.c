@@ -42,14 +42,10 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		return 0;
 	}
 
-	int inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
-	if(*abort_error)
-	{
-		deinitialize_locked_pages_stack(locked_pages_stack_p);
-		return 0;
-	}
+	int split_inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 
+	// on a abort_error here, the corresponding locks to the pages in the locked_pages_stack would have already been released by split_insert_and_unlock_pages_up
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
 
-	return inserted;
+	return split_inserted;
 }
