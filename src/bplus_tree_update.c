@@ -213,21 +213,27 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			release_for_split--;
 		}
 
-		int inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+		result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error)
-			return 0;
+			goto ABORT_OR_FAIL;
 
-		return inserted;
+		// release allocation for locked_pages_stack
+		deinitialize_locked_pages_stack(locked_pages_stack_p);
+		return result;
 	}
 	else if(old_record != NULL && new_record == NULL) // delete case
 	{
-		// make a local copy of the old_record
+		// we can release lock on release_for_merge number of parent pages
+		while(release_for_merge > 0)
 		{
-			const void* temp = old_record;
-			old_record = malloc(old_record_size);
-			if(old_record == NULL)
-				exit(-1);
-			memory_move(old_record, temp, old_record_size);
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+			if(*abort_error)
+				goto ABORT_OR_FAIL;
+
+			release_for_merge--;
 		}
 
 		// perform a delete operation on the found index in this page
@@ -240,34 +246,16 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 							abort_error
 						);
 		if(*abort_error)
-		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
-			return 0;
-		}
+			goto ABORT_OR_FAIL;
 
-		// we need to merge it, if it is not root and is lesser than half full
-		if(concerned_leaf.page_id != root_page_id && is_page_lesser_than_or_equal_to_half_full(&concerned_leaf, bpttd_p->page_size, bpttd_p->record_def))
-		{
-			// here the duplicate of the old_record will allow us to walk_down_and_merge at correct position
-			walk_down_and_merge_util(root_page_id, &concerned_leaf, old_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
-			if(*abort_error)
-			{
-				free(old_record);
-				return 0;
-			}
-		}
-		else
-		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
-			if(*abort_error)
-			{
-				free(old_record);
-				return 0;
-			}
-		}
+		merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_OR_FAIL;
 
-		free(old_record);
-		return 1;
+		result = 1;
+		// release allocation for locked_pages_stack
+		deinitialize_locked_pages_stack(locked_pages_stack_p);
+		return result;
 	}
 	else // update
 	{
