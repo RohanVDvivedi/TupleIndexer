@@ -237,7 +237,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		}
 
 		// perform a delete operation on the found index in this page
-		delete_in_sorted_packed_page(
+		result = delete_in_sorted_packed_page(
 							&(concerned_leaf), bpttd_p->page_size,
 							bpttd_p->record_def,
 							found_index,
@@ -252,7 +252,6 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		if(*abort_error)
 			goto ABORT_OR_FAIL;
 
-		result = 1;
 		// release allocation for locked_pages_stack
 		deinitialize_locked_pages_stack(locked_pages_stack_p);
 		return result;
