@@ -1,6 +1,5 @@
 #include<bplus_tree_split_insert_util.h>
 
-#include<locked_pages_stack.h>
 #include<storage_capacity_page_util.h>
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
@@ -28,9 +27,9 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 		// figure out which child page to go to next
 		curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), record, bpttd_p->key_element_count, bpttd_p);
 
-		// if you rwach here, then curr_locked_page is not a leaf page
+		// if you reach here, then curr_locked_page is not a leaf page
 		// if curr_locked_page will not require a split, then release locks on all the parent pages of curr_locked_page
-		if(!may_require_split_for_insert_for_bplus_tree(&curr_locked_page, bpttd_p->page_size, bpttd_p->index_def))
+		if(!may_require_split_for_insert_for_bplus_tree(&(curr_locked_page->ppage), bpttd_p->page_size, bpttd_p->index_def))
 		{
 			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_locked_page)
 			{

@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_FIND_FOR_UPDATE_UTIL_H
 #define BPLUS_TREE_FIND_FOR_UPDATE_UTIL_H
 
-#include<persistent_page.h>
+#include<locked_pages_stack.h>
 #include<bplus_tree_tuple_definitions.h>
 #include<opaque_data_access_methods.h>
 
