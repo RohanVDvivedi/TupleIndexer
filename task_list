@@ -1,6 +1,5 @@
 ** PICKED TASKS
 
- * deadlock free logic for inspected_update, implement a walk_down function, to write lock pages, from root while noting the count of pages not required either for split, and merge conditions, then depending on whether you split or merge unlock pages prior to operation
  * allow cancel_update using a callback function, to release locks taking cancel_update_context, transaction_id and abort_error -> this will release all locks on the locked_pages_stack and downgrade read lock, on the leaf page
 
  * allow starting a bplus_tree_iterator with writer lock, to allow inplace updates of fixed width columns
