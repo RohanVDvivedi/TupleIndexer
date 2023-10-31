@@ -1,14 +1,5 @@
 ** PICKED TASKS
 
- * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
-
- * print locks active count, on the close call of unWALed_in_memory_data_store
- * dam in release_lock(FREE_PAGE) -> allow the operation only if there is exactly only 1 thread, with reader and writer lock on the page, else fail to even release lock on the page
- * dam functions add functionality
-  * uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
-  * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
- * free_page must fail with an abort, if there are concurrent readers OR writers to the page, i.e. if a page is read or write locked (allow only 1 locker for the calling thread if FREE_PAGE is set for release_lock), while freeing a page.
-
  * normalize logic of walk_down for merge_util and split_insert_util
    -> in split_insert, check the logic for only the curr_locked_page, to release locks on all the parents
    -> in split_insert, then, outside the loop check if the insert to leaf (for the given record) can accomodate the new tuple, if yes then release locks on all parents
@@ -22,6 +13,15 @@
 
  * allow starting a bplus_tree_iterator with writer lock, to allow inplace updates of fixed width columns
  * build a stacked iterator, to lock pages all the way from root to leaf and then when going to next or prev page, release lock on the leaf and go to next using the parent entry, to retrieve the next page
+
+ * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
+ * print locks active count, on the close call of unWALed_in_memory_data_store
+
+ * dam in release_lock(FREE_PAGE) -> allow the operation only if there is exactly only 1 thread, with reader and writer lock on the page, else fail to even release lock on the page
+ * free_page must fail with an abort, if there are concurrent readers OR writers to the page, i.e. if a page is read or write locked (allow only 1 locker for the calling thread if FREE_PAGE is set for release_lock), while freeing a page.
+ * dam add functionality (Still think if you need this, with current hashtable design we have, we do not need this)
+  * uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
+  * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
