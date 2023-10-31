@@ -196,40 +196,24 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		// check again if the new_record is small enough to be inserted on the page
 		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
-			if(*abort_error)
-				return 0;
-			return 0;
+			result = 0;
+			goto ABORT_OR_FAIL;
 		}
 
-		// try to insert
-		uint32_t insertion_point;
-		int inserted = insert_to_sorted_packed_page(
-									&(concerned_leaf), bpttd_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
-									new_record, 
-									&insertion_point,
-									pmm_p,
-									transaction_id,
-									abort_error
-								);
-		if(*abort_error)
+		// we can release lock on release_for_split number of parent pages
+		while(release_for_split > 0)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
-			return 0;
-		}
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
-		// if inserted, we are done
-		if(inserted)
-		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &concerned_leaf, NONE_OPTION, abort_error);
 			if(*abort_error)
-				return 0;
-			return 1;
+				goto ABORT_OR_FAIL;
+
+			release_for_split--;
 		}
 
-		// else we split insert
-		inserted = walk_down_and_split_insert_util(root_page_id, &concerned_leaf, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+		int inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
 
@@ -393,6 +377,9 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
+
+	// release allocation for locked_pages_stack
+	deinitialize_locked_pages_stack(locked_pages_stack_p);
 
 	// on an abort, overide the result to 0
 	if(*abort_error)
