@@ -192,6 +192,19 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 					if(*abort_error)
 						goto ABORT_OR_FAIL;
 
+					// we can release lock on release_for_split number of parent pages
+					while(release_for_split > 0)
+					{
+						locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+						release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+						pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+						if(*abort_error)
+							goto ABORT_OR_FAIL;
+
+						release_for_split--;
+					}
+
 					// once the delete is done, we can split insert the new_record
 					result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 					if(*abort_error)
@@ -208,8 +221,21 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 					goto ABORT_OR_FAIL;
 				}
 			}
-			else // new_record_size < old_record_size -> may require merge -> but it is assumed to be true that updated = 1
+			else // new_record_size <= old_record_size -> may require merge -> but it is assumed to be true that updated = 1
 			{
+				// we can release lock on release_for_merge number of parent pages
+				while(release_for_merge > 0)
+				{
+					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+					release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+					if(*abort_error)
+						goto ABORT_OR_FAIL;
+
+					release_for_merge--;
+				}
+
 				merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto ABORT_OR_FAIL;
