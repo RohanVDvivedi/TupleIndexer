@@ -21,6 +21,7 @@
  * walk_down functions, remove until_level parameter -> walking down until middle of the bplus tree will not be allowed
 
  * allow starting a bplus_tree_iterator with writer lock, to allow inplace updates of fixed width columns
+ * build a stacked iterator, to lock pages all the way from root to leaf and then when going to next or prev page, release lock on the leaf and go to next using the parent entry, to retrieve the next page
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
