@@ -2,7 +2,7 @@
 
 ERROR HANDLING TASKS IN DAM
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
- * print locks active count, on the close call of unWALed_in_memory_data_store
+ * print active read and write locks count, number of total pages and number of free pages, on the close call of unWALed_in_memory_data_store
 
  * dam in release_lock(FREE_PAGE) -> allow the operation only if there is exactly only 1 thread, with reader and writer lock on the page, else fail to even release lock on the page
  * free_page must fail with an abort, if there are concurrent readers OR writers to the page, i.e. if a page is read or write locked (allow only 1 locker for the calling thread if FREE_PAGE is set for release_lock), while freeing a page.
