@@ -14,7 +14,7 @@
 
 #include<stdlib.h>
 
-int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_page_id, uint32_t until_level, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
 	while(1)
@@ -28,22 +28,11 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 		// figure out which child page to go to next
 		curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), record, bpttd_p->key_element_count, bpttd_p);
 
-		// if an until_level is reached, then break out
-		if(get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p) == until_level)
-			break;
-
-		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
-		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
-		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
-
-		if(*abort_error)
-			goto ABORT_ERROR;
-
-		// if child page will not require a split, then release locks on all the parent pages
-		if( ( is_bplus_tree_leaf_page(&child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->record_def))
-		||  (!is_bplus_tree_leaf_page(&child_page, bpttd_p) && !may_require_split_for_insert_for_bplus_tree(&child_page, bpttd_p->page_size, bpttd_p->index_def )) )
+		// if you rwach here, then curr_locked_page is not a leaf page
+		// if curr_locked_page will not require a split, then release locks on all the parent pages of curr_locked_page
+		if(!may_require_split_for_insert_for_bplus_tree(&curr_locked_page, bpttd_p->page_size, bpttd_p->index_def))
 		{
-			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_locked_page)
 			{
 				locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
 				release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
@@ -54,8 +43,34 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 			}
 		}
 
+		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
+		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
+		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
+
 		// push this child page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
+	}
+
+	// if we reach here, then the top page in the locked_pages_stack_p is likely the leaf page
+
+	// get leaf from locked_pages_stack
+	locked_page_info* leaf_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+
+	// if the leaf_locked_page must not split on insertion of record, then release all locks on all the parent pages
+	if(!must_split_for_insert_bplus_tree_leaf_page(&(leaf_locked_page->ppage), record, bpttd_p))
+	{
+		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the leaf_locked_page)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 	}
 
 	return 1;
