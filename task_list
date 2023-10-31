@@ -84,3 +84,10 @@
       bytes_to_read = new_bytes_to_read;
     }
     return stack.reverse();
+
+* think about future project,
+ * think about how to do undo and redo logging
+ * logical logging with physiological logging will allow us higher concurrency
+ * mini transactions like that innodb can generate very large log records, which we may not want in memory
+   * clubbing all physiological logs for a logical operation into a single buffer and log them only upon completion (with strict 2pl on the latches), can use large amount of memory for log buffer, but you can easily redo and undo it, it is never undone physiologically, only logically
+ * How about we use logical mini transaction redo, composed of physiological logs, now we do physiological undo when logical operation is incomplete, and logical undo for other operations above. we may have to undo and undo in this case
