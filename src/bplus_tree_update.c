@@ -68,14 +68,14 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	if((*abort_error) || ui_res == 0)
 	{
 		result = 0;
-		goto ABORT_OR_FAIL;
+		goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 	}
 
 	// if old_record did not exist and the new_record is set to NULL (i.e. a request for deletion, then do nothing)
 	if(old_record == NULL && new_record == NULL)
 	{
 		result = 1;
-		goto ABORT_OR_FAIL;
+		goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 	}
 	else if(old_record == NULL && new_record != NULL) // insert case
 	{
@@ -83,7 +83,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
 		{
 			result = 0;
-			goto ABORT_OR_FAIL;
+			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 		}
 
 		// we can release lock on release_for_split number of parent pages
@@ -94,17 +94,17 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 			if(*abort_error)
-				goto ABORT_OR_FAIL;
+				goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
 			release_for_split--;
 		}
 
 		result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
-		if(*abort_error)
-			goto ABORT_OR_FAIL;
 
-		// release allocation for locked_pages_stack
+		// deinitialize stack, all page locks will be released, after return of the above function
 		deinitialize_locked_pages_stack(locked_pages_stack_p);
+
+		// on abort, result will be 0
 		return result;
 	}
 	else if(old_record != NULL && new_record == NULL) // delete case
@@ -117,13 +117,13 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 			if(*abort_error)
-				goto ABORT_OR_FAIL;
+				goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
 			release_for_merge--;
 		}
 
-		// perform a delete operation on the found index in this page
-		result = delete_in_sorted_packed_page(
+		// perform a delete operation on the found index in this page, this has to succeed
+		delete_in_sorted_packed_page(
 							concerned_leaf, bpttd_p->page_size,
 							bpttd_p->record_def,
 							found_index,
@@ -132,14 +132,14 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 							abort_error
 						);
 		if(*abort_error)
-			goto ABORT_OR_FAIL;
+			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
-		merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
-		if(*abort_error)
-			goto ABORT_OR_FAIL;
+		result = merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 
-		// release allocation for locked_pages_stack
+		// deinitialize stack, all page locks will be released, after return of the above function
 		deinitialize_locked_pages_stack(locked_pages_stack_p);
+
+		// on abort, result will be 0
 		return result;
 	}
 	else // update
@@ -148,14 +148,14 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		if(0 != compare_tuples(old_record, bpttd_p->record_def, bpttd_p->key_element_ids, new_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count))
 		{
 			result = 0;
-			goto ABORT_OR_FAIL;
+			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 		}
 
 		// check again if the new_record is small enough to be inserted on the page
 		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
 		{
 			result = 0;
-			goto ABORT_OR_FAIL;
+			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 		}
 
 		// compute the size of the new record
@@ -171,7 +171,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 									abort_error
 								);
 		if(*abort_error)
-			goto ABORT_OR_FAIL;
+			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
 		if(new_record_size != old_record_size) // inplace update
 		{
@@ -190,7 +190,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 							abort_error
 						);
 					if(*abort_error)
-						goto ABORT_OR_FAIL;
+						goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
 					// we can release lock on release_for_split number of parent pages
 					while(release_for_split > 0)
@@ -200,25 +200,25 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 						pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 						if(*abort_error)
-							goto ABORT_OR_FAIL;
+							goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
 						release_for_split--;
 					}
 
 					// once the delete is done, we can split insert the new_record
 					result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
-					if(*abort_error)
-						goto ABORT_OR_FAIL;
 
-					// release allocation for locked_pages_stack
+					// deinitialize stack, all page locks will be released, after return of the above function
 					deinitialize_locked_pages_stack(locked_pages_stack_p);
+
+					// on abort, result will be 0
 					return result;
 				}
 				else
 				{
 					// the record was big, yet we could fit it on the page, nothing to be done really
 					result = 1;
-					goto ABORT_OR_FAIL;
+					goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 				}
 			}
 			else // new_record_size <= old_record_size -> may require merge -> but it is assumed to be true that updated = 1
@@ -231,33 +231,30 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 					if(*abort_error)
-						goto ABORT_OR_FAIL;
+						goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
 					release_for_merge--;
 				}
 
-				merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
-				if(*abort_error)
-					goto ABORT_OR_FAIL;
+				result = merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
 
-				// updated has to be 1 here
-				result = updated;
-
-				// release allocation for locked_pages_stack
+				// deinitialize stack, all page locks will be released, after return of the above function
 				deinitialize_locked_pages_stack(locked_pages_stack_p);
+
+				// on abort, result will be 0
 				return result;
 			}
 		}
 		else // we do not need to do any thing further, if the records are of same size
 		{
-			// set return value to 1, and ABORT_OR_FAIL will take care of the rest
+			// set return value to 1, and RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT will take care of the rest
 			result = 1;
-			goto ABORT_OR_FAIL;
+			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 		}
 	}
 
 
-	ABORT_OR_FAIL:;
+	RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT:;
 	// release all locks of the locked_pages_stack and exit
 	// do not worry about abort_error here or in the loop, as we are only releasing locks
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
