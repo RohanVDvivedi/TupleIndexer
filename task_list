@@ -1,5 +1,23 @@
 ** PICKED TASKS
 
+*UPDATE FEATURE
+ *0 allow cancel_update using a callback function, to release write locks taking cancel_update_context, transaction_id and abort_error -> this will release all locks on the locked_pages_stack and downgrade read lock, on the leaf page
+  * cancel_update_context stores pointer to locked_pages_stack, and a pointer to int value that gets set if the write locks were released
+  * if write locks were released, return the result of update inspector
+
+NEW STACKED ITERATOR AND ITERATOR FEATURE
+ *1 allow starting a bplus_tree_iterator with writer lock, to allow inplace updates of fixed width columns
+   * logic for read lock stays the same
+   * for write lock
+    * root page is locked with write lock for this (because we do not know if the root is leaf page or not)
+    * downgrade root_page to read lock, if it is not leaf
+    * on leaf page only take write lock
+ *2 in bplus tree iterator, if the curr_page is write locked, then take write lock on next or prev page of that leaf
+ *3 segregate logic in the find, to reach correct page, to get either a stack of locked pages or lock to only the leaf page -> use a flag saying is_stacked_iterator_required, to state if it returns all parents in locked_pages_stack or just the leaf in locked_pages_stack, interface remains the same
+ *4 using the above, build a stacked iterator, to lock pages all the way from root to leaf and then when going to next or prev page, release lock on the leaf and go to next using the parent entry, to retrieve the next page
+ *5 find gets 2 variants, one with bplus_tree_iterator and one with bplus_tree_stacked_iterator
+ *6 test code -> write logic to iterate using the iterator and stacked_iterator, and compare both their results
+
 ERROR HANDLING TASKS IN DAM
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
  * print active read and write locks count, number of total pages and number of free pages, on the close call of unWALed_in_memory_data_store
@@ -9,13 +27,6 @@ ERROR HANDLING TASKS IN DAM
  * dam add functionality (Still think if you need this, with current hashtable design we have, we do not need this)
   * uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
   * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
-
-UPDATE FEATURE
- * allow cancel_update using a callback function, to release locks taking cancel_update_context, transaction_id and abort_error -> this will release all locks on the locked_pages_stack and downgrade read lock, on the leaf page
-
-NEW STACKED ITERATOR AND ITERATOR FEATURE
- * allow starting a bplus_tree_iterator with writer lock, to allow inplace updates of fixed width columns
- * build a stacked iterator, to lock pages all the way from root to leaf and then when going to next or prev page, release lock on the leaf and go to next using the parent entry, to retrieve the next page
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
