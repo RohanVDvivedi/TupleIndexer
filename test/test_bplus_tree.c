@@ -625,7 +625,7 @@ int main()
 
 
 	// insert every 4th tuple from TEST_DATA_FILE
-	/* INSERTIONS SARTED */
+	/* INSERTIONS STARTED */
 
 	res = insert_from_file(root_page_id, TEST_DATA_FILE, 0, 3, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
@@ -636,7 +636,7 @@ int main()
 
 
 	// again try insert all tuples now 64/256 tuples must fail from TEST_DATA_RANDOM_FILE
-	/* INSERTIONS SARTED */
+	/* INSERTIONS STARTED */
 
 	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
@@ -702,7 +702,7 @@ int main()
 
 
 	// again insert all from TEST_DATA_RANDOM_FILE -> lesser than 62 failures
-	/* INSERTIONS SARTED */
+	/* INSERTIONS STARTED */
 
 	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
