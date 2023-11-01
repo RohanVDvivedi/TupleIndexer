@@ -77,7 +77,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	// if old_record did not exist and the new_record is set to NULL (i.e. a request for deletion, then do nothing)
 	if(old_record == NULL && new_record == NULL)
 	{
-		result = 1;
+		result = 0;
 		goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 	}
 	else if(old_record == NULL && new_record != NULL) // insert case
