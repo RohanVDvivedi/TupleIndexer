@@ -35,14 +35,15 @@ struct update_inspector
 {
 	const void* context;
 
-	// the operation for an update will be performed only if the update_inspector returns 1, 0 implies no operation
+	// the operation for an update will be performed only if the update_inspector returns 1 and the cancel_update_callback has not been called, 0 implies no operation
+	// cancel_update_callback simply, releases all write locks and downgrades lock on the leaf page to read lock, you may still read the old_record after calling cancel_update_callback
 	// new_record can be modified by this function, (but mind well to keep all the key elements of the record un touched)
 	// upon the return of 1 from this function
 	// if(old_record == NULL && *new_record == NULL) -> do nothing
 	// else if(old_record != NULL && *new_record == NULL) -> do delete of the old_record
 	// else if(old_record == NULL && *new_record != NULL) -> do insert for the new_record
 	// else if(old_record != NULL && *new_record != NULL) -> do update old_record with the new_record
-	int (*update_inspect)(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, const void* transaction_id, int* abort_error);
+	int (*update_inspect)(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, void (*cancel_update_callback)(const void* cancel_update_callback_context, const void* transaction_id, int* abort_error), const void* cancel_update_callback_context, const void* transaction_id, int* abort_error);
 };
 
 // to find and read a record, then inspect it with the ui_p, and then proceed to update it
