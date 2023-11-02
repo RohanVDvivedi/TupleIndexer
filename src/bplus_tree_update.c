@@ -38,7 +38,7 @@ void cancel_update_callback(void* cancel_update_callback_context_p, const void* 
 
 	// if you reach here then there is only 1 page locked, and that must be leaf page that we are concerned about
 
-	// we just downgrade that lock and return to the user, we do not pop it, since we will still be holding read lock on it
+	// we just downgrade that lock and return to the user, we do not pop it, since we will still be holding read lock on it, as long as the update_inspector will read the old_record
 	locked_page_info* bottom = get_bottom_of_locked_pages_stack(cuc_cntxt->locked_pages_stack_p);
 	downgrade_to_reader_lock_on_persistent_page(cuc_cntxt->dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 }
