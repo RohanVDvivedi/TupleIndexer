@@ -257,6 +257,21 @@ update_inspector di = {
 	.update_inspect = deletor_update_inspect,
 };
 
+int reader_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, void (*cancel_update_callback)(void* cancel_update_callback_context, const void* transaction_id, int* abort_error), void* cancel_update_callback_context, const void* transaction_id, int* abort_error)
+{
+	cancel_update_callback(cancel_update_callback_context, transaction_id, abort_error);
+	if(old_record == NULL)
+		printf("NOT FOUND\n");
+	else
+		print_tuple(old_record, record_def);
+	return 0;
+}
+
+update_inspector ri = {
+	.context = NULL,
+	.update_inspect = reader_update_inspect,
+};
+
 result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
@@ -740,6 +755,10 @@ int main()
 	res = update_in_file(root_page_id, &di, TEST_DATA_FILE, 179, 0, 1, 0, 1, &bpttd, dam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+	res = update_in_file(root_page_id, &ri, TEST_DATA_FILE, 4, 4, 256, 0, 0, &bpttd, dam_p, pmm_p);
+
+	printf("reads using updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	/* DELETE USING UPDATE FUNCTIONALITY */
 #define TEST_DELETE_USING_UPDATE
