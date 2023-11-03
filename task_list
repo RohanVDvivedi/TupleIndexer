@@ -2,16 +2,10 @@
 
 NEW STACKED ITERATOR AND ITERATOR FEATURE
  *1 allow starting a bplus_tree_iterator with writer lock, to allow inplace updates of fixed width columns
-   * logic for read lock stays the same
-   * for write lock
-    * root page is locked with write lock for this (because we do not know if the root is leaf page or not)
-    * downgrade root_page to read lock, if it is not leaf
-    * on leaf page only take write lock
  *2 in bplus tree iterator, if the curr_page is write locked, then take write lock on next or prev page of that leaf
- *3 segregate logic in the find, to reach correct page, to get either a stack of locked pages or lock to only the leaf page -> use a flag saying is_stacked_iterator_required, to state if it returns all parents in locked_pages_stack or just the leaf in locked_pages_stack, interface remains the same
- *4 using the above, build a stacked iterator, to lock pages all the way from root to leaf and then when going to next or prev page, release lock on the leaf and go to next using the parent entry, to retrieve the next page
- *5 find gets 2 variants, one with bplus_tree_iterator and one with bplus_tree_stacked_iterator
- *6 test code -> write logic to iterate using the iterator and stacked_iterator, and compare both their results
+ *3 build a stacked iterator, to lock pages all the way from root to leaf and then when going to next or prev page, release lock on the leaf and go to next using the parent entry, to retrieve the next page
+ *4 find gets 2 variants, one with bplus_tree_iterator and one with bplus_tree_stacked_iterator
+ *5 test code -> write logic to iterate using the iterator and stacked_iterator, and compare both their results
 
 ERROR HANDLING TASKS IN DAM
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
