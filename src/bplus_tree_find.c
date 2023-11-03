@@ -40,12 +40,12 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		// get lock on the root page of the bplus_tree in mode (referred by lock_type), this is because root_page can be a leaf page
 		persistent_page root_page = acquire_persistent_page_with_lock(dam_p, transaction_id, root_page_id, lock_type, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return ((locked_pages_stack){});
 
 		// pre cache level of the root_page
 		root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
 
-		// create a stack of capacity = levels (locked_parents = 1) or capacity = 2 (locked_parents = 0)
+		// create a stack of capacity = levels (when locked_parents = 1) or capacity = 2 (when locked_parents = 0)
 		if(locked_parents) // locked_parents -> lock all level pages that lead to leaf
 		{
 			if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
@@ -59,6 +59,8 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 
 		// push the root page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
+
+		// root_page now has been pushed to stack, it must not be accessed directly from here on
 
 		if(root_page_level == 0) // if root is the leaf page, then return
 			return (*locked_pages_stack_p);
@@ -108,10 +110,11 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		}
 
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
-		// only the leaf_page (if the parents level == 1) is locked with lock_type, all other pages (the parent_pages) are locked in READ_LOCK mode
+		// only the leaf_page (if the parent's level == 1) is locked with lock_type, all other pages (the parent_pages) are locked in READ_LOCK mode
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
-		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, (curr_locked_page_level == 1) ? lock_type : READ_LOCK, abort_error);
+		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, ((curr_locked_page_level == 1) ? lock_type : READ_LOCK), abort_error);
 
+		// exit for abort_error
 		if(*abort_error)
 			goto ABORT_ERROR;
 
