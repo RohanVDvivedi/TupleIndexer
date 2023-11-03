@@ -11,7 +11,7 @@
 #include<persistent_page_functions.h>
 #include<tuple.h>
 
-#include<stdint.h>
+#include<stdlib.h>
 
 // order of the enum values in find_type must remain the same
 typedef enum find_type find_type;
@@ -65,7 +65,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		else
 		{ // downgrade lock on the root page
 			locked_page_info* root_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-			downgrade_to_reader_lock_on_persistent_page(&(root_locked_page->ppage), transaction_id, abort_error);
+			downgrade_to_reader_lock_on_persistent_page(dam_p, transaction_id, &(root_locked_page->ppage), NONE_OPTION, abort_error);
 
 			if(*abort_error)
 				goto ABORT_ERROR;
@@ -84,13 +84,33 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		// pre cache level of the curr_locked_page
 		uint32_t curr_locked_page_level = get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p);
 
-		// figure out which child page to go to next
-		curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key, bpttd_p->key_element_count, bpttd_p);
+		// figure out which child page to go to next, based on f_type, key and key_element_count_concerned
+		switch(f_type)
+		{
+			case MIN_TUPLE :
+			{
+				curr_locked_page->child_index = -1;
+				break;
+			}
+			case LESSER_THAN_KEY :
+			case LESSER_THAN_EQUALS_KEY :
+			case GREATER_THAN_EQUALS_KEY :
+			case GREATER_THAN_KEY :
+			{
+				curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key, key_element_count_concerned, bpttd_p);
+				break;
+			}
+			case MAX_TUPLE :
+			{
+				curr_locked_page->child_index = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
+				break;
+			}
+		}
 
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 		// only the leaf_page (if the parents level == 1) is locked with lock_type, all other pages (the parent_pages) are locked in READ_LOCK mode
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
-		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, (curr_locked_page_level == 1) : lock_type : READ_LOCK, abort_error);
+		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, (curr_locked_page_level == 1) ? lock_type : READ_LOCK, abort_error);
 
 		if(*abort_error)
 			goto ABORT_ERROR;
