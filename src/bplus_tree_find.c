@@ -1,5 +1,6 @@
 #include<bplus_tree.h>
 
+#include<locked_pages_stack.h>
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
 #include<bplus_tree_page_header.h>
@@ -23,6 +24,14 @@ enum find_type
 	GREATER_THAN_KEY,
 	MAX_TUPLE,
 };
+
+// walks down for find, using the key, find_type and key_element_count_concerned (what ever is necessary)
+// lock_type indicates the lock to be acquired for leaf pages, and locked_parents tells it if all parents of the leaf must be locked
+// on an abort error, all pages locked in this function are unlocked and locked_pages_stack is deinitialized -> i.e. on abort_error nothing needs to be done
+locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const void* key, find_type type, uint32_t key_element_count_concerned, int lock_type, int locked_parents, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+{
+
+}
 
 bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
