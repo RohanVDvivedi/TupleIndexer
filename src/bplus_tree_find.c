@@ -28,6 +28,8 @@ enum find_type
 // walks down for find, using the key, find_type and key_element_count_concerned (what ever is necessary)
 // lock_type indicates the lock to be acquired for leaf pages, and locked_parents tells it if all parents of the leaf must be locked
 // on an abort error, all pages locked in this function are unlocked and locked_pages_stack is deinitialized -> i.e. on abort_error nothing needs to be done
+// on success (*abort_error) == 0, all pages requested/required are locked in the locked_pages_stack
+// NOTE: if locked_parents is set, then the parents are locked only in READ_LOCK mode
 locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const void* key, find_type type, uint32_t key_element_count_concerned, int lock_type, int locked_parents, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 
