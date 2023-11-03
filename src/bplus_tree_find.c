@@ -98,7 +98,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		// push this child page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
 
-		// if parents are not to be locked, then unlock the parent
+		// if parents are not to be locked, then unlock the immidiate parent after we have locked the child
 		if(!locked_parents)
 		{
 			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
