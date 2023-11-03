@@ -64,12 +64,15 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		if(root_page_level == 0) // if root is the leaf page, then return
 			return (*locked_pages_stack_p);
 		else
-		{ // downgrade lock on the root page
-			locked_page_info* root_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-			downgrade_to_reader_lock_on_persistent_page(dam_p, transaction_id, &(root_locked_page->ppage), NONE_OPTION, abort_error);
+		{
+			if(lock_type == WRITE_LOCK) // downgrade lock on the root page, if we had to WRITE_LOCK it
+			{
+				locked_page_info* root_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+				downgrade_to_reader_lock_on_persistent_page(dam_p, transaction_id, &(root_locked_page->ppage), NONE_OPTION, abort_error);
 
-			if(*abort_error)
-				goto ABORT_ERROR;
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
 		}
 	}
 
