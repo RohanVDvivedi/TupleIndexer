@@ -34,7 +34,6 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 {
 	// create a stack of capacity = levels (locked_parents = 1) or capacity = 2 (locked_parents = 0)
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
-	uint32_t root_page_level;
 
 	{
 		// get lock on the root page of the bplus_tree in mode (referred by lock_type), this is because root_page can be a leaf page
@@ -43,7 +42,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 			return ((locked_pages_stack){});
 
 		// pre cache level of the root_page
-		root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
 
 		// create a stack of capacity = levels (when locked_parents = 1) or capacity = 2 (when locked_parents = 0)
 		if(locked_parents) // locked_parents -> lock all level pages that lead to leaf

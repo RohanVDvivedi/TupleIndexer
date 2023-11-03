@@ -13,7 +13,6 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 {
 	// create a stack of capacity = levels
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
-	uint32_t root_page_level;
 
 	{
 		// get lock on the root page of the bplus_tree
@@ -22,7 +21,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 			return 0;
 
 		// pre cache level of the root_page
-		root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
 
 		// create a stack of capacity = levels
 		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
