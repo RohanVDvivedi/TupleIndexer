@@ -5,31 +5,37 @@
 
 #include<stdlib.h>
 
-bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+static persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p);
+
+bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || dam_p == NULL)
 		return NULL;
 
-	if(is_persistent_page_NULL(&curr_page, dam_p))
+	// and the lps size must not be zero
+	if(get_element_count_locked_pages_stack(&lps) == 0)
 		return NULL;
-
-	if(curr_tuple_index == LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE)
-	{
-		uint32_t tuple_count_on_curr_page = get_tuple_count_on_persistent_page(&curr_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
-		if(tuple_count_on_curr_page == 0)
-			curr_tuple_index = 0;
-		else
-			curr_tuple_index = tuple_count_on_curr_page - 1;
-	}
 
 	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
 	if(bpi_p == NULL)
 		exit(-1);
-	bpi_p->curr_page = curr_page;
+
+	bpi_p->lps = lps;
 	bpi_p->curr_tuple_index = curr_tuple_index;
 	bpi_p->bpttd_p = bpttd_p;
 	bpi_p->dam_p = dam_p;
+
+	persistent_page* curr_page = get_curr_leaf_page(bpi_p);
+
+	if(bpi_p->curr_tuple_index == LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE)
+	{
+		uint32_t tuple_count_on_curr_page = get_tuple_count_on_persistent_page(curr_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+		if(tuple_count_on_curr_page == 0)
+			bpi_p->curr_tuple_index = 0;
+		else
+			bpi_p->curr_tuple_index = tuple_count_on_curr_page - 1;
+	}
 
 	return bpi_p;
 }
