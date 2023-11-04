@@ -8,6 +8,7 @@
 
 #include<stddef.h>
 #include<stdlib.h>
+#include<stdio.h>
 
 typedef struct page_descriptor page_descriptor;
 struct page_descriptor
@@ -540,6 +541,7 @@ static void delete_notified_page_descriptor(void* resource_p, const void* data)
 int close_and_destroy_unWALed_in_memory_data_store(data_access_methods* dam_p)
 {
 	memory_store_context* cntxt = dam_p->context;
+	printf("pages still being used = %llu, of which %lu are free\n", get_element_count_hashmap(&(cntxt->page_id_map)), cntxt->free_pages_count);
 	remove_all_from_hashmap(&(cntxt->page_id_map), &((notifier_interface){NULL, delete_notified_page_descriptor}));
 	deinitialize_hashmap(&(cntxt->page_id_map));
 	deinitialize_hashmap(&(cntxt->page_memory_map));
