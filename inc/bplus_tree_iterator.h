@@ -23,6 +23,9 @@ struct bplus_tree_iterator
 	// all interior pages in case of a stacked_iterator are only READ_LOCK-ed
 	int leaf_lock_type;
 
+	// if this attribute is 1, then the iteration occurrs using the parent pages, else it happens through the next and prev page pointers on the leaf page
+	int is_stacked;
+
 	const bplus_tree_tuple_defs* bpttd_p;
 
 	const data_access_methods* dam_p;

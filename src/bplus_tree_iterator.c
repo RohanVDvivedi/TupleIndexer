@@ -27,7 +27,6 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 	bpi_p->dam_p = dam_p;
 
 	persistent_page* curr_page = get_curr_leaf_page(bpi_p);
-
 	if(bpi_p->curr_tuple_index == LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE)
 	{
 		uint32_t tuple_count_on_curr_page = get_tuple_count_on_persistent_page(curr_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
@@ -36,6 +35,9 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 		else
 			bpi_p->curr_tuple_index = tuple_count_on_curr_page - 1;
 	}
+
+	bpi_p->leaf_lock_type = is_persistent_page_write_locked(curr_page) ? WRITE_LOCK : READ_LOCK;
+	bpi_p->is_stacked = get_element_count_locked_pages_stack(&lps) > 1;
 
 	return bpi_p;
 }
