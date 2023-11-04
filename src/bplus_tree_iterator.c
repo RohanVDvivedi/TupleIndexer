@@ -35,7 +35,7 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		// attempt to lock the next_leaf_page, if locked successfully, push it onto the stack
 		if(next_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
 		{
-			persistent_page next_leaf_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, next_page_id, READ_LOCK, abort_error);
+			persistent_page next_leaf_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, next_page_id, bpi_p->leaf_lock_type, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(next_leaf_page));
@@ -90,7 +90,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		// attempt to lock the prev_leaf_page, if locked successfully, push it onto the stack
 		if(prev_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
 		{
-			persistent_page prev_leaf_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, prev_page_id, READ_LOCK, abort_error);
+			persistent_page prev_leaf_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, prev_page_id, bpi_p->leaf_lock_type, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(prev_leaf_page));
