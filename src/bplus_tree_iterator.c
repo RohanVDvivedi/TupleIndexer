@@ -13,13 +13,59 @@ static persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p)
 	return &(curr_leaf_page->ppage);
 }
 
+// makes the iterator point to next page of the curr_leaf_page
 // this function releases all locks on an abort_error
 // on abort_error OR on reaching end, all page locks are released, and return value is 0
-static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
+static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
+{
+	if(get_element_count_locked_pages_stack(&(bpi_p->lps)) == 0)
+		return 0;
 
+	if(bpi_p->is_stacked == 0) // iterate forward using the next_page pointer on the leaf
+	{
+
+	}
+	else // iterate forward using the pointers on the parent pages that are stacked
+	{
+
+	}
+
+	ABORT_ERROR:;
+	while(get_element_count_locked_pages_stack(&(bpi_p->lps)) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
+		release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(&(bpi_p->lps));
+	}
+	return 0;
+}
+
+// makes the iterator point to prev page of the curr_leaf_page
 // this function releases all locks on an abort_error
 // on abort_error OR on reaching end, all page locks are released, and return value is 0
-static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
+static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
+{
+	if(get_element_count_locked_pages_stack(&(bpi_p->lps)) == 0)
+		return 0;
+
+	if(bpi_p->is_stacked == 0) // iterate backward using the prev_page pointer on the leaf
+	{
+
+	}
+	else // iterate backward using the pointers on the parent pages that are stacked
+	{
+
+	}
+
+	ABORT_ERROR:;
+	while(get_element_count_locked_pages_stack(&(bpi_p->lps)) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
+		release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(&(bpi_p->lps));
+	}
+	return 0;
+}
 
 bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
 {
