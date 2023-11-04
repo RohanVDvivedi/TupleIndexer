@@ -23,7 +23,35 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 
 	if(bpi_p->is_stacked == 0) // iterate forward using the next_page pointer on the leaf
 	{
+		int result = 0;
 
+		// get the next_page_id
+		uint64_t next_page_id;
+		{
+			persistent_page* curr_leaf_page = &(get_top_of_locked_pages_stack(&(bpi_p->lps))->ppage);
+			next_page_id = get_next_page_id_of_bplus_tree_leaf_page(curr_leaf_page, bpi_p->bpttd_p);
+		}
+
+		// attempt to lock the next_leaf_page, if locked successfully, push it onto the stack
+		if(next_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
+		{
+			persistent_page next_leaf_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, next_page_id, READ_LOCK, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(next_leaf_page));
+			result = 1;
+		}
+
+		// pop one from the bottom, this was the old curr_leaf_page
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
+			release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(&(bpi_p->lps));
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+
+		return result;
 	}
 	else // iterate forward using the pointers on the parent pages that are stacked
 	{
@@ -50,7 +78,35 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 
 	if(bpi_p->is_stacked == 0) // iterate backward using the prev_page pointer on the leaf
 	{
+		int result = 0;
 
+		// get the prev_page_id
+		uint64_t prev_page_id;
+		{
+			persistent_page* curr_leaf_page = &(get_top_of_locked_pages_stack(&(bpi_p->lps))->ppage);
+			prev_page_id = get_next_page_id_of_bplus_tree_leaf_page(curr_leaf_page, bpi_p->bpttd_p);
+		}
+
+		// attempt to lock the prev_leaf_page, if locked successfully, push it onto the stack
+		if(prev_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
+		{
+			persistent_page prev_leaf_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, prev_page_id, READ_LOCK, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(prev_leaf_page));
+			result = 1;
+		}
+
+		// pop one from the bottom, this was the old curr_leaf_page
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
+			release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(&(bpi_p->lps));
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+
+		return result;
 	}
 	else // iterate backward using the pointers on the parent pages that are stacked
 	{
