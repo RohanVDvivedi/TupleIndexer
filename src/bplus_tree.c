@@ -76,7 +76,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// if this is an interior page whose all child pages are leaf pages, i.e. level = 1
-		if(get_level_of_bplus_tree_page(curr_locked_page->ppage.page, bpttd_p) == 1)
+		if(get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p) == 1)
 		{
 			// free all child leaf pages of this page
 			// without acquiring lock on this pages
@@ -93,7 +93,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			// free the child leaf page id at index [0, tuple_count)
 			for(uint32_t i = 0; i < tuple_count; i++)
 			{
-				child_leaf_page_id = get_child_page_id_by_child_index(curr_locked_page->ppage.page, i, bpttd_p);
+				child_leaf_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), i, bpttd_p);
 				free_persistent_page(dam_p, transaction_id, child_leaf_page_id, abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
