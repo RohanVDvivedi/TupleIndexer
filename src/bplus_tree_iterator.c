@@ -1,6 +1,7 @@
 #include<bplus_tree_iterator.h>
 
 #include<persistent_page_functions.h>
+#include<bplus_tree_page_header.h>
 #include<bplus_tree_leaf_page_header.h>
 
 #include<stdlib.h>
@@ -54,17 +55,17 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		{
 			locked_page_info* top = get_top_of_locked_pages_stack(&(bpi_p->lps));
 			release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(top->ppage), NONE_OPTION, abort_error);
-			pop_from_locked_pages_stack(locked_pages_stack_p);
+			pop_from_locked_pages_stack(&(bpi_p->lps));
 			if(*abort_error)
 				goto ABORT_ERROR;
 		}
 
 		// loop over stack to reach the next
-		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		while(get_element_count_locked_pages_stack(&(bpi_p->lps)) > 0)
 		{
-			locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+			locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(&(bpi_p->lps));
 
-			if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
+			if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpi_p->bpttd_p))
 				break;
 
 			// for an interior page,
@@ -131,17 +132,17 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		{
 			locked_page_info* top = get_top_of_locked_pages_stack(&(bpi_p->lps));
 			release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(top->ppage), NONE_OPTION, abort_error);
-			pop_from_locked_pages_stack(locked_pages_stack_p);
+			pop_from_locked_pages_stack(&(bpi_p->lps));
 			if(*abort_error)
 				goto ABORT_ERROR;
 		}
 
 		// loop over stack to reach the prev
-		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		while(get_element_count_locked_pages_stack(&(bpi_p->lps)) > 0)
 		{
-			locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+			locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(&(bpi_p->lps));
 
-			if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
+			if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpi_p->bpttd_p))
 				break;
 
 			// for an interior page,
