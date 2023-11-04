@@ -19,4 +19,7 @@ struct persistent_page
 	int is_write_locked;
 };
 
+#define WRITE_LOCK 1
+#define READ_LOCK  0
+
 #endif

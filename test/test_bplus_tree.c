@@ -45,6 +45,9 @@
 
 #define PAGE_ID_WIDTH 3
 
+#define DEFAULT_FIND_LEAF_LOCK_TYPE READ_LOCK
+#define DEFAULT_FIND_IS_STACKED 0
+
 // initialize transaction_id and abort_error
 const void* transaction_id = NULL;
 int abort_error = 0;
@@ -433,7 +436,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 
 	printf("printing the first 4 tuples\n");
 
-	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, bpttd_p, dam_p, transaction_id, &abort_error);
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, dam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -465,7 +468,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 
 	printf("printing the last 4 tuples\n");
 
-	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, bpttd_p, dam_p, transaction_id, &abort_error);
+	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, dam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -542,7 +545,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			}
 		}
 
-		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, bpttd_p, dam_p, transaction_id, &abort_error);
+		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, dam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
