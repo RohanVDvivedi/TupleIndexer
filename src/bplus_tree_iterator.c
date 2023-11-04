@@ -23,8 +23,6 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 
 	if(bpi_p->is_stacked == 0) // iterate forward using the next_page pointer on the leaf
 	{
-		int result = 0;
-
 		// get the next_page_id
 		uint64_t next_page_id;
 		{
@@ -39,7 +37,6 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			if(*abort_error)
 				goto ABORT_ERROR;
 			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(next_leaf_page));
-			result = 1;
 		}
 
 		// pop one from the bottom, this was the old curr_leaf_page
@@ -50,8 +47,6 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			if(*abort_error)
 				goto ABORT_ERROR;
 		}
-
-		return result;
 	}
 	else // iterate forward using the pointers on the parent pages that are stacked
 	{
@@ -65,8 +60,25 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		}
 
 		// loop over stack to reach the next
-		// TODO
+		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		{
+			locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+
+			if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
+				break;
+
+			// for an interior page,
+			// if it's child_index + 1 is out of bounds then release lock on it and pop it
+			// else lock the child_page on it's child_index + 1 entry and push this child_page onto the lps stack
+			// TODO
+		}
 	}
+
+	if(get_element_count_locked_pages_stack(&(bpi_p->lps)) == 0) // this implies end of scan
+		return 0;
+
+	// on success we would have the curr_leaf_page on the stack
+	return 1;
 
 	ABORT_ERROR:;
 	while(get_element_count_locked_pages_stack(&(bpi_p->lps)) > 0)
@@ -88,8 +100,6 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 
 	if(bpi_p->is_stacked == 0) // iterate backward using the prev_page pointer on the leaf
 	{
-		int result = 0;
-
 		// get the prev_page_id
 		uint64_t prev_page_id;
 		{
@@ -104,7 +114,6 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			if(*abort_error)
 				goto ABORT_ERROR;
 			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(prev_leaf_page));
-			result = 1;
 		}
 
 		// pop one from the bottom, this was the old curr_leaf_page
@@ -115,8 +124,6 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			if(*abort_error)
 				goto ABORT_ERROR;
 		}
-
-		return result;
 	}
 	else // iterate backward using the pointers on the parent pages that are stacked
 	{
@@ -130,8 +137,25 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		}
 
 		// loop over stack to reach the prev
-		// TODO
+		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		{
+			locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+
+			if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
+				break;
+
+			// for an interior page,
+			// if it's child_index - 1 is out of bounds then release lock on it and pop it
+			// else lock the child_page on it's child_index - 1 entry and push this child_page onto the lps stack
+			// TODO
+		}
 	}
+
+	if(get_element_count_locked_pages_stack(&(bpi_p->lps)) == 0) // this implies end of scan
+		return 0;
+
+	// on success we would have the curr_leaf_page on the stack
+	return 1;
 
 	ABORT_ERROR:;
 	while(get_element_count_locked_pages_stack(&(bpi_p->lps)) > 0)
