@@ -25,9 +25,10 @@ struct bplus_tree_iterator
 
 #define LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE UINT32_MAX
 
-// if the current page is NULL then a lock is acquired by the iterator's get_new function
+// if the lps has its leaf page locked in write_mode, then the iterator will lock all following leaf pages in WRITE_LOCK
+// if the size of the lps is > 1, then the iterator becomes stacked iterator, locking leaf pages using parent pages instead of the next and previous linkages
 // curr_tuple_index if UINT32_MAX then the iterator will point to the last 
-bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
+bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 // it moves the cursor forward by a tuple
 // returns 1 for success, it returns 0, if there are no records to move to
