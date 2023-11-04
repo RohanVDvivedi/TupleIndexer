@@ -12,11 +12,15 @@
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 struct bplus_tree_iterator
 {
-	persistent_page curr_page;
+	locked_pages_stack lps;
 
 	// curr_tuple_index is the index of the tuple, that the iterator points
 	// in the curr_page (a bplus_tree_leaf page)
 	uint32_t curr_tuple_index;
+
+	// WRITE_LOCK or READ_LOCK, for the leaves
+	// all interior pages in case of a stacked_iterator are only READ_LOCK-ed
+	int leaf_lock_type;
 
 	const bplus_tree_tuple_defs* bpttd_p;
 
