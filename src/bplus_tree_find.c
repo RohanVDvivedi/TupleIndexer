@@ -47,7 +47,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		// create a stack of capacity = levels (when locked_parents = 1) or capacity = 2 (when locked_parents = 0)
 		if(locked_parents) // locked_parents -> lock all level pages that lead to leaf
 		{
-			if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
+			if(!initialize_locked_pages_stack(locked_pages_stack_p, max(root_page_level + 1, 2)))
 				exit(-1);
 		}
 		else // we only need to lock the page and its parent at any point
@@ -155,7 +155,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 	return ((locked_pages_stack){});
 }
 
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// if the user wants to consider all the key elements then
 	// set key_element_count_concerned to bpttd_p->key_element_count
@@ -171,32 +171,12 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	else
 		f_type = LESSER_THAN_KEY + (find_pos - LESSER_THAN);
 
-	locked_pages_stack lps = walk_down_for_find_using_key(root_page_id, key, f_type, key_element_count_concerned, READ_LOCK, 0, bpttd_p, dam_p, transaction_id, abort_error);
+	locked_pages_stack lps = walk_down_for_find_using_key(root_page_id, key, f_type, key_element_count_concerned, leaf_lock_type, is_stacked, bpttd_p, dam_p, transaction_id, abort_error);
 	if(*abort_error) // on abort, all pages would have already been locked by this function
 		return NULL;
 
-	// unlock all parent pages, and extract the top page
-	while(get_element_count_locked_pages_stack(&lps) > 1)
-	{
-		locked_page_info* bottom = get_bottom_of_locked_pages_stack(&lps);
-		release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
-		pop_bottom_from_locked_pages_stack(&lps);
-
-		// on abort error, relase all locks, deinitialize lps stack and exit
-		if(*abort_error)
-		{
-			while(get_element_count_locked_pages_stack(&lps) > 0)
-			{
-				locked_page_info* bottom = get_bottom_of_locked_pages_stack(&lps);
-				release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
-				pop_bottom_from_locked_pages_stack(&lps);
-			}
-			deinitialize_locked_pages_stack(&lps);
-			return NULL;
-		}
-	}
-	persistent_page leaf_page = get_top_of_locked_pages_stack(&lps)->ppage;
-	deinitialize_locked_pages_stack(&lps);
+	// extract the top page
+	persistent_page* leaf_page = &(get_top_of_locked_pages_stack(&lps)->ppage);
 
 	// lps mus not be accessed from this point on
 
@@ -213,7 +193,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case LESSER_THAN_KEY :
 		{
 			leaf_tuple_index = find_preceding_in_sorted_packed_page(
-									&leaf_page, bpttd_p->page_size, 
+									leaf_page, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -224,7 +204,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case LESSER_THAN_EQUALS_KEY :
 		{
 			leaf_tuple_index = find_preceding_equals_in_sorted_packed_page(
-									&leaf_page, bpttd_p->page_size, 
+									leaf_page, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -235,7 +215,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case GREATER_THAN_EQUALS_KEY :
 		{
 			leaf_tuple_index = find_succeeding_equals_in_sorted_packed_page(
-									&leaf_page, bpttd_p->page_size, 
+									leaf_page, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -246,7 +226,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case GREATER_THAN_KEY :
 		{
 			leaf_tuple_index = find_succeeding_in_sorted_packed_page(
-									&leaf_page, bpttd_p->page_size, 
+									leaf_page, bpttd_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -261,7 +241,9 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 	}
 
-	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(leaf_page, leaf_tuple_index, bpttd_p, dam_p);
+	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(lps, leaf_tuple_index, bpttd_p, dam_p);
+
+	// from this point on lps becomes the ownership of the bplus_tree_iterator, it and the leaf_page must not be accessed any further
 
 	// iterate next or previous in bplus_tree_iterator, based on the f_type
 	// this is not required for MIN_TUPLE and MAX_TUPLE

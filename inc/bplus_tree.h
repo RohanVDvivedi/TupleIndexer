@@ -28,7 +28,9 @@ enum find_position
 // the key == NULL and find_pos == GREATER_THAN, then the iterator will point to the first tuple of the bplus_tree
 // the key == NULL and find_pos == LESSER_THAN, then the iterator will point to the last tuple of the bplus_tree
 // it may return NULL, only on an abort_error
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error);
+// if lock_type == WRITE_LOCK, all iterator's leaf pages will be write locked
+// if is_stacked == 1, the iterator uses parent linkages for the next leaf and prev leaf page iteration
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error);
 
 typedef struct update_inspector update_inspector;
 struct update_inspector
