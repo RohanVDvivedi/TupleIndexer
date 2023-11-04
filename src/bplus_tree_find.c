@@ -248,13 +248,13 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	// if we couldn't initialize a bplus_tree_iterator, then just unlock all the pages, deinitialize the stack and exit
 	if(bpi_p == NULL)
 	{
-		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		while(get_element_count_locked_pages_stack(&lps) > 0)
 		{
-			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(&lps);
 			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
-			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+			pop_bottom_from_locked_pages_stack(&lps);
 		}
-		deinitialize_locked_pages_stack(locked_pages_stack_p);
+		deinitialize_locked_pages_stack(&lps);
 		return NULL;
 	}
 
