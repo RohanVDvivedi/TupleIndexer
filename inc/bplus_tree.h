@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_H
 #define BPLUS_TREE_H
 
-#include<bplus_tree_iterator.h>
+#include<bplus_tree_iterator_public.h>
 
 #include<bplus_tree_tuple_definitions.h>
 #include<opaque_data_access_methods.h>

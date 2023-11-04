@@ -8,6 +8,8 @@
 #include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
 
+#include<bplus_tree_iterator.h>
+
 #include<persistent_page_functions.h>
 #include<tuple.h>
 
