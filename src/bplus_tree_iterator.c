@@ -102,9 +102,10 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 
 const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
-	if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->dam_p) || bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(&(bpi_p->curr_page), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
+	persistent_page* curr_page = get_curr_leaf_page(bpi_p);
+	if(curr_page == NULL || bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(&curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 		return NULL;
-	return get_nth_tuple_on_persistent_page(&(bpi_p->curr_page), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def), bpi_p->curr_tuple_index);
+	return get_nth_tuple_on_persistent_page(curr_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def), bpi_p->curr_tuple_index);
 }
 
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
