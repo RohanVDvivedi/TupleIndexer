@@ -3,6 +3,7 @@
 #include<persistent_page_functions.h>
 #include<bplus_tree_page_header.h>
 #include<bplus_tree_leaf_page_header.h>
+#include<bplus_tree_interior_page_util.h>
 
 #include<stdlib.h>
 
@@ -71,7 +72,35 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			// for an interior page,
 			// if it's child_index + 1 is out of bounds then release lock on it and pop it
 			// else lock the child_page on it's child_index + 1 entry and push this child_page onto the lps stack
-			// TODO
+			
+			// get tuple_count of the page
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->index_def->size_def));
+
+			// increment its child_index
+			curr_locked_page->child_index++;
+
+			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count) // if child_index is within bounds, push this child_page onto the lps stack
+			{
+				// then lock the page at child_index, and push it onto the stack
+				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpi_p->bpttd_p);
+				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				// push a locked_page_info for child_page pointing to its (first_child_index - 1)
+				locked_page_info child_locked_page_info = INIT_LOCKED_PAGE_INFO(child_page);
+				if(!is_bplus_tree_leaf_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p))
+					child_locked_page_info.child_index = -2; // this is so that when this becomes initially the top for this loop, it will get incremented to its first_child_index
+				push_to_locked_pages_stack(&(bpi_p->lps), &child_locked_page_info);
+			}
+			else // pop release lock on the curr_locked_page, and pop it
+			{
+				// pop it from the stack and unlock it
+				release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(curr_locked_page->ppage), NONE_OPTION, abort_error);
+				pop_from_locked_pages_stack(&(bpi_p->lps));
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
 		}
 	}
 
@@ -148,7 +177,35 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			// for an interior page,
 			// if it's child_index - 1 is out of bounds then release lock on it and pop it
 			// else lock the child_page on it's child_index - 1 entry and push this child_page onto the lps stack
-			// TODO
+
+			// get tuple_count of the page
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->index_def->size_def));
+
+			// decrement its child_index
+			curr_locked_page->child_index--;
+
+			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count) // if child_index is within bounds, push this child_page onto the lps stack
+			{
+				// then lock the page at child_index, and push it onto the stack
+				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpi_p->bpttd_p);
+				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				// push a locked_page_info for child_page, making its last child + 1,
+				locked_page_info child_locked_page_info = INIT_LOCKED_PAGE_INFO(child_page);
+				if(!is_bplus_tree_leaf_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p))
+					child_locked_page_info.child_index = get_tuple_count_on_persistent_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->index_def->size_def)); // this is so that when this becomes initially the top for this loop, it will get decremented to its last_child_index
+				push_to_locked_pages_stack(&(bpi_p->lps), &child_locked_page_info);
+			}
+			else // pop release lock on the curr_locked_page, and pop it
+			{
+				// pop it from the stack and unlock it
+				release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(curr_locked_page->ppage), NONE_OPTION, abort_error);
+				pop_from_locked_pages_stack(&(bpi_p->lps));
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
 		}
 	}
 
