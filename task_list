@@ -1,10 +1,5 @@
 ** PICKED TASKS
 
-NEW STACKED ITERATOR AND ITERATOR FEATURE
- *1 in bplus tree iterator, if the leaf_page is write locked, then take write lock on next or prev page of that leaf
- *2 build stacked iterator inside the bplus_tree iterator, to take in locked_pages_stack, build, get_curr_leaf_page, goto_next_leaf_page and goto_prev_leaf_page, to allow indifferently iterate it
- *3 test code -> write logic to iterate using the iterator and stacked_iterator, and compare both their results and print all function with write lock, to iterate backwards and forward without stopping one over another.
-
 BPLUS_TREE_ITERATOR NEW FEATURES
  * allow starting a bplus_tree_iterator with writer lock, to allow inplace updates of fixed width non-key columns
 
