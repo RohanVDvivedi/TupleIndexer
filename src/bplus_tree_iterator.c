@@ -136,7 +136,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		uint64_t prev_page_id;
 		{
 			persistent_page* curr_leaf_page = &(get_top_of_locked_pages_stack(&(bpi_p->lps))->ppage);
-			prev_page_id = get_next_page_id_of_bplus_tree_leaf_page(curr_leaf_page, bpi_p->bpttd_p);
+			prev_page_id = get_prev_page_id_of_bplus_tree_leaf_page(curr_leaf_page, bpi_p->bpttd_p);
 		}
 
 		// attempt to lock the prev_leaf_page, if locked successfully, push it onto the stack
