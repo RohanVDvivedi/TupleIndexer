@@ -69,6 +69,8 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpi_p->bpttd_p))
 				break;
 
+			uint32_t curr_page_level = get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpi_p->bpttd_p);
+
 			// for an interior page,
 			// if it's child_index + 1 is out of bounds then release lock on it and pop it
 			// else lock the child_page on it's child_index + 1 entry and push this child_page onto the lps stack
@@ -83,7 +85,7 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			{
 				// then lock the page at child_index, and push it onto the stack
 				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpi_p->bpttd_p);
-				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
+				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, child_page_id, ((curr_page_level == 1) ? bpi_p->leaf_lock_type : READ_LOCK), abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
@@ -174,6 +176,8 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpi_p->bpttd_p))
 				break;
 
+			uint32_t curr_page_level = get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpi_p->bpttd_p);
+
 			// for an interior page,
 			// if it's child_index - 1 is out of bounds then release lock on it and pop it
 			// else lock the child_page on it's child_index - 1 entry and push this child_page onto the lps stack
@@ -188,7 +192,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			{
 				// then lock the page at child_index, and push it onto the stack
 				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpi_p->bpttd_p);
-				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
+				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, child_page_id, ((curr_page_level == 1) ? bpi_p->leaf_lock_type : READ_LOCK), abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
