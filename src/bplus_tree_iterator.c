@@ -55,7 +55,17 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 	}
 	else // iterate forward using the pointers on the parent pages that are stacked
 	{
+		// pop the top of the stack, which will happen to be curr_leaf_page, exposing us to the parent pages underneath
+		{
+			locked_page_info* top = get_top_of_locked_pages_stack(&(bpi_p->lps));
+			release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(top->ppage), NONE_OPTION, abort_error);
+			pop_from_locked_pages_stack(locked_pages_stack_p);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 
+		// loop over stack to reach the next
+		// TODO
 	}
 
 	ABORT_ERROR:;
@@ -110,7 +120,17 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 	}
 	else // iterate backward using the pointers on the parent pages that are stacked
 	{
+		// pop the top of the stack, which will happen to be curr_leaf_page, exposing us to the parent pages underneath
+		{
+			locked_page_info* top = get_top_of_locked_pages_stack(&(bpi_p->lps));
+			release_lock_on_persistent_page(bpi_p->dam_p, transaction_id, &(top->ppage), NONE_OPTION, abort_error);
+			pop_from_locked_pages_stack(locked_pages_stack_p);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 
+		// loop over stack to reach the prev
+		// TODO
 	}
 
 	ABORT_ERROR:;
