@@ -245,6 +245,19 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 
 	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(lps, leaf_tuple_index, bpttd_p, dam_p);
 
+	// if we couldn't initialize a bplus_tree_iterator, then just unlock all the pages, deinitialize the stack and exit
+	if(bpi_p == NULL)
+	{
+		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+		}
+		deinitialize_locked_pages_stack(locked_pages_stack_p);
+		return NULL;
+	}
+
 	// from this point on lps becomes the ownership of the bplus_tree_iterator, it and the leaf_page must not be accessed any further
 
 	// iterate next or previous in bplus_tree_iterator, based on the f_type
