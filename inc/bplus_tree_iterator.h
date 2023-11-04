@@ -28,7 +28,9 @@ struct bplus_tree_iterator
 // if the lps has its leaf page locked in write_mode, then the iterator will lock all following leaf pages in WRITE_LOCK
 // if the size of the lps is > 1, then the iterator becomes stacked iterator, locking leaf pages using parent pages instead of the next and previous linkages
 // the capacity of lps is expected to be atleast 2
-// curr_tuple_index if UINT32_MAX then the iterator will point to the last 
+// curr_tuple_index if UINT32_MAX then the iterator will point to the last
+// after the call to this function, the lps is solely owned by the bplus_tree_iterator, on an abort_error, all the lps pages will be unlocked by the bplus_tree_iterator
+// and lps gets deinitialized by the bplus_tree_iterator only after delete_bplus_tree_iterator() call
 bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p);
 
 // it moves the cursor forward by a tuple
