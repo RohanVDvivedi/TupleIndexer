@@ -5,7 +5,13 @@
 
 #include<stdlib.h>
 
-static persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p);
+static persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p)
+{
+	locked_page_info* curr_page = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
+	if(curr_page == NULL)
+		return NULL;
+	return &(curr_page->ppage);
+}
 
 static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
 
