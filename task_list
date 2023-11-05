@@ -21,6 +21,9 @@ BPLUS_TREE_ITERATOR NEW FEATURES
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * project and its makefile restructure, to put all bplus_tree files in the same directory
+  * RM = rm -rf
+  * MK = mkdir -p
+  * both of above will easily do the job for nested directories, now we need to only call mkdir -p on creating an object
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
    * each has table has 2 types of pages, HASH_ARRAY_PAGE and BUCKET_PAGE
    * BUCKET_PAGE are the ones that contain data, original tuples, with key and value (duplicate keys allowed)
