@@ -18,6 +18,7 @@ BPLUS_TREE_ITERATOR NEW FEATURES
  * add a test case involving 2 threads, iterating with write locks in opposite directions (one stacked and another not-stacked) and modifying first bytes of the update to X or Y and print the results
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * project and its makefile restructure, to put all bplus_tree files in the same directory
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
    * each has table has 2 types of pages, HASH_ARRAY_PAGE and BUCKET_PAGE
    * BUCKET_PAGE are the ones that contain data, original tuples, with key and value (duplicate keys allowed)
