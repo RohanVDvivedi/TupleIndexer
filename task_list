@@ -24,7 +24,8 @@ BPLUS_TREE_ITERATOR NEW FEATURES
   * RM = rm -rf
   * MK = mkdir -p
   * both of above will easily do the job for nested directories, now we need to only call mkdir -p on creating an object
-  * for objects add MK $(@D) to create its directory before creatin the .o file
+  * for objects add MK $(@D) to create its directory before creating the .o and .a files
+  * for header restructure them from #include<bplus_tree.h> to #include<bplus_tree/bplus_tree.h>
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
    * each has table has 2 types of pages, HASH_ARRAY_PAGE and BUCKET_PAGE
    * BUCKET_PAGE are the ones that contain data, original tuples, with key and value (duplicate keys allowed)
