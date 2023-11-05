@@ -26,7 +26,8 @@ BPLUS_TREE_ITERATOR NEW FEATURES
   * both of above will easily do the job for nested directories, now we need to only call mkdir -p on creating an object
   * for objects add MK $(@D) to create its directory before creatin the .o file
   * for object dirs make rule like this
-  * ${OBJ_DIR}/* :
+  * ${OBJECTS_DIRS} = some logic to get directories of all ${OBJECTS}
+  * ${OBJECTS_DIRS} : ${OBJ_DIR}/% :
       ${MK} $@
   * ${OBJ_DIR}/%.o : ${SRC_DIR}/%.c | $(@D) to make all directory structure for the files
  * hash_table, a linux page table like hashtable where each bucket points a linked_page_list, each working with PRESERVE_ROOT_PAGE_ID
