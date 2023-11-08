@@ -55,7 +55,7 @@ UPDATE OPTIMIZATION
      * for building ith level of interior page, we copy the first tuple's key of all the lower level (i-1 level) pages, and build a singly linkedlist of interior pages composed of each index record pointing to the lower level page, we maintain only the heads of the 2 adjacent levels and a write iterator to the upper level and read iterator of the lower level.
      * since in the initial phase we are not storing the least_keys_page_id in the interior pages, we can use this interior page header field to link all pages in the same level as a singly linkedlist
      * for this we need to define an union {all_least_keys_page_id next_page_id}, to use the utility iterator to work.
- * think about implementing more data structures like T-tree, R-tree
+ * think about implementing more data structures like T-tree, R-tree, Patricia Trie, etc
 
 ** OPTIMIZATION
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
