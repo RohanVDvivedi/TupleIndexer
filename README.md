@@ -10,9 +10,7 @@ Note:
  * [Cutlery](https://github.com/RohanVDvivedi/Cutlery)
  * [SerializableInteger](https://github.com/RohanVDvivedi/SerializableInteger)
  * [TupleStore](https://github.com/RohanVDvivedi/TupleStore)
- * [BoomPar](https://github.com/RohanVDvivedi/BoomPar)
  * [ReaderWriterLock](https://github.com/RohanVDvivedi/ReaderWriterLock)
- * [Bufferpool](https://github.com/RohanVDvivedi/Bufferpool)
 
 **Download source code :**
  * `git clone https://github.com/RohanVDvivedi/TupleIndexer.git`
@@ -26,7 +24,7 @@ Note:
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-ltupleindexer -ltuplestore -rwlock -lserint -lcutlery` linker flag, while compiling your application
+ * add `-ltupleindexer -ltuplestore -lrwlock -lserint -lcutlery -lpthread` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `#include<bplus_tree.h>`
    * `#include<data_access_methods.h>`
