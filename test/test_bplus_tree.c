@@ -735,11 +735,17 @@ int main()
 
 	// again insert all from TEST_DATA_RANDOM_FILE -> lesser than 62 failures
 	/* INSERTIONS STARTED */
+#define TEST_INSERT_USING_UPDATE
 
+#ifdef TEST_INSERT_USING_UPDATE
+	res = update_in_file(root_page_id, &ii, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
+
+	printf("updates (inserts) to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+#else
 	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
-
+#endif
 	/* INSERTIONS COMPLETED */
 
 
