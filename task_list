@@ -17,9 +17,6 @@ BPLUS_TREE_ITERATOR NEW FEATURES
  * allow inplace updates of non-key columns of the row (and only if the old and new value are of the same size), that the iterator is pointing to, only if the iterator is openned with leaf_lock_type == WRITE_LOCK
  * add a test case involving 2 threads, iterating with write locks in opposite directions (one stacked and another not-stacked) and modifying first bytes of the update to X or Y and print the results
 
-UPDATE OPTIMIZATION
- * if the old_record is NULL, i.e. not found, then it is either a no-op (new_record = NULL) || an insert of new_record, so we can release parent page locks that can be released for split_insert, before calling the update inspector.
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * project and its makefile restructure, to put all bplus_tree files in the same directory
   * RM = rm -rf
