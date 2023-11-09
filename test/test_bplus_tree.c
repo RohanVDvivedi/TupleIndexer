@@ -833,7 +833,15 @@ int main()
 
 
 	// update first byte of update column using iterator
-	update_UPDATE_column_for_all_tuples_with_iterator(root_page_id, '1', 1, 1, &bpttd, dam_p, pmm_p);
+	{
+		update_UPDATE_column_for_all_tuples_with_iterator(root_page_id, '1', 1, 1, &bpttd, dam_p, pmm_p);
+		print_bplus_tree(root_page_id, 1, &bpttd, dam_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
 
 
 	// read using the update functionality
