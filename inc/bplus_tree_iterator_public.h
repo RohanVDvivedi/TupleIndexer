@@ -36,6 +36,7 @@ void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transact
 // below functions can be used with only writable iterator
 // you can use it to update only a fixed length non-key column
 
-// API TODO
+// update a non_key same sized column, inplace at the place that the bplus_tree_iterator is pointing to
+int update_non_key_value_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 #endif
