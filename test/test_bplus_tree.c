@@ -656,6 +656,18 @@ int main()
 
 
 
+	// find in empty bplus_tree
+	printf("perforing finds in an empty bplus_tree\n\n");
+	/* FIND STARTED */
+
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 10, 5, 8, 16, 1, &bpttd, dam_p);
+
+	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+	/* FIND COMPLETED */
+
+
+
 	// insert every 4th tuple from TEST_DATA_FILE
 	/* INSERTIONS STARTED */
 
