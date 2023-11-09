@@ -99,6 +99,26 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	// result to return
 	int result = 0;
 
+	// OPTIMIZATION - release early locks of release_for_split number of parent pages, if you can anticipate that you may not be merging
+	// if old_record is NULL, then all you can do is an insert (consequently a split insert)
+	// you can't update or delete a non existent record, you can only insert into its place, so you may end up splitting, but never merging
+	if(old_record == NULL)
+	{
+		while(release_for_split > 0)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+			if(*abort_error)
+				goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
+
+			release_for_split--;
+		}
+	}
+	// as you could guess, you can discard this piece of code
+	// OPTIMIZATION - end
+
 	cancel_update_callback_context cuc_cntxt = {.update_canceled = 0, .locked_pages_stack_p = locked_pages_stack_p, .dam_p = dam_p};
 	int ui_res = ui_p->update_inspect(ui_p->context, bpttd_p->record_def, old_record, &new_record, cancel_update_callback, &cuc_cntxt, transaction_id, abort_error);
 	if((*abort_error) || cuc_cntxt.update_canceled == 1 || ui_res == 0)
