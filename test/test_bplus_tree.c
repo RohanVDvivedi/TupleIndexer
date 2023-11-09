@@ -228,6 +228,20 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
+// insert -> update only if the old_record is NULL, i.e. being an insert
+int inserted_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, void (*cancel_update_callback)(void* cancel_update_callback_context, const void* transaction_id, int* abort_error), void* cancel_update_callback_context, const void* transaction_id, int* abort_error)
+{
+	if(old_record == NULL)
+		return 1;
+	else
+		return 0;
+}
+
+update_inspector ii = {
+	.context = NULL,
+	.update_inspect = inserter_update_inspect,
+};
+
 int updater_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, void (*cancel_update_callback)(void* cancel_update_callback_context, const void* transaction_id, int* abort_error), void* cancel_update_callback_context, const void* transaction_id, int* abort_error)
 {
 	user_value update_data = get_value_from_element_from_tuple(record_def, 7, old_record);
