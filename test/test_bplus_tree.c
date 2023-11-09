@@ -877,7 +877,7 @@ int main()
 	// update first byte of update column using iterator
 	// running this test requires that the update colum of all the records in the bplus tree must have atleast 1 byte
 	// running this test is not deterministic, hence does not produce same output on any 2 runs even with the same params
-#define CONCURRENT_WRITABLE_ITERATOR_SCAN
+//#define CONCURRENT_WRITABLE_ITERATOR_SCAN
 #ifdef CONCURRENT_WRITABLE_ITERATOR_SCAN
 	run_concurrent_writable_scan_forward_and_backward(root_page_id, &bpttd, dam_p, pmm_p);
 #endif
