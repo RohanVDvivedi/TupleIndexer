@@ -243,8 +243,8 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 	}
 
-	// if the leaf_page is empty, then we need to go next or prev immediately after creating the bplus_tree_iterator
-	int is_current_leaf_page_empty = (0 == get_tuple_count_on_persistent_page(leaf_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def)));
+	// if the initial leaf_page is empty, then we need to go next or prev immediately after creating the bplus_tree_iterator
+	int is_initial_leaf_page_empty = (0 == get_tuple_count_on_persistent_page(leaf_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def)));
 
 	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(lps, leaf_tuple_index, bpttd_p, dam_p);
 
@@ -269,7 +269,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	{
 		case LESSER_THAN_KEY :
 		{
-			if(is_current_leaf_page_empty)
+			if(is_initial_leaf_page_empty)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -294,7 +294,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 		case LESSER_THAN_EQUALS_KEY :
 		{
-			if(is_current_leaf_page_empty)
+			if(is_initial_leaf_page_empty)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -319,7 +319,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 		case GREATER_THAN_EQUALS_KEY :
 		{
-			if(is_current_leaf_page_empty)
+			if(is_initial_leaf_page_empty)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -344,7 +344,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 		case GREATER_THAN_KEY :
 		{
-			if(is_current_leaf_page_empty)
+			if(is_initial_leaf_page_empty)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -369,7 +369,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 		case MIN_TUPLE :
 		{
-			if(is_current_leaf_page_empty)
+			if(is_initial_leaf_page_empty)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -382,7 +382,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 		case MAX_TUPLE :
 		{
-			if(is_current_leaf_page_empty)
+			if(is_initial_leaf_page_empty)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
