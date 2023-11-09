@@ -620,6 +620,46 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	return res;
 }
 
+void update_UPDATE_column_for_all_tuples_with_iterator(uint64_t root_page_id, char first_byte, int is_forward, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+{
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, (is_forward ? GREATER_THAN : LESSER_THAN), WRITE_LOCK, is_stacked, bpttd_p, dam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	const void* tuple_to_process = get_tuple_bplus_tree_iterator(bpi_p);
+	while(tuple_to_process != NULL)
+	{
+		// update the update column here in place
+		const user_value old_value = get_value_from_element_from_tuple(bpttd_p->record_def, 7, tuple_to_process);
+		char data_bytes[64] = {};
+		memmove(data_bytes, old_value.data, old_value.data_size);
+		user_value new_value = {.data = data_bytes, .data_size = old_value.data_size};
+		((char*)(new_value.data))[0] = first_byte;
+		update_non_key_value_in_place_at_bplus_tree_iterator(bpi_p, 7, &new_value, pmm_p, transaction_id, &abort_error);
+
+		if(is_forward)
+			next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		else
+			prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		tuple_to_process = get_tuple_bplus_tree_iterator(bpi_p);
+	}
+
+	delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 int main()
 {
 	/* SETUP STARTED */
