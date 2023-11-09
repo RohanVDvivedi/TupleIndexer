@@ -239,6 +239,10 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 	if(get_element_count_locked_pages_stack(&lps) == 0)
 		return NULL;
 
+	// the top most page must be a leaf page
+	if(!is_bplus_tree_leaf_page(&(get_top_of_locked_pages_stack(&lps)->ppage), bpttd_p))
+		return NULL;
+
 	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
 	if(bpi_p == NULL)
 		exit(-1);
