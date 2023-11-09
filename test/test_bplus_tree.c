@@ -657,7 +657,7 @@ int main()
 
 
 	// find in empty bplus_tree
-	printf("perforing finds in an empty bplus_tree\n\n");
+	printf("performing finds in an empty bplus_tree\n\n");
 	/* FIND STARTED */
 
 	res = find_from_file(root_page_id, TEST_DATA_FILE, 10, 5, 8, 16, 1, &bpttd, dam_p);
@@ -689,7 +689,7 @@ int main()
 	/* INSERTIONS COMPLETED */
 
 
-	// perfrom find 12 times on tules from TEST_DATA_FILE on all tuples
+	// perfrom find 12 times on tuples from TEST_DATA_FILE on all tuples
 	/* FIND STARTED */
 
 	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 64, 1, &bpttd, dam_p);
