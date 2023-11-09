@@ -831,9 +831,17 @@ int main()
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
+
+	// update first byte of update column using iterator
+	update_UPDATE_column_for_all_tuples_with_iterator(root_page_id, '1', 1, 1, bpttd_p, dam_p, pmm_p);
+
+
+	// read using the update functionality
 	res = update_in_file(root_page_id, &ri, TEST_DATA_FILE, 4, 4, 256, 0, 0, &bpttd, dam_p, pmm_p);
 
 	printf("reads using updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+
 
 	/* DELETE USING UPDATE FUNCTIONALITY */
 #define TEST_DELETE_USING_UPDATE
