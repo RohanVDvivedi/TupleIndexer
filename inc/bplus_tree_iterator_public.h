@@ -6,10 +6,10 @@
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 
 // returns true, if the leaf page of the bplus_tree_iterator is/will be write locked
-int is_writable_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+int is_writable_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
 
 // returns true, if the path from the root ot leaf is locked by the iterator and is used for iteration instead of the next and prev linkages of the leaf page
-int is_stacked_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+int is_stacked_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
 
 // it moves the cursor forward by a tuple
 // returns 1 for success, it returns 0, if there are no records to move to
