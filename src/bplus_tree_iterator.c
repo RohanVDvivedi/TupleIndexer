@@ -268,6 +268,16 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 	return bpi_p;
 }
 
+int is_writable_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
+{
+	return bpi_p->leaf_lock_type == WRITE_LOCK;
+}
+
+int is_stacked_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
+{
+	return bpi_p->is_stacked;
+}
+
 int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
 {
 	{
