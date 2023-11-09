@@ -13,8 +13,6 @@ INMEMORY DAM FIXES AND DAM FEATURES
   * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
 
 BPLUS_TREE_ITERATOR NEW FEATURES
- * allow inplace updates of non-key columns of the row (and only if the old and new value are of the same size), that the iterator is pointing to, only if the iterator is openned with leaf_lock_type == WRITE_LOCK
-    * add a comment, that the above feature is only provided to lock tuples, change its access or transaction timestamps, etc
  * add a test case involving 2 threads, iterating with write locks in opposite directions (one stacked and another not-stacked) and modifying first bytes of the update to X or Y and print the results
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
