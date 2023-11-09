@@ -683,7 +683,7 @@ void* update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER(update_UPDATE_co
 void run_concurrent_writable_scan_forward_and_backward(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
 {
 	update_UPDATE_column_params p1 = {root_page_id, 'F', 1, 0, bpttd_p, dam_p, pmm_p};
-	update_UPDATE_column_params p2 = {root_page_id, 'B', 1, 1, bpttd_p, dam_p, pmm_p};
+	update_UPDATE_column_params p2 = {root_page_id, 'B', 0, 1, bpttd_p, dam_p, pmm_p};
 
 	executor* thread_pool = new_executor(FIXED_THREAD_COUNT_EXECUTOR, 2, 2, 0, NULL, NULL, NULL);
 
