@@ -387,3 +387,26 @@ void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transact
 	deinitialize_locked_pages_stack(&(bpi_p->lps));
 	free(bpi_p);
 }
+
+int update_non_key_value_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// cannot update non WRITE_LOCKed bplus_tree_iterator
+	if(bpi_p->leaf_lock_type != WRITE_LOCK)
+		return 0;
+
+	// make sure that the element that the user is trying to update in place is not a key for the bplus_tree
+	// if you allow so, it could be a disaster
+	for(uint32_t i = 0; i < bpi_p->bpttd_p->key_element_count; i++)
+		if(bpi_p->bpttd_p->key_element_ids[i] == element_index)
+			return 0;
+
+	// get current leaf page that the bplus_tree_iterator is pointing to
+	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
+
+	// if the iterator is at the end OR is not pointing to a valid tuple, then fail
+	if(curr_leaf_page == NULL || bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
+		return 0;
+
+	// perform the inplace update
+	return set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, curr_leaf_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index, element_index, element_value, abort_error);
+}
