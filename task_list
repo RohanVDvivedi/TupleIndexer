@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
-BPLUS_TREE_ITERATOR NEW FEATURES
- * handle case of bplus_tree_iterator pointing to empty leaf page, by going next or prev is_curr_page_empty -> build functionality for this task
-
 ERROR HANDLING TASKS IN DAM
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
  * print active read and write locks count, on the close call of unWALed_in_memory_data_store
