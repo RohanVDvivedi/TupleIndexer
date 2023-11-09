@@ -12,6 +12,8 @@
 #include<unWALed_in_memory_data_store.h>
 #include<unWALed_page_modification_methods.h>
 
+#include<executor.h>
+
 // uncomment based on the keys that you want to test with
 #define KEY_NAME_EMAIL
 //#define KEY_INDEX_PHONE
@@ -660,6 +662,46 @@ void update_UPDATE_column_for_all_tuples_with_iterator(uint64_t root_page_id, ch
 	}
 }
 
+typedef struct update_UPDATE_column_params update_UPDATE_column_params;
+struct update_UPDATE_column_params
+{
+	uint64_t root_page_id;
+	char first_byte;
+	int is_forward;
+	int is_stacked;
+	const bplus_tree_tuple_defs* bpttd_p;
+	const data_access_methods* dam_p;
+	const page_modification_methods* pmm_p;
+};
+
+void* update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER(update_UPDATE_column_params* p)
+{
+	update_UPDATE_column_for_all_tuples_with_iterator(p->root_page_id, p->first_byte, p->is_forward, p->is_stacked, p->bpttd_p, p->dam_p, p->pmm_p);
+	return NULL;
+}
+
+void run_concurrent_writable_scan_forward_and_backward(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+{
+	update_UPDATE_column_params p1 = {root_page_id, 'F', 1, 0, bpttd_p, dam_p, pmm_p};
+	update_UPDATE_column_params p2 = {root_page_id, 'B', 1, 1, bpttd_p, dam_p, pmm_p};
+
+	executor* thread_pool = new_executor(FIXED_THREAD_COUNT_EXECUTOR, 2, 2, 0, NULL, NULL, NULL);
+
+	submit_job_executor(thread_pool, (void*(*)(void*))update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER, &p1, NULL, NULL, 0);
+	submit_job_executor(thread_pool, (void*(*)(void*))update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER, &p2, NULL, NULL, 0);
+
+	shutdown_executor(thread_pool, 0);
+	wait_for_all_executor_workers_to_complete(thread_pool);
+	delete_executor(thread_pool);
+
+	print_bplus_tree(root_page_id, 1, bpttd_p, dam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -833,15 +875,13 @@ int main()
 
 
 	// update first byte of update column using iterator
-	{
-		update_UPDATE_column_for_all_tuples_with_iterator(root_page_id, '1', 1, 1, &bpttd, dam_p, pmm_p);
-		print_bplus_tree(root_page_id, 1, &bpttd, dam_p, transaction_id, &abort_error);
-		if(abort_error)
-		{
-			printf("ABORTED\n");
-			exit(-1);
-		}
-	}
+	// running this test requires that the update colum of all the records in the bplus tree must have atleast 1 byte
+	// running this test is not deterministic, hence does not produce same output on any 2 runs even with the same params
+#define CONCURRENT_WRITABLE_ITERATOR_SCAN
+#ifdef CONCURRENT_WRITABLE_ITERATOR_SCAN
+	run_concurrent_writable_scan_forward_and_backward(root_page_id, &bpttd, dam_p, pmm_p);
+#endif
+
 
 
 	// read using the update functionality
