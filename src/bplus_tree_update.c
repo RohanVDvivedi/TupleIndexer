@@ -99,8 +99,6 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	// result to return
 	int result = 0;
 
-	int rel_temp = 0;
-
 	// OPTIMIZATION - release early locks of release_for_split number of parent pages, if you can anticipate that you may not be merging
 	// if old_record is NULL, then all you can do is an insert (consequently a split insert)
 	// you can't update or delete a non existent record, you can only insert into its place, so you may end up splitting, but never merging
@@ -116,11 +114,8 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 				goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
 			release_for_split--;
-
-			rel_temp++;
 		}
 	}
-	printf("rel_temp = %d\n", rel_temp);
 	// as you could guess, you can discard this piece of code
 	// OPTIMIZATION - end
 
