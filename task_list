@@ -13,12 +13,6 @@ INMEMORY DAM FIXES AND DAM FEATURES
   * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * project and its makefile restructure, to put all bplus_tree files in the same directory
-  * RM = rm -rf
-  * MK = mkdir -p
-  * both of above will easily do the job for nested directories, now we need to only call mkdir -p on creating an object
-  * for objects add MK $(@D) to create its directory before creating the .o and .a files
-  * for header restructure them from #include<bplus_tree.h> to #include<bplus_tree/bplus_tree.h>
  * bplus_tree bulk loading
    * bulk loading to accept bpttd_p, dam_p and pmm_p and allocate root page first
    * api to accept accept records, tuple by tuple
