@@ -1,13 +1,13 @@
 ** PICKED TASKS
 
-ERROR HANDLING TASKS IN DAM
+ERROR HANDLING TASKS AND FIXES INT UNWALED-IN-INMEMORY-DAM
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
- * print active read and write locks count, on the close call of unWALed_in_memory_data_store
- * free_pages_count is not being used, check why?
-
-INMEMORY DAM FIXES AND DAM FEATURES
+ * print active read and write locks count, on the close call of unWALed_in_memory_data_store, increment and decrement read_locks_count and write_locks_count
+ * free_pages_count is not being used, check why? and fix it.
  * dam in release_lock(FREE_PAGE) -> allow the operation only if there is exactly only 1 thread, with reader and writer lock on the page, else fail to even release lock on the page
  * free_page must fail with an abort, if there are concurrent readers OR writers to the page, i.e. if a page is read or write locked (allow only 1 locker for the calling thread if FREE_PAGE is set for release_lock), while freeing a page.
+
+DAM FEATURES
  * dam add functionality (Still think if you need this, with current hashtable design we have, we do not need this)
   * uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
   * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
