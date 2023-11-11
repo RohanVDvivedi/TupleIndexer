@@ -30,7 +30,7 @@ LFLAGS:=-L${LIB_DIR} -l${PROJECT_NAME} -ltuplestore -lrwlock -lserint -lcutlery 
 AR:=ar rcs
 
 # utility
-RM:=rm -f
+RM:=rm -rf
 MK:=mkdir -p
 CP:=cp
 
@@ -39,6 +39,8 @@ CP:=cp
 SOURCES=$(shell find ${SRC_DIR} -name '*.c')
 # and the required objects to be built, as intermediary
 OBJECTS=$(patsubst ${SRC_DIR}/%.c, ${OBJ_DIR}/%.o, ${SOURCES})
+# name of directories of the objects
+OBJECTS_DIRS=$(sort $(dir $(OBJECTS))
 
 # rule to make the directory for storing object files, that we create
 ${OBJ_DIR} :
