@@ -40,7 +40,14 @@ DAM FEATURES
  * sort that can be called on a linked_page_list or a hash_table
  * utility header function that reads page_type from common_page_header and helps get and set the next_page_id and prev_page_id
    * this can be used to build a generic iterator over linked list, bplus_tree leaf pages and interior pages
- * think about implementing more data structures like T-tree, R-tree, Patricia Trie, etc
+ * Rtree will be supported
+   * very similar to b+tree, n dimensional data can be inserted, deleted, no least_keys_page_id required
+   * splits and merges happen according to the minimal increase in interior node areas
+   * may need to lock all pages till leaf to ensure no new insertions to the same range are possible
+   * inserts and deletes can release page locks if it is deemed that split and merge would not propogate up the tree
+   * accomodate any tuple that is atleast half the size of the leaf page, and interior page tuples would be fixed width with non NULL elements
+   * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
+ * think about implementing more data structures like T-tree, Patricia Trie, etc
 
 ** OPTIMIZATION
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
