@@ -51,7 +51,7 @@ DAM FEATURES
    * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
  * think about implementing more data structures like T-tree, Patricia Trie, etc
 
-** OPTIMIZATION
+** OPTIMIZATION (THIS MAY NEVER MAKE IT TO THE PROJECT)
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
  * prefix key compression -> store prefix compression for var_strings (for internal nodes only), working in the following ways
     0  ->  "ABCD"            "ABCD"
@@ -94,7 +94,7 @@ DAM FEATURES
     }
     return stack.reverse();
 
-* think about future project,
+* think about future project (THIS WILL BE PROJECTS THAT WILL DEPEND ON THIS PROJECT)
  * think about how to do undo and redo logging
  * logical logging with physiological logging will allow us higher concurrency
  * mini transactions like that innodb can generate very large log records, which we may not want in memory
