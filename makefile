@@ -73,7 +73,7 @@ all : ${LIB_DIR}/${LIBRARY}
 
 # clean all the build, in this directory
 clean :
-	${RM} -r ${BIN_DIR} ${LIB_DIR} ${OBJ_DIR}
+	${RM} ${BIN_DIR} ${LIB_DIR} ${OBJ_DIR}
 
 # -----------------------------------------------------
 # INSTALLING and UNINSTALLING system wide
