@@ -43,11 +43,11 @@ OBJECTS=$(patsubst ${SRC_DIR}/%.c, ${OBJ_DIR}/%.o, ${SOURCES})
 OBJECTS_DIRS=$(sort $(dir $(OBJECTS)))
 
 # rule to make the directory for storing object files, that we create
-${OBJ_DIR} :
+${OBJECTS_DIRS} : ${OBJ_DIR}/% :
 	${MK} $@
 
-# generic rule to build any object file
-${OBJ_DIR}/%.o : ${SRC_DIR}/%.c | ${OBJ_DIR}
+# generic rule to build any object file, it will depend on the existing of its directory path (i.e. ${@D} )
+${OBJECTS} : ${OBJ_DIR}/%.o : ${SRC_DIR}/%.c | $${@D}
 	${CC} ${CFLAGS} -c $< -o $@
 
 # rule to make the directory for storing libraries, that we create
