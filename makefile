@@ -40,7 +40,7 @@ SOURCES=$(shell find ${SRC_DIR} -name '*.c')
 # and the required objects to be built, as intermediary
 OBJECTS=$(patsubst ${SRC_DIR}/%.c, ${OBJ_DIR}/%.o, ${SOURCES})
 # name of directories of the objects
-OBJECTS_DIRS=$(sort $(dir $(OBJECTS))
+OBJECTS_DIRS=$(sort $(dir $(OBJECTS)))
 
 # rule to make the directory for storing object files, that we create
 ${OBJ_DIR} :
