@@ -42,8 +42,11 @@ OBJECTS=$(patsubst ${SRC_DIR}/%.c, ${OBJ_DIR}/%.o, ${SOURCES})
 # name of directories of the objects
 OBJECTS_DIRS=$(sort $(dir $(OBJECTS)))
 
+temp :
+	echo $(OBJECTS_DIRS)
+
 # rule to make the directory for storing object files, that we create
-${OBJECTS_DIRS} : ${OBJ_DIR}/% :
+${OBJ_DIR}/% :
 	${MK} $@
 
 # generic rule to build any object file, it will depend on the existing of its directory path (i.e. ${@D} )
