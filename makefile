@@ -7,7 +7,10 @@ DOWNLOAD_DIR:=/usr/local
 # we may download all the public headers
 
 # list of public api headers (only these headers will be installed)
-PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions.h bplus_tree/bplus_tree_iterator_public.h interface/data_access_methods.h interface/data_access_methods_options.h interface/opaque_data_access_methods.h interface/unWALed_in_memory_data_store.h interface/page_modification_methods.h interface/opaque_page_modification_methods.h interface/unWALed_page_modification_methods.h utils/persistent_page.h
+PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions.h bplus_tree/bplus_tree_iterator_public.h \
+				interface/data_access_methods.h interface/data_access_methods_options.h interface/opaque_data_access_methods.h interface/unWALed_in_memory_data_store.h\
+				interface/page_modification_methods.h interface/opaque_page_modification_methods.h interface/unWALed_page_modification_methods.h \
+				utils/persistent_page.h
 # the library, which we will create
 LIBRARY:=lib${PROJECT_NAME}.a
 # the binary, which will use the created library
