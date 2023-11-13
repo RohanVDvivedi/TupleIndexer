@@ -132,6 +132,10 @@ struct memory_store_context
 	// total number of pages in the system = total_page
 	// total_pages = get_element_count_hashmap(page_id_map)
 	// the number of pages in page_memory_map = total_pages - free_pages_count
+
+	// to maintain the number to read_locks and write_locks currently active
+	uint64_t active_read_locks_count;
+	uint64_t active_write_locks_count;
 };
 
 #define MIN_BUCKET_COUNT 128
@@ -563,6 +567,8 @@ data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, ui
 		free(dam_p);
 		return NULL;
 	}
+	cntxt->active_read_locks_count = 0;
+	cntxt->active_write_locks_count = 0;
 	return dam_p;
 }
 
@@ -577,6 +583,7 @@ int close_and_destroy_unWALed_in_memory_data_store(data_access_methods* dam_p)
 {
 	memory_store_context* cntxt = dam_p->context;
 	printf("pages still being used = %llu, of which %lu are free\n", get_element_count_hashmap(&(cntxt->page_id_map)), cntxt->free_pages_count);
+	printf("active locks count, read = %llu, write %llu\n", cntxt->active_read_locks_count, cntxt->active_write_locks_count);
 	remove_all_from_hashmap(&(cntxt->page_id_map), &((notifier_interface){NULL, delete_notified_page_descriptor}));
 	deinitialize_hashmap(&(cntxt->page_id_map));
 	deinitialize_hashmap(&(cntxt->page_memory_map));
