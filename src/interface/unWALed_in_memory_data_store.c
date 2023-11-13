@@ -153,7 +153,7 @@ static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 
 		// remove the trailing page_descriptor, it will not exist in page_memory_map, since it is a free page
 		// we also do not need to deallocate the page_memory, since we found this page in the free_page_descs
-		remove_from_bst(&(cntxt->free_page_descs), trailing);
+		cntxt->free_pages_count -= remove_from_bst(&(cntxt->free_page_descs), trailing);
 		remove_from_hashmap(&(cntxt->page_id_map), trailing);
 
 		// now we can safely delete the page_descriptor
@@ -209,7 +209,7 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 	if(is_free_floating_bstnode(&(page_desc->free_page_descs_node)) && !has_waiters(&(page_desc->page_lock)))
 	{
 		// insert it into the free_page_descs, this ensures, that this page_desc can be reused by a get_new_page_with_write_lock call
-		insert_in_bst(&(cntxt->free_page_descs), page_desc);
+		cntext->free_pages_count += insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
 		// delete trailing free_pages from free_page_descs
 		discard_trailing_free_page_descs_unsafe(cntxt);
@@ -232,7 +232,7 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 		if(page_desc != NULL)
 		{
 			// if a page_desc is found, then then remove it from the free_page_descs
-			remove_from_bst(&(cntxt->free_page_descs), page_desc);
+			cntxt->free_pages_count -= remove_from_bst(&(cntxt->free_page_descs), page_desc);
 		}
 		else
 		{
@@ -271,7 +271,7 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 			else // ROLLBACK, if allocation fails
 			{
 				// insert it back into free_page_descs, it has no page_memory
-				insert_in_bst(&(cntxt->free_page_descs), page_desc);
+				cntext->free_pages_count += insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
 				// delete trailing free_pages from free_page_descs
 				discard_trailing_free_page_descs_unsafe(cntxt);
