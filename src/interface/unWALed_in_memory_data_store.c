@@ -209,7 +209,7 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 	if(is_free_floating_bstnode(&(page_desc->free_page_descs_node)) && !has_waiters(&(page_desc->page_lock)))
 	{
 		// insert it into the free_page_descs, this ensures, that this page_desc can be reused by a get_new_page_with_write_lock call
-		cntext->free_pages_count += insert_in_bst(&(cntxt->free_page_descs), page_desc);
+		cntxt->free_pages_count += insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
 		// delete trailing free_pages from free_page_descs
 		discard_trailing_free_page_descs_unsafe(cntxt);
@@ -271,7 +271,7 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 			else // ROLLBACK, if allocation fails
 			{
 				// insert it back into free_page_descs, it has no page_memory
-				cntext->free_pages_count += insert_in_bst(&(cntxt->free_page_descs), page_desc);
+				cntxt->free_pages_count += insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
 				// delete trailing free_pages from free_page_descs
 				discard_trailing_free_page_descs_unsafe(cntxt);
