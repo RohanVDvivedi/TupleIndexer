@@ -169,12 +169,13 @@ static int discard_trailing_free_page_descs_unsafe(memory_store_context* cntxt)
 	return page_count_shrunk;
 }
 
+// call this function, only after releasing lock that you are holding on it
 static int run_free_page_management_unsafe(memory_store_context* cntxt, page_descriptor* page_desc)
 {
 	int freed = 0;
 
-	// if not free, mark it as free
-	if(!(page_desc->is_free))
+	// if not free, mark it as free, only if there are no readers and writers on that page
+	if(!(page_desc->is_free) && !is_read_locked(&(page_desc->page_lock)) && !is_write_locked(&(page_desc->page_lock)))
 	{
 		page_desc->is_free = 1; // this will ensure that, any waiters will fail to acquire a lock on this page
 			// yet this page_desc and its page_id can not be reused until, it gets put back into the free_page_desc (with its page_memeory freed)
