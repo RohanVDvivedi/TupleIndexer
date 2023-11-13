@@ -174,29 +174,39 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 {
 	int freed = 0;
 
-	// if not free, mark it as free, only if there are no readers and writers on that page
-	if(!(page_desc->is_free) && !is_read_locked(&(page_desc->page_lock)) && !is_write_locked(&(page_desc->page_lock)))
+	// if the page is read or write locked, then fail the free call
+	if(is_read_locked(&(page_desc->page_lock)) || is_write_locked(&(page_desc->page_lock)))
+	{
+		freed = 0;
+		return freed;
+	}
+
+	// if not free, mark it as free
+	if(!(page_desc->is_free))
 	{
 		page_desc->is_free = 1; // this will ensure that, any waiters will fail to acquire a lock on this page
 			// yet this page_desc and its page_id can not be reused until, it gets put back into the free_page_desc (with its page_memeory freed)
 			// this will happen (if this function is called properly), when all the locks on that page are released
 		freed = 1;
+
+		// if the page has allocated page memory, and ofcourse it is not read or write locked, then release the held memory
+		if(page_desc->page_memory != NULL)
+		{
+			// if it is not read or write locked, then it is not going to be accessed with it's page_memeory
+			// remove it from page_memory_map
+			remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
+
+			// deallocate page_memory
+			deallocate_page(page_desc->page_memory);
+			page_desc->page_memory = NULL;
+		}
 	}
 
-	// if the page has allocated page memory, and is not read or write locked as of now, then
-	if(page_desc->page_memory != NULL && (!is_read_locked(&(page_desc->page_lock))) && (!is_write_locked(&(page_desc->page_lock))))
-	{
-		// if it is not read or write locked, then it is not going to be accessed with it's page_memeory
-		// remove it from page_memory_map
-		remove_from_hashmap(&(cntxt->page_memory_map), page_desc);
-
-		// deallocate page_memory
-		deallocate_page(page_desc->page_memory);
-		page_desc->page_memory = NULL;
-	}
-
-	// if the page_desc does not exist in the free_page_desc and it is not referenced by any readers, writers or waiters
-	if(is_free_floating_bstnode(&(page_desc->free_page_descs_node)) && (!is_referenced(&(page_desc->page_lock))))
+	// if the page_desc does not exist in the free_page_desc and it is not referenced any waiters
+	// then you may add it to the free_page_descs bst, so that it can be allocated again
+	// we can not re-allocate the page while there are threads waiting on acquiring lock on it
+	// and if there are any waiters, then it is their responsibility to insert the free page into free_pag_descs
+	if(is_free_floating_bstnode(&(page_desc->free_page_descs_node)) && !has_waiters(&(page_desc->page_lock)))
 	{
 		// insert it into the free_page_descs, this ensures, that this page_desc can be reused by a get_new_page_with_write_lock call
 		insert_in_bst(&(cntxt->free_page_descs), page_desc);
@@ -411,8 +421,20 @@ static int release_writer_lock_on_page(void* context, const void* transaction_id
 		{
 			lock_released = write_unlock(&(page_desc->page_lock));
 
-			if(lock_released && ((opts & FREE_PAGE) || page_desc->is_free))
-				run_free_page_management_unsafe(cntxt, page_desc);
+			// the page would never have been freed while we were having write lock in it, so we do not need to worry about this case
+			if(lock_released && (opts & FREE_PAGE))
+			{
+				int freed = run_free_page_management_unsafe(cntxt, page_desc);
+
+				// if the page was not freed, (this may be because of other thread having lock on it, this will never happen in case of writer lock, but this code serves as a reminder of what needs to be done)
+				// then we need to undo the released lock
+				if(!freed)
+				{
+					// we know we had a write lock on it, so we take that lock back NON_BLOCKING-ly
+					write_lock(&(page_desc->page_lock), NON_BLOCKING);
+					lock_released = 0;
+				}
+			}
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
@@ -438,8 +460,20 @@ static int release_reader_lock_on_page(void* context, const void* transaction_id
 		{
 			lock_released = read_unlock(&(page_desc->page_lock));
 
-			if(lock_released && ((opts & FREE_PAGE) || page_desc->is_free))
-				run_free_page_management_unsafe(cntxt, page_desc);
+			// the page would never have been freed while we were having read lock in it, so we do not need to worry about this case
+			if(lock_released && (opts & FREE_PAGE))
+			{
+				int freed = run_free_page_management_unsafe(cntxt, page_desc);
+
+				// if the page was not freed, (this may be because of other readers having lock on it)
+				// then we need to undo the released lock
+				if(!freed)
+				{
+					// we know we had a read lock on it, so we take that lock back READ_PREFERRING-ly and NON_BLOCKING-ly
+					read_lock(&(page_desc->page_lock), READ_PREFERRING, NON_BLOCKING);
+					lock_released = 0;
+				}
+			}
 		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
@@ -462,7 +496,7 @@ static int free_page(void* context, const void* transaction_id, uint64_t page_id
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_id_map), &((page_descriptor){.page_id = page_id}));
 
 		// if the page_desc exists and is not free
-		if(page_desc != NULL)
+		if(page_desc != NULL && !page_desc->is_free)
 			// run_free_page_management, will take care of everything
 			is_freed = run_free_page_management_unsafe(cntxt, page_desc);
 
