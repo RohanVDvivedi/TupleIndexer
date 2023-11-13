@@ -282,6 +282,10 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 			}
 		}
 
+		// on success increment the active write locks count
+		if(page_ptr != NULL)
+			cntxt->active_write_locks_count++;
+
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	// set error if returning failure
@@ -319,6 +323,10 @@ static void* acquire_page_with_reader_lock(void* context, const void* transactio
 					page_ptr = page_desc->page_memory;
 			}
 		}
+
+		// on success increment the active read locks count
+		if(page_ptr != NULL)
+			cntxt->active_read_locks_count++;
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
@@ -358,6 +366,10 @@ static void* acquire_page_with_writer_lock(void* context, const void* transactio
 			}
 		}
 
+		// on success increment the active write locks count
+		if(page_ptr != NULL)
+			cntxt->active_write_locks_count++;
+
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	// set error if returning failure
@@ -380,6 +392,13 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, const voi
 		if(page_desc)
 			lock_downgraded = downgrade_lock(&(page_desc->page_lock));
 
+		// on success decrement the active write locks count, and increment the active read locks count
+		if(lock_downgraded)
+		{
+			cntxt->active_write_locks_count--;
+			cntxt->active_read_locks_count++;
+		}
+
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	// set error if returning failure
@@ -401,6 +420,13 @@ static int upgrade_reader_lock_to_writer_lock_on_page(void* context, const void*
 
 		if(page_desc)
 			lock_upgraded = upgrade_lock(&(page_desc->page_lock), BLOCKING);
+
+		// on success decrement the active read locks count, and increment the active write locks count
+		if(lock_upgraded)
+		{
+			cntxt->active_read_locks_count--;
+			cntxt->active_write_locks_count++;
+		}
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
@@ -441,6 +467,10 @@ static int release_writer_lock_on_page(void* context, const void* transaction_id
 			}
 		}
 
+		// on success decrement the active write locks count
+		if(lock_released)
+			cntxt->active_write_locks_count--;
+
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
 	// set error if returning failure
@@ -479,6 +509,10 @@ static int release_reader_lock_on_page(void* context, const void* transaction_id
 				}
 			}
 		}
+
+		// on success decrement the active read locks count
+		if(lock_released)
+			cntxt->active_read_locks_count--;
 
 	pthread_mutex_unlock(&(cntxt->global_lock));
 
@@ -583,7 +617,7 @@ int close_and_destroy_unWALed_in_memory_data_store(data_access_methods* dam_p)
 {
 	memory_store_context* cntxt = dam_p->context;
 	printf("pages still being used = %llu, of which %lu are free\n", get_element_count_hashmap(&(cntxt->page_id_map)), cntxt->free_pages_count);
-	printf("active locks count, read = %llu, write %llu\n", cntxt->active_read_locks_count, cntxt->active_write_locks_count);
+	printf("active locks count, read = %lu, write %lu\n", cntxt->active_read_locks_count, cntxt->active_write_locks_count);
 	remove_all_from_hashmap(&(cntxt->page_id_map), &((notifier_interface){NULL, delete_notified_page_descriptor}));
 	deinitialize_hashmap(&(cntxt->page_id_map));
 	deinitialize_hashmap(&(cntxt->page_memory_map));
