@@ -2,7 +2,6 @@
 
 ERROR HANDLING TASKS AND FIXES INT UNWALED-IN-INMEMORY-DAM
  * implement an error handling strategy to check the was_modified bit, in in-memory-data-store, and exit with error, if the page was modified and was_modified was not set.
- * print active read and write locks count, on the close call of unWALed_in_memory_data_store, increment and decrement read_locks_count and write_locks_count
 
 DAM FEATURES
  * dam add functionality (Still think if you need this, with current hashtable design we have, we do not need this)
