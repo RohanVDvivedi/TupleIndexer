@@ -36,9 +36,19 @@ DAM FEATURES
    * puts tuples in a page, sorts them and inserts it into a page_table
    * it will then merge adjacent runs until the page_table contains only 1 entry
  * Rtree will be supported
-   * very similar to b+tree, n dimensional data can be inserted, deleted, no least_keys_page_id required
+   * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
-   * may need to lock all pages till leaf to ensure no new insertions to the same range are possible
+   * searches walk down a tree, and maintain a stack, releasing locks only if only 1 entry is to be scannd in the interior node, next, prev and get_curr are supported, leafs may be acquired with write locks
+   * inserts walk down only 1 path of the tree, trying to minimize the increased area
+   * deleted walk down like a search would, and since we maintain a stack, a delete can be performed, which will destroy the stack releasing all locks
+   * you need to define a rtree_tuple_definitions, that also has a function to get the hyper_rectangle for any of the records, which defines the minimum area hyper rectangle that the record falls into, as expected that allows you to store n dimensional lines, points etc.
+   * hyper rectangle is an n dimensional rectangle.
+   * all interior nodes store a hyper rectangle and a corresponding page_id, and atleast 2 entries must fit on a page, else rttd contruction fails. yet you can have any number of dimensions.
+   * you can also specify any numeral datatype for dimension, as long as it is supported by the TupleStore.
+   * need to think about how to calculate areas of the hyper rectangle with dimensions of different types, such that it fits a number and also does not violate precision requirements (getting areas is necessary for splitting and merging). think about using GNU MP for this purpose of getting area. BUT we can not store GNU MP number in the TupleStore. ALSO you can just use GNU MP for substractions of lower_bound and upper_bound to estimate splits and merges, but while constructing bounding boxes, you can revert to get_max(d0_lb_1, d0_lb_1), etc for computing the new bounding boxes.
+   * fail insertions if the lower_bound and upper_bound of the get_hyper_rectangle do not follow <= comparison for any of the n dimensions.
+   * build utility function to check that hyper rectangle does not have a negative dimension (i.e. lower_bound <= upper_bound), construct hyper_rectangle covering 2 or more hyper rectangles, and check if a hyper_rectangle intersects with another hyper_rectangle etc.
+   * all queries take only hyper_rectangle keys for search and delete, while user takes a leaf record (this is why we need a function to build a hyper rectangle).
    * inserts and deletes can release page locks if it is deemed that split and merge would not propogate up the tree
    * accomodate any tuple that is atleast half the size of the leaf page, and interior page tuples would be fixed width with non NULL elements
    * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
