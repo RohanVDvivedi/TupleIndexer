@@ -10,6 +10,9 @@
 #include<stdlib.h>
 #include<stdio.h>
 
+// uncomment the below line, if you want to make this data store to check for the validity of WAS_MODIFIED option flag on releasing write lock on the page
+#define CHECK_WAS_MODIFIED_BIT
+
 typedef struct page_descriptor page_descriptor;
 struct page_descriptor
 {
@@ -22,6 +25,13 @@ struct page_descriptor
 
 	// this will be NULL for a free page_desc
 	void* page_memory;
+
+#ifdef CHECK_WAS_MODIFIED_BIT
+	// the below pointer will be used to allocate page_size memory,
+	// and will hold its previous value, while you modify the page_memory
+	// the contents will be checked against this memory contents to check the validity of WAS_MODIFIED option flag
+	void* previous_page_memory;
+#endif
 
 	// reader wrier lock for the page
 	rwlock page_lock;
@@ -46,6 +56,9 @@ page_descriptor* get_new_page_descriptor(uint64_t page_id, pthread_mutex_t* glob
 	page_desc->page_id = page_id;
 	page_desc->is_free = 1;	// because initially page_memory = NULL
 	page_desc->page_memory = NULL;
+#ifdef CHECK_WAS_MODIFIED_BIT
+	page_desc->previous_page_memory = NULL;
+#endif
 	initialize_rwlock(&(page_desc->page_lock), global_lock_p);
 	initialize_llnode(&(page_desc->page_id_map_node));
 	initialize_llnode(&(page_desc->page_memory_map_node));
@@ -203,6 +216,12 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 			// deallocate page_memory
 			deallocate_page(page_desc->page_memory);
 			page_desc->page_memory = NULL;
+
+			#ifdef CHECK_WAS_MODIFIED_BIT
+				// deallocate previous_page_memory
+				deallocate_page(page_desc->previous_page_memory);
+				page_desc->previous_page_memory = NULL;
+			#endif
 		}
 	}
 
@@ -257,9 +276,18 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 			// allocate page memory for this free page descriptor
 			page_desc->page_memory = allocate_page(cntxt->page_size);
 
-			if(page_desc->page_memory != NULL)
+			#ifdef CHECK_WAS_MODIFIED_BIT
+				if(page_desc->page_memory != NULL)
+					page_desc->previous_page_memory = allocate_page(cntxt->page_size);
+			#endif
+
+			if(page_desc->page_memory != NULL
+			#ifdef CHECK_WAS_MODIFIED_BIT
+				&& page_desc->previous_page_memory != NULL
+			#endif
+			)
 			{
-				// this page_descriptor has page_memory associated with it, hopefully if the call to malloc doesn't fail
+				// this page_descriptor is now not free
 				page_desc->is_free = 0;
 
 				// insert this page in the page_memory_map, so that they future calls to release or upgrade/downgrade lock calls can find it
@@ -274,6 +302,14 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 			}
 			else // ROLLBACK, if allocation fails
 			{
+				// deallocate whatever memory we allocated, if any
+				if(page_desc->page_memory != NULL)
+					deallocate_page(page_desc->page_memory);
+				#ifdef CHECK_WAS_MODIFIED_BIT
+					if(page_desc->previous_page_memory != NULL)
+						deallocate_page(page_desc->previous_page_memory);
+				#endif
+
 				// insert it back into free_page_descs, it has no page_memory
 				cntxt->free_pages_count += insert_in_bst(&(cntxt->free_page_descs), page_desc);
 
@@ -291,6 +327,12 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 	// set error if returning failure
 	if(page_ptr == NULL)
 		(*abort_error) = 1;
+
+	// if, we took a write lock on it, so copy the previous contents to the previous_page_memory
+	#ifdef CHECK_WAS_MODIFIED_BIT
+		if(page_ptr != NULL)
+			memory_move(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
+	#endif
 
 	return page_ptr;
 }
@@ -376,6 +418,12 @@ static void* acquire_page_with_writer_lock(void* context, const void* transactio
 	if(page_ptr == NULL)
 		(*abort_error) = 1;
 
+	// if, we took a write lock on it, so copy the previous contents to the previous_page_memory
+	#ifdef CHECK_WAS_MODIFIED_BIT
+		if(page_ptr != NULL)
+			memory_move(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
+	#endif
+
 	return page_ptr;
 }
 
@@ -391,6 +439,15 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, const voi
 
 		if(page_desc)
 			lock_downgraded = downgrade_lock(&(page_desc->page_lock));
+
+		#ifdef CHECK_WAS_MODIFIED_BIT
+			// if the was_modified bit is NOT set, and the page is modified, then exit
+			if(lock_downgraded && (!(opts & WAS_MODIFIED)) && memory_compare(page_desc->page_memory, page_desc->previous_page_memory, cntxt->page_size))
+			{
+				printf("BUG :: downgrading write lock on a page after modfication, but WAS_MODIFIED bit not set\n");
+				exit(-1);
+			}
+		#endif
 
 		// on success decrement the active write locks count, and increment the active read locks count
 		if(lock_downgraded)
@@ -448,22 +505,29 @@ static int release_writer_lock_on_page(void* context, const void* transaction_id
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
 
 		if(page_desc)
-		{
 			lock_released = write_unlock(&(page_desc->page_lock));
 
-			// the page would never have been freed while we were having write lock in it, so we do not need to worry about this case
-			if(lock_released && (opts & FREE_PAGE))
+		#ifdef CHECK_WAS_MODIFIED_BIT
+			// if the was_modified bit is NOT set, and the page is modified, then exit
+			if(lock_released && (!(opts & WAS_MODIFIED)) && memory_compare(page_desc->page_memory, page_desc->previous_page_memory, cntxt->page_size))
 			{
-				int freed = run_free_page_management_unsafe(cntxt, page_desc);
+				printf("BUG :: releasing write lock on a page after modfication, but WAS_MODIFIED bit not set\n");
+				exit(-1);
+			}
+		#endif
 
-				// if the page was not freed, (this may be because of other thread having lock on it, this will never happen in case of writer lock, but this code serves as a reminder of what needs to be done)
-				// then we need to undo the released lock
-				if(!freed)
-				{
-					// we know we had a write lock on it, so we take that lock back NON_BLOCKING-ly
-					write_lock(&(page_desc->page_lock), NON_BLOCKING);
-					lock_released = 0;
-				}
+		// the page would never have been freed while we were having write lock in it, so we do not need to worry about this case
+		if(lock_released && (opts & FREE_PAGE))
+		{
+			int freed = run_free_page_management_unsafe(cntxt, page_desc);
+
+			// if the page was not freed, (this may be because of other thread having lock on it, this will never happen in case of writer lock, but this code serves as a reminder of what needs to be done)
+			// then we need to undo the released lock
+			if(!freed)
+			{
+				// we know we had a write lock on it, so we take that lock back NON_BLOCKING-ly
+				write_lock(&(page_desc->page_lock), NON_BLOCKING);
+				lock_released = 0;
 			}
 		}
 
@@ -491,22 +555,20 @@ static int release_reader_lock_on_page(void* context, const void* transaction_id
 		page_descriptor* page_desc = (page_descriptor*)find_equals_in_hashmap(&(cntxt->page_memory_map), &((page_descriptor){.page_memory = pg_ptr}));
 
 		if(page_desc)
-		{
 			lock_released = read_unlock(&(page_desc->page_lock));
 
-			// the page would never have been freed while we were having read lock in it, so we do not need to worry about this case
-			if(lock_released && (opts & FREE_PAGE))
-			{
-				int freed = run_free_page_management_unsafe(cntxt, page_desc);
+		// the page would never have been freed while we were having read lock in it, so we do not need to worry about this case
+		if(lock_released && (opts & FREE_PAGE))
+		{
+			int freed = run_free_page_management_unsafe(cntxt, page_desc);
 
-				// if the page was not freed, (this may be because of other readers having lock on it)
-				// then we need to undo the released lock
-				if(!freed)
-				{
-					// we know we had a read lock on it, so we take that lock back READ_PREFERRING-ly and NON_BLOCKING-ly
-					read_lock(&(page_desc->page_lock), READ_PREFERRING, NON_BLOCKING);
-					lock_released = 0;
-				}
+			// if the page was not freed, (this may be because of other readers having lock on it)
+			// then we need to undo the released lock
+			if(!freed)
+			{
+				// we know we had a read lock on it, so we take that lock back READ_PREFERRING-ly and NON_BLOCKING-ly
+				read_lock(&(page_desc->page_lock), READ_PREFERRING, NON_BLOCKING);
+				lock_released = 0;
 			}
 		}
 
@@ -610,6 +672,10 @@ static void delete_notified_page_descriptor(void* resource_p, const void* data)
 {
 	if(((page_descriptor*)(data))->page_memory != NULL)
 		deallocate_page(((page_descriptor*)(data))->page_memory);
+	#ifdef CHECK_WAS_MODIFIED_BIT
+		if(((page_descriptor*)(data))->previous_page_memory != NULL)
+			deallocate_page(((page_descriptor*)(data))->previous_page_memory);
+	#endif
 	delete_page_descriptor(((page_descriptor*)(data)));
 }
 
