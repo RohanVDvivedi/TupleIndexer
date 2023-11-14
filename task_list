@@ -3,7 +3,6 @@
 DAM FEATURES
  * dam add functionality (Still think if you need this, with current hashtable design we have, we do not need this)
   * uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
-  * free_contiguous_pages(uint64_t first_page_id, uint64_t page_count), instead of free_page -> to free n contiguous pages.
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
