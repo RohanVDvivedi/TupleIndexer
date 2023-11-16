@@ -27,6 +27,11 @@ int can_append_tuple_on_persistent_page(const persistent_page* ppage, uint32_t p
 	return can_append_tuple_on_page(ppage->page, page_size, tpl_sz_d, external_tuple);
 }
 
+int can_insert_tuple_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple)
+{
+	return can_insert_tuple_on_page(ppage->page, page_size, tpl_sz_d, index, external_tuple);
+}
+
 int can_update_tuple_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple)
 {
 	return can_update_tuple_on_page(ppage->page, page_size, tpl_sz_d, index, external_tuple);
