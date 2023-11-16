@@ -1,4 +1,5 @@
 ** PICKED TASKS
+ * use insert_tuple functionality of TupleStore
 
 DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if you need this, with current hashtable design we have, we do not need this)
   * uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
