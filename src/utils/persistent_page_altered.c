@@ -85,6 +85,35 @@ int append_tuple_on_persistent_page(const page_modification_methods* pmm_p, cons
 	return res;
 }
 
+int insert_tuple_on_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
+{
+	// if a persistent_page is not write locked, then you can not write to it
+	if(!is_persistent_page_write_locked(ppage))
+	{
+		printf("BUG :: attempting to write to read locked page\n");
+		exit(-1);
+	}
+
+	// attempt to modify a page after an abort
+	if(*(abort_error))
+	{
+		printf("BUG :: attempting to modify a page, after knowing of an abort\n");
+		exit(-1);
+	}
+
+	int res = pmm_p->insert_tuple_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, index, external_tuple, abort_error);
+
+	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
+	if(res && (!(*abort_error)))
+		ppage->flags |= WAS_MODIFIED;
+
+	// if aborted modification is not expected to have been performed
+	if((*abort_error))
+		return 0;
+
+	return res;
+}
+
 int update_tuple_on_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
 {
 	// if a persistent_page is not write locked, then you can not write to it
