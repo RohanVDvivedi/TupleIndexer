@@ -18,8 +18,16 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
    * If there are E entries in each of the page, and if the root page has level = n, then the page table has E^(n+1) buckets.
    * If the root has only 1 entry at its first index, then the hash_table shrinks, by moving the contents of its new child to the root.
    * child pages are allocated as and when required, not upfront
-   * If any page becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the hash_table up the chain.
- * linked_page_list where you can iterate over the page over all its tuples, head remains at the same page_id, you can insert -> inserting always at the tail, top and pop -> returns the tail (previous element inserted) or the head (first element inserted)
+   * If any page becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the page_table up the chain.
+   * the page_table can be walked with options like
+     * FOR_READ -> read locks only the leaf page (level 0), or FAILS if the entry does not exists
+     * FOR_LEAF_UPDATE -> read lock with latch coupling on interior pages, and the leaf page is locked with write lock and returned in stack -> this case does not allow you to write a NULL_PAGE_ID -> path until leaf is created if it does not exists
+     * FOR_ALL_UPDATE -> write lock all pages from root to desired leaf in the stack (NULL ing a page_id may require removing entries for the page, if the whole page starts being consisted of only NULL_PAGE_ID) -> path until leaf is created if it does not exists
+ * linked_page_list a doubly linkedlist of pages with tuple on them
+   * all insert/update/delete functions take flag to FIXED_HEAD, to always keep head at the same page_id, moving it's next contents to it if the head page becomes empty
+   * read and write iterator allowing you to update/delete in place
+   * insert can take falgs like AT_HEAD, AT_TAIL, ANYWHERE -> to insert any where on any page
+   * on delete, any page that becomes empty is removed, unless its head with FIXED_HEAD flag set
    * this can work as both stack and queue
    * tuples are never moved, any page other than head page, can be discarded if it becomes empty
    * deletes to other tuples (other than head and tail) are allowed by updating them with NULL, using a writable iterator
