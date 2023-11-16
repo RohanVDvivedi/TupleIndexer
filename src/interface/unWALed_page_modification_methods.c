@@ -21,6 +21,11 @@ static int append_tuple_on_page_unWALed(void* context, const void* transaction_i
 	return append_tuple_on_page(ppage.page, page_size, tpl_sz_d, external_tuple);
 }
 
+static int insert_tuple_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
+{
+	return insert_tuple_on_page(ppage.page, page_size, tpl_sz_d, index, external_tuple);
+}
+
 static int update_tuple_on_page_unWALed(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
 {
 	return update_tuple_on_page(ppage.page, page_size, tpl_sz_d, index, external_tuple);
@@ -78,6 +83,7 @@ page_modification_methods* get_new_unWALed_page_modification_methods()
 	pmm_p->init_page = init_page_unWALed;
 	pmm_p->set_page_header = set_page_header_unWALed;
 	pmm_p->append_tuple_on_page = append_tuple_on_page_unWALed;
+	pmm_p->insert_tuple_on_page = insert_tuple_on_page_unWALed;
 	pmm_p->update_tuple_on_page = update_tuple_on_page_unWALed;
 	pmm_p->discard_tuple_on_page = discard_tuple_on_page_unWALed;
 	pmm_p->discard_all_tuples_on_page = discard_all_tuples_on_page_unWALed;
