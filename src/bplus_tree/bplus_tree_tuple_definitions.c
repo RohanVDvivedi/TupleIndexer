@@ -23,6 +23,10 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 	if(page_id_width < 8 && NULL_PAGE_ID >= ( ((uint64_t)(1)) << (page_id_width * 8) ) )
 		return 0;
 
+	// fail if there is no room after accomodating header on the page
+	if(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p) >= page_size || sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p) >= page_size)
+		return 0;
+
 	// initialize struct attributes
 	bpttd_p->NULL_PAGE_ID = NULL_PAGE_ID;
 	bpttd_p->page_id_width = page_id_width;
@@ -30,9 +34,6 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 	bpttd_p->key_element_count = key_element_count;
 
 	bpttd_p->system_header_size = system_header_size;
-
-	if(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p) >= page_size || sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p) >= page_size)
-		return 0;
 
 	bpttd_p->key_element_ids = malloc(sizeof(uint32_t) * bpttd_p->key_element_count);
 	memcpy(bpttd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * bpttd_p->key_element_count);
