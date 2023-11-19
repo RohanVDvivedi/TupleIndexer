@@ -12,21 +12,27 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
    * for building ith level of interior page, from the i-1th level, we copy the 1st row from the page with page id of the page, we will use the least_keys_page_id to link the level of the interior pages. for building tuple for iterior page level 1, we will use the suffix compression also to build the index tuple, while for other levels we will only use the same index tuple as in the first row of the interior page.
    * in the last pass, we will revisit all the interior pages using dfs and move the first row's page_id to least_keys_page_id and discard the first row.
  * a page_table that maps a 64 bit integer to a page_id
-   * It is structured as a tree, starting with level 0, and then increasing towards root, like bplus tree
-   * root always stays at the same page_id and is never freed, unless a destroy is called, hence the page_table capacity is atleast E (E being the number of page_id entries that can accomodate 1 page)
-   * each page contains list of page_ids, each of page_id_width, pointing to another page_table page (when its level > 0) OR something else (when its level = 0), all pages are identical.
-   * If there are E entries in each of the page, and if the root page has level = n, then the page table has E^(n+1) buckets.
-   * If the root has only 1 entry at its first index, then the hash_table shrinks, by moving the contents of its new child to the root.
+   * It is structured as a tree, starting with level 0 at the leaf, and then increasing towards root, like bplus tree.
+   * each page at any level is identical and contains list of page_ids, each of page_id_width, pointing to another page_table page (when its level > 0) OR something else (when its level = 0), all pages are identical.
+   * If there are E entries in each of the page, then that page is bound to point to E^(n+1) buckets/entries in all.
+   * A interior node with level n (n > 0), can have child with any level p (n > p >= 0).
+   * with each node there is associated start_entry_id and a level n, each of that page's entries point to another valid subtree reach leaf entries in range, [start_entry_id * i * (E^n), start_entry_id * (i+1) * (E^n)), where is the slot number of ith entry on that page. It is also true that the range of slots that the parent can point to is [start_entry_id, start_entry_id + E^(n+1))
+   * As shown in point above each node stores its level n and its own start_entry_id in the header.
    * child pages are allocated as and when required, not upfront
+   * For instance, If the parent of the page has level n (n > q) with start entry id s, and the child at slot i has level q with start_entry_id p, then the child is allowed to expand to [s * i * (E^n), s * (i+1) * (E^n)). NOTE in this case it must be true that the range of the child [p, p + E^(q+1)) must fall within the range designated by the parent, ideally it is the range designated by the parent if (q == n-1) or a range of a child in its subtree (if it was fully populated).
+   * locking a node means locking the designated range of the node, not its actual range. designated range is given by the parent, not the headers of the node itself.
+   * a root node always has a deginated range of [0, 2^b) where b is the number of the bits used for entry_id
    * If any page becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the page_table up the chain.
    * api:
-     * walk_down_page_table(uint64_t root_page_id, uint64_t start_entry_id, uint64_t last_entry_id, int leaf_lock_type (READ_LOCK or WRITE_LOCK), int create_leaf_if_absent);
-       * struct that stores first_entry_id that the top of locked pages stack represents
+     * walk_down_page_table(uint64_t root_page_id, uint64_t start_entry_id, uint64_t last_entry_id, int leaf_lock_type (READ_LOCK or WRITE_LOCK), int create_if_absent);
+       * returns a struct that stores designated range given by the parent of the locked page, and a locked pages stack enough to hold any subtree of the range
        * walks down latch coupling taking write locks, releasing parent locks when required
-       * returns when we have first_entry_id >= start_entry_id
-       * if a page in the walk down does not exists then fail, if create_leaf_if_absent = 0, else create interior pages and leaves as required
-       * can update the entry if the leaf_lock_type is empty, you also get range of entries that are in the locked leaf
+       * returns when the range requested lies completely within the designated range for a node, with more than 1 entries pointing to the subtrees in the range.
+       * if a page in the walk down does not exists then fail, if create_if_absent = 0, else create interior pages and leaves as required
      * set_entry_page_id and get_entry_page_id, to get and set values on the struct returned by the above struct
+       * they will use the designated range as the range that can be accessed, and the locked page as the root.
+       * they will create nodes and increase level of the nodes, rooted at the given locked node, as they like
+       * get will return NULL_PAGE_ID if the entry does not exists, while set can create and destry nodes and entries at will.
      * shrink_page_table(uin64_t root_page_id, uint64_t entry_id);
        * to be called when you write NULL_PAGE_ID to entry_id, it will shrink the page_table taking write locks all the way until leaf and freeeing pages on the path on the way up, if the page only consists of NULL_PAGE_ID's in it
        * at the end if the root only has 1 entry at its first entry, then the contents of its only leaf are copied onto it, shrinking the tree up a level.
