@@ -1,5 +1,7 @@
 #include<page_access_specification.h>
 
+#include<page_layout_unaltered.h>
+
 int init_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width, uint32_t page_size, uint64_t NULL_PAGE_ID, uint32_t system_header_size)
 {
 	// bytes required to store page id, must be between 1 and 8 both inclusive
