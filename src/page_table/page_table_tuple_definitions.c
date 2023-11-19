@@ -63,7 +63,15 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t sy
 
 void deinit_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
 {
+	if(pttd_p->entry_def)
+		delete_tuple_def(pttd_p->entry_def);
 
+	pttd_p->NULL_PAGE_ID = 0;
+	pttd_p->page_id_width = 0;
+	pttd_p->page_size = 0;
+	pttd_p->system_header_size = 0;
+	pttd_p->entry_def = NULL;
+	pttd_p->entries_per_page = 0;
 }
 
 void print_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
