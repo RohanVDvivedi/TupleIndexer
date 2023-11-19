@@ -108,7 +108,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 			}
 			case MAX_TUPLE :
 			{
-				curr_locked_page->child_index = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
+				curr_locked_page->child_index = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def)) - 1;
 				break;
 			}
 		}
@@ -195,7 +195,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case LESSER_THAN_KEY :
 		{
 			leaf_tuple_index = find_preceding_in_sorted_packed_page(
-									leaf_page, bpttd_p->page_size, 
+									leaf_page, bpttd_p->pas.page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -206,7 +206,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case LESSER_THAN_EQUALS_KEY :
 		{
 			leaf_tuple_index = find_preceding_equals_in_sorted_packed_page(
-									leaf_page, bpttd_p->page_size, 
+									leaf_page, bpttd_p->pas.page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -217,7 +217,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case GREATER_THAN_EQUALS_KEY :
 		{
 			leaf_tuple_index = find_succeeding_equals_in_sorted_packed_page(
-									leaf_page, bpttd_p->page_size, 
+									leaf_page, bpttd_p->pas.page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -228,7 +228,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		case GREATER_THAN_KEY :
 		{
 			leaf_tuple_index = find_succeeding_in_sorted_packed_page(
-									leaf_page, bpttd_p->page_size, 
+									leaf_page, bpttd_p->pas.page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
 									key, bpttd_p->key_def, NULL
 								);
@@ -244,7 +244,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	}
 
 	// if the initial leaf_page is empty, then we need to go next or prev immediately after creating the bplus_tree_iterator
-	int is_initial_leaf_page_empty = (0 == get_tuple_count_on_persistent_page(leaf_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def)));
+	int is_initial_leaf_page_empty = (0 == get_tuple_count_on_persistent_page(leaf_page, bpttd_p->pas.page_size, &(bpttd_p->record_def->size_def)));
 
 	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(lps, leaf_tuple_index, bpttd_p, dam_p);
 
