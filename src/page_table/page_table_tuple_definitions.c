@@ -76,5 +76,19 @@ void deinit_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
 
 void print_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
 {
+	printf("Page_table tuple defs:\n");
 
+	printf("page_id_width = %"PRIu8"\n", pttd_p->page_id_width);
+
+	printf("page_size = %"PRIu32"\n", bpttd_p->page_size);
+
+	printf("NULL_PAGE_ID = %"PRIu64"\n", bpttd_p->NULL_PAGE_ID);
+
+	printf("entry_def = ");
+	if(pttd_p->entry_def)
+		print_tuple_def(pttd_p->entry_def);
+	else
+		printf("NULL\n");
+
+	printf("entries_per_page = %"PRIu64"\n", pttd_p->entries_per_page);
 }
