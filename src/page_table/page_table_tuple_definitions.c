@@ -23,7 +23,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t sy
 
 	// this can only be done after setting the above attributes
 	// there must be room for atleast some bytes after the page_table_page_header
-	if(sizeof_PAGE_TABLE_PAGE_HEADER(pttd_p) >= page_size)
+	if(!can_page_header_fit_on_page(sizeof_PAGE_TABLE_PAGE_HEADER(pttd_p), page_size))
 		return 0;
 
 	int res = 1;
