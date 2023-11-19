@@ -19,10 +19,18 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
    * If the root has only 1 entry at its first index, then the hash_table shrinks, by moving the contents of its new child to the root.
    * child pages are allocated as and when required, not upfront
    * If any page becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the page_table up the chain.
-   * the page_table can be walked with options like
-     * FOR_READ -> read locks only the leaf page (level 0), or FAILS if the entry does not exists
-     * FOR_LEAF_UPDATE -> read lock with latch coupling on interior pages, and the leaf page is locked with write lock and returned in stack -> this case does not allow you to write a NULL_PAGE_ID -> path until leaf is created if it does not exists
-     * FOR_ALL_UPDATE -> write lock all pages from root to desired leaf in the stack (NULL ing a page_id may require removing entries for the page, if the whole page starts being consisted of only NULL_PAGE_ID) -> path until leaf is created if it does not exists
+   * api:
+     * walk_down_page_table(uint64_t root_page_id, uint64_t entry_id, int leaf_lock_type (READ_LOCK or WRITE_LOCK), int create_leaf_if_absent);
+       * walks down latch coupling taking write locks, releasing parent locks when required
+       * if a page in the walk down does not exists then fail, if create_leaf_if_absent = 0, else create interior pages and leaves as required
+       * can update the entry if the leaf_lock_type is empty, you also get range of entries that are in the locked leaf
+     * shrink_page_table(uin64_t root_page_id, uint64_t entry_id);
+       * to be called when you write NULL_PAGE_ID to entry_id, it will shrink the page_table taking write locks all the way until leaf and freeeing pages on the path on the way up, if the page only consists of NULL_PAGE_ID's in it
+       * at the end if the root only has 1 entry at its first entry, then the contents of its only leaf are copied onto it, shrinking the tree up a level.
+       * think about optimizations like, when there are more than 1 valid non NULL entries in interior or leaf page, then release all parent locks.
+     * release_locks function to release page_table lock acquired by the walk_down_page_table function.
+     * check_is_root_locked
+       * check if we locked the root page
  * linked_page_list a doubly linkedlist of pages with tuple on them
    * all insert/update/delete functions take flag to FIXED_HEAD, to always keep head at the same page_id, moving it's next contents to it if the head page becomes empty
    * read and write iterator allowing you to update/delete in place
