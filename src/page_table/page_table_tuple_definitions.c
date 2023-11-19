@@ -1,6 +1,10 @@
 #include<page_table_tuple_definitions.h>
 
-int init_bplus_tree_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t system_header_size, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID)
+#include<page_table_page_header.h>
+
+#include<page_layout_unaltered.h>
+
+int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t system_header_size, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID)
 {
 	// bytes required to store page id
 	if(page_id_width == 0 || page_id_width > 8)
@@ -31,7 +35,7 @@ int init_bplus_tree_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t sy
 		deinit_page_table_tuple_definitions(pttd_p);
 		return 0;
 	}
-	res = insert_element_def(pttd_p->entry_def, "child_page_id", UINT, page_id_width, 1, &((user_value){.uint_value = bpttd_p->NULL_PAGE_ID}));
+	res = insert_element_def(pttd_p->entry_def, "child_page_id", UINT, page_id_width, 1, &((user_value){.uint_value = pttd_p->NULL_PAGE_ID}));
 	if(res == 0)
 	{
 		deinit_page_table_tuple_definitions(pttd_p);

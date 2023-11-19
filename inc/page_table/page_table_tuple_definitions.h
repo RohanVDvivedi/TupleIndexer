@@ -1,6 +1,9 @@
 #ifndef PAGE_TABLE_TUPLE_DEFINITIONS_H
 #define PAGE_TABLE_TUPLE_DEFINITIONS_H
 
+#include<tuple.h>
+#include<inttypes.h>
+
 typedef struct page_table_tuple_defs page_table_tuple_defs;
 struct page_table_tuple_defs
 {
@@ -37,7 +40,7 @@ struct page_table_tuple_defs
 // returns 1 for success, it fails with 0
 // it may also fail if the system_header size makes it impossible to store any entries on the page
 // page_id_width is bytes required for storing page_id, it can be anything from 1 to 8 both inclusive
-int init_bplus_tree_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t system_header_size, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID);
+int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t system_header_size, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID);
 
 // it deallocates the entry_def and
 // then resets all the page_table_tuple_defs struct attributes to NULL or 0
