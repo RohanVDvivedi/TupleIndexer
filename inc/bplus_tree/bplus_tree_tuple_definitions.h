@@ -4,27 +4,13 @@
 #include<tuple.h>
 #include<inttypes.h>
 
+#include<page_access_specification.h>
+
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs
 {
-	// page_id_witdh is bytes required for storing page_id, it can be in range [1, 8] both inclusive
-	uint8_t page_id_width;
-
-	// size of each page inside this bplus tree
-	uint32_t page_size;
-
-	// this is what is considered as a NULL pointer in the bplus_tree
-	// NULL_PAGE_ID < (1 << (page_id_width * 8))
-	uint64_t NULL_PAGE_ID;
-
-	// this is the additional page header space left out by the library for your use
-	// any page that will be used by the library for the bplus_tree will have page_header of size system_header_size of this plus the ones additionally required by the specific page type
-	// this many number of bytes will be left in the preface of the page_header and will be left untouched
-	// this part of the header can be used for storing :
-	// * pageLSN (latest log_sequence_number that modified the page) for idempotency of physiological logs
-	// * checksum (lets say crc32 of the whole page) for integrity
-	// * transaction_id (to lock the whole page for writing - hypothetical, because you may just have latches managed by dam)
-	uint32_t system_header_size;
+	// specification of all the pages in the bplus_tree
+	page_access_specs pas;
 
 	// number of elements considered as keys
 	uint32_t key_element_count;
