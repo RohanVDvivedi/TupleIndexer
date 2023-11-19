@@ -12,7 +12,7 @@
 
 int init_bplus_tree_leaf_page(persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	int inited = init_persistent_page(pmm_p, transaction_id, ppage, bpttd_p->page_size, sizeof_LEAF_PAGE_HEADER(bpttd_p), &(bpttd_p->record_def->size_def), abort_error);
+	int inited = init_persistent_page(pmm_p, transaction_id, ppage, bpttd_p->page_size, sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), &(bpttd_p->record_def->size_def), abort_error);
 	if((*abort_error) || !inited)
 		return 0;
 

@@ -23,7 +23,7 @@ struct bplus_tree_interior_page_header
 	int is_last_page_of_level;
 };
 
-#define sizeof_INTERIOR_PAGE_HEADER get_offset_to_end_of_bplus_tree_interior_page_header
+#define sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER get_offset_to_end_of_bplus_tree_interior_page_header
 
 uint32_t get_offset_to_end_of_bplus_tree_interior_page_header(const bplus_tree_tuple_defs* bpttd_p);
 
