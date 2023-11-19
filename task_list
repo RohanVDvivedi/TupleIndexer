@@ -1,6 +1,4 @@
 ** PICKED TASKS
- * BPTTD fixes
-   * add attributes to bpttd and pttd's print functions
 
  * a page_table that maps a 64 bit integer to a page_id
    * It is structured as a tree, starting with level 0 at the leaf, and then increasing towards root, like bplus tree.
@@ -83,9 +81,12 @@
    * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
  * think about implementing more data structures like T-tree, Patricia Trie, etc
 
+LEFT FOR LATER TASKS
 DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if you need this, with current hashtable design we have, we do not need this)
   * uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
   * free_contiguous_pages will not be supported, since we need to be aware that the page must not be locked or waiting to be locked, while doing this, and so we would need a lot to do to undo in case if a page can not be freed, hence only allocate_contiguous_pages will be the only thing close to what we will support in dam api.
+BPTTD FIX
+  * failing on any malloc failures
 
 ** OPTIMIZATION (THIS MAY NEVER MAKE IT TO THE PROJECT)
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
