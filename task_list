@@ -32,7 +32,7 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
        * walks down latch coupling taking write locks, releasing parent locks when possible.
        * walk down until leaf or 
          * if actual range of the page does not encompass the proposed query range, then this page is what we want to lock and return.
-         * if actual page encompasses the whole proposed range, then check how many indices do we need for the start and last entry_id of the query, if it is > 1, then go to child, else return with lock on this page.
+         * if actual range of the page encompasses the whole proposed range, then check how many indices do we need for the start and last entry_id of the query, if it is > 1, then go to child, else return with lock on this page.
        * we get this by checking the slot index for the start_entry_id and last_entry_id, if they are same then it is safe to release parent lock. 
        * returns when the range requested lies completely within the designated range for a node, with more than 1 entries pointing to the subtrees in the range.
        * if a page in the walk down does not exists then fail, if create_if_absent = 0, else create interior pages and leaves as required
