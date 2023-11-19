@@ -20,10 +20,13 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
    * child pages are allocated as and when required, not upfront
    * If any page becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the page_table up the chain.
    * api:
-     * walk_down_page_table(uint64_t root_page_id, uint64_t entry_id, int leaf_lock_type (READ_LOCK or WRITE_LOCK), int create_leaf_if_absent);
+     * walk_down_page_table(uint64_t root_page_id, uint64_t start_entry_id, uint64_t last_entry_id, int leaf_lock_type (READ_LOCK or WRITE_LOCK), int create_leaf_if_absent);
+       * struct that stores first_entry_id that the top of locked pages stack represents
        * walks down latch coupling taking write locks, releasing parent locks when required
+       * returns when we have first_entry_id >= start_entry_id
        * if a page in the walk down does not exists then fail, if create_leaf_if_absent = 0, else create interior pages and leaves as required
        * can update the entry if the leaf_lock_type is empty, you also get range of entries that are in the locked leaf
+     * set_entry_page_id and get_entry_page_id, to get and set values on the struct returned by the above struct
      * shrink_page_table(uin64_t root_page_id, uint64_t entry_id);
        * to be called when you write NULL_PAGE_ID to entry_id, it will shrink the page_table taking write locks all the way until leaf and freeeing pages on the path on the way up, if the page only consists of NULL_PAGE_ID's in it
        * at the end if the root only has 1 entry at its first entry, then the contents of its only leaf are copied onto it, shrinking the tree up a level.
