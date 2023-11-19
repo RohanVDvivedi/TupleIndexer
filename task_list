@@ -23,6 +23,9 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
    * locking a node means locking the designated range of the node, not its actual range. designated range is given by the parent, not the headers of the node itself.
    * a root node always has a deginated range of [0, 2^b) where b is the number of the bits used for entry_id
    * If any page becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the page_table up the chain.
+   * an entry_id X is pointed to by a page of level n in its subtree, with start_entry_id s, only if X lies in range [s, s + E^(n+1)). (here s is also a multiple of E^(n+1))
+     * where s = floor(X / (E^(n+1))) * E^(n+1)
+     * and the child slot pointing to X is at index i in the page where, i = floor((X - s) / (E^n)) = floor((X % (E^(n+1))) / (E^n))
    * api:
      * walk_down_page_table(uint64_t root_page_id, uint64_t start_entry_id, uint64_t last_entry_id, int leaf_lock_type (READ_LOCK or WRITE_LOCK), int create_if_absent);
        * returns a struct that stores designated range given by the parent of the locked page, and a locked pages stack enough to hold any subtree of the range
