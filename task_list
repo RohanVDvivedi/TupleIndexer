@@ -29,7 +29,9 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
    * api:
      * walk_down_page_table(uint64_t root_page_id, uint64_t start_entry_id, uint64_t last_entry_id, int leaf_lock_type (READ_LOCK or WRITE_LOCK), int create_if_absent);
        * returns a struct that stores designated range given by the parent of the locked page, and a locked pages stack enough to hold any subtree of the range
-       * walks down latch coupling taking write locks, releasing parent locks when possible
+       * walks down latch coupling taking write locks, releasing parent locks when possible.
+       * walk down until leaf or until the first page in the page table that needs more than 1 entry slots to point to the whole proposed range for the designated range for that page. (not the actual range.)
+       * if the actual range does not completely encompass the proposed query range than the node has to expand pushing its contents into its children, and incrementing the level of the node, until the actual range encompasses the range of the query.
        * you can release parent lock, if there is only 1 entry in the parent points to a sub tree such that the designated range of that subtree completely encompasses the proposed query range
        * we get this by checking the slot index for the start_entry_id and last_entry_id, if they are same then it is safe to release parent lock. 
        * returns when the range requested lies completely within the designated range for a node, with more than 1 entries pointing to the subtrees in the range.
