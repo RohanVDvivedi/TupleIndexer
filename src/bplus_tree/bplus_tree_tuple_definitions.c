@@ -251,6 +251,8 @@ void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 
 	printf("NULL_PAGE_ID = %"PRIu64"\n", bpttd_p->NULL_PAGE_ID);
 
+	printf("system_header_size = %"PRIu32"\n", bpttd_p->system_header_size);
+
 	printf("key_element_count = %"PRIu32"\n", bpttd_p->key_element_count);
 
 	printf("key_element_ids = ");
@@ -259,6 +261,17 @@ void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 		printf("{ ");
 		for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
 			printf("%u, ", bpttd_p->key_element_ids[i]);
+		printf(" }\n");
+	}
+	else
+		printf("NULL\n");
+
+	printf("key_element_ids = ");
+	if(bpttd_p->key_compare_direction)
+	{
+		printf("{ ");
+		for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
+			printf("%s, ", ((bpttd_p->key_compare_direction[i] == ASC) ? "ASC" : "DESC"));
 		printf(" }\n");
 	}
 	else
@@ -281,4 +294,8 @@ void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 		print_tuple_def(bpttd_p->key_def);
 	else
 		printf("NULL\n");
+
+	printf("max_record_size = %"PRIu32"\n", bpttd_p->max_record_size);
+
+	printf("max_index_record_size = %"PRIu32"\n", bpttd_p->max_index_record_size);
 }
