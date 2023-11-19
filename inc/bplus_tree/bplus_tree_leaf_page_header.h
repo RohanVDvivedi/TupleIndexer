@@ -14,7 +14,7 @@ struct bplus_tree_leaf_page_header
 	// all leaf pages are doubly linked, with pointers (page_id-s) to next and prev pages
 	uint64_t next_page_id;
 
-	uint32_t prev_page_id;
+	uint64_t prev_page_id;
 };
 
 #define sizeof_BPLUS_TREE_LEAF_PAGE_HEADER get_offset_to_end_of_bplus_tree_leaf_page_header
