@@ -9,6 +9,6 @@ enum page_type
 	// add more page_types as you wish at most ((2^16) - 1) page_types can be supported
 };
 
-page_type get_type_of_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
+page_type get_type_of_page(const persistent_page* ppage, const page_access_specs* pas_p);
 
 #endif
