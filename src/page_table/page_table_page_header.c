@@ -55,6 +55,26 @@ void serialize_page_table_page_header(void* hdr_serial, const page_table_page_he
 	serialize_uint64(page_table_page_header_serial + BYTES_FOR_PAGE_LEVEL, pttd_p->pas.page_id_width, ptph_p->first_bucket_id);
 }
 
-void set_page_table_page_header(persistent_page* ppage, const page_table_page_header* ptph_p, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+void set_page_table_page_header(persistent_page* ppage, const page_table_page_header* ptph_p, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	uint32_t page_header_size = get_page_header_size_persistent_page(ppage, pttd_p->pas.page_size);
+
+	// allocate memory, to hold complete page_header
+	void* hdr_serial = malloc(page_header_size);
+	if(hdr_serial == NULL)
+		exit(-1);
+
+	// copy the old page_header to it
+	memory_move(hdr_serial, get_page_header_ua_persistent_page(ppage, pttd_p->pas.page_size), page_header_size);
+
+	// serialize ptph_p on the hdr_serial
+	serialize_page_table_page_header(hdr_serial, ptph_p, pttd_p);
+
+	// write hdr_serial to the new header position
+	set_persistent_page_header(pmm_p, transaction_id, ppage, pttd_p->pas.page_size, hdr_serial, abort_error);
+
+	// we need to free hdr_serial, even on an abort_error
+	free(hdr_serial);
+}
 
 void print_page_table_page_header(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
