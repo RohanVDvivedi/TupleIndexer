@@ -6,14 +6,6 @@
 
 int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_access_specs* pas_p)
 {
-	// bytes required to store page id
-	if(page_id_width == 0 || page_id_width > 8)
-		return 0;
-
-	// NULL_PAGE_ID must fit in page_id_width number of bytes
-	if(page_id_width < 8 && NULL_PAGE_ID >= ( ((uint64_t)(1)) << (page_id_width * 8) ) )
-		return 0;
-
 	// check id page_access_specs struct is valid
 	if(!is_valid_page_access_specs(pas_p))
 		return 0;
