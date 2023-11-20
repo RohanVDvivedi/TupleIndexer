@@ -46,8 +46,8 @@ page_table_page_header get_page_table_page_header(const persistent_page* ppage, 
 	};
 }
 
-void serialize_page_table_page_header(void* hdr_serial, const page_table_page_header* bptiph_p, const page_table_tuple_defs* pttd_p);
+void serialize_page_table_page_header(void* hdr_serial, const page_table_page_header* ptph_p, const page_table_tuple_defs* pttd_p);
 
-void set_page_table_page_header(persistent_page* ppage, const page_table_page_header* bptiph_p, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+void set_page_table_page_header(persistent_page* ppage, const page_table_page_header* ptph_p, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 void print_page_table_page_header(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
