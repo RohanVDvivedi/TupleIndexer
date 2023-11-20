@@ -35,7 +35,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 		deinit_page_table_tuple_definitions(pttd_p);
 		return 0;
 	}
-	res = insert_element_def(pttd_p->entry_def, "child_page_id", UINT, page_id_width, 1, &((user_value){.uint_value = pttd_p->pas.NULL_PAGE_ID}));
+	res = insert_element_def(pttd_p->entry_def, "child_page_id", UINT, page_id_width, 1, &((user_value){.uint_value = pttd_p->pas_p->NULL_PAGE_ID}));
 	if(res == 0)
 	{
 		deinit_page_table_tuple_definitions(pttd_p);
@@ -77,10 +77,10 @@ void print_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
 
 	if(pttd_p->pas_p)
 	{
-		printf("page_id_width = %"PRIu8"\n", pttd_p->pas.page_id_width);
-		printf("page_size = %"PRIu32"\n", pttd_p->pas.page_size);
-		printf("NULL_PAGE_ID = %"PRIu64"\n", pttd_p->pas.NULL_PAGE_ID);
-		printf("system_header_size = %"PRIu32"\n", pttd_p->pas.system_header_size);
+		printf("page_id_width = %"PRIu8"\n", pttd_p->pas_p->page_id_width);
+		printf("page_size = %"PRIu32"\n", pttd_p->pas_p->page_size);
+		printf("NULL_PAGE_ID = %"PRIu64"\n", pttd_p->pas_p->NULL_PAGE_ID);
+		printf("system_header_size = %"PRIu32"\n", pttd_p->pas_p->system_header_size);
 	}
 
 	printf("entry_def = ");
