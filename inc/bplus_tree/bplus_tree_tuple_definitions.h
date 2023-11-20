@@ -10,7 +10,7 @@ typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs
 {
 	// specification of all the pages in the bplus_tree
-	page_access_specs pas;
+	const page_access_specs* pas_p;
 
 	// number of elements considered as keys
 	uint32_t key_element_count;
@@ -43,9 +43,8 @@ struct bplus_tree_tuple_defs
 // initializes the attributes in bplus_tree_tuple_defs struct as per the provided parameters
 // it allocates memory only for index_def and the key_def
 // returns 1 for success, it fails with 0, if the record_def has element_count 0 OR key_element_count == 0 OR key_elements == NULL OR if any of the key_element_ids is out of bounds
-// it may also fail if the system_header size makes it impossible to store any tuples in the page
-// page_id_width is bytes required for storing page_id, it can be anything from 1 to 8 both inclusive
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t system_header_size, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID);
+// it also fails if the pas_p does not pass is_valid_page_access_specs(pas_p)
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count);
 
 // checks to see if a record_tuple can be inserted into a bplus_tree
 int check_if_record_can_be_inserted_into_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple);

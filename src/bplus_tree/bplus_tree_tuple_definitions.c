@@ -8,17 +8,20 @@
 #include<stdlib.h>
 #include<string.h>
 
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t system_header_size, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, uint32_t page_size, uint8_t page_id_width, uint64_t NULL_PAGE_ID)
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count)
 {
 	// basic parameter check
 	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || get_element_def_count_tuple_def(record_def) == 0)
 		return 0;
 
-	// initialize page_access_specs struct attributes
-	if(!init_page_access_specs(&(bpttd_p->pas), page_id_width, page_size, NULL_PAGE_ID, system_header_size))
+	// check id page_access_specs struct is valid
+	if(!is_valid_page_access_specs(pas_p))
 		return 0;
 
-	// this can only be called after setting the above attributes
+	// initialize page_access_specs fo the bpttd
+	bpttd_p->pas_p->p = pas_p;
+
+	// this can only be called after setting the pas_p attribute of bpttd
 	// fail if there is no room after accomodating header on the page
 	if((!can_page_header_fit_on_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), page_size)) || (!can_page_header_fit_on_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), page_size)))
 		return 0;
@@ -48,7 +51,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 	
 	// the unsigned int page id that the index entry will point to
 	// this element must be a NON NULL, with default_value being bpttd_p->NULL_PAGE_ID
-	res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, page_id_width, 1, &((user_value){.uint_value = bpttd_p->pas.NULL_PAGE_ID}));
+	res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, page_id_width, 1, &((user_value){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}));
 
 	// if any of the index element_definitions could not be inserted
 	if(!res)
@@ -85,16 +88,16 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 	/* compute max_record_size for the leaf pages and interior pages of the bplus tree */
 	{
 		uint32_t min_record_tuple_count = 2;
-		uint32_t total_available_space_in_leaf_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->pas.page_size, &(bpttd_p->record_def->size_def));
+		uint32_t total_available_space_in_leaf_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
 		uint32_t total_available_space_in_leaf_page_per_min_tuple_count = total_available_space_in_leaf_page / min_record_tuple_count;
-		bpttd_p->max_record_size = total_available_space_in_leaf_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->pas.page_size, &(bpttd_p->record_def->size_def));
+		bpttd_p->max_record_size = total_available_space_in_leaf_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
 	}
 
 	{
 		uint32_t min_index_record_tuple_count = 2;
-		uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+		uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 		uint32_t total_available_space_in_interior_page_per_min_tuple_count = total_available_space_in_interior_page / min_index_record_tuple_count;
-		bpttd_p->max_index_record_size = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+		bpttd_p->max_index_record_size = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 	}
 
 	if(bpttd_p->max_record_size < get_minimum_tuple_size(bpttd_p->record_def) ||
@@ -186,6 +189,7 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	if(bpttd_p->key_compare_direction)
 		free(bpttd_p->key_compare_direction);
 
+	bpttd_p->pas_p = NULL;
 	bpttd_p->key_element_count = 0;
 	bpttd_p->key_element_ids = NULL;
 	bpttd_p->record_def = NULL;
@@ -215,7 +219,7 @@ int check_if_record_can_be_inserted_into_bplus_tree(const bplus_tree_tuple_defs*
 	}
 
 	// check the size after inserting a child_page_id, 
-	int can_set_in_index_tuple = can_set_uninitialized_element_in_tuple(bpttd_p->index_def, bpttd_p->key_element_count, index_record_tuple_size, &((user_value){.uint_value = bpttd_p->pas.NULL_PAGE_ID}), &index_record_tuple_size);
+	int can_set_in_index_tuple = can_set_uninitialized_element_in_tuple(bpttd_p->index_def, bpttd_p->key_element_count, index_record_tuple_size, &((user_value){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}), &index_record_tuple_size);
 	if(!can_set_in_index_tuple)
 		return 0;
 
@@ -232,13 +236,13 @@ void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 {
 	printf("Bplus_tree tuple defs:\n");
 
-	printf("page_id_width = %"PRIu8"\n", bpttd_p->pas.page_id_width);
+	printf("page_id_width = %"PRIu8"\n", bpttd_p->pas_p->page_id_width);
 
-	printf("page_size = %"PRIu32"\n", bpttd_p->pas.page_size);
+	printf("page_size = %"PRIu32"\n", bpttd_p->pas_p->page_size);
 
-	printf("NULL_PAGE_ID = %"PRIu64"\n", bpttd_p->pas.NULL_PAGE_ID);
+	printf("NULL_PAGE_ID = %"PRIu64"\n", bpttd_p->pas_p->NULL_PAGE_ID);
 
-	printf("system_header_size = %"PRIu32"\n", bpttd_p->pas.system_header_size);
+	printf("system_header_size = %"PRIu32"\n", bpttd_p->pas_p->system_header_size);
 
 	printf("key_element_count = %"PRIu32"\n", bpttd_p->key_element_count);
 
