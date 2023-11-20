@@ -1,5 +1,13 @@
 ** PICKED TASKS
 
+ * implement page_table_range struct, that has first_bucket_id and last_bucket_id
+ * implement page_table_page_util funtion to check if the page is empty -> tombstone_count == tuple_count
+ * get designated range of the entry at ith slot
+ * get actual range of the page we are looking at
+ * get child_index for a bucket_id on the page
+ * set_entry to set the ith entry
+ * get_entry to get the ith entry
+
  * a page_table that maps a 64 bit integer to a page_id
    * It is structured as a tree, starting with level 0 at the leaf, and then increasing towards root, like bplus tree.
    * each page at any level is identical and contains list of page_ids, each of page_id_width, pointing to another page_table page (when its level > 0) OR something else (when its level = 0), all pages are identical.
