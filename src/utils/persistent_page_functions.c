@@ -6,12 +6,12 @@
 
 int is_persistent_page_NULL(const persistent_page* ppage, const data_access_methods* dam_p)
 {
-	return (ppage->page == NULL) && (ppage->page_id == dam_p->NULL_PAGE_ID);
+	return (ppage->page == NULL) && (ppage->page_id == dam_p->pas.NULL_PAGE_ID);
 }
 
 persistent_page get_NULL_persistent_page(const data_access_methods* dam_p)
 {
-	return (persistent_page){.page = NULL, .page_id = dam_p->NULL_PAGE_ID};
+	return (persistent_page){.page = NULL, .page_id = dam_p->pas.NULL_PAGE_ID};
 }
 
 int is_persistent_page_write_locked(const persistent_page* ppage)
