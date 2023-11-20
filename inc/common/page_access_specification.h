@@ -22,7 +22,7 @@ struct page_access_specs
 	// this part of the header can be used for storing :
 	// * pageLSN (latest log_sequence_number that modified the page) for idempotency of physiological logs
 	// * checksum (lets say crc32 of the whole page) for integrity
-	// * transaction_id (to lock the whole page for writing - hypothetical, because you may just have latches managed by dam)
+	// * transaction_id (to lock the whole page for writing - hypothetical, because you may just have latches managed by pam)
 	uint32_t system_header_size;
 };
 

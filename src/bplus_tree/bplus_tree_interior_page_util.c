@@ -157,7 +157,7 @@ int must_split_for_insert_bplus_tree_interior_page(const persistent_page* page1,
 	return 1;
 }
 
-int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
+int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
 {
 	// check if a page must split to accomodate the new tuple
 	if(!must_split_for_insert_bplus_tree_interior_page(page1, tuple_to_insert, bpttd_p))
@@ -198,7 +198,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 	//uint32_t tuples_leave_page1 = page1_tuple_count - tuples_stay_in_page1;
 
 	// allocate a new page
-	persistent_page page2 = get_new_persistent_page_with_write_lock(dam_p, transaction_id, abort_error);
+	persistent_page page2 = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
 
 	// return with a split failure if the page2 could not be allocated
 	if(*abort_error)
@@ -211,7 +211,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 	// if the bplus_tree interior page could not be inited, release lock and fail
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
 	}
 
@@ -230,13 +230,13 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 		set_bplus_tree_interior_page_header(page1, &page1_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 		set_bplus_tree_interior_page_header(&page2, &page2_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
@@ -257,7 +257,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
 	}
 
@@ -273,7 +273,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
 	}
 
@@ -293,7 +293,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 		if(*abort_error)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
@@ -312,7 +312,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 		if(*abort_error)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
@@ -344,7 +344,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 		if(*abort_error)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
@@ -367,12 +367,12 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
 	}
 
 	// release lock on the page2
-	release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+	release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 
 	// on abort, return 0
 	if(*abort_error)
@@ -403,7 +403,7 @@ int can_merge_bplus_tree_interior_pages(const persistent_page* page1, const void
 	return 1;
 }
 
-int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separator_parent_tuple, persistent_page* page2, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separator_parent_tuple, persistent_page* page2, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// ensure that we can merge
 	if(!can_merge_bplus_tree_interior_pages(page1, separator_parent_tuple, page2, bpttd_p))

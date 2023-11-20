@@ -16,7 +16,7 @@ struct cancel_update_callback_context
 	// set to true if cancel_update_callback gets called
 	int update_canceled;
 	locked_pages_stack* locked_pages_stack_p;
-	const page_access_methods* dam_p;
+	const page_access_methods* pam_p;
 };
 
 void cancel_update_callback(void* cancel_update_callback_context_p, const void* transaction_id, int* abort_error)
@@ -28,7 +28,7 @@ void cancel_update_callback(void* cancel_update_callback_context_p, const void* 
 	while(get_element_count_locked_pages_stack(cuc_cntxt->locked_pages_stack_p) > 1)
 	{
 		locked_page_info* bottom = get_bottom_of_locked_pages_stack(cuc_cntxt->locked_pages_stack_p);
-		release_lock_on_persistent_page(cuc_cntxt->dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(cuc_cntxt->pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 		pop_bottom_from_locked_pages_stack(cuc_cntxt->locked_pages_stack_p);
 
 		// on abort_error, return to the caller
@@ -40,10 +40,10 @@ void cancel_update_callback(void* cancel_update_callback_context_p, const void* 
 
 	// we just downgrade that lock and return to the user, we do not pop it, since we will still be holding read lock on it, as long as the update_inspector will read the old_record
 	locked_page_info* bottom = get_bottom_of_locked_pages_stack(cuc_cntxt->locked_pages_stack_p);
-	downgrade_to_reader_lock_on_persistent_page(cuc_cntxt->dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+	downgrade_to_reader_lock_on_persistent_page(cuc_cntxt->pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 }
 
-int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
 		return 0;
@@ -53,7 +53,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 
 	{
 		// get lock on the root page of the bplus_tree
-		persistent_page root_page = acquire_persistent_page_with_lock(dam_p, transaction_id, root_page_id, WRITE_LOCK, abort_error);
+		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, WRITE_LOCK, abort_error);
 		if(*abort_error)
 			return 0;
 
@@ -70,7 +70,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 
 	uint32_t release_for_split = 0;
 	uint32_t release_for_merge = 0;
-	walk_down_locking_parent_pages_for_update_using_record(root_page_id, locked_pages_stack_p, new_record, &release_for_split, &release_for_merge, bpttd_p, dam_p, transaction_id, abort_error);
+	walk_down_locking_parent_pages_for_update_using_record(root_page_id, locked_pages_stack_p, new_record, &release_for_split, &release_for_merge, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		deinitialize_locked_pages_stack(locked_pages_stack_p);
@@ -107,7 +107,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		while(release_for_split > 0)
 		{
 			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 			if(*abort_error)
@@ -119,7 +119,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	// as you could guess, you can discard this piece of code
 	// OPTIMIZATION - end
 
-	cancel_update_callback_context cuc_cntxt = {.update_canceled = 0, .locked_pages_stack_p = locked_pages_stack_p, .dam_p = dam_p};
+	cancel_update_callback_context cuc_cntxt = {.update_canceled = 0, .locked_pages_stack_p = locked_pages_stack_p, .pam_p = pam_p};
 	int ui_res = ui_p->update_inspect(ui_p->context, bpttd_p->record_def, old_record, &new_record, cancel_update_callback, &cuc_cntxt, transaction_id, abort_error);
 	if((*abort_error) || cuc_cntxt.update_canceled == 1 || ui_res == 0)
 	{
@@ -146,7 +146,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		while(release_for_split > 0)
 		{
 			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 			if(*abort_error)
@@ -155,7 +155,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			release_for_split--;
 		}
 
-		result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+		result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 
 		// deinitialize stack, all page locks will be released, after return of the above function
 		deinitialize_locked_pages_stack(locked_pages_stack_p);
@@ -169,7 +169,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		while(release_for_merge > 0)
 		{
 			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 			if(*abort_error)
@@ -190,7 +190,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		if(*abort_error)
 			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
 
-		result = merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+		result = merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 
 		// deinitialize stack, all page locks will be released, after return of the above function
 		deinitialize_locked_pages_stack(locked_pages_stack_p);
@@ -252,7 +252,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 					while(release_for_split > 0)
 					{
 						locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-						release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+						release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 						pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 						if(*abort_error)
@@ -262,7 +262,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 					}
 
 					// once the delete is done, we can split insert the new_record
-					result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+					result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 
 					// deinitialize stack, all page locks will be released, after return of the above function
 					deinitialize_locked_pages_stack(locked_pages_stack_p);
@@ -283,7 +283,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 				while(release_for_merge > 0)
 				{
 					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-					release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+					release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 					if(*abort_error)
@@ -292,7 +292,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 					release_for_merge--;
 				}
 
-				result = merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, dam_p, pmm_p, transaction_id, abort_error);
+				result = merge_and_unlock_pages_up(root_page_id, locked_pages_stack_p, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 
 				// deinitialize stack, all page locks will be released, after return of the above function
 				deinitialize_locked_pages_stack(locked_pages_stack_p);
@@ -316,7 +316,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-		release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 

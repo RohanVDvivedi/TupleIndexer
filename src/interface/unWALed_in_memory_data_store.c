@@ -614,55 +614,55 @@ page_access_methods* get_new_unWALed_in_memory_data_store(const page_access_spec
 	if(!is_valid_page_access_specs(pas_suggested))
 		return 0;
 
-	page_access_methods* dam_p = malloc(sizeof(page_access_methods));
-	if(dam_p == NULL)
+	page_access_methods* pam_p = malloc(sizeof(page_access_methods));
+	if(pam_p == NULL)
 		return NULL;
 
-	dam_p->pas = (*pas_suggested);
-	dam_p->pas.NULL_PAGE_ID = UINT64_MAX >> ((sizeof(uint64_t) - dam_p->pas.page_id_width) * CHAR_BIT);
+	pam_p->pas = (*pas_suggested);
+	pam_p->pas.NULL_PAGE_ID = UINT64_MAX >> ((sizeof(uint64_t) - pam_p->pas.page_id_width) * CHAR_BIT);
 
-	dam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
-	dam_p->acquire_page_with_reader_lock = acquire_page_with_reader_lock;
-	dam_p->acquire_page_with_writer_lock = acquire_page_with_writer_lock;
-	dam_p->downgrade_writer_lock_to_reader_lock_on_page = downgrade_writer_lock_to_reader_lock_on_page;
-	dam_p->upgrade_reader_lock_to_writer_lock_on_page = upgrade_reader_lock_to_writer_lock_on_page;
-	dam_p->release_reader_lock_on_page = release_reader_lock_on_page;
-	dam_p->release_writer_lock_on_page = release_writer_lock_on_page;
-	dam_p->free_page = free_page;
+	pam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
+	pam_p->acquire_page_with_reader_lock = acquire_page_with_reader_lock;
+	pam_p->acquire_page_with_writer_lock = acquire_page_with_writer_lock;
+	pam_p->downgrade_writer_lock_to_reader_lock_on_page = downgrade_writer_lock_to_reader_lock_on_page;
+	pam_p->upgrade_reader_lock_to_writer_lock_on_page = upgrade_reader_lock_to_writer_lock_on_page;
+	pam_p->release_reader_lock_on_page = release_reader_lock_on_page;
+	pam_p->release_writer_lock_on_page = release_writer_lock_on_page;
+	pam_p->free_page = free_page;
 	
-	dam_p->context = malloc(sizeof(memory_store_context));
-	if(dam_p->context == NULL)
+	pam_p->context = malloc(sizeof(memory_store_context));
+	if(pam_p->context == NULL)
 	{
-		free(dam_p);
+		free(pam_p);
 		return NULL;
 	}
 	
-	((memory_store_context*)(dam_p->context))->page_size = dam_p->pas.page_size;
-	((memory_store_context*)(dam_p->context))->MAX_PAGE_COUNT = dam_p->pas.NULL_PAGE_ID;
+	((memory_store_context*)(pam_p->context))->page_size = pam_p->pas.page_size;
+	((memory_store_context*)(pam_p->context))->MAX_PAGE_COUNT = pam_p->pas.NULL_PAGE_ID;
 
 	// on success return the data access methods
 
-	memory_store_context* cntxt = dam_p->context;
+	memory_store_context* cntxt = pam_p->context;
 
 	pthread_mutex_init(&(cntxt->global_lock), NULL);
 	cntxt->free_pages_count = 0;
 	initialize_bst(&(cntxt->free_page_descs), RED_BLACK_TREE, &simple_comparator(compare_page_descs_by_page_ids), offsetof(page_descriptor, free_page_descs_node));
 	if(!initialize_hashmap(&(cntxt->page_id_map), ELEMENTS_AS_LINKEDLIST_INSERT_AT_HEAD, MIN_BUCKET_COUNT, &simple_hasher(hash_on_page_id), &simple_comparator(compare_page_descs_by_page_ids), offsetof(page_descriptor, page_id_map_node)))
 	{
-		free(dam_p->context);
-		free(dam_p);
+		free(pam_p->context);
+		free(pam_p);
 		return NULL;
 	}
 	if(!initialize_hashmap(&(cntxt->page_memory_map), ELEMENTS_AS_LINKEDLIST_INSERT_AT_HEAD, MIN_BUCKET_COUNT, &simple_hasher(hash_on_page_memory), &simple_comparator(compare_page_descs_by_page_memories), offsetof(page_descriptor, page_memory_map_node)))
 	{
 		deinitialize_hashmap(&(cntxt->page_id_map));
-		free(dam_p->context);
-		free(dam_p);
+		free(pam_p->context);
+		free(pam_p);
 		return NULL;
 	}
 	cntxt->active_read_locks_count = 0;
 	cntxt->active_write_locks_count = 0;
-	return dam_p;
+	return pam_p;
 }
 
 static void delete_notified_page_descriptor(void* resource_p, const void* data)
@@ -676,9 +676,9 @@ static void delete_notified_page_descriptor(void* resource_p, const void* data)
 	delete_page_descriptor(((page_descriptor*)(data)));
 }
 
-int close_and_destroy_unWALed_in_memory_data_store(page_access_methods* dam_p)
+int close_and_destroy_unWALed_in_memory_data_store(page_access_methods* pam_p)
 {
-	memory_store_context* cntxt = dam_p->context;
+	memory_store_context* cntxt = pam_p->context;
 	printf("pages still being used = %llu, of which %lu are free\n", get_element_count_hashmap(&(cntxt->page_id_map)), cntxt->free_pages_count);
 	printf("active locks count, read = %lu, write %lu\n", cntxt->active_read_locks_count, cntxt->active_write_locks_count);
 	remove_all_from_hashmap(&(cntxt->page_id_map), &((notifier_interface){NULL, delete_notified_page_descriptor}));
@@ -686,7 +686,7 @@ int close_and_destroy_unWALed_in_memory_data_store(page_access_methods* dam_p)
 	deinitialize_hashmap(&(cntxt->page_memory_map));
 	pthread_mutex_destroy(&(cntxt->global_lock));
 	cntxt->free_pages_count = 0;
-	free(dam_p->context);
-	free(dam_p);
+	free(pam_p->context);
+	free(pam_p);
 	return 1;
 }

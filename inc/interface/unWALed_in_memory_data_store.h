@@ -13,6 +13,6 @@
 
 page_access_methods* get_new_unWALed_in_memory_data_store(const page_access_specs* pas_suggested);
 
-int close_and_destroy_unWALed_in_memory_data_store(page_access_methods* dam_p);
+int close_and_destroy_unWALed_in_memory_data_store(page_access_methods* pam_p);
 
 #endif

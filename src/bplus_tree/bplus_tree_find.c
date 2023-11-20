@@ -32,14 +32,14 @@ enum find_type
 // on an abort error, all pages locked in this function are unlocked and locked_pages_stack is deinitialized -> i.e. on abort_error nothing needs to be done
 // on success (*abort_error) == 0, all pages requested/required are locked in the locked_pages_stack
 // NOTE: if locked_parents is set, then the parents are locked only in READ_LOCK mode
-locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const void* key, find_type f_type, uint32_t key_element_count_concerned, int lock_type, int locked_parents, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error)
+locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const void* key, find_type f_type, uint32_t key_element_count_concerned, int lock_type, int locked_parents, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// create a stack of capacity = levels (locked_parents = 1) or capacity = 2 (locked_parents = 0)
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
 
 	{
 		// get lock on the root page of the bplus_tree in mode (referred by lock_type), this is because root_page can be a leaf page
-		persistent_page root_page = acquire_persistent_page_with_lock(dam_p, transaction_id, root_page_id, lock_type, abort_error);
+		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, lock_type, abort_error);
 		if(*abort_error)
 			return ((locked_pages_stack){});
 
@@ -70,7 +70,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 			if(lock_type == WRITE_LOCK) // downgrade lock on the root page, if we had to WRITE_LOCK it
 			{
 				locked_page_info* root_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-				downgrade_to_reader_lock_on_persistent_page(dam_p, transaction_id, &(root_locked_page->ppage), NONE_OPTION, abort_error);
+				downgrade_to_reader_lock_on_persistent_page(pam_p, transaction_id, &(root_locked_page->ppage), NONE_OPTION, abort_error);
 
 				if(*abort_error)
 					goto ABORT_ERROR;
@@ -116,7 +116,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
 		// only the leaf_page (if the parent's level == 1) is locked with lock_type, all other pages (the parent_pages) are locked in READ_LOCK mode
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
-		persistent_page child_page = acquire_persistent_page_with_lock(dam_p, transaction_id, child_page_id, ((curr_locked_page_level == 1) ? lock_type : READ_LOCK), abort_error);
+		persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, ((curr_locked_page_level == 1) ? lock_type : READ_LOCK), abort_error);
 
 		// exit for abort_error
 		if(*abort_error)
@@ -129,7 +129,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 		if(!locked_parents)
 		{
 			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 			// on abort_error just go to ABORT_ERROR
@@ -146,7 +146,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-		release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 
@@ -157,7 +157,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 	return ((locked_pages_stack){});
 }
 
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error)
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// if the user wants to consider all the key elements then
 	// set key_element_count_concerned to bpttd_p->key_element_count
@@ -173,7 +173,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	else
 		f_type = LESSER_THAN_KEY + (find_pos - LESSER_THAN);
 
-	locked_pages_stack lps = walk_down_for_find_using_key(root_page_id, key, f_type, key_element_count_concerned, leaf_lock_type, is_stacked, bpttd_p, dam_p, transaction_id, abort_error);
+	locked_pages_stack lps = walk_down_for_find_using_key(root_page_id, key, f_type, key_element_count_concerned, leaf_lock_type, is_stacked, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error) // on abort, all pages would have already been locked by this function
 		return NULL;
 
@@ -246,7 +246,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	// if the initial leaf_page is empty, then we need to go next or prev immediately after creating the bplus_tree_iterator
 	int is_initial_leaf_page_empty = (0 == get_tuple_count_on_persistent_page(leaf_page, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)));
 
-	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(lps, leaf_tuple_index, bpttd_p, dam_p);
+	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(lps, leaf_tuple_index, bpttd_p, pam_p);
 
 	// if we couldn't initialize a bplus_tree_iterator, then just unlock all the pages, deinitialize the stack and exit
 	if(bpi_p == NULL)
@@ -254,7 +254,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		while(get_element_count_locked_pages_stack(&lps) > 0)
 		{
 			locked_page_info* bottom = get_bottom_of_locked_pages_stack(&lps);
-			release_lock_on_persistent_page(dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 			pop_bottom_from_locked_pages_stack(&lps);
 		}
 		deinitialize_locked_pages_stack(&lps);

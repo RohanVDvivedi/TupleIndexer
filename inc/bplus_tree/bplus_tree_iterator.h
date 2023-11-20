@@ -28,7 +28,7 @@ struct bplus_tree_iterator
 
 	const bplus_tree_tuple_defs* bpttd_p;
 
-	const page_access_methods* dam_p;
+	const page_access_methods* pam_p;
 };
 
 #define LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE UINT32_MAX
@@ -39,7 +39,7 @@ struct bplus_tree_iterator
 // curr_tuple_index if LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE then the iterator will point to the last
 // after the successfull call to this function (return value != NULL), the lps is solely owned by the bplus_tree_iterator
 // and lps gets deinitialized by the bplus_tree_iterator only after delete_bplus_tree_iterator() call
-bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p);
+bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p);
 
 #include<bplus_tree_iterator.h>
 

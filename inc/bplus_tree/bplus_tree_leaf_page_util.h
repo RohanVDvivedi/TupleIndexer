@@ -30,7 +30,7 @@ int must_split_for_insert_bplus_tree_leaf_page(const persistent_page* page1, con
 // the failure may also result from following reason:
 // failure to allocate a new page OR failure to get reference to the next page of the page1
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
-int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert);
+int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert);
 
 // check if 2 bplus_tree leaf pages can be merged
 int can_merge_bplus_tree_leaf_pages(const persistent_page* page1, const persistent_page* page2, const bplus_tree_tuple_defs* bpttd_p);
@@ -41,6 +41,6 @@ int can_merge_bplus_tree_leaf_pages(const persistent_page* page1, const persiste
 // it fails with a 0 if the pages can not be merged (this may be due to their used spaces greater than the allotted size on the page1)
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 // if this function returns a 1, then it is left on to the calling function to delete the corresponding parent entry of the page that is next to page1
-int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 #endif

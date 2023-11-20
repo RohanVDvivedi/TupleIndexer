@@ -198,7 +198,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 	return res;
 }
 
-int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
+int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
 {
 	// check if a page must split to accomodate the new tuple
 	if(!must_split_for_insert_bplus_tree_leaf_page(page1, tuple_to_insert, bpttd_p))
@@ -238,12 +238,12 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	//uint32_t tuples_leave_page1 = page1_tuple_count - tuples_stay_in_page1;
 
 	// lock the next page of page1, we call it page3
-	persistent_page page3 = get_NULL_persistent_page(dam_p);
+	persistent_page page3 = get_NULL_persistent_page(pam_p);
 	{
 		uint64_t page3_id = get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p);
 		if(page3_id != bpttd_p->pas_p->NULL_PAGE_ID)
 		{
-			page3 = acquire_persistent_page_with_lock(dam_p, transaction_id, page3_id, WRITE_LOCK, abort_error);
+			page3 = acquire_persistent_page_with_lock(pam_p, transaction_id, page3_id, WRITE_LOCK, abort_error);
 
 			// if we could not acquire lock on page3, then fail split_insert
 			if(*abort_error)
@@ -252,14 +252,14 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	}
 
 	// allocate a new page, to place in between page1 and page3, it will accomodate half of the tuples of page1
-	persistent_page page2 = get_new_persistent_page_with_write_lock(dam_p, transaction_id, abort_error);
+	persistent_page page2 = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
 
 	// return with a split failure if the page2 could not be allocated
 	if(*abort_error)
 	{
 		// on failure, do not forget to release writer lock on page3, if you had it
-		if(!is_persistent_page_NULL(&page3, dam_p))
-			release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
+		if(!is_persistent_page_NULL(&page3, pam_p))
+			release_lock_on_persistent_page(pam_p, transaction_id, &page3, NONE_OPTION, abort_error);
 		return 0;
 	}
 
@@ -268,9 +268,9 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	if(*abort_error)
 	{
 		// on failure, do not forget to release writer lock on page3 (if you had it) and page2
-		if(!is_persistent_page_NULL(&page3, dam_p))
-			release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		if(!is_persistent_page_NULL(&page3, pam_p))
+			release_lock_on_persistent_page(pam_p, transaction_id, &page3, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
 	}
 
@@ -298,16 +298,16 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 			set_bplus_tree_leaf_page_header(&page3, &page3_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
 			if(*abort_error) // if aborted here, release locks on page2 and page3 and return failure
 			{
-				release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
-				release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &page3, NONE_OPTION, abort_error);
 				return 0;
 			}
 
 			// release writer lock on page3
-			release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page3, NONE_OPTION, abort_error);
 			if(*abort_error) // on abort we need to only release lock on page2
 			{
-				release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 				return 0;
 			}
 		}
@@ -325,13 +325,13 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 		set_bplus_tree_leaf_page_header(page1, &page1_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error) // if aborted here, release lock on page2 and return failure
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 		set_bplus_tree_leaf_page_header(&page2, &page2_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error) // if aborted here, release lock on page2 and return failure
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
@@ -352,7 +352,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 
 	if(*abort_error) // if aborted here, release lock on page2 and return failure
 	{
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
 	}
 
@@ -368,7 +368,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 
 	if(*abort_error) // if aborted here, release lock on page2 and return failure
 	{
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
 	}
 
@@ -388,7 +388,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 
 		if(*abort_error) // if aborted here, release lock on page2 and return failure
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
@@ -407,7 +407,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 
 		if(*abort_error) // if aborted here, release lock on page2 and return failure
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
@@ -419,7 +419,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	build_suffix_truncated_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
 
 	// release lock on the page2
-	release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+	release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 	if(*abort_error) // no locks, required to be released here
 		return 0;
 
@@ -440,17 +440,17 @@ int can_merge_bplus_tree_leaf_pages(const persistent_page* page1, const persiste
 	return 1;
 }
 
-int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// get the next adjacent page of this page
-	persistent_page page2 = get_NULL_persistent_page(dam_p);
+	persistent_page page2 = get_NULL_persistent_page(pam_p);
 	{
 		uint64_t page2_id = get_next_page_id_of_bplus_tree_leaf_page(page1, bpttd_p);
 
 		if(page2_id != bpttd_p->pas_p->NULL_PAGE_ID)
 		{
 			// acquire lock on the next page, i.e. page2
-			page2 = acquire_persistent_page_with_lock(dam_p, transaction_id, page2_id, WRITE_LOCK, abort_error);
+			page2 = acquire_persistent_page_with_lock(pam_p, transaction_id, page2_id, WRITE_LOCK, abort_error);
 
 			// failed acquiring lock on this page, return 0 (failure)
 			if(*abort_error)
@@ -463,7 +463,7 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 	// check if a merge can be performed, and on failure release writer lock on page2, that we just acquired
 	if(!can_merge_bplus_tree_leaf_pages(page1, &page2, bpttd_p))
 	{
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		if(*abort_error)
 			return 0;
 		return 0;
@@ -485,13 +485,13 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 		if(page3_id != bpttd_p->pas_p->NULL_PAGE_ID)
 		{
 			// acquire lock on the page3
-			persistent_page page3 = acquire_persistent_page_with_lock(dam_p, transaction_id, page3_id, WRITE_LOCK, abort_error);
+			persistent_page page3 = acquire_persistent_page_with_lock(pam_p, transaction_id, page3_id, WRITE_LOCK, abort_error);
 
 			// could not acquire lock on page3, so can not perform a merge
 			if(*abort_error)
 			{
 				// on error, we release writer lock on page2
-				release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 				return 0;
 			}
 
@@ -507,16 +507,16 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 
 			if(*abort_error) // if aborted here, release lock on page2 and page3
 			{
-				release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
-				release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &page3, NONE_OPTION, abort_error);
 				return 0;
 			}
 
 			// release lock on page3
-			release_lock_on_persistent_page(dam_p, transaction_id, &page3, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page3, NONE_OPTION, abort_error);
 			if(*abort_error) // only page2 needs to be unlocked here
 			{
-				release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 				return 0;
 			}
 		}
@@ -536,13 +536,13 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 		set_bplus_tree_leaf_page_header(page1, &page1_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 		set_bplus_tree_leaf_page_header(&page2, &page2_hdr, bpttd_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
@@ -565,16 +565,16 @@ int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_d
 
 		if(*abort_error)
 		{
-			release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 			return 0;
 		}
 	}
 
 	// free page2 and release its lock
-	release_lock_on_persistent_page(dam_p, transaction_id, &page2, FREE_PAGE, abort_error);
+	release_lock_on_persistent_page(pam_p, transaction_id, &page2, FREE_PAGE, abort_error);
 	if(*abort_error) // release lock, the free_page call failed, so release lock with NONE_OPTION
 	{
-		release_lock_on_persistent_page(dam_p, transaction_id, &page2, NONE_OPTION, abort_error);
+		release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
 		return 0;
 	}
 
