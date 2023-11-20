@@ -14,12 +14,9 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t sy
 	if(page_id_width < 8 && NULL_PAGE_ID >= ( ((uint64_t)(1)) << (page_id_width * 8) ) )
 		return 0;
 
-	// initialize struct attributes
-	pttd_p->NULL_PAGE_ID = NULL_PAGE_ID;
-	pttd_p->page_id_width = page_id_width;
-	pttd_p->page_size = page_size;
-
-	pttd_p->system_header_size = system_header_size;
+	// initialize page_access_specs struct attributes
+	if(!init_page_access_specs(&(bpttd_p->pas), page_id_width, page_size, NULL_PAGE_ID, system_header_size))
+		return 0;
 
 	// this can only be done after setting the above attributes
 	// there must be room for atleast some bytes after the page_table_page_header

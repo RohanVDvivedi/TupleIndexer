@@ -19,12 +19,12 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 	if(!init_page_access_specs(&(bpttd_p->pas), page_id_width, page_size, NULL_PAGE_ID, system_header_size))
 		return 0;
 
-	bpttd_p->key_element_count = key_element_count;
-
 	// this can only be called after setting the above attributes
 	// fail if there is no room after accomodating header on the page
 	if((!can_page_header_fit_on_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), page_size)) || (!can_page_header_fit_on_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), page_size)))
 		return 0;
+
+	bpttd_p->key_element_count = key_element_count;
 
 	bpttd_p->key_element_ids = malloc(sizeof(uint32_t) * bpttd_p->key_element_count);
 	memcpy(bpttd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * bpttd_p->key_element_count);
