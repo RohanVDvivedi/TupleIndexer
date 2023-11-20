@@ -1,5 +1,14 @@
 ** PICKED TASKS
 
+ * make page_access_specs into data_store_specs
+ * make all *_tuple_defs and dam point to a global data_store_specs
+ * all of them take in data_store_specs as input in their constructor
+ * dam constructor will be allowed to modify dss (as in-out parameter), all the params are taken as suggestions
+ * while the *_tuple_defs take dss are a unwritten rule, that can not be modified
+ * data_store_specs only provides 1 function to check its valid-ness
+ * only dam stores data_store_specs, and all *_tuple_defs point to it
+ * *_tuple_defs are constructed from the dss of the dam
+
  * implement page_table_range struct, that has first_bucket_id and last_bucket_id
  * implement page_table_page_util funtion to check if the page is empty -> tombstone_count == tuple_count
  * get designated range of the entry at ith slot
