@@ -33,7 +33,7 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		}
 
 		// attempt to lock the next_leaf_page, if locked successfully, push it onto the stack
-		if(next_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
+		if(next_page_id != bpi_p->bpttd_p->pas.NULL_PAGE_ID)
 		{
 			persistent_page next_leaf_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, next_page_id, bpi_p->leaf_lock_type, abort_error);
 			if(*abort_error)
@@ -76,7 +76,7 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			// else lock the child_page on it's child_index + 1 entry and push this child_page onto the lps stack
 			
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->index_def->size_def));
 
 			// increment its child_index
 			curr_locked_page->child_index++;
@@ -140,7 +140,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		}
 
 		// attempt to lock the prev_leaf_page, if locked successfully, push it onto the stack
-		if(prev_page_id != bpi_p->bpttd_p->NULL_PAGE_ID)
+		if(prev_page_id != bpi_p->bpttd_p->pas.NULL_PAGE_ID)
 		{
 			persistent_page prev_leaf_page = acquire_persistent_page_with_lock(bpi_p->dam_p, transaction_id, prev_page_id, bpi_p->leaf_lock_type, abort_error);
 			if(*abort_error)
@@ -183,7 +183,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			// else lock the child_page on it's child_index - 1 entry and push this child_page onto the lps stack
 
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->index_def->size_def));
 
 			// decrement its child_index
 			curr_locked_page->child_index--;
@@ -199,7 +199,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 				// push a locked_page_info for child_page, making its last child + 1,
 				locked_page_info child_locked_page_info = INIT_LOCKED_PAGE_INFO(child_page);
 				if(!is_bplus_tree_leaf_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p))
-					child_locked_page_info.child_index = get_tuple_count_on_persistent_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->index_def->size_def)); // this is so that when this becomes initially the top for this loop, it will get decremented to its last_child_index
+					child_locked_page_info.child_index = get_tuple_count_on_persistent_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->index_def->size_def)); // this is so that when this becomes initially the top for this loop, it will get decremented to its last_child_index
 				push_to_locked_pages_stack(&(bpi_p->lps), &child_locked_page_info);
 			}
 			else // pop release lock on the curr_locked_page, and pop it
@@ -255,7 +255,7 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
 	if(bpi_p->curr_tuple_index == LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE)
 	{
-		uint32_t tuple_count_on_curr_leaf_page = get_tuple_count_on_persistent_page(curr_leaf_page, bpttd_p->page_size, &(bpttd_p->record_def->size_def));
+		uint32_t tuple_count_on_curr_leaf_page = get_tuple_count_on_persistent_page(curr_leaf_page, bpttd_p->pas.page_size, &(bpttd_p->record_def->size_def));
 		if(tuple_count_on_curr_leaf_page == 0)
 			bpi_p->curr_tuple_index = 0;
 		else
@@ -288,7 +288,7 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 			return 0;
 
 		// increment the current tuple count, if the next tuple we point to will be on this page
-		if(bpi_p->curr_tuple_index + 1 < get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
+		if(bpi_p->curr_tuple_index + 1 < get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 		{
 			bpi_p->curr_tuple_index++;
 			return 1;
@@ -310,7 +310,7 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 		if(curr_leaf_page == NULL)
 			return 0;
 
-		uint32_t curr_leaf_page_tuple_count = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
+		uint32_t curr_leaf_page_tuple_count = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
 		// a valid leaf page has atleast a tuple
 		if(curr_leaf_page_tuple_count > 0)
@@ -326,9 +326,9 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
-	if(curr_leaf_page == NULL || bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
+	if(curr_leaf_page == NULL || bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 		return NULL;
-	return get_nth_tuple_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def), bpi_p->curr_tuple_index);
+	return get_nth_tuple_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->record_def->size_def), bpi_p->curr_tuple_index);
 }
 
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
@@ -363,7 +363,7 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 		if(curr_leaf_page == NULL)
 			return 0;
 
-		uint32_t curr_leaf_page_tuple_count = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
+		uint32_t curr_leaf_page_tuple_count = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
 		// a valid page has atleast a tuple
 		if(curr_leaf_page_tuple_count > 0)
@@ -404,9 +404,9 @@ int update_non_key_value_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bp
 	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
 
 	// if the iterator is at the end OR is not pointing to a valid tuple, then fail
-	if(curr_leaf_page == NULL || bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
+	if(curr_leaf_page == NULL || bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas.page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 		return 0;
 
 	// perform the inplace update
-	return set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, curr_leaf_page, bpi_p->bpttd_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index, element_index, element_value, abort_error);
+	return set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, curr_leaf_page, bpi_p->bpttd_p->pas.page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index, element_index, element_value, abort_error);
 }
