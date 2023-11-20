@@ -8,6 +8,7 @@
  * data_store_specs only provides 1 function to check its valid-ness
  * only dam stores data_store_specs, and all *_tuple_defs point to it
  * *_tuple_defs are constructed from the dss of the dam
+ * make dam into pam (page_access_methods)
 
  * implement page_table_range struct, that has first_bucket_id and last_bucket_id
  * implement page_table_page_util funtion to check if the page is empty -> tombstone_count == tuple_count
