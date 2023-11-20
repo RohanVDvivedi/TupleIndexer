@@ -2,7 +2,7 @@
 
 #include<page_layout_unaltered.h>
 
-int is_valid_page_access_specs(page_access_specs* pas_p)
+int is_valid_page_access_specs(const page_access_specs* pas_p)
 {
 	// bytes required to store page id, must be between 1 and 8 both inclusive
 	if(pas_p->page_id_width == 0 || pas_p->page_id_width > 8)

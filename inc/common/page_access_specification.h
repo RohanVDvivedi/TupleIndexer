@@ -27,6 +27,6 @@ struct page_access_specs
 };
 
 // if this function returns 0, that implies that the pas's passed params are invalid
-int is_valid_page_access_specs(page_access_specs* pas_p);
+int is_valid_page_access_specs(const page_access_specs* pas_p);
 
 #endif

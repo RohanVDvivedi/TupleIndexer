@@ -5,7 +5,7 @@
 
 int is_bplus_tree_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
 {
-	return get_common_page_header(ppage, &(bpttd_p->pas)).type == BPLUS_TREE_LEAF_PAGE;
+	return get_common_page_header(ppage, bpttd_p->pas_p).type == BPLUS_TREE_LEAF_PAGE;
 }
 
 uint32_t get_level_of_bplus_tree_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)

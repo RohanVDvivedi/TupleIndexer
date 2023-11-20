@@ -19,11 +19,11 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 		return 0;
 
 	// initialize page_access_specs fo the bpttd
-	bpttd_p->pas_p->p = pas_p;
+	bpttd_p->pas_p = pas_p;
 
 	// this can only be called after setting the pas_p attribute of bpttd
 	// fail if there is no room after accomodating header on the page
-	if((!can_page_header_fit_on_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), page_size)) || (!can_page_header_fit_on_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), page_size)))
+	if((!can_page_header_fit_on_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size)) || (!can_page_header_fit_on_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size)))
 		return 0;
 
 	bpttd_p->key_element_count = key_element_count;
@@ -40,7 +40,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	// initialize index_def
 
 	// allocate memory for index def and initialize it
-	bpttd_p->index_def = get_new_tuple_def("temp_index_def", key_element_count + 1, page_size);
+	bpttd_p->index_def = get_new_tuple_def("temp_index_def", key_element_count + 1, bpttd_p->pas_p->page_size);
 
 	// result of inserting element_definitions to index def
 	int res = 1;
@@ -51,7 +51,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	
 	// the unsigned int page id that the index entry will point to
 	// this element must be a NON NULL, with default_value being bpttd_p->NULL_PAGE_ID
-	res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, page_id_width, 1, &((user_value){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}));
+	res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, bpttd_p->pas_p->page_id_width, 1, &((user_value){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}));
 
 	// if any of the index element_definitions could not be inserted
 	if(!res)
@@ -66,7 +66,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	// initialize key def
 
 	// allocate memory for key_def and initialize it
-	bpttd_p->key_def = get_new_tuple_def("temp_key_def", key_element_count, page_size);
+	bpttd_p->key_def = get_new_tuple_def("temp_key_def", key_element_count, bpttd_p->pas_p->page_size);
 
 	// result of inserting element_definitions to key_def
 	res = 1;

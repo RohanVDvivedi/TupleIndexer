@@ -20,20 +20,20 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_acc
 
 	// failure to acquire a new page
 	if(*abort_error)
-		return bpttd_p->pas.NULL_PAGE_ID;
+		return bpttd_p->pas_p->NULL_PAGE_ID;
 
 	// if init_page fails
 	init_bplus_tree_leaf_page(&root_page, bpttd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		release_lock_on_persistent_page(dam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
-		return bpttd_p->pas.NULL_PAGE_ID;
+		return bpttd_p->pas_p->NULL_PAGE_ID;
 	}
 
 	uint64_t res = root_page.page_id;
 	release_lock_on_persistent_page(dam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
 	if(*abort_error)
-		return bpttd_p->pas.NULL_PAGE_ID;
+		return bpttd_p->pas_p->NULL_PAGE_ID;
 
 	return res;
 }
@@ -82,7 +82,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 			// without acquiring lock on this pages
 
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// free the child leaf page id at index -1
 			uint64_t child_leaf_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), -1, bpttd_p);
@@ -109,7 +109,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 		else
 		{
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// if child index is -1 or lesser than tuple_count
 			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
@@ -193,7 +193,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 		else
 		{
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 
 			// if child index is -1 or lesser than tuple_count
 			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)

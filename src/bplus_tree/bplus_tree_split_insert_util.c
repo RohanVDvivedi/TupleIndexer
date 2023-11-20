@@ -29,7 +29,7 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 
 		// if you reach here, then curr_locked_page is not a leaf page
 		// if curr_locked_page will not require a split, then release locks on all the parent pages of curr_locked_page
-		if(!may_require_split_for_insert_for_bplus_tree(&(curr_locked_page->ppage), bpttd_p->pas.page_size, bpttd_p->index_def))
+		if(!may_require_split_for_insert_for_bplus_tree(&(curr_locked_page->ppage), bpttd_p->pas_p->page_size, bpttd_p->index_def))
 		{
 			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_locked_page)
 			{
@@ -104,7 +104,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 		{
 			// check if the record already exists in this leaf page
 			int found = (NO_TUPLE_FOUND != find_last_in_sorted_packed_page(
-												&(curr_locked_page.ppage), bpttd_p->pas.page_size, 
+												&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 
 												bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 												record, bpttd_p->record_def, bpttd_p->key_element_ids
 											));
@@ -118,7 +118,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 			// if it does not already exist then try to insert it
 			uint32_t insertion_point;
 			inserted = insert_to_sorted_packed_page(
-									&(curr_locked_page.ppage), bpttd_p->pas.page_size, 
+									&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									record, 
 									&insertion_point,
@@ -150,7 +150,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 				}
 
 				// clone root page contents into the new root_least_keys_child
-				clone_persistent_page(pmm_p, transaction_id, &(root_least_keys_child), bpttd_p->pas.page_size, &(bpttd_p->record_def->size_def), &(curr_locked_page.ppage), abort_error);
+				clone_persistent_page(pmm_p, transaction_id, &(root_least_keys_child), bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), &(curr_locked_page.ppage), abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page(dam_p, transaction_id, &root_least_keys_child, NONE_OPTION, abort_error);
@@ -209,7 +209,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 
 			uint32_t insertion_point = curr_locked_page.child_index + 1;
 			parent_tuple_inserted = insert_at_in_sorted_packed_page(
-									&(curr_locked_page.ppage), bpttd_p->pas.page_size, 
+									&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									parent_insert, 
 									insertion_point,
@@ -241,7 +241,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 				}
 
 				// clone root page contents into the new root_least_keys_child
-				clone_persistent_page(pmm_p, transaction_id, &root_least_keys_child, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def), &(curr_locked_page.ppage), abort_error);
+				clone_persistent_page(pmm_p, transaction_id, &root_least_keys_child, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def), &(curr_locked_page.ppage), abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page(dam_p, transaction_id, &root_least_keys_child, NONE_OPTION, abort_error);
