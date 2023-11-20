@@ -609,15 +609,17 @@ static int free_page(void* context, const void* transaction_id, uint64_t page_id
 	return is_freed;
 }
 
-data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, uint8_t page_id_width)
+data_access_methods* get_new_unWALed_in_memory_data_store(const page_access_specs* pas_suggested)
 {
-	// check for invalud page_width
-	if(page_id_width == 0 || page_id_width > sizeof(uint64_t))
-		return NULL;
+	if(!is_valid_page_access_specs(pas_suggested))
+		return 0;
 
 	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
 	if(dam_p == NULL)
 		return NULL;
+
+	dam_p->pas = (*pas_suggested);
+	dam_p->pas.NULL_PAGE_ID = UINT64_MAX >> ((sizeof(uint64_t) - dam_p->pas.page_id_width) * CHAR_BIT);
 
 	dam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
 	dam_p->acquire_page_with_reader_lock = acquire_page_with_reader_lock;
@@ -627,11 +629,6 @@ data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, ui
 	dam_p->release_reader_lock_on_page = release_reader_lock_on_page;
 	dam_p->release_writer_lock_on_page = release_writer_lock_on_page;
 	dam_p->free_page = free_page;
-
-	dam_p->page_size = page_size;
-	dam_p->page_id_width = page_id_width;
-
-	dam_p->NULL_PAGE_ID = UINT64_MAX >> ((sizeof(uint64_t) - dam_p->page_id_width) * CHAR_BIT);
 	
 	dam_p->context = malloc(sizeof(memory_store_context));
 	if(dam_p->context == NULL)
@@ -640,8 +637,8 @@ data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, ui
 		return NULL;
 	}
 	
-	((memory_store_context*)(dam_p->context))->page_size = page_size;
-	((memory_store_context*)(dam_p->context))->MAX_PAGE_COUNT = dam_p->NULL_PAGE_ID;
+	((memory_store_context*)(dam_p->context))->page_size = dam_p->pas.page_size;
+	((memory_store_context*)(dam_p->context))->MAX_PAGE_COUNT = dam_p->pas.NULL_PAGE_ID;
 
 	// on success return the data access methods
 

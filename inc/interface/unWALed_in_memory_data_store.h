@@ -1,6 +1,7 @@
 #ifndef IN_MEMORY_DATA_STORE_H
 #define IN_MEMORY_DATA_STORE_H
 
+#include<page_access_specification.h>
 #include<data_access_methods.h>
 
 /*
@@ -10,7 +11,7 @@
 **	it will not WAL log your page allocations and deallocations, but it is concurrently accessible
 */
 
-data_access_methods* get_new_unWALed_in_memory_data_store(uint32_t page_size, uint8_t page_id_width);
+data_access_methods* get_new_unWALed_in_memory_data_store(const page_access_specs* pas_suggested);
 
 int close_and_destroy_unWALed_in_memory_data_store(data_access_methods* dam_p);
 
