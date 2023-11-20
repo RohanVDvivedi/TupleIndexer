@@ -46,7 +46,14 @@ page_table_page_header get_page_table_page_header(const persistent_page* ppage, 
 	};
 }
 
-void serialize_page_table_page_header(void* hdr_serial, const page_table_page_header* ptph_p, const page_table_tuple_defs* pttd_p);
+void serialize_page_table_page_header(void* hdr_serial, const page_table_page_header* ptph_p, const page_table_tuple_defs* pttd_p)
+{
+	serialize_common_page_header(hdr_serial, &(ptph_p->parent), &(pttd_p->pas));
+
+	void* page_table_page_header_serial = hdr_serial + get_offset_to_page_table_page_header_locals(pttd_p);
+	serialize_uint32(page_table_page_header_serial, BYTES_FOR_PAGE_LEVEL, ptph_p->level);
+	serialize_uint64(page_table_page_header_serial + BYTES_FOR_PAGE_LEVEL, pttd_p->pas.page_id_width, ptph_p->first_bucket_id);
+}
 
 void set_page_table_page_header(persistent_page* ppage, const page_table_page_header* ptph_p, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
