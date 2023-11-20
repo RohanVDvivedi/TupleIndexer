@@ -1,6 +1,5 @@
 ** PICKED TASKS
 
- * make page_access_specs into data_store_specs
  * make all *_tuple_defs and dam point to a global data_store_specs
  * all of them take in data_store_specs as input in their constructor
  * dam constructor will be allowed to modify dss (as in-out parameter), all the params are taken as suggestions
