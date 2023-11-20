@@ -8,7 +8,7 @@
 
 #include<bplus_tree.h>
 #include<bplus_tree_tuple_definitions.h>
-#include<data_access_methods.h>
+#include<page_access_methods.h>
 #include<unWALed_in_memory_data_store.h>
 #include<unWALed_page_modification_methods.h>
 
@@ -41,7 +41,7 @@
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC,ASC}
 #endif
 
-// attributes of the page_access_specs suggestions for creating data_access_methods
+// attributes of the page_access_specs suggestions for creating page_access_methods
 #define PAGE_ID_WIDTH        3
 #define PAGE_SIZE          256
 #define SYSTEM_HEADER_SIZE   3
@@ -153,7 +153,7 @@ struct result
 	uint32_t records_processed;
 };
 
-result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -188,7 +188,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, dam_p, pmm_p, transaction_id, &abort_error);
+		res.operations_succeeded += insert_in_bplus_tree(root_page_id, record_tuple, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -199,7 +199,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		if(print_tree_after_each)
 		{
 			printf("---------------------------------------------------------------------------------------------------------\n");
-			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p, transaction_id, &abort_error);
+			print_bplus_tree(root_page_id, 0, bpttd_p, pam_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -215,7 +215,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	// print bplus tree
 	if(print_tree_on_completion)
 	{
-		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p, transaction_id, &abort_error);
+		print_bplus_tree(root_page_id, 1, bpttd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -290,7 +290,7 @@ update_inspector ri = {
 	.update_inspect = reader_update_inspect,
 };
 
-result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -325,7 +325,7 @@ result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* f
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
 		// insert the record_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += inspected_update_in_bplus_tree(root_page_id, record_tuple, ui, bpttd_p, dam_p, pmm_p, transaction_id, &abort_error);
+		res.operations_succeeded += inspected_update_in_bplus_tree(root_page_id, record_tuple, ui, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -336,7 +336,7 @@ result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* f
 		if(print_tree_after_each)
 		{
 			printf("---------------------------------------------------------------------------------------------------------\n");
-			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p, transaction_id, &abort_error);
+			print_bplus_tree(root_page_id, 0, bpttd_p, pam_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -352,7 +352,7 @@ result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* f
 	// print bplus tree
 	if(print_tree_on_completion)
 	{
-		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p, transaction_id, &abort_error);
+		print_bplus_tree(root_page_id, 1, bpttd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -366,7 +366,7 @@ result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* f
 	return res;
 }
 
-result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_tree_after_each, int print_tree_on_completion, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -401,7 +401,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
 
 		// delete the data corresponding to key_tuple in the bplus_tree rooted at root_page_id
-		res.operations_succeeded += delete_from_bplus_tree(root_page_id, key_tuple, bpttd_p, dam_p, pmm_p, transaction_id, &abort_error);
+		res.operations_succeeded += delete_from_bplus_tree(root_page_id, key_tuple, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -412,7 +412,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		if(print_tree_after_each)
 		{
 			printf("---------------------------------------------------------------------------------------------------------\n");
-			print_bplus_tree(root_page_id, 0, bpttd_p, dam_p, transaction_id, &abort_error);
+			print_bplus_tree(root_page_id, 0, bpttd_p, pam_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -428,7 +428,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	// print bplus tree
 	if(print_tree_on_completion)
 	{
-		print_bplus_tree(root_page_id, 1, bpttd_p, dam_p, transaction_id, &abort_error);
+		print_bplus_tree(root_page_id, 1, bpttd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -442,7 +442,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
-result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, uint32_t max_scan_length, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, uint32_t max_scan_length, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -451,7 +451,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 
 	printf("printing the first 4 tuples\n");
 
-	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, dam_p, transaction_id, &abort_error);
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, GREATER_THAN, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -483,7 +483,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 
 	printf("printing the last 4 tuples\n");
 
-	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, dam_p, transaction_id, &abort_error);
+	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, LESSER_THAN, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -560,7 +560,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			}
 		}
 
-		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, dam_p, transaction_id, &abort_error);
+		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, DEFAULT_FIND_LEAF_LOCK_TYPE, DEFAULT_FIND_IS_STACKED, bpttd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -621,9 +621,9 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	return res;
 }
 
-void update_UPDATE_column_for_all_tuples_with_iterator(uint64_t root_page_id, char first_byte, int is_forward, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+void update_UPDATE_column_for_all_tuples_with_iterator(uint64_t root_page_id, char first_byte, int is_forward, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, (is_forward ? GREATER_THAN : LESSER_THAN), WRITE_LOCK, is_stacked, bpttd_p, dam_p, transaction_id, &abort_error);
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, (is_forward ? GREATER_THAN : LESSER_THAN), WRITE_LOCK, is_stacked, bpttd_p, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -669,20 +669,20 @@ struct update_UPDATE_column_params
 	int is_forward;
 	int is_stacked;
 	const bplus_tree_tuple_defs* bpttd_p;
-	const data_access_methods* dam_p;
+	const page_access_methods* pam_p;
 	const page_modification_methods* pmm_p;
 };
 
 void* update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER(update_UPDATE_column_params* p)
 {
-	update_UPDATE_column_for_all_tuples_with_iterator(p->root_page_id, p->first_byte, p->is_forward, p->is_stacked, p->bpttd_p, p->dam_p, p->pmm_p);
+	update_UPDATE_column_for_all_tuples_with_iterator(p->root_page_id, p->first_byte, p->is_forward, p->is_stacked, p->bpttd_p, p->pam_p, p->pmm_p);
 	return NULL;
 }
 
-void run_concurrent_writable_scan_forward_and_backward(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p)
+void run_concurrent_writable_scan_forward_and_backward(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	update_UPDATE_column_params p1 = {root_page_id, 'F', 1, 0, bpttd_p, dam_p, pmm_p};
-	update_UPDATE_column_params p2 = {root_page_id, 'B', 0, 1, bpttd_p, dam_p, pmm_p};
+	update_UPDATE_column_params p1 = {root_page_id, 'F', 1, 0, bpttd_p, pam_p, pmm_p};
+	update_UPDATE_column_params p2 = {root_page_id, 'B', 0, 1, bpttd_p, pam_p, pmm_p};
 
 	executor* thread_pool = new_executor(FIXED_THREAD_COUNT_EXECUTOR, 2, 2, 0, NULL, NULL, NULL);
 
@@ -693,7 +693,7 @@ void run_concurrent_writable_scan_forward_and_backward(uint64_t root_page_id, co
 	wait_for_all_executor_workers_to_complete(thread_pool);
 	delete_executor(thread_pool);
 
-	print_bplus_tree(root_page_id, 1, bpttd_p, dam_p, transaction_id, &abort_error);
+	print_bplus_tree(root_page_id, 1, bpttd_p, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -706,7 +706,7 @@ int main()
 	/* SETUP STARTED */
 
 	// construct an in-memory data store
-	data_access_methods* dam_p = get_new_unWALed_in_memory_data_store(&((page_access_specs){.page_id_width = PAGE_ID_WIDTH, .page_size = PAGE_SIZE, .system_header_size = SYSTEM_HEADER_SIZE}));
+	page_access_methods* pam_p = get_new_unWALed_in_memory_data_store(&((page_access_specs){.page_id_width = PAGE_ID_WIDTH, .page_size = PAGE_SIZE, .system_header_size = SYSTEM_HEADER_SIZE}));
 
 	// construct unWALed page_modification_methods
 	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
@@ -716,13 +716,13 @@ int main()
 
 	// construct tuple definitions for bplus_tree
 	bplus_tree_tuple_defs bpttd;
-	init_bplus_tree_tuple_definitions(&bpttd, &(dam_p->pas), record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT);
+	init_bplus_tree_tuple_definitions(&bpttd, &(pam_p->pas), record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT);
 
 	// print the generated bplus tree tuple defs
 	print_bplus_tree_tuple_definitions(&bpttd);
 
 	// create a bplus tree and get its root
-	uint64_t root_page_id = get_new_bplus_tree(&bpttd, dam_p, pmm_p, transaction_id, &abort_error);
+	uint64_t root_page_id = get_new_bplus_tree(&bpttd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -741,7 +741,7 @@ int main()
 	printf("performing finds in an empty bplus_tree\n\n");
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 10, 5, 8, 16, 1, &bpttd, dam_p);
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 10, 5, 8, 16, 1, &bpttd, pam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -752,7 +752,7 @@ int main()
 	// insert every 4th tuple from TEST_DATA_FILE
 	/* INSERTIONS STARTED */
 
-	res = insert_from_file(root_page_id, TEST_DATA_FILE, 0, 3, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = insert_from_file(root_page_id, TEST_DATA_FILE, 0, 3, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -763,7 +763,7 @@ int main()
 	// again try insert all tuples now 64/256 tuples must fail from TEST_DATA_RANDOM_FILE
 	/* INSERTIONS STARTED */
 
-	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -773,7 +773,7 @@ int main()
 	// perfrom find 12 times on tuples from TEST_DATA_FILE on all tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 64, 1, &bpttd, dam_p);
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 64, 1, &bpttd, pam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -783,7 +783,7 @@ int main()
 	// delete some random 30 tuples from TEST_DATA_RANDOM_FILE -> 30/30
 	/* DELETIONS STARTED */
 
-	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 30, 0, 0, &bpttd, dam_p, pmm_p);
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 30, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("deletions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -794,7 +794,7 @@ int main()
 	// perfrom find on remaining tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 9, 64, 1, &bpttd, dam_p);
+	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 9, 64, 1, &bpttd, pam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -806,7 +806,7 @@ int main()
 	// delete some random 30 tuples from TEST_DATA_RANDOM_FILE -> lesser than 32 success
 	/* DELETIONS STARTED */
 
-	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("deletions to bplus tree completed(%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -818,7 +818,7 @@ int main()
 	// perfrom find on remaining tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 9, 64, 1, &bpttd, dam_p);
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 9, 64, 1, &bpttd, pam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -831,11 +831,11 @@ int main()
 //#define TEST_INSERT_USING_UPDATE
 
 #ifdef TEST_INSERT_USING_UPDATE
-	res = update_in_file(root_page_id, &ii, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ii, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("updates (inserts) to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 #else
-	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = insert_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 #endif
@@ -844,31 +844,31 @@ int main()
 
 	/* UPDATES */
 
-	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 1, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 1, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 3, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 3, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 7, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 15, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 15, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 31, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ui, TEST_DATA_RANDOM_FILE, 0, 31, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_in_file(root_page_id, &di, TEST_DATA_FILE, 179, 0, 1, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &di, TEST_DATA_FILE, 179, 0, 1, 0, 1, &bpttd, pam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -878,13 +878,13 @@ int main()
 	// running this test is not deterministic, hence does not produce same output on any 2 runs even with the same params
 //#define CONCURRENT_WRITABLE_ITERATOR_SCAN
 #ifdef CONCURRENT_WRITABLE_ITERATOR_SCAN
-	run_concurrent_writable_scan_forward_and_backward(root_page_id, &bpttd, dam_p, pmm_p);
+	run_concurrent_writable_scan_forward_and_backward(root_page_id, &bpttd, pam_p, pmm_p);
 #endif
 
 
 
 	// read using the update functionality
-	res = update_in_file(root_page_id, &ri, TEST_DATA_FILE, 4, 4, 256, 0, 0, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &ri, TEST_DATA_FILE, 4, 4, 256, 0, 0, &bpttd, pam_p, pmm_p);
 
 	printf("reads using updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -894,7 +894,7 @@ int main()
 #define TEST_DELETE_USING_UPDATE
 
 #ifdef TEST_DELETE_USING_UPDATE
-	res = update_in_file(root_page_id, &di, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = update_in_file(root_page_id, &di, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, pam_p, pmm_p);
 
 	printf("updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 #endif
@@ -902,7 +902,7 @@ int main()
 	// delete all
 	/* DELETIONS STARTED */
 
-	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, dam_p, pmm_p);
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, 1, &bpttd, pam_p, pmm_p);
 
 	printf("deletions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -913,7 +913,7 @@ int main()
 	/* CLEANUP */
 
 	// destroy bplus tree
-	destroy_bplus_tree(root_page_id, &bpttd, dam_p, transaction_id, &abort_error);
+	destroy_bplus_tree(root_page_id, &bpttd, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -921,7 +921,7 @@ int main()
 	}
 
 	// close the in-memory data store
-	close_and_destroy_unWALed_in_memory_data_store(dam_p);
+	close_and_destroy_unWALed_in_memory_data_store(pam_p);
 
 	// destroy bplus_tree_tuple_definitions
 	deinit_bplus_tree_tuple_definitions(&bpttd);
