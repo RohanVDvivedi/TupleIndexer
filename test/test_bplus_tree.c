@@ -41,11 +41,10 @@
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC,ASC}
 #endif
 
-#define DEFAULT_COMMON_PAGE_HEADER_SIZE 3
-
-#define PAGE_SIZE 256
-
-#define PAGE_ID_WIDTH 3
+// attributes of the page_access_specs suggestions for creating data_access_methods
+#define PAGE_ID_WIDTH        3
+#define PAGE_SIZE          256
+#define SYSTEM_HEADER_SIZE   3
 
 #define DEFAULT_FIND_LEAF_LOCK_TYPE READ_LOCK
 #define DEFAULT_FIND_IS_STACKED 0
@@ -707,7 +706,7 @@ int main()
 	/* SETUP STARTED */
 
 	// construct an in-memory data store
-	data_access_methods* dam_p = get_new_unWALed_in_memory_data_store(PAGE_SIZE, PAGE_ID_WIDTH);
+	data_access_methods* dam_p = get_new_unWALed_in_memory_data_store(&((page_access_specs){.page_id_width = PAGE_ID_WIDTH, .page_size = PAGE_SIZE, .system_header_size = SYSTEM_HEADER_SIZE}));
 
 	// construct unWALed page_modification_methods
 	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
@@ -717,7 +716,7 @@ int main()
 
 	// construct tuple definitions for bplus_tree
 	bplus_tree_tuple_defs bpttd;
-	init_bplus_tree_tuple_definitions(&bpttd, DEFAULT_COMMON_PAGE_HEADER_SIZE, record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT, PAGE_SIZE, PAGE_ID_WIDTH, dam_p->NULL_PAGE_ID);
+	init_bplus_tree_tuple_definitions(&bpttd, &(dam_p->pas), record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT);
 
 	// print the generated bplus tree tuple defs
 	print_bplus_tree_tuple_definitions(&bpttd);
