@@ -1,6 +1,5 @@
 ** PICKED TASKS
 
- * *_tuple_defs are constructed from the dss of the dam
  * make dam into pam (page_access_methods)
 
  * implement page_table_range struct, that has first_bucket_id and last_bucket_id
