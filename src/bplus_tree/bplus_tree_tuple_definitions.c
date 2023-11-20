@@ -237,12 +237,7 @@ void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	printf("Bplus_tree tuple defs:\n");
 
 	if(bpttd_p->pas_p)
-	{
-		printf("page_id_width = %"PRIu8"\n", bpttd_p->pas_p->page_id_width);
-		printf("page_size = %"PRIu32"\n", bpttd_p->pas_p->page_size);
-		printf("NULL_PAGE_ID = %"PRIu64"\n", bpttd_p->pas_p->NULL_PAGE_ID);
-		printf("system_header_size = %"PRIu32"\n", bpttd_p->pas_p->system_header_size);
-	}
+		print_page_access_specs(bpttd_p->pas_p);
 
 	printf("key_element_count = %"PRIu32"\n", bpttd_p->key_element_count);
 

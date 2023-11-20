@@ -18,3 +18,11 @@ int is_valid_page_access_specs(const page_access_specs* pas_p)
 
 	return 1;
 }
+
+void print_page_access_specs(const page_access_specs* pas_p)
+{
+	printf("page_id_width = %"PRIu8"\n", pas_p->page_id_width);
+	printf("page_size = %"PRIu32"\n", pas_p->page_size);
+	printf("NULL_PAGE_ID = %"PRIu64"\n", pas_p->NULL_PAGE_ID);
+	printf("system_header_size = %"PRIu32"\n", pas_p->system_header_size);
+}
