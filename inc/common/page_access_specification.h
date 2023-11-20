@@ -27,6 +27,6 @@ struct page_access_specs
 };
 
 // if this function returns 0, that implies that the pas's passed params are invalid
-int init_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width, uint32_t page_size, uint64_t NULL_PAGE_ID, uint32_t system_header_size);
+int is_valid_page_access_specs(page_access_specs* pas_p);
 
 #endif
