@@ -14,7 +14,6 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, uint32_t s
 	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || get_element_def_count_tuple_def(record_def) == 0)
 		return 0;
 
-
 	// initialize page_access_specs struct attributes
 	if(!init_page_access_specs(&(bpttd_p->pas), page_id_width, page_size, NULL_PAGE_ID, system_header_size))
 		return 0;
