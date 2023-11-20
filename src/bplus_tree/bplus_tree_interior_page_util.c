@@ -14,7 +14,7 @@
 
 int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	int inited = init_persistent_page(pmm_p, transaction_id, ppage, bpttd_p->page_size, sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def), abort_error);
+	int inited = init_persistent_page(pmm_p, transaction_id, ppage, bpttd_p->pas.page_size, sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def), abort_error);
 	if((*abort_error) || !inited)
 		return 0;
 
@@ -22,7 +22,7 @@ int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is
 	bplus_tree_interior_page_header hdr = get_bplus_tree_interior_page_header(ppage, bpttd_p);
 	hdr.parent.type = BPLUS_TREE_INTERIOR_PAGE;
 	hdr.level = level;
-	hdr.least_keys_page_id = bpttd_p->NULL_PAGE_ID;
+	hdr.least_keys_page_id = bpttd_p->pas.NULL_PAGE_ID;
 	hdr.is_last_page_of_level = is_last_page_of_level;
 	set_bplus_tree_interior_page_header(ppage, &hdr, bpttd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
@@ -34,14 +34,14 @@ int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is
 void print_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
 {
 	print_bplus_tree_interior_page_header(ppage, bpttd_p);
-	print_persistent_page(ppage, bpttd_p->page_size, bpttd_p->index_def);
+	print_persistent_page(ppage, bpttd_p->pas.page_size, bpttd_p->index_def);
 }
 
 uint32_t find_child_index_for_key(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// find preceding equals in the interior pages, by comparing against all index entries
 	uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
-										ppage, bpttd_p->page_size,
+										ppage, bpttd_p->pas.page_size,
 										bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned,
 										key, bpttd_p->key_def, NULL
 									);
@@ -53,7 +53,7 @@ uint32_t find_child_index_for_record(const persistent_page* ppage, const void* r
 {
 	// find preceding equals in the interior pages, by comparing against all index entries
 	uint32_t child_index = find_preceding_equals_in_sorted_packed_page(
-										ppage, bpttd_p->page_size,
+										ppage, bpttd_p->pas.page_size,
 										bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned,
 										record, bpttd_p->record_def, bpttd_p->key_element_ids
 									);
@@ -68,7 +68,7 @@ uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t
 		return get_least_keys_page_id_of_bplus_tree_interior_page(ppage, bpttd_p);
 
 	// tuple of the interior page that is at index
-	const void* index_tuple = get_nth_tuple_on_persistent_page(ppage, bpttd_p->page_size, &(bpttd_p->index_def->size_def), index);
+	const void* index_tuple = get_nth_tuple_on_persistent_page(ppage, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def), index);
 
 	// get child_page_id of the index tuple
 	uint64_t child_page_id = get_child_page_id_from_index_tuple(index_tuple, bpttd_p);
@@ -79,7 +79,7 @@ uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t
 static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// construct a virtual unsplitted persistent page to work on
-	virtual_unsplitted_persistent_page vupp = get_virtual_unsplitted_persistent_page(page1, bpttd_p->page_size, tuple_to_insert, tuple_to_insert_at, bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count);
+	virtual_unsplitted_persistent_page vupp = get_virtual_unsplitted_persistent_page(page1, bpttd_p->pas.page_size, tuple_to_insert, tuple_to_insert_at, bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count);
 
 	// get total tuple count that we would be dealing with
 	uint32_t total_tuple_count = get_tuple_count_on_virtual_unsplitted_persistent_page(&vupp);
@@ -95,7 +95,7 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent
 	else
 	{
 		// this is the total space available to you to store the tuples
-		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
 
 		// this is the result number of tuple that should stay on this page
 		uint32_t result = 0;
@@ -142,13 +142,13 @@ static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent
 int must_split_for_insert_bplus_tree_interior_page(const persistent_page* page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// do not perform a split if the page can accomodate the new tuple
-	if(can_append_tuple_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def), tuple_to_insert))
+	if(can_append_tuple_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def), tuple_to_insert))
 		return 0;
 
 	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
 	// if tuple_to_insert can fit on the page after a compaction, then you should not be splitting the page
-	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_available_page1 = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - get_space_occupied_by_all_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_available_page1 = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def)) - get_space_occupied_by_all_tuples_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
 
 	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
 	if(space_available_page1 >= space_occupied_by_new_tuple)
@@ -166,13 +166,13 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 	// if the index of the new tuple was not provided then calculate it
 	if(tuple_to_insert_at == NO_TUPLE_FOUND)
 		tuple_to_insert_at = find_insertion_point_in_sorted_packed_page(
-									page1, bpttd_p->page_size, 
+									page1, bpttd_p->pas.page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuple_to_insert
 								);
 
 	// current tuple count of the page to be split
-	uint32_t page1_tuple_count = get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t page1_tuple_count = get_tuple_count_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
 
 	// total number of tuples we would be dealing with
 	//uint32_t total_tuple_count = page1_tuple_count + 1;
@@ -247,7 +247,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 	// copy all required tuples from the page1 to page2
 	insert_all_from_sorted_packed_page(
-									&page2, page1, bpttd_p->page_size,
+									&page2, page1, bpttd_p->pas.page_size,
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuples_stay_in_page1, page1_tuple_count - 1,
 									pmm_p,
@@ -263,7 +263,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 	// delete the corresponding (copied) tuples in the page1
 	delete_all_in_sorted_packed_page(
-									page1, bpttd_p->page_size,
+									page1, bpttd_p->pas.page_size,
 									bpttd_p->index_def,
 									tuples_stay_in_page1, page1_tuple_count - 1,
 									pmm_p,
@@ -282,7 +282,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 	{
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page1
 		insert_at_in_sorted_packed_page(
-									page1, bpttd_p->page_size,
+									page1, bpttd_p->pas.page_size,
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuple_to_insert,
 									tuple_to_insert_at,
@@ -301,7 +301,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 	{
 		// insert the tuple_to_insert (the new tuple) at the desired index in the page2
 		insert_at_in_sorted_packed_page(
-									&page2, bpttd_p->page_size,
+									&page2, bpttd_p->pas.page_size,
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									tuple_to_insert,
 									tuple_to_insert_at - tuples_stay_in_page1,
@@ -325,7 +325,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 	// we then can delete the first tuple of this page2
 	// and then finally we return the output_parent_insert tuple that can be inserted into parent page
 
-	const void* first_tuple_page2 = get_nth_tuple_on_persistent_page(&page2, bpttd_p->page_size, &(bpttd_p->index_def->size_def), 0);
+	const void* first_tuple_page2 = get_nth_tuple_on_persistent_page(&page2, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def), 0);
 	uint32_t size_of_first_tuple_page2 = get_tuple_size(bpttd_p->index_def, first_tuple_page2);
 
 	// get least_keys_page_id for page2 from its first tuple
@@ -357,7 +357,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 
 	// now you may, delete the first tuple of page2
 	delete_in_sorted_packed_page(
-									&page2, bpttd_p->page_size, 
+									&page2, bpttd_p->pas.page_size, 
 									bpttd_p->index_def,
 									0,
 									pmm_p,
@@ -391,10 +391,10 @@ int can_merge_bplus_tree_interior_pages(const persistent_page* page1, const void
 	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
 
 	// check if a merge is possible, by comparing the total space requirement
-	uint32_t total_space_page1 = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_to_be_occupied_by_separator_tuple = separator_tuple_size + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_persistent_page(page2, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t total_space_page1 = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_to_be_occupied_by_separator_tuple = separator_tuple_size + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_persistent_page(page2, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
 
 	// the page1 must be able to accomodate all its current tuples, the separator tuple and the tuples of page2
 	if(total_space_page1 < space_in_use_page1 + space_to_be_occupied_by_separator_tuple + space_in_use_page2)
@@ -433,10 +433,10 @@ int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separato
 
 	// insert separator_parent_tuple in the page1, at the end, we will call this separator_tuple
 	insert_at_in_sorted_packed_page(
-									page1, bpttd_p->page_size, 
+									page1, bpttd_p->pas.page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									separator_parent_tuple, 
-									get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)),
+									get_tuple_count_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def)),
 									pmm_p,
 									transaction_id,
 									abort_error
@@ -448,8 +448,8 @@ int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separato
 	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
 
 	// since this update is to a fixed_length UINT type, it must either end in success OR in abort_error
-	set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, page1, bpttd_p->page_size, bpttd_p->index_def,
-												get_tuple_count_on_persistent_page(page1, bpttd_p->page_size, &(bpttd_p->index_def->size_def)) - 1,
+	set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, page1, bpttd_p->pas.page_size, bpttd_p->index_def,
+												get_tuple_count_on_persistent_page(page1, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def)) - 1,
 												get_element_def_count_tuple_def(bpttd_p->index_def) - 1,
 												&((const user_value){.uint_value = separator_tuple_child_page_id}),
 												abort_error);
@@ -459,12 +459,12 @@ int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separato
 	// now, we can safely transfer all tuples from page2 to page1
 
 	// only if there are any tuples to move from page2
-	uint32_t tuple_count_page2 = get_tuple_count_on_persistent_page(page2, bpttd_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t tuple_count_page2 = get_tuple_count_on_persistent_page(page2, bpttd_p->pas.page_size, &(bpttd_p->index_def->size_def));
 	if(tuple_count_page2 > 0)
 	{
 		// only if there are any tuples to move
 		insert_all_from_sorted_packed_page(
-									page1, page2, bpttd_p->page_size, 
+									page1, page2, bpttd_p->pas.page_size, 
 									bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									0, tuple_count_page2 - 1,
 									pmm_p,

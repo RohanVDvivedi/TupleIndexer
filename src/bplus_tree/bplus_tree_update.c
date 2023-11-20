@@ -82,7 +82,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 
 	// find index of last record that compares equal to the new_record
 	uint32_t found_index = find_last_in_sorted_packed_page(
-											concerned_leaf, bpttd_p->page_size,
+											concerned_leaf, bpttd_p->pas.page_size,
 											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 											new_record, bpttd_p->record_def, bpttd_p->key_element_ids
 										);
@@ -92,7 +92,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	uint32_t old_record_size = 0;
 	if(NO_TUPLE_FOUND != found_index)
 	{
-		old_record = (void*) get_nth_tuple_on_persistent_page(concerned_leaf, bpttd_p->page_size, &(bpttd_p->record_def->size_def), found_index);
+		old_record = (void*) get_nth_tuple_on_persistent_page(concerned_leaf, bpttd_p->pas.page_size, &(bpttd_p->record_def->size_def), found_index);
 		old_record_size = get_tuple_size(bpttd_p->record_def, old_record);
 	}
 
@@ -180,7 +180,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 
 		// perform a delete operation on the found index in this page, this has to succeed
 		delete_in_sorted_packed_page(
-							concerned_leaf, bpttd_p->page_size,
+							concerned_leaf, bpttd_p->pas.page_size,
 							bpttd_p->record_def,
 							found_index,
 							pmm_p,
@@ -218,7 +218,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		uint32_t new_record_size = get_tuple_size(bpttd_p->record_def, new_record);
 
 		int updated = update_at_in_sorted_packed_page(
-									concerned_leaf, bpttd_p->page_size, 
+									concerned_leaf, bpttd_p->pas.page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									new_record, 
 									found_index,
@@ -238,7 +238,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 					// first perform a delete and then a split insert
 					// this function may not fail, because our found index is valid
 					delete_in_sorted_packed_page(
-							concerned_leaf, bpttd_p->page_size,
+							concerned_leaf, bpttd_p->pas.page_size,
 							bpttd_p->record_def,
 							found_index,
 							pmm_p,
