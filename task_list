@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
- * make dam into pam (page_access_methods)
-
  * implement page_table_range struct, that has first_bucket_id and last_bucket_id
  * implement page_table_page_util funtion to check if the page is empty -> tombstone_count == tuple_count
  * get designated range of the entry at ith slot
