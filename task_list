@@ -1,11 +1,5 @@
 ** PICKED TASKS
 
- * make all *_tuple_defs and dam point to a global data_store_specs
- * all of them take in data_store_specs as input in their constructor
- * dam constructor will be allowed to modify dss (as in-out parameter), all the params are taken as suggestions
- * while the *_tuple_defs take dss are a unwritten rule, that can not be modified
- * data_store_specs only provides 1 function to check its valid-ness
- * only dam stores data_store_specs, and all *_tuple_defs point to it
  * *_tuple_defs are constructed from the dss of the dam
  * make dam into pam (page_access_methods)
 
