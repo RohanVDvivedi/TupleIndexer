@@ -4,6 +4,8 @@
 #include<tuple.h>
 #include<inttypes.h>
 
+#include<page_access_specification.h>
+
 typedef struct page_table_tuple_defs page_table_tuple_defs;
 struct page_table_tuple_defs
 {

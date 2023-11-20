@@ -15,7 +15,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, uint32_t sy
 		return 0;
 
 	// initialize page_access_specs struct attributes
-	if(!init_page_access_specs(&(bpttd_p->pas), page_id_width, page_size, NULL_PAGE_ID, system_header_size))
+	if(!init_page_access_specs(&(pttd_p->pas), page_id_width, page_size, NULL_PAGE_ID, system_header_size))
 		return 0;
 
 	// this can only be done after setting the above attributes
