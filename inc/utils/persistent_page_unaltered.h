@@ -11,6 +11,12 @@ const void* get_page_header_ua_persistent_page(const persistent_page* ppage, uin
 
 uint32_t get_page_header_size_persistent_page(const persistent_page* ppage, uint32_t page_size);
 
+uint32_t get_space_required_for_persistent_page_header(uint32_t page_header_size, uint32_t page_size);
+
+int can_page_header_fit_on_persistent_page(uint32_t page_header_size, uint32_t page_size);
+
+uint32_t get_maximum_tuple_count_on_persistent_page(uint32_t page_header_size, uint32_t page_size, const tuple_size_def* tpl_sz_d);
+
 uint32_t get_tuple_count_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d);
 
 uint32_t get_tomb_stone_count_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d);

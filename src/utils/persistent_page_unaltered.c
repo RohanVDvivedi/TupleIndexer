@@ -12,6 +12,21 @@ uint32_t get_page_header_size_persistent_page(const persistent_page* ppage, uint
 	return get_page_header_size(ppage->page, page_size);
 }
 
+uint32_t get_space_required_for_persistent_page_header(uint32_t page_header_size, uint32_t page_size)
+{
+	return get_space_required_for_page_header(page_header_size, page_size);
+}
+
+int can_page_header_fit_on_persistent_page(uint32_t page_header_size, uint32_t page_size)
+{
+	return can_page_header_fit_on_page(page_header_size, page_size);
+}
+
+uint32_t get_maximum_tuple_count_on_persistent_page(uint32_t page_header_size, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+{
+	return get_maximum_tuple_count_on_page(page_header_size, page_size, tpl_sz_d);
+}
+
 uint32_t get_tuple_count_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
 {
 	return get_tuple_count_on_page(ppage->page, page_size, tpl_sz_d);
