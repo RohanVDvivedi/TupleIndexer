@@ -77,4 +77,9 @@ void set_page_table_page_header(persistent_page* ppage, const page_table_page_he
 	free(hdr_serial);
 }
 
-void print_page_table_page_header(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
+void print_page_table_page_header(const persistent_page* ppage, const page_table_tuple_defs* pttd_p)
+{
+	print_common_page_header(ppage, &(pttd_p->pas));
+	printf("level : %"PRIu32"\n", get_level_of_page_table_page(ppage, pttd_p));
+	printf("first_bucket_id : %"PRIu64"\n", get_first_bucket_id_of_page_table_page(ppage, pttd_p));
+}
