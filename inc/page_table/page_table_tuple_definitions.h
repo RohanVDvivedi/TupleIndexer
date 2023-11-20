@@ -22,6 +22,7 @@ struct page_table_tuple_defs
 };
 
 // initializes the attributes in page_table_tuple_defs struct as per the provided parameters
+// the parameter pas_p must point to the pas attribute of the data_access_method that you are using it with
 // it allocates memory only for entry_def
 // returns 1 for success, it fails with 0
 // it also fails if the pas_p does not pass is_valid_page_access_specs(pas_p)
