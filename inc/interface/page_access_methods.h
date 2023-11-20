@@ -1,5 +1,5 @@
-#ifndef DATA_ACCESS_METHODS_H
-#define DATA_ACCESS_METHODS_H
+#ifndef PAGE_ACCESS_METHODS_H
+#define PAGE_ACCESS_METHODS_H
 
 #include<stdint.h>
 
@@ -10,7 +10,7 @@
 **
 **	All operations must return 1 or Non NULL when they have succeeded
 **  0 or NULL impiles an abort_error/a failure with the corresponding operation
-**	a failure to data_access_methods function calls must accompany with a non-zero abort_error
+**	a failure to page_access_methods function calls must accompany with a non-zero abort_error
 **	this the same error that you should mark the transaction with in your transaction manager
 **	Any error returned, is expected to have aborted the transaction, and its reason must be returned in abort_error
 **
@@ -38,7 +38,7 @@
 **	From concurrency point of view, locks to the same transaction must pass, but WRITE latches to same page from different threads, even for same transaction must wait
 **	Because if you allow 2 threads of the same transaction to have write latches, then they may write at once to the same page and corrupt it
 **
-**	TupleIndexer will call data_access_methods only to instruct what it wants latched and for what (reading or writing) and upgrade and downgrade latches
+**	TupleIndexer will call page_access_methods only to instruct what it wants latched and for what (reading or writing) and upgrade and downgrade latches
 **	or finally to release latches.
 **
 **	You need to handle locks on your own using these functions given below.
@@ -53,18 +53,18 @@
 **	allow freeing of a page, with release lock function, only if there is only 1 thread (with same lock type as the release lock function) having reader or writer lock on the page.
 **	free_page function must succeed only if no locks are acquired on the page.
 **	in case when release_*_lock_on_page() function is passed with a FREE_PAGE flag, and if the operation stands aborted, then the latch/lock on the page is not to be released, until later when TupleIndexer calls to release_lock() without the option of FREE_PAGE
-**	an abort on a release_*_lock_on_page(FREE_PAGE), is always followed by a call to release_*_lock_on_page() (called without FREE_PAGE option), so that your data_access_methods will release the acquired latch for an aborted transaction
+**	an abort on a release_*_lock_on_page(FREE_PAGE), is always followed by a call to release_*_lock_on_page() (called without FREE_PAGE option), so that your page_access_methods will release the acquired latch for an aborted transaction
 */
 
 // below are the options that can go with the functions below
 //#define NONE_OPTION  0b000	// dummy for setting no options
 //#define FREE_PAGE    0b001	// will be used only while releasing the page lock
 //#define WAS_MODIFIED 0b010	// this suggests that the page has been modified, allowing you bitwise OR it with your dirty bit
-// moved to data_access_methods_options.h
-#include<data_access_methods_options.h>
+// moved to page_access_methods_options.h
+#include<page_access_methods_options.h>
 
-typedef struct data_access_methods data_access_methods;
-struct data_access_methods
+typedef struct page_access_methods page_access_methods;
+struct page_access_methods
 {
 	// a request method to get a new blank page from the page manager with write lock on the page
 	// the page_id_returned is set with the page_id of the new_page
@@ -92,7 +92,7 @@ struct data_access_methods
 
 	// page access specification for all the pages in the data store
 	// even though it is not a constant, you must not modify it, unless while you are creating it
-	// a constructor of any data_access_methods must take in a page_access_specs struct as a suggestion (even here only system_header size remains the same as the suggested one)
+	// a constructor of any page_access_methods must take in a page_access_specs struct as a suggestion (even here only system_header size remains the same as the suggested one)
 	// this attribute must be utilized for creating *_tuple_defs struct of required type
 	page_access_specs pas;
 
