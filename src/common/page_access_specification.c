@@ -9,7 +9,7 @@ int is_valid_page_access_specs(page_access_specs* pas_p)
 		return 0;
 
 	// NULL_PAGE_ID must fit in page_id_width number of bytes
-	if(pas_p->page_id_width < 8 && NULL_PAGE_ID >= ( ((uint64_t)(1)) << (pas_p->page_id_width * 8) ) )
+	if(pas_p->page_id_width < 8 && pas_p->NULL_PAGE_ID >= ( ((uint64_t)(1)) << (pas_p->page_id_width * 8) ) )
 		return 0;
 
 	// if the page can not even fit the system header on the page, then fail
