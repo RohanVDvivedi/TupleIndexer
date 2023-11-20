@@ -11,7 +11,7 @@
 
 #include<tuple.h>
 
-int walk_down_locking_parent_pages_for_update_using_record(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, uint32_t* release_for_split, uint32_t* release_for_merge, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+int walk_down_locking_parent_pages_for_update_using_record(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, uint32_t* release_for_split, uint32_t* release_for_merge, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// initialize relase_for_* to zeros
 	(*release_for_merge) = 0;

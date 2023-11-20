@@ -32,7 +32,7 @@ enum find_type
 // on an abort error, all pages locked in this function are unlocked and locked_pages_stack is deinitialized -> i.e. on abort_error nothing needs to be done
 // on success (*abort_error) == 0, all pages requested/required are locked in the locked_pages_stack
 // NOTE: if locked_parents is set, then the parents are locked only in READ_LOCK mode
-locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const void* key, find_type f_type, uint32_t key_element_count_concerned, int lock_type, int locked_parents, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const void* key, find_type f_type, uint32_t key_element_count_concerned, int lock_type, int locked_parents, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// create a stack of capacity = levels (locked_parents = 1) or capacity = 2 (locked_parents = 0)
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
@@ -157,7 +157,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 	return ((locked_pages_stack){});
 }
 
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// if the user wants to consider all the key elements then
 	// set key_element_count_concerned to bpttd_p->key_element_count

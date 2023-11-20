@@ -1,7 +1,7 @@
 #ifndef PERSISTENT_PAGE_FUNCTIONS_H
 #define PERSISTENT_PAGE_FUNCTIONS_H
 
-#include<opaque_data_access_methods.h>
+#include<opaque_page_access_methods.h>
 
 #include<opaque_page_modification_methods.h>
 
@@ -9,10 +9,10 @@
 
 // we need dam_p here, because that's what gives us NULL_PAGE_ID
 // a persistent_page is NULL, if it's page = NULL and page_id == NULL_PAGE_ID
-int is_persistent_page_NULL(const persistent_page* ppage, const data_access_methods* dam_p);
+int is_persistent_page_NULL(const persistent_page* ppage, const page_access_methods* dam_p);
 
 // to get a NULL persistent_page i.e. persistent_page with its .page = NULL and .page_id = NULL_PAGE_ID
-persistent_page get_NULL_persistent_page(const data_access_methods* dam_p);
+persistent_page get_NULL_persistent_page(const page_access_methods* dam_p);
 
 // if a persistent_page exists (i.e. is not NULL), then it always will be readable
 // but the below function allows you to check if it is writable

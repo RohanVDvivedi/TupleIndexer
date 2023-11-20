@@ -13,7 +13,7 @@
 
 #include<stdlib.h>
 
-int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
 	while(1)
@@ -86,7 +86,7 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 	return 0;
 }
 
-int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// inserted will be set if the record, was inserted
 	int inserted = 0;

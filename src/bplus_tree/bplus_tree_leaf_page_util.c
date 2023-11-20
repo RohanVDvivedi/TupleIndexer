@@ -198,7 +198,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 	return res;
 }
 
-int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
+int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
 {
 	// check if a page must split to accomodate the new tuple
 	if(!must_split_for_insert_bplus_tree_leaf_page(page1, tuple_to_insert, bpttd_p))
@@ -440,7 +440,7 @@ int can_merge_bplus_tree_leaf_pages(const persistent_page* page1, const persiste
 	return 1;
 }
 
-int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int merge_bplus_tree_leaf_pages(persistent_page* page1, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// get the next adjacent page of this page
 	persistent_page page2 = get_NULL_persistent_page(dam_p);

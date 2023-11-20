@@ -609,12 +609,12 @@ static int free_page(void* context, const void* transaction_id, uint64_t page_id
 	return is_freed;
 }
 
-data_access_methods* get_new_unWALed_in_memory_data_store(const page_access_specs* pas_suggested)
+page_access_methods* get_new_unWALed_in_memory_data_store(const page_access_specs* pas_suggested)
 {
 	if(!is_valid_page_access_specs(pas_suggested))
 		return 0;
 
-	data_access_methods* dam_p = malloc(sizeof(data_access_methods));
+	page_access_methods* dam_p = malloc(sizeof(page_access_methods));
 	if(dam_p == NULL)
 		return NULL;
 
@@ -676,7 +676,7 @@ static void delete_notified_page_descriptor(void* resource_p, const void* data)
 	delete_page_descriptor(((page_descriptor*)(data)));
 }
 
-int close_and_destroy_unWALed_in_memory_data_store(data_access_methods* dam_p)
+int close_and_destroy_unWALed_in_memory_data_store(page_access_methods* dam_p)
 {
 	memory_store_context* cntxt = dam_p->context;
 	printf("pages still being used = %llu, of which %lu are free\n", get_element_count_hashmap(&(cntxt->page_id_map)), cntxt->free_pages_count);

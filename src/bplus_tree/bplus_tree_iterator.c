@@ -229,7 +229,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 	return 0;
 }
 
-bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p)
+bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || dam_p == NULL)

@@ -16,7 +16,7 @@ struct cancel_update_callback_context
 	// set to true if cancel_update_callback gets called
 	int update_canceled;
 	locked_pages_stack* locked_pages_stack_p;
-	const data_access_methods* dam_p;
+	const page_access_methods* dam_p;
 };
 
 void cancel_update_callback(void* cancel_update_callback_context_p, const void* transaction_id, int* abort_error)
@@ -43,7 +43,7 @@ void cancel_update_callback(void* cancel_update_callback_context_p, const void* 
 	downgrade_to_reader_lock_on_persistent_page(cuc_cntxt->dam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 }
 
-int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
 		return 0;

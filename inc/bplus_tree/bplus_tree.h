@@ -4,11 +4,11 @@
 #include<bplus_tree_iterator_public.h>
 
 #include<bplus_tree_tuple_definitions.h>
-#include<opaque_data_access_methods.h>
+#include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 
 // returns pointer to the root page of the bplus_tree
-uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // order of the enum values in find_position must remain the same
 typedef enum find_position find_position;
@@ -30,7 +30,7 @@ enum find_position
 // it may return NULL, only on an abort_error
 // if lock_type == WRITE_LOCK, all iterator's leaf pages will be write locked
 // if is_stacked == 1, the iterator uses parent linkages for the next leaf and prev leaf page iteration
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error);
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error);
 
 typedef struct update_inspector update_inspector;
 struct update_inspector
@@ -52,22 +52,22 @@ struct update_inspector
 
 // to find and read a record, then inspect it with the ui_p, and then proceed to update it
 // update may fail for an abort_error OR if the update_inspector returns so that no update is required
-int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // insert record in bplus_tree
 // insert may fail on an abort_error OR if a record with the same key already exists in the bplus_tree
-int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // delete a record given by key
 // delete may fail on an abort_error OR if a record with the given key, does not exist in the bplus_tree
-int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // frees all the pages occupied by the bplus_tree
 // it may fail on an abort_error, ALSO you must ensure that you are the only one who has lock on the given bplus_tree
-int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error);
+int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error);
 
 // prints all the pages in the bplus_tree
 // it may return an abort_error, unable to print all of the bplus_tree pages
-void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error);
+void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error);
 
 #endif

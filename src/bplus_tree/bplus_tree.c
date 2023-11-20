@@ -14,7 +14,7 @@
 
 #include<stdlib.h>
 
-uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	persistent_page root_page = get_new_persistent_page_with_write_lock(dam_p, transaction_id, abort_error);
 
@@ -38,7 +38,7 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const data_acc
 	return res;
 }
 
-int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// create a stack
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
@@ -147,7 +147,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 	return 1;
 }
 
-void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const data_access_methods* dam_p, const void* transaction_id, int* abort_error)
+void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* dam_p, const void* transaction_id, int* abort_error)
 {
 	// print the root page id of the bplsu tree
 	printf("\n\nBplus_tree @ root_page_id = %"PRIu64"\n\n", root_page_id);
