@@ -3,6 +3,8 @@
 
 #include<stdint.h>
 
+#include<page_access_specification.h>
+
 /*
 **	This structure defines functions that provide page level access methods to the storage model to access the database in pages of fixed size
 **
@@ -88,17 +90,11 @@ struct data_access_methods
 	// fails only if the page is already free
 	int (*free_page)(void* context, const void* transaction_id, uint64_t page_id, int* abort_error);
 
-	// size of page in bytes
-	uint32_t page_size;
-
-	// number of bytes in the page id
-	// this can be 1, 2, 4, or 8
-	uint8_t page_id_width;
-
-	// a page with this page_id number should/would never be allocated or used by the system
-	// this page_id implies something similar to a NULL pointer
-	// NULL_PAGE_ID < (1 << (page_id_width * 8))
-	uint64_t NULL_PAGE_ID;
+	// page access specification for all the pages in the data store
+	// even though it is not a constant, you must not modify it, unless while you are creating it
+	// a constructor of any data_access_methods must take in a page_access_specs struct as a suggestion (even here only system_header size remains the same as the suggested one)
+	// this attribute must be utilized for creating *_tuple_defs struct of required type
+	page_access_specs pas;
 
 	// context to be passed on every page access
 	void* context;
