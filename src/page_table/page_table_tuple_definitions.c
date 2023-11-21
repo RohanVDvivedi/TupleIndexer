@@ -2,7 +2,7 @@
 
 #include<page_table_page_header.h>
 
-#include<page_layout_unaltered.h>
+#include<persistent_page_functions.h>
 
 int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_access_specs* pas_p)
 {
@@ -15,7 +15,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 
 	// this can only be done after setting the pas_p attribute of pttd
 	// there must be room for atleast some bytes after the page_table_page_header
-	if(!can_page_header_fit_on_page(sizeof_PAGE_TABLE_PAGE_HEADER(pttd_p), pttd_p->pas_p->page_size))
+	if(!can_page_header_fit_on_persistent_page(sizeof_PAGE_TABLE_PAGE_HEADER(pttd_p), pttd_p->pas_p->page_size))
 		return 0;
 
 	int res = 1;
