@@ -1,13 +1,20 @@
 ** PICKED TASKS
 
- * implement a getter to get nth from top of the locked_pages_stack
- * implement page_table_range struct, that has first_bucket_id and last_bucket_id
- * implement page_table_page_util funtion to check if the page is empty -> tombstone_count == tuple_count
- * get designated range of the entry at ith slot
+ * implement page_table_bucket_range struct with first_bucket_id and last_bucket_id with functions like
+  * is_valid : first <= last
+  * is_contained : a range is contained within b
+  * has_overlap : 
+  * are_disjoint :
+
+ * function to get and set entry of a slot on page, setting NULL_PAGE_ID deletes the slot value and discard trailing tombstones, getting null slot returns NULL_PAGE_ID
+ * function to check if page has any entries (tombstone_count == tuple_count)
+
+ * implement a getter to get nth from top of the locked_pages_stack (only if you need it)
+
+ * get designated range of the entry at ith slot of the page_table page
  * get actual range of the page we are looking at
+
  * get child_index for a bucket_id on the page
- * set_entry to set the ith entry
- * get_entry to get the ith entry
 
  * a page_table that maps a 64 bit integer to a page_id
    * It is structured as a tree, starting with level 0 at the leaf, and then increasing towards root, like bplus tree.
