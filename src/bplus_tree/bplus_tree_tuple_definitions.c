@@ -1,6 +1,6 @@
 #include<bplus_tree_tuple_definitions.h>
 
-#include<page_layout_unaltered.h>
+#include<persistent_page_functions.h>
 
 #include<bplus_tree_leaf_page_header.h>
 #include<bplus_tree_interior_page_header.h>
@@ -23,7 +23,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 
 	// this can only be called after setting the pas_p attribute of bpttd
 	// fail if there is no room after accomodating header on the page
-	if((!can_page_header_fit_on_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size)) || (!can_page_header_fit_on_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size)))
+	if((!can_page_header_fit_on_persistent_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size)) || (!can_page_header_fit_on_persistent_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size)))
 		return 0;
 
 	bpttd_p->key_element_count = key_element_count;
@@ -88,16 +88,16 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	/* compute max_record_size for the leaf pages and interior pages of the bplus tree */
 	{
 		uint32_t min_record_tuple_count = 2;
-		uint32_t total_available_space_in_leaf_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
+		uint32_t total_available_space_in_leaf_page = get_space_to_be_allotted_to_all_tuples_on_persistent_page(sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
 		uint32_t total_available_space_in_leaf_page_per_min_tuple_count = total_available_space_in_leaf_page / min_record_tuple_count;
-		bpttd_p->max_record_size = total_available_space_in_leaf_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
+		bpttd_p->max_record_size = total_available_space_in_leaf_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
 	}
 
 	{
 		uint32_t min_index_record_tuple_count = 2;
-		uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
+		uint32_t total_available_space_in_interior_page = get_space_to_be_allotted_to_all_tuples_on_persistent_page(sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 		uint32_t total_available_space_in_interior_page_per_min_tuple_count = total_available_space_in_interior_page / min_index_record_tuple_count;
-		bpttd_p->max_index_record_size = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_page(bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
+		bpttd_p->max_index_record_size = total_available_space_in_interior_page_per_min_tuple_count - get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 	}
 
 	if(bpttd_p->max_record_size < get_minimum_tuple_size(bpttd_p->record_def) ||

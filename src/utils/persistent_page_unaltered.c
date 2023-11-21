@@ -87,6 +87,11 @@ uint32_t get_space_allotted_to_all_tuples_on_persistent_page(const persistent_pa
 	return get_space_allotted_to_all_tuples_on_page(ppage->page, page_size, tpl_sz_d);
 }
 
+uint32_t get_space_to_be_allotted_to_all_tuples_on_persistent_page(uint32_t page_header_size, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+{
+	return get_space_to_be_allotted_to_all_tuples_on_page(page_header_size, page_size, tpl_sz_d);
+}
+
 uint32_t get_fragmentation_space_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
 {
 	return get_fragmentation_space_on_page(ppage->page, page_size, tpl_sz_d);

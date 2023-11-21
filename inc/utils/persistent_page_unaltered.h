@@ -41,6 +41,8 @@ uint32_t get_space_occupied_by_all_tomb_stones_on_persistent_page(const persiste
 
 uint32_t get_space_allotted_to_all_tuples_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d);
 
+uint32_t get_space_to_be_allotted_to_all_tuples_on_persistent_page(uint32_t page_header_size, uint32_t page_size, const tuple_size_def* tpl_sz_d);
+
 uint32_t get_fragmentation_space_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d);
 
 uint32_t get_additional_space_overhead_per_tuple_on_persistent_page(uint32_t page_size, const tuple_size_def* tpl_sz_d);
