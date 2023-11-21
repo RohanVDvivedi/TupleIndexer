@@ -41,7 +41,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 	}
 
 	// number of entries that can fir on the page
-	pttd_p->entries_per_page = get_maximum_tuple_count_on_page(sizeof_PAGE_TABLE_PAGE_HEADER(pttd_p), pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
+	pttd_p->entries_per_page = get_maximum_tuple_count_on_persistent_page(sizeof_PAGE_TABLE_PAGE_HEADER(pttd_p), pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
 
 	// there has to be atleast 2 entries per page for it to be a tree
 	if(pttd_p->entries_per_page < 2)
