@@ -1,6 +1,6 @@
 #include<page_access_specification.h>
 
-#include<page_layout_unaltered.h>
+#include<persistent_page_functions.h>
 
 int is_valid_page_access_specs(const page_access_specs* pas_p)
 {
@@ -13,7 +13,7 @@ int is_valid_page_access_specs(const page_access_specs* pas_p)
 		return 0;
 
 	// if the page can not even fit the system header on the page, then fail
-	if(!can_page_header_fit_on_page(pas_p->system_header_size, pas_p->page_size))
+	if(!can_page_header_fit_on_persistent_page(pas_p->system_header_size, pas_p->page_size))
 		return 0;
 
 	return 1;
