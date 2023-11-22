@@ -64,6 +64,32 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 	return 1;
 }
 
+int get_power_of_entries_per_page(page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result)
+{
+	*result = 1;
+
+	// This is a very use of the power_table for entries_per_page ^ exp
+	// break exp into its binary representation and product all components
+	for(uint8_t bit_index = 0; bit_index < (sizeof(uint64_t) * CHAR_BIT) && ((exp >> bit_index) != UINT64_C(0)); bit_index++)
+	{
+		// if the number required more or equal bits than the power_table_overflows_at, then fail causing overflow
+		if(bit_index >= pttd_p->power_table_overflows_at)
+			return 0;
+
+		// get the bit_value of exp at bit_index
+		int bit_value = (exp >> bit_index) & 1;
+		if(bit_value)
+		{
+			if(will_unsigned_mul_overflow(uint64_t, pttd_p->power_table[bit_index], (*result)))
+				return 0;
+			(*result) *= pttd_p->power_table[bit_index];
+		}
+	}
+
+	// success, no overflows
+	return 1;
+}
+
 void deinit_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
 {
 	if(pttd_p->entry_def)
