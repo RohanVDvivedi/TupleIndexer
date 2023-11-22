@@ -1,6 +1,8 @@
 #ifndef PAGE_TABLE_BUCKET_RANGE_H
 #define PAGE_TABLE_BUCKET_RANGE_H
 
+#include<stdint.h>
+
 // this is an inclusive range of the bucket_id on values in the page_table
 // from first_bucket_id to last_bucket_id both inclusive
 
