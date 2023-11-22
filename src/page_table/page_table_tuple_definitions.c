@@ -64,7 +64,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 	return 1;
 }
 
-int get_power_of_entries_per_page(page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result)
+int get_power_of_entries_per_page(const page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result)
 {
 	*result = 1;
 
