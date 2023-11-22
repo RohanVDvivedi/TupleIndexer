@@ -19,6 +19,14 @@ struct page_table_tuple_defs
 	// this decides the number of entries that can fit on any of the page_table page
 	// this is fixed since the entry_def is fixed sized
 	uint64_t entries_per_page;
+
+	// power table for entries_per_page
+	// ith value in this row = entries_per_page ^ (2 ^ i)
+	// if the i-1 th value is n, then the ith value is n^2
+	uint64_t power_table[64];
+
+	// for all indices greater than this value, the power_table is useless, because it has overflowed
+	uint8_t power_table_overflows_at;
 };
 
 // initializes the attributes in page_table_tuple_defs struct as per the provided parameters
