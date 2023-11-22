@@ -36,6 +36,10 @@ struct page_table_tuple_defs
 // it also fails if the pas_p does not pass is_valid_page_access_specs(pas_p)
 int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_access_specs* pas_p);
 
+// if return == 1, after the call to this function, result will be set to entries_per_page ^ exp
+// on an overflow return == 0
+int get_power_of_entries_per_page(page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result);
+
 // it deallocates the entry_def and
 // then resets all the page_table_tuple_defs struct attributes to NULL or 0
 void deinit_page_table_tuple_definitions(page_table_tuple_defs* pttd_p);
