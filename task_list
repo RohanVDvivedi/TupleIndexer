@@ -14,7 +14,9 @@
  * get designated range of the entry at ith slot of the page_table page
  * get actual range of the page we are looking at
 
- * get child_index for a bucket_id on the page
+ * get child_index for a bucket_id on the page or by ite level
+
+ * add powers_table a array to 32 uint64_t, each value at ith index being (entries_per_page ^ (2 ^ i)), this can be used to quicky calculate entries_per_page ^ num, and a uint8_t power_table_overflow_at, to give an index at which the power's over flow 64 bit integers
 
  * a page_table that maps a 64 bit integer to a page_id
    * It is structured as a tree, starting with level 0 at the leaf, and then increasing towards root, like bplus tree.
