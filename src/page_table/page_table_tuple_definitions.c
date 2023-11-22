@@ -4,6 +4,8 @@
 
 #include<persistent_page_functions.h>
 
+#include<cutlery_math.h>
+
 int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_access_specs* pas_p)
 {
 	// check id page_access_specs struct is valid
@@ -48,6 +50,15 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 	{
 		deinit_page_table_tuple_definitions(pttd_p);
 		return 0;
+	}
+
+	// build power_table and optimally set the power_table_overflows_at to the index at which values of power_table starts overflowing
+	pttd_p->power_table[0] = pttd_p->entries_per_page;
+	for(pttd_p->power_table_overflows_at = 1; pttd_p->power_table_overflows_at < sizeof(pttd_p->power_table)/sizeof(pttd_p->power_table[0]); pttd_p->power_table_overflows_at++)
+	{
+		if(will_unsigned_mul_overflow(uint64_t, pttd_p->power_table[pttd_p->power_table_overflows_at-1], pttd_p->power_table[pttd_p->power_table_overflows_at-1]))
+			break;
+		pttd_p->power_table[pttd_p->power_table_overflows_at] = pttd_p->power_table[pttd_p->power_table_overflows_at-1] * pttd_p->power_table[pttd_p->power_table_overflows_at-1];
 	}
 
 	return 1;
