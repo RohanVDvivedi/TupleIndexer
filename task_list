@@ -1,9 +1,5 @@
 ** PICKED TASKS
 
-PAGE_TABLE_TUPLE_DEFS
- * add powers_table a array to 32 uint64_t, each value at ith index being (entries_per_page ^ (2 ^ i)), this can be used to quicky calculate entries_per_page ^ num, and a uint8_t power_table_overflow_at, to give an index at which the power's over flow 64 bit integers
- * add a function to get nth power of entries_per_page, using the powers_table, OR tell if it's an overflow
-
 PAGE_TABLE_PAGE_UTIL
  * implement function to init a page_table page, with given level and first_bucket_id
  * get child_index for a bucket_id on the page
