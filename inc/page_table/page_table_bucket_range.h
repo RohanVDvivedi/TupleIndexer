@@ -14,6 +14,8 @@ struct page_table_bucket_range
 // returns 1 if ptbr_p->first_bucket_id <= ptbr_p->last_bucket_id, else 0
 int is_valid_page_table_bucket_range(const page_table_bucket_range* ptbr_p);
 
+// all the below functions assume that the ptbr's provided as parameters pass valid as per the above function's specifications
+
 // returns 1, if the ptbr1 and ptbr2 are disjoint, i.e. no overlap
 int are_disjoint_page_table_bucket_range(const page_table_bucket_range* ptbr1_p, const page_table_bucket_range* ptbr2_p);
 
