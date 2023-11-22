@@ -2,8 +2,9 @@
 
 PAGE_TABLE_PAGE_UTIL
  * implement function to init a page_table page, with given level and first_bucket_id
- * get child_index for a bucket_id on the page
- * function to get and set entry of a slot on page, setting NULL_PAGE_ID deletes the slot value and discard trailing tombstones, getting null slot returns NULL_PAGE_ID
+ * get and set functions, implemented thinking of the page as an array (add this as comment)
+   * get child_index for a bucket_id on the page
+   * function to get and set entry of a slot on page, setting NULL_PAGE_ID deletes the slot value and discard trailing tombstones, getting null slot returns NULL_PAGE_ID
  * function to check if page has any entries (tombstone_count == tuple_count)
  * get designated range of the entry at child_index of the page_table page
  * get actual range of the page we are looking at OR (using first_bucket_id and level)
