@@ -1,11 +1,5 @@
 ** PICKED TASKS
 
- * implement page_table_bucket_range struct with first_bucket_id and last_bucket_id with functions like
-  * is_valid : first <= last
-  * is_contained : a range is contained within b
-  * has_overlap : 
-  * are_disjoint :
-
  * function to get and set entry of a slot on page, setting NULL_PAGE_ID deletes the slot value and discard trailing tombstones, getting null slot returns NULL_PAGE_ID
  * function to check if page has any entries (tombstone_count == tuple_count)
 
