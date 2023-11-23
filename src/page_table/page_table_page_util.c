@@ -92,3 +92,9 @@ int has_all_NULL_PAGE_ID_in_page_table_page(const persistent_page* ppage, const 
 	// if tomb_stone_count == tuple_count, then this means all child_page_id's are NULL_PAGE_ID
 	return get_tuple_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def)) == get_tomb_stone_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
 }
+
+uint32_t get_non_NULL_PAGE_ID_count_in_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p)
+{
+	// this is simply equal to tuple_count - tomb_stone_count
+	return get_tuple_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def)) - get_tomb_stone_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
+}
