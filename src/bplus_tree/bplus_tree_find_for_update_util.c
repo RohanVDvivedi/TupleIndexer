@@ -70,7 +70,7 @@ int walk_down_locking_parent_pages_for_update_using_record(uint64_t root_page_id
 			goto ABORT_ERROR;
 
 		// push this child page onto the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
 	}
 
 	// if we reach here, then the top page in the locked_pages_stack_p is likely the leaf page

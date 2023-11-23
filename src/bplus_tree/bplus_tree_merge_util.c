@@ -50,7 +50,7 @@ int walk_down_locking_parent_pages_for_merge_using_key(uint64_t root_page_id, lo
 			goto ABORT_ERROR;
 
 		// push this child page onto the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
 	}
 
 	// if we reach here, then the top page in the locked_pages_stack_p is likely the leaf page
@@ -111,7 +111,7 @@ int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id,
 			goto ABORT_ERROR;
 
 		// push this child page onto the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
 	}
 
 	// if we reach here, then the top page in the locked_pages_stack_p is likely the leaf page
@@ -189,7 +189,7 @@ int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_
 					persistent_page prev_child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, prev_child_page_id, WRITE_LOCK, abort_error);
 					if(*abort_error)
 						break;
-					curr_locked_page = INIT_LOCKED_PAGE_INFO(prev_child_page);
+					curr_locked_page = INIT_LOCKED_PAGE_INFO(prev_child_page, INVALID_TUPLE_INDEX);
 				}
 
 				merged = merge_bplus_tree_leaf_pages(&(curr_locked_page.ppage), bpttd_p, pam_p, pmm_p, transaction_id, abort_error);

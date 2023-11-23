@@ -68,7 +68,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
 
 		// push the root page onto the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, ALL_LEAST_KEYS_CHILD_INDEX));
 	}
 
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
@@ -120,7 +120,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 				if(*abort_error)
 					goto ABORT_ERROR;
 
-				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
+				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, ALL_LEAST_KEYS_CHILD_INDEX));
 			}
 			else // we have freed all its children, now we can free this page
 			{
@@ -168,7 +168,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
 
 		// push the root page onto the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, ALL_LEAST_KEYS_CHILD_INDEX));
 	}
 
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
@@ -204,7 +204,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 				if(*abort_error)
 					goto ABORT_ERROR;
 
-				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
+				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, ALL_LEAST_KEYS_CHILD_INDEX));
 			}
 			else // we have printed all its children, now we print this page
 			{

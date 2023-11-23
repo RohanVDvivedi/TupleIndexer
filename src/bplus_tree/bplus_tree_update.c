@@ -65,7 +65,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			exit(-1);
 
 		// push the root page onto the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page));
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, INVALID_TUPLE_INDEX));
 	}
 
 	uint32_t release_for_split = 0;

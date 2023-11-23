@@ -38,7 +38,7 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			persistent_page next_leaf_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, next_page_id, bpi_p->leaf_lock_type, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
-			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(next_leaf_page));
+			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(next_leaf_page, INVALID_TUPLE_INDEX));
 		}
 
 		// pop one from the bottom, this was the old curr_leaf_page
@@ -90,9 +90,9 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 					goto ABORT_ERROR;
 
 				// push a locked_page_info for child_page pointing to its (first_child_index - 1)
-				locked_page_info child_locked_page_info = INIT_LOCKED_PAGE_INFO(child_page);
-				if(!is_bplus_tree_leaf_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p))
-					child_locked_page_info.child_index = -2; // this is so that when this becomes initially the top for this loop, it will get incremented to its first_child_index
+				locked_page_info child_locked_page_info = INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX);
+				if(!is_bplus_tree_leaf_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p)) // when not leaf
+					child_locked_page_info.child_index = ALL_LEAST_KEYS_CHILD_INDEX-1; // this is so that when this becomes initially the top for this loop, it will get incremented to its ALL_LEAST_KEYS_CHILD_INDEX
 				push_to_locked_pages_stack(&(bpi_p->lps), &child_locked_page_info);
 			}
 			else // pop release lock on the curr_locked_page, and pop it
@@ -145,7 +145,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			persistent_page prev_leaf_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, prev_page_id, bpi_p->leaf_lock_type, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
-			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(prev_leaf_page));
+			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(prev_leaf_page, INVALID_TUPLE_INDEX));
 		}
 
 		// pop one from the bottom, this was the old curr_leaf_page
@@ -197,9 +197,9 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 					goto ABORT_ERROR;
 
 				// push a locked_page_info for child_page, making its last child + 1,
-				locked_page_info child_locked_page_info = INIT_LOCKED_PAGE_INFO(child_page);
+				locked_page_info child_locked_page_info = INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX);
 				if(!is_bplus_tree_leaf_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p))
-					child_locked_page_info.child_index = get_tuple_count_on_persistent_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->index_def->size_def)); // this is so that when this becomes initially the top for this loop, it will get decremented to its last_child_index
+					child_locked_page_info.child_index = get_tuple_count_on_persistent_page(&(child_locked_page_info.ppage), bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->index_def->size_def)); // this is so that when this becomes initially the top for this loop, it will get decremented to its last_child_index, which is at (tuple_count-1)
 				push_to_locked_pages_stack(&(bpi_p->lps), &child_locked_page_info);
 			}
 			else // pop release lock on the curr_locked_page, and pop it

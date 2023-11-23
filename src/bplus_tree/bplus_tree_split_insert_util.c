@@ -50,7 +50,7 @@ int walk_down_locking_parent_pages_for_split_insert_using_record(uint64_t root_p
 			goto ABORT_ERROR;
 
 		// push this child page onto the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page));
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
 	}
 
 	// if we reach here, then the top page in the locked_pages_stack_p is likely the leaf page
@@ -179,7 +179,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 				}
 
 				// create new locked_page_info for the root_least_keys_child
-				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child);
+				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child, INVALID_TUPLE_INDEX);
 				root_least_keys_child_info.child_index = curr_locked_page.child_index;
 				curr_locked_page.child_index = -1; // the root page only has a single child at the moment
 
@@ -270,7 +270,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 				}
 
 				// create new locked_page_info for the root_least_keys_child
-				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child);
+				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child, INVALID_TUPLE_INDEX);
 				root_least_keys_child_info.child_index = curr_locked_page.child_index;
 				curr_locked_page.child_index = -1; // the root page only has a single child at the moment
 
