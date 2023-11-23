@@ -1,10 +1,5 @@
 ** PICKED TASKS
 
- * make a macro INVALID_TUPLE_INDEX = UINT32_MAX, add comment that since tuple indices on page are 32 bits, this value as index may never appear
- * make sorted packed_page's TUPLE_NOT_FOUND equal to this macro
- * change macro to build locked page info to take child_index as parameter, this will reduce code ambiguity
- * also define ALL_LEAST_KEYS_CHILD_INDEX as INVALID_TUPLE_INDEX
-
 PAGE_TABLE_PAGE_UTIL
  * get_non_NULL_child_count_on_page_table_page -> (tuple_count - tomb_stone_count) for page_table_page
    * add comment that a page can only shrink down, if it has this value as 1
