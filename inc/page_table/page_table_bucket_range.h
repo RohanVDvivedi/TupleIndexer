@@ -27,4 +27,7 @@ int have_overlap_page_table_bucket_range(const page_table_bucket_range* ptbr1_p,
 // returns true if the containee's range is completely contaned in the container's range
 int is_contained_page_table_bucket_range(const page_table_bucket_range* container_p, const page_table_bucket_range* containee_p);
 
+// returns true if the containee bucket range is completely contaned in the container's range
+int is_bucket_contained_page_table_bucket_range(const page_table_bucket_range* container_p, uint64_t containee);
+
 #endif
