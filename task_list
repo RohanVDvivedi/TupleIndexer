@@ -4,6 +4,7 @@
  * make sorted packed_page's TUPLE_NOT_FOUND equal to this macro
  * check if uint64_t x = -1, actually sets value to UIN64_MAX
  * change macro to build locked page info to take child_index as parameter, this will reduce code ambiguity
+ * also define ALL_LEAST_KEYS_CHILD_INDEX as INVALID_TUPLE_INDEX
 
 PAGE_TABLE_PAGE_UTIL
  * get_non_NULL_child_count_on_page_table_page -> (tuple_count - tomb_stone_count) for page_table_page
