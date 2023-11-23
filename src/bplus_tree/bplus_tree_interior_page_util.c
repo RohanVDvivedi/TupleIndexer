@@ -63,8 +63,8 @@ uint32_t find_child_index_for_record(const persistent_page* ppage, const void* r
 
 uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t index, const bplus_tree_tuple_defs* bpttd_p)
 {
-	// if the index is -1, return the page_id stored in the header
-	if(index == -1)
+	// if the index is ALL_LEAST_KEYS_CHILD_INDEX, return the page_id stored in the header
+	if(index == ALL_LEAST_KEYS_CHILD_INDEX)
 		return get_least_keys_page_id_of_bplus_tree_interior_page(ppage, bpttd_p);
 
 	// tuple of the interior page that is at index
