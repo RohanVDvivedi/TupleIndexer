@@ -119,7 +119,7 @@ int delete_all_in_sorted_packed_page(
 									int* abort_error
 								);
 
-#define NO_TUPLE_FOUND (~((uint32_t)0))
+#define NO_TUPLE_FOUND INVALID_TUPLE_INDEX
 
 // returns index of the tuple found
 uint32_t find_first_in_sorted_packed_page(
