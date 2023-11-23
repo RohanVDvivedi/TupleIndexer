@@ -7,6 +7,7 @@
 #include<bplus_tree_tuple_definitions.h>
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
+#include<invalid_tuple_indices.h>
 
 /*
 *	child index start from (-1) and end at (tuple_count - 1)

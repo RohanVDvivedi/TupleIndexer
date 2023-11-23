@@ -5,6 +5,7 @@
 #include<bplus_tree_page_header.h>
 #include<persistent_page_functions.h>
 #include<bplus_tree_split_insert_util.h>
+#include<invalid_tuple_indices.h>
 
 #include<stdlib.h>
 
