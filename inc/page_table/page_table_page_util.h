@@ -3,7 +3,7 @@
 
 #include<page_table_tuple_definitions.h>
 #include<opaque_page_modification_methods.h>
-#include<persistent_page_functions.h>
+#include<persistent_page.h>
 
 // initialize page table page
 int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_bucket_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);

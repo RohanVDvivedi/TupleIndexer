@@ -1,6 +1,7 @@
 #include<page_table_page_util.h>
 
 #include<page_table_page_header.h>
+#include<persistent_page_functions.h>
 
 #include<stdlib.h>
 
