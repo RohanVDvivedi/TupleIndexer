@@ -11,6 +11,7 @@
 const char* page_type_string[] = {
 	"BPLUS_TREE_LEAF_PAGE",
 	"BPLUS_TREE_INTERIOR_PAGE",
+	"PAGE_TABLE_PAGE",
 };
 
 // allowed values for size for storing page_type = 1 or 2

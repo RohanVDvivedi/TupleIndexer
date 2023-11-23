@@ -6,6 +6,7 @@ enum page_type
 {
 	BPLUS_TREE_LEAF_PAGE,
 	BPLUS_TREE_INTERIOR_PAGE,
+	PAGE_TABLE_PAGE,
 	// add more page_types as you wish at most ((2^16) - 1) page_types can be supported
 };
 
