@@ -2,6 +2,8 @@
 
 #include<page_table_page_header.h>
 
+#include<stdlib.h>
+
 int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_bucket_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	int inited = init_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, sizeof_PAGE_TABLE_PAGE_HEADER(pttd_p), &(pttd_p->entry_def->size_def), abort_error);
@@ -23,7 +25,7 @@ int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_
 uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p)
 {
 	// child_index out of range
-	if(child_index >= pttd_p->pas_p->entries_per_page)
+	if(child_index >= pttd_p->entries_per_page)
 		return pttd_p->pas_p->NULL_PAGE_ID;
 
 	const void* child_tuple = get_nth_tuple_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), child_index);
@@ -39,7 +41,7 @@ uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_pa
 int set_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, uint64_t child_page_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// child_index out of range
-	if(child_index >= pttd_p->pas_p->entries_per_page)
+	if(child_index >= pttd_p->entries_per_page)
 		return 0;
 
 	if(child_page_id == pttd_p->pas_p->NULL_PAGE_ID)
@@ -49,11 +51,30 @@ int set_child_page_id_at_child_index_in_page_table_page(const persistent_page* p
 		// if the child_index is greater than or equal to the tuple_count on the page, then this function fails and we do not need to take care of it, since the tuple still get read as NULL by the getter function above
 		update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), child_index, NULL, abort_error);
 		if(*abort_error)
-			return  0;
+			return 0;
 	}
 	else
 	{
-		// TODO
+		// keep on appending NULLs, until child_index is not in bounds of the tuple_count on the page
+		while(child_index >= get_tuple_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def)))
+		{
+			append_tuple_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), NULL, abort_error);
+			if(*abort_error)
+				return 0;
+		}
+
+		// now since the child_index is within bounds of tuple_count, we can directly update
+
+		// construct a tuple in temporary memory and make it point to child_page_id
+		void* new_child_tuple = malloc(get_minimum_tuple_size(pttd_p->entry_def)); // minimum size of fixed width tuple is same as its size
+		init_tuple(pttd_p->entry_def, new_child_tuple);
+		set_element_in_tuple(pttd_p->entry_def, 0, new_child_tuple, &((user_value){.uint_value = child_page_id}));
+
+		// perform update
+		update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), child_index, new_child_tuple, abort_error);
+		free(new_child_tuple);
+		if(*abort_error)
+			return 0;
 	}
 
 	return 1;
