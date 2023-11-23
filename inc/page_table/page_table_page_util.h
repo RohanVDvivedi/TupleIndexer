@@ -15,7 +15,7 @@ uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_pa
 
 // set child_page_id in the page at child_index
 // fails if child_index > pttd_p->entries_per_page
-int set_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, uint64_t child_page_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, uint32_t child_index, uint64_t child_page_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // returns true if all the child pointers in the page_table_page are NULL_PAGE_ID
 // i.e. tombstones_count == tuples_count

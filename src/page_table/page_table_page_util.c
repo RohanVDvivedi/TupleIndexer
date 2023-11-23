@@ -38,7 +38,7 @@ uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_pa
 	return get_value_from_element_from_tuple(pttd_p->entry_def, 0, child_tuple).uint_value;
 }
 
-int set_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, uint64_t child_page_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, uint32_t child_index, uint64_t child_page_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// child_index out of range
 	if(child_index >= pttd_p->entries_per_page)
