@@ -11,7 +11,7 @@ int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_
 // prints page table page
 void print_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
 
-// NOTE:: the below 3 functions allow you to access a page_table_page as an array of page_ids of size = pttd_p->entries_per_page
+// NOTE:: the below 4 functions allow you to access a page_table_page as an array of page_ids of size = pttd_p->entries_per_page
 
 // get child_page_id in the page at child_index
 uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p);
@@ -24,6 +24,11 @@ int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, 
 // i.e. tombstones_count == tuples_count
 int has_all_NULL_PAGE_ID_in_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
 
-// NOTE:: the above 3 functions allow you to access a page_table_page as an array of page_ids of size = pttd_p->entries_per_page
+// returns the number of children of the page that are not equal to NULL_PAGE_ID
+// you may shrink up the level, only if this valus is 1
+// in case this value becomes 0 (i.e. has_all_NULL_PAGE_ID_in_page_table_page(ppage, pttd_p) == 1), then you may free this page and remove it's entry from the parent page
+uint32_t get_non_NULL_PAGE_ID_count_in_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
+
+// NOTE:: the above 4 functions allow you to access a page_table_page as an array of page_ids of size = pttd_p->entries_per_page
 
 #endif
