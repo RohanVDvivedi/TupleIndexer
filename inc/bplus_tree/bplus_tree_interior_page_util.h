@@ -21,6 +21,7 @@ void print_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tr
 
 // use this child index to access the all_least_keys_page_id
 // since uint32_t is circular, this value is just mathematically and conceptually equivalent to (-1)
+// so logically (ALL_LEAST_KEYS_CHILD_INDEX+1) == 0, i.e. first tuple on the page
 #define ALL_LEAST_KEYS_CHILD_INDEX INVALID_TUPLE_INDEX
 
 // this the index of the tuple in the interior page that you should follow
