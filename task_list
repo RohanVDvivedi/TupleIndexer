@@ -1,5 +1,9 @@
 ** PICKED TASKS
 
+ * make a macro INVALID_TUPLE_INDEX = UINT32_MAX, add comment that since tuple indices on page are 32 bits, this value as index may never appear
+ * make sorted packed_page's TUPLE_NOT_FOUND equal to this macro
+ * check if uint64_t x = -1, actually sets value to UIN64_MAX
+
 PAGE_TABLE_PAGE_UTIL
  * get_non_NULL_child_count_on_page_table_page -> (tuple_count - tomb_stone_count) for page_table_page
    * add comment that a page can only shrink down, if it has this value as 1
@@ -36,6 +40,8 @@ PAGE_TABLE_BUCKET_RANGE
          * if actual range of the page encompasses the whole proposed range, then check how many indices do we need for the start and last entry_id of the query, if it is > 1, then go to child, else return with lock on this page.
        * designated range is what we have locked, actual range may change while we have lock on that page, designated range for a page never changes. It can only copy its contents to children and increase its level on a set call.
        * if all the entries in the actual range of the page that correspond to the proposed query range, then we return with lock on this page.
+     * allow reducing the locked range of the above struct, by going further down if possible, if the new query range is contained within the designated range of the locked page on the stack
+       * move down just like in the above case if possible, releasing lock on the previous locked page on the stack and changing the designated range of the page_table locker in context.
      * set_entry_page_id and get_entry_page_id, to get and set values on the struct returned by the above struct
        * they will use the designated range as the range that can be accessed, and the locked page as the root.
        * they will create nodes and increase level of the nodes, rooted at the given locked node, as they like
