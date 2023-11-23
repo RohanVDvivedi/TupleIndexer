@@ -120,6 +120,7 @@ int delete_all_in_sorted_packed_page(
 								);
 
 // all the find functions returns NO_TUPLE_FOUND, when they fail for find a desired match on the page
+#include<invalid_tuple_indices.h>
 
 // returns index of the tuple found
 uint32_t find_first_in_sorted_packed_page(
