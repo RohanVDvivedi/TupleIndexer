@@ -22,6 +22,12 @@ int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_
 	return 1;
 }
 
+void print_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p)
+{
+	print_page_table_page_header(ppage, pttd_p);
+	print_persistent_page(ppage, pttd_p->pas_p->page_size, pttd_p->entry_def);
+}
+
 uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p)
 {
 	// child_index out of range

@@ -9,7 +9,7 @@
 int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_bucket_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // ptints page table page
-int print_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
+void print_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
 
 // NOTE:: the below 3 functions allow you to access a page_table_page as an array of page_ids of size = pttd_p->entries_per_page
 
