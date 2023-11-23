@@ -24,4 +24,8 @@ uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_pa
 
 int set_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, uint64_t child_page_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
-int has_all_NULL_PAGE_ID_in_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
+int has_all_NULL_PAGE_ID_in_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p)
+{
+	// if tomb_stome_count == tuple_count, then this means all child_page_id's are NULL_PAGE_ID
+	return get_tuple_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def)) == get_tomb_stone_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
+}
