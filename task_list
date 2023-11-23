@@ -7,9 +7,6 @@ PAGE_TABLE_PAGE_UTIL
  * get actual range of the page we are looking at OR (using first_bucket_id and level)
  * get child_index for bucket_id, return -1 if the bucket_id is not in actual range of the page
 
-PAGE_TABLE_BUCKET_RANGE
- * is_contained for singular bucket_id
-
  * implement a getter to get nth from top of the locked_pages_stack (only if you need it)
 
  * a page_table that maps a 64 bit integer to a page_id
