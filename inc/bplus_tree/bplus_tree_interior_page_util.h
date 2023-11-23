@@ -19,6 +19,10 @@ int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is
 // prints of bplus_tree interior page
 void print_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
+// use this child index to access the all_least_keys_page_id
+// since uint32_t is circular, this value is just mathematically and conceptually equivalent to (-1)
+#define ALL_LEAST_KEYS_CHILD_INDEX INVALID_TUPLE_INDEX
+
 // this the index of the tuple in the interior page that you should follow
 // you may cache this, it may help in case of a split
 // the constrained parameter key_element_count_concerned <= bpttd_p->bpttd_p->key_element_count

@@ -46,7 +46,7 @@ uint32_t find_child_index_for_key(const persistent_page* ppage, const void* key,
 										key, bpttd_p->key_def, NULL
 									);
 
-	return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+	return (child_index == NO_TUPLE_FOUND) ? ALL_LEAST_KEYS_CHILD_INDEX : child_index;
 }
 
 uint32_t find_child_index_for_record(const persistent_page* ppage, const void* record, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p)
@@ -58,7 +58,7 @@ uint32_t find_child_index_for_record(const persistent_page* ppage, const void* r
 										record, bpttd_p->record_def, bpttd_p->key_element_ids
 									);
 
-	return (child_index == NO_TUPLE_FOUND) ? -1 : child_index;
+	return (child_index == NO_TUPLE_FOUND) ? ALL_LEAST_KEYS_CHILD_INDEX : child_index;
 }
 
 uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t index, const bplus_tree_tuple_defs* bpttd_p)
