@@ -38,9 +38,7 @@ page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_pa
 
 // returns the bucket range that this page entrusts its child at child_index to contain
 // the delegated range of the root page is [0, UINT64_MAX]
-// while delegated range for any other page is decided by its parent
-// a child node will always have its bucket range, contained within its delegated range dictated by its immediate parent
 // this function does not care about the overflow of the first_bucket_id of the delegated range, it is expected that you will always provide a child_index that has atleast 1 bucket
-page_table_bucket_range get_delegated_bucket_range_for_child_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p);
+page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p);
 
 #endif
