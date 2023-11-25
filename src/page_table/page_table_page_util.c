@@ -98,3 +98,28 @@ uint32_t get_non_NULL_PAGE_ID_count_in_page_table_page(const persistent_page* pp
 	// this is simply equal to tuple_count - tomb_stone_count
 	return get_tuple_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def)) - get_tomb_stone_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
 }
+
+page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p)
+{
+	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
+
+	page_table_bucket_range result = {.first_bucket_id = hdr.first_bucket_id};
+
+	uint64_t bucket_range_size;
+	if(0 == get_power_of_entries_per_page(pttd_p, hdr.level + 1, &bucket_range_size))
+		goto EXIT_OVERFLOW;
+
+	if(will_unsigned_sum_overflow(uint64_t, result.first_bucket_id, (bucket_range_size-1)))
+		goto EXIT_OVERFLOW;
+
+	result.last_bucket_id = result.first_bucket_id + (bucket_range_size-1);
+
+	// effectively equal to [first_bucket_id, first_bucket_id + (entries_per_page ^ (level + 1)) - 1]
+	return result;
+
+	EXIT_OVERFLOW:;
+	result.last_bucket_id = UINT64_MAX;
+	return result;
+}
+
+page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p);
