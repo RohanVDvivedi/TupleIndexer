@@ -1,10 +1,6 @@
 ** PICKED TASKS
 
 PAGE_TABLE_PAGE_UTIL
- * implement get_first_bucket_id_for_level_and_bucket_id_for_page_table_page
-   * it will return the first_bucket_id for a page_table page at a given level, such that it points to given bucket_id through one of its leaf nodes
-   * add a comment that first_bucket_id of a given level is always a multiple of (entries_per_page ^ (level + 1))
-   * first_bucket_id = floor(bucket_id / (entries_per_page ^ (level + 1)))
  * test page_table_page_util's range and get child_index functions
 
  * implement a getter to get nth from top of the locked_pages_stack (only if you need it)
