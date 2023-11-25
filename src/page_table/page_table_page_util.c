@@ -164,3 +164,13 @@ page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table
 	EXIT_OUT_OF_BOUNDS_CHILD:
 	return (page_table_bucket_range){.first_bucket_id = UINT64_MAX, .last_bucket_id = 0};
 }
+
+uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page* ppage, uint64_t bucket_id, const page_table_tuple_defs* pttd_p)
+{
+	page_table_bucket_range bucket_range_for_page = get_bucket_range_for_page_table_page(ppage, pttd_p);
+
+	if(!is_bucket_contained_page_table_bucket_range(&bucket_range_for_page, bucket_id))
+		return NO_TUPLE_FOUND;
+
+	// TODO
+}
