@@ -122,4 +122,45 @@ page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_pa
 	return result;
 }
 
-page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p);
+page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p)
+{
+	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
+
+	page_table_bucket_range result;
+
+	uint64_t child_bucket_range_size;
+	if(0 == get_power_of_entries_per_page(pttd_p, hdr.level, &child_bucket_range_size))
+	{
+		if(child_index != 0)
+			goto EXIT_OUT_OF_BOUNDS_CHILD;
+		else
+		{
+			// if the child_index is 0, then the first_bucket_id will not overflow but the last_bucket_id will
+			result = (page_table_bucket_range){.first_bucket_id = hdr.first_bucket_id};
+			goto EXIT_OVERFLOW;
+		}
+	}
+
+	if(will_unsigned_mul_overflow(uint64_t, child_bucket_range_size, child_index))
+		goto EXIT_OUT_OF_BOUNDS_CHILD;
+	if(will_unsigned_sum_overflow(uint64_t, hdr.first_bucket_id, child_bucket_range_size * child_index))
+		goto EXIT_OUT_OF_BOUNDS_CHILD;
+
+	result = (page_table_bucket_range){.first_bucket_id = (hdr.first_bucket_id + child_bucket_range_size * child_index)};
+
+	if(will_unsigned_sum_overflow(uint64_t, result.first_bucket_id, (child_bucket_range_size-1)))
+		goto EXIT_OVERFLOW;
+
+	result.last_bucket_id = result.first_bucket_id + (child_bucket_range_size-1);
+
+	// effectively equal to [first_bucket_id + child_index * (entries_per_page ^ level), first_bucket_id + (child_index) * (entries_per_page ^ level) + (entries_per_page ^ level) - 1]
+	return result;
+
+	EXIT_OVERFLOW:;
+	result.last_bucket_id = UINT64_MAX;
+	return result;
+
+	// this is what happens when even the first_bucket_id of the child's delegated range is out of 64 bit number
+	EXIT_OUT_OF_BOUNDS_CHILD:
+	return (page_table_bucket_range){.first_bucket_id = UINT64_MAX, .last_bucket_id = 0};
+}
