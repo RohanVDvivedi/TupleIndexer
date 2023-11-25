@@ -24,6 +24,17 @@ int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_
 	return 1;
 }
 
+uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(const persistent_page* ppage, uint64_t bucket_id, const page_table_tuple_defs* pttd_p)
+{
+	uint64_t bucket_range_size;
+
+	// if the bucket_range_size is greater than (entries_per_page^(level+1)), then all the bucket_ids point to first_bucket_id
+	if(0 == get_power_of_entries_per_page(pttd_p, level + 1, &bucket_range_size))
+		return 0;
+
+	return (bucket_id / bucket_range_size) * bucket_range_size;
+}
+
 void print_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p)
 {
 	print_page_table_page_header(ppage, pttd_p);
