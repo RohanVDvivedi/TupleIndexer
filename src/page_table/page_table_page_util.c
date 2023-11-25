@@ -24,7 +24,7 @@ int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_
 	return 1;
 }
 
-uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(const persistent_page* ppage, uint64_t bucket_id, const page_table_tuple_defs* pttd_p)
+uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(const persistent_page* ppage, uint32_t level, uint64_t bucket_id, const page_table_tuple_defs* pttd_p)
 {
 	uint64_t bucket_range_size;
 

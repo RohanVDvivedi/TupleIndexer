@@ -10,7 +10,7 @@
 int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_bucket_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // the first_bucket_id of the page is always a multipl of (entries_per_page ^ (level + 1))
-uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(const persistent_page* ppage, uint64_t bucket_id, const page_table_tuple_defs* pttd_p);
+uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(const persistent_page* ppage, uint32_t level, uint64_t bucket_id, const page_table_tuple_defs* pttd_p);
 
 // prints page table page
 void print_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
