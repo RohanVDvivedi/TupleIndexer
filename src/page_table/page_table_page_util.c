@@ -173,6 +173,8 @@ uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page*
 	if(!is_bucket_contained_page_table_bucket_range(&bucket_range_for_page, bucket_id))
 		return NO_TUPLE_FOUND;
 
+	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
+
 	uint64_t child_bucket_range_size;
 	if(0 == get_power_of_entries_per_page(pttd_p, hdr.level, &child_bucket_range_size)) // if child_bucket_range_size is too big then, you can only access the first child
 		return 0;
