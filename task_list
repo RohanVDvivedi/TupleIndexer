@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
 PAGE_TABLE_PAGE_UTIL
- * get child_index for bucket_id, return NO_TUPLE_FOUND if the bucket_id is not in actual range of the page
+ * test page_table_page_util's range and get child_index functions
 
  * implement a getter to get nth from top of the locked_pages_stack (only if you need it)
 
