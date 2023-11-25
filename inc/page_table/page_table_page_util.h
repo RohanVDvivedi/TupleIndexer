@@ -41,4 +41,8 @@ page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_pa
 // this function does not care about the overflow of the first_bucket_id of the delegated range, it is expected that you will always provide a child_index that has atleast 1 bucket
 page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p);
 
+// find the child_index to go to for accessing bucket at bucket_id index
+// returns NO_TUPLE_FOUND, if the bucket_id is not in the range of this page
+uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page* ppage, uint64_t bucket_id, const page_table_tuple_defs* pttd_p);
+
 #endif
