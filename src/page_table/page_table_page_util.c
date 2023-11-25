@@ -2,6 +2,7 @@
 
 #include<page_table_page_header.h>
 #include<persistent_page_functions.h>
+#include<invalid_tuple_indices.h>
 
 #include<stdlib.h>
 
