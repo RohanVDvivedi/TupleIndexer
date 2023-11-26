@@ -1,7 +1,9 @@
 ** PICKED TASKS
 
-PAGE_TABLE_PAGE_UTIL
- * test page_table_page_util's range and get child_index functions
+PAGE_TABLE_H
+ * get_new_page_table // allocates root page and initialize it as a leaf page with no elements
+ * print_page_table  // prints all pages of page_table, takes int only_leaf_pages as param
+ * destroy_page_table // releases all pages of the page table, all pages get read locked and then freed
 
 PAGE_TABLE_LOCKER_H
  * build a struct page_table_locker, storing locked_pages_stack and delegated_root_range.
@@ -12,12 +14,14 @@ PAGE_TABLE_LOCKER_H
  * set_in_page_table
  * destroy_page_table_locker
 
-PAGE_TABLE_H
- * get_new_page_table // allocates root page and initialize it as a leaf page with no elements
- * print_page_table  // prints all pages of page_table, takes int only_leaf_pages as param
- * destroy_page_table // releases all pages of the page table, all pages get read locked and then freed
+PAGE_TABLE_PAGE_UTIL
+ * test page_table_page_util's range and get child_index functions
 
- * implement a getter to get nth from top of the locked_pages_stack (only if you need it)
+ADVANCED FEATURES
+ * find first non_NULL bucket_id in the locked range
+ * find next non_NULL bucket_id in locked range
+ * find prev non_NULL bucket_id in locked range
+ * find last non_NULL bucket_id in locked range
 
  * a page_table that maps a 64 bit integer to a page_id
    * It is structured as a tree, starting with level 0 at the leaf, and then increasing towards root, like bplus tree.
@@ -26,7 +30,7 @@ PAGE_TABLE_H
    * A interior node with level n (n > 0), can have child with any level p (n > p >= 0).
    * with each node there is associated start_entry_id and a level n, each of that page's entries point to another valid subtree reach leaf entries in range, [start_entry_id * i * (E^n), start_entry_id * (i+1) * (E^n)), where is the slot number of ith entry on that page. It is also true that the range of slots that the parent can point to is [start_entry_id, start_entry_id + E^(n+1))
    * As shown in point above each node stores its level n and its own start_entry_id in the header.
-   * child pages are allocated as and when required, not upfront
+   * child pages are allocated as and when required, not upfront except for the root, which always stays where ever it is
    * For instance, If the parent of the page has level n (n > q) with start entry id s, and the child at slot i has level q with start_entry_id p, then the child is allowed to expand to [s * i * (E^n), s * (i+1) * (E^n)). NOTE in this case it must be true that the range of the child [p, p + E^(q+1)) must fall within the range designated by the parent, ideally it is the range designated by the parent if (q == n-1) or a range of a child in its subtree (if it was fully populated).
    * locking a node means locking the designated range of the node, not its actual range. designated range is given by the parent, not the headers of the node itself.
    * a root node always has a deginated range of [0, 2^b) where b is the number of the bits used for entry_id
