@@ -3,6 +3,20 @@
 PAGE_TABLE_PAGE_UTIL
  * test page_table_page_util's range and get child_index functions
 
+PAGE_TABLE_LOCKER_H
+ * build a struct page_table_locker, storing locked_pages_stack and delegated_root_range.
+ * macro to define DELEGATED_ROOT_RANGE that is from [0, UINT64_MAX]
+ * lock_range_for_page_table, with READ_LOCK or WRITE_LOCK
+ * minimize_lock_range_for_page_table
+ * get_from_page_table
+ * set_in_page_table
+ * destroy_page_table_locker
+
+PAGE_TABLE_H
+ * get_new_page_table // allocates root page and initialize it as a leaf page with no elements
+ * print_page_table  // prints all pages of page_table, takes int only_leaf_pages as param
+ * destroy_page_table // releases all pages of the page table, all pages get read locked and then freed
+
  * implement a getter to get nth from top of the locked_pages_stack (only if you need it)
 
  * a page_table that maps a 64 bit integer to a page_id
