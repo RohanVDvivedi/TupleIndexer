@@ -12,11 +12,25 @@ PAGE_TABLE_H
 PAGE_TABLE_LOCKER_H
  * build a struct page_table_locker, storing locked_pages_stack and delegated_root_range.
  * macro to define DELEGATED_ROOT_RANGE that is from [0, UINT64_MAX]
+    * implement functions to get the lock range
+    * lock type, this is the lock type of the bottom of the tree
  * lock_range_for_page_table, with READ_LOCK or WRITE_LOCK
+    * locks root and initializes its delegated range and calls minimize_loc_range_for_page_table
+ * for minimize, get and set fuinction always test that the query falls within the delegated range of the root of the locker
  * minimize_lock_range_for_page_table
+    * walks down, if the page table has only 1 child entry pointing to the query range, else breaks
+    * every walk down releases lock on the parent and delegated range is updated
  * get_from_page_table
+    * lock all pages in read mode only, except the root
+    * for the current top, if the actual range does not include the query_bucket_id, return NULL_PAGE_ID
+    * if actual range includes query_bucket_id, then check that child entry, if its NULL_PAGE_ID, then return NULL_PAGE_ID
+    * else if it is not NULL, then walk down if it is not leaf, else return that child_page_id
  * set_in_page_table
+    * fail if the locker is not open in write mode
+    * lock all pages in write mode
+    * TODO
  * destroy_page_table_locker
+    * release all locks from locked pages stack
 
 PAGE_TABLE_PAGE_UTIL
  * test page_table_page_util's range and get child_index functions
