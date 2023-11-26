@@ -136,6 +136,10 @@ page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_pa
 
 page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p)
 {
+	// child_index must be within bounds of entries_per_page
+	if(child_index >= pttd_p->entries_per_page)
+		goto EXIT_OUT_OF_BOUNDS_CHILD;
+
 	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
 
 	page_table_bucket_range result;
