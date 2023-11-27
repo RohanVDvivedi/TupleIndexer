@@ -1,9 +1,5 @@
 ** PICKED TASKS
 
-PAGE_TABLE_PAGE_UTIL_H
- * level_up_page_table_page() // push current contents of th page_table page, into a new page below and increment the level of the current page
- * lelve_down_page_table_page() // success only if the page is not leaf (level > 0) and has only 1 child, copies contents of its only child to itself, and frees the child page
-
 PAGE_TABLE_H
  * get_new_page_table // allocates root page and initialize it as a leaf page with no elements
  * print_page_table  // prints all pages of page_table, takes int only_leaf_pages as param
@@ -34,6 +30,7 @@ PAGE_TABLE_LOCKER_H
 
 PAGE_TABLE_PAGE_UTIL
  * test page_table_page_util's range and get child_index functions
+ * test level up and level down functions
 
 ADVANCED FEATURES
  * find first non_NULL bucket_id in the locked range
