@@ -230,9 +230,13 @@ int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs
 			return 0;
 	}
 
-	// TODO
-	// * discard all tuples from the ppage
-	// * for hdr increment its level and update first_bucket_id, and write this header onto the page
+	// discard all tuples from the ppage
+	discard_all_tuples_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), abort_error);
+
+	// increment its level and update first_bucket_id
+	hdr->level = old_hdr.level;
+	hdr->first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(oldhdr.level + 1, old_hdr.first_bucket_id, pttd_p);
+
 	// * if the only_child_page_id != NULL_PAGE_ID
 	//   * then set child index entry for old_hdr.first_bucket_id -> only_child_page_id
 
