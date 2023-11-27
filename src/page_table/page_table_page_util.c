@@ -200,10 +200,20 @@ uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page*
 
 int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	// grab the header of the page
+	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
+
 	// TODO
 }
 
 int level_down_page_table_page(persistent_page* ppage, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	// if the page is leaf OR if the count of non-NULL_PAGE_ID entry is not 1, then it can can not be levelled down
+	if(is_page_table_leaf_page(ppage, pttd_p) || get_non_NULL_PAGE_ID_count_in_page_table_page(ppage, pttd_p) != 1)
+		return 0;
+
+	// grab the header of the page
+	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
+
 	// TODO
 }
