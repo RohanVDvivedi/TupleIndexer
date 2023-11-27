@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
 PAGE_TABLE_LOCKER_H
+ * call page_table_locker as page_table_range_locker
  * build a struct page_table_locker, storing locked_pages_stack and delegated_root_range.
  * macro to define DELEGATED_ROOT_RANGE that is from [0, UINT64_MAX]
     * implement functions to get the lock range
