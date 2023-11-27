@@ -237,8 +237,20 @@ int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs
 	hdr->level = old_hdr.level + 1;
 	hdr->first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(oldhdr.level + 1, old_hdr.first_bucket_id, pttd_p);
 
-	// * if the only_child_page_id != NULL_PAGE_ID
-	//   * then set child index entry for old_hdr.first_bucket_id -> only_child_page_id
+	// write new header hdr onto the ppage
+	set_page_table_page_header(ppage, &hdr, pttd_p, pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+
+	// if we needed to copy contents of the ppage onto its child, then make an entry for it on this promoted ppage
+	if(only_child_page_id != pttd_p->pas_p->NULL_PAGE_ID)
+	{
+		// the entry goes for only_child_page.first_bucket_id -> only_child_page_id
+		uint32_t child_index_for_only_child_page = get_child_index_for_bucket_id_on_page_table_page(ppage, old_hdr.first_bucket_id, pttd_p);
+		set_child_page_id_at_child_index_in_page_table_page(ppage, child_index_for_only_child_page, only_child_page_id, pttd_p, pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+	}
 
 	return 1;
 }
