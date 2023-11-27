@@ -234,8 +234,8 @@ int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs
 	discard_all_tuples_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), abort_error);
 
 	// increment its level and update first_bucket_id
-	hdr->level = old_hdr.level + 1;
-	hdr->first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(oldhdr.level + 1, old_hdr.first_bucket_id, pttd_p);
+	hdr.level = old_hdr.level + 1;
+	hdr.first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(old_hdr.level + 1, old_hdr.first_bucket_id, pttd_p);
 
 	// write new header hdr onto the ppage
 	set_page_table_page_header(ppage, &hdr, pttd_p, pmm_p, transaction_id, abort_error);

@@ -3,6 +3,7 @@
 
 #include<page_table_tuple_definitions.h>
 #include<opaque_page_modification_methods.h>
+#include<opaque_page_access_methods.h>
 #include<persistent_page.h>
 #include<page_table_bucket_range.h>
 
