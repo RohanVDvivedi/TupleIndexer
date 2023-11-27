@@ -50,11 +50,13 @@ uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page*
 
 // level up the page table page, moving its contents into one of its children
 // you must have write lock on the page_table_page to do this
+// all the page locks acquired in this function will be released on its return
 int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // level down page table page, moving contents of its children into it
 // this succeeds only if there is exactly 1 non NULL_PAGE_ID child on the page, and the page is not a leaf
 // you must have write lock on the page_table_page to do this
+// all the page locks acquired in this function will be released on its return
 int level_down_page_table_page(persistent_page* ppage, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 #endif
