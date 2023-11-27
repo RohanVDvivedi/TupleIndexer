@@ -261,8 +261,38 @@ int level_down_page_table_page(persistent_page* ppage, const page_table_tuple_de
 	if(is_page_table_leaf_page(ppage, pttd_p) || get_non_NULL_PAGE_ID_count_in_page_table_page(ppage, pttd_p) != 1)
 		return 0;
 
-	// grab the header of the page
-	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
+	// find the only child (only_child_page_id) of this ppage and its index on the page
+	uint32_t only_child_index = 0;
+	uint64_t only_child_page_id = pttd_p->pas_p->NULL_PAGE_ID;
+	for(;only_child_index < pttd_p->entries_per_page; only_child_index++)
+	{
+		if(get_child_page_id_at_child_index_in_page_table_page(ppage, only_child_index, pttd_p) != pttd_p->pas_p->NULL_PAGE_ID)
+		{
+			only_child_page_id = get_child_page_id_at_child_index_in_page_table_page(ppage, only_child_index, pttd_p);
+			break;
+		}
+	}
 
-	// TODO
+	// get write lock on this only_child_page
+	persistent_page only_child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, only_child_page_id, WRITE_LOCK, abort_error);
+	if(*abort_error)
+		return 0;
+
+	// clone the only_child_page onto the ppage
+	clone_persistent_page(pmm_p, transaction_id, ppage,  pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), &only_child_page, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+		return 0;
+	}
+
+	// free the only_child_page
+	release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, FREE_PAGE, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+		return 0;
+	}
+
+	return 1;
 }
