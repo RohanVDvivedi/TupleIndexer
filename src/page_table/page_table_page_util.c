@@ -203,32 +203,38 @@ int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs
 	// grab the header of the page
 	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
 
-	// get lock on a new child page
-	persistent_page only_child_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
-	if(*abort_error)
-		return 0;
-
-	// clone contents of the ppage onto the only_child_page
-	clone_persistent_page(pmm_p, transaction_id, &only_child_page, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), ppage, abort_error);
-	if(*abort_error)
-	{
-		release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-		return 0;
-	}
-
-	// now we are donw with only_child_page, release lock on it
-	uint64_t only_child_page_id = only_child_page.page_id;
-	release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-	if(*abort_error)
-		return 0;
-
 	// cache the old header value
 	const page_table_page_header old_hdr = hdr;
+	uint64_t only_child_page_id = pttd_p->pas_p->NULL_PAGE_ID;
+
+	// if the ppage has atleast 1 non-NULL_PAGE_ID, then its contents have to preserved in its child
+	if(!has_all_NULL_PAGE_ID_in_page_table_page(ppage, pttd_p))
+	{
+		// get lock on a new child page
+		persistent_page only_child_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+
+		// clone contents of the ppage onto the only_child_page
+		clone_persistent_page(pmm_p, transaction_id, &only_child_page, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), ppage, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+			return 0;
+		}
+
+		// now we are donw with only_child_page, release lock on it
+		only_child_page_id = only_child_page.page_id;
+		release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+		if(*abort_error)
+			return 0;
+	}
 
 	// TODO
 	// * discard all tuples from the ppage
 	// * for hdr increment its level and update first_bucket_id, and write this header onto the page
-	// * set child index entry for old_hdr.first_bucket_id -> only_child_page_id
+	// * if the only_child_page_id != NULL_PAGE_ID
+	//   * then set child index entry for old_hdr.first_bucket_id -> only_child_page_id
 
 	return 1;
 }
