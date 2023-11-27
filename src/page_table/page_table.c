@@ -11,7 +11,7 @@ uint64_t get_new_page_table(const page_table_tuple_defs* pttd_p, const page_acce
 	if(*abort_error)
 		return pttd_p->pas_p->NULL_PAGE_ID;
 
-	// if init_page fails
+	// init root page as if it was the first leaf page
 	init_page_table_page(&root_page, 0, 0, pttd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
