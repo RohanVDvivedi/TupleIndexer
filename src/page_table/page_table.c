@@ -71,7 +71,7 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 
 			int pushed_child = 0;
 
-			// if child index is -1 or lesser than tuple_count
+			// if child index is lesser than tuple_count
 			while(curr_locked_page->child_index < tuple_count)
 			{
 				// then push it's child at child_index onto the stack (with child_index = 0), while incrementing its child index
@@ -145,11 +145,11 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// print current page as a leaf page
-		if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
+		if(is_page_table_leaf_page(&(curr_locked_page->ppage), pttd_p))
 		{
 			// print this page and its page_id
 			printf("page_id : %"PRIu64"\n\n", curr_locked_page->ppage.page_id);
-			print_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p);
+			print_page_table_page(&(curr_locked_page->ppage), pttd_p);
 			printf("xxxxxxxxxxxxx\n\n");
 
 			// unlock it and pop it from the stack
@@ -162,28 +162,37 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 		else
 		{
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
 
-			// if child index is -1 or lesser than tuple_count
-			if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count)
+			int pushed_child = 0;
+
+			// if child index is lesser than tuple_count
+			while(curr_locked_page->child_index < tuple_count)
 			{
-				// then push it's child at child_index onto the stack (with child_index = -1), while incrementing its child index
-				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index++, bpttd_p);
+				// then push it's child at child_index onto the stack (with child_index = 0), while incrementing its child index
+				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, pttd_p);
+
+				// if it is a NULL_PAGE_ID, then continue
+				if(child_page_id == pttd_p->pas_p->NULL_PAGE_ID)
+					continue;
+
 				persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
-				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, ALL_LEAST_KEYS_CHILD_INDEX));
-			}
-			else // we have printed all its children, now we print this page
-			{
-				// here the child_index of the page is tuple_count
+				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, 0));
 
+				pushed_child = 1;
+			}
+
+			// we have printed all its children, now we print this page
+			if(pushed_child == 0 && curr_locked_page->child_index == tuple_count)
+			{
 				if(!only_leaf_pages)
 				{
 					// print this page and its page_id
 					printf("page_id : %"PRIu64"\n\n", curr_locked_page->ppage.page_id);
-					print_bplus_tree_interior_page(&(curr_locked_page->ppage), bpttd_p);
+					print_page_table_page(&(curr_locked_page->ppage), pttd_p);
 					printf("xxxxxxxxxxxxx\n");
 				}
 
