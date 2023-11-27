@@ -197,3 +197,13 @@ uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page*
 	// effectively equal to (bucket_id - first_bucket_id) / (entries_per_page ^ level)
 	return (bucket_id - bucket_range_for_page.first_bucket_id) / child_bucket_range_size;
 }
+
+int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
+
+int level_down_page_table_page(persistent_page* ppage, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
