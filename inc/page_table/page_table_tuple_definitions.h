@@ -27,6 +27,9 @@ struct page_table_tuple_defs
 
 	// for all indices greater than this value, the power_table is useless, because it has overflowed
 	uint8_t power_table_overflows_at;
+
+	// the maximum height of the page table will never be more than this value
+	uint64_t max_page_table_height;
 };
 
 // initializes the attributes in page_table_tuple_defs struct as per the provided parameters

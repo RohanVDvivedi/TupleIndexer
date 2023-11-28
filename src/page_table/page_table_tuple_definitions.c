@@ -61,6 +61,25 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 		pttd_p->power_table[pttd_p->power_table_overflows_at] = pttd_p->power_table[pttd_p->power_table_overflows_at-1] * pttd_p->power_table[pttd_p->power_table_overflows_at-1];
 	}
 
+	// calculations for max_page_table_height
+	// above attributes must be set successfully for this block of code to run properly
+	{
+		uint64_t l = 0;
+		uint64_t h = UINT64_MAX;
+		while(l <= h)
+		{
+			uint64_t m = l + ((h - l) / 2);
+			uint64_t exp_m;
+			if(!get_power_of_entries_per_page(pttd_p, m, &exp_m))
+			{
+				pttd_p->max_page_table_height = m;
+				h = m - 1;
+			}
+			else
+				l = m + 1;
+		}
+	}
+
 	return 1;
 }
 
@@ -114,4 +133,6 @@ void print_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
 		printf("NULL\n");
 
 	printf("entries_per_page = %"PRIu64"\n", pttd_p->entries_per_page);
+
+	printf("max_page_table_height = %"PRIu64"\n", pttd_p->max_page_table_height);
 }
