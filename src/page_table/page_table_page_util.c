@@ -210,24 +210,40 @@ int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs
 	// if the ppage has atleast 1 non-NULL_PAGE_ID, then its contents have to preserved in its child
 	if(!has_all_NULL_PAGE_ID_in_page_table_page(ppage, pttd_p))
 	{
-		// get lock on a new child page
-		persistent_page only_child_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
-		if(*abort_error)
-			return 0;
-
-		// clone contents of the ppage onto the only_child_page
-		clone_persistent_page(pmm_p, transaction_id, &only_child_page, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), ppage, abort_error);
-		if(*abort_error)
+		// we do not need to create a new child page, if the ppage has only 1 child
+		if(get_non_NULL_PAGE_ID_count_in_page_table_page(ppage, pttd_p) == 1)
 		{
-			release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-			return 0;
+			// find the only child (only_child_page_id) of this ppage
+			for(uint32_t i = 0; i < pttd_p->entries_per_page; i++)
+			{
+				if(get_child_page_id_at_child_index_in_page_table_page(ppage, i, pttd_p) != pttd_p->pas_p->NULL_PAGE_ID)
+				{
+					only_child_page_id = get_child_page_id_at_child_index_in_page_table_page(ppage, i, pttd_p);
+					break;
+				}
+			}
 		}
+		else // else create a new child page that will contain all the children of ppage
+		{
+			// get lock on a new child page
+			persistent_page only_child_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
+			if(*abort_error)
+				return 0;
 
-		// now we are done with only_child_page, release lock on it
-		only_child_page_id = only_child_page.page_id;
-		release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-		if(*abort_error)
-			return 0;
+			// clone contents of the ppage onto the only_child_page
+			clone_persistent_page(pmm_p, transaction_id, &only_child_page, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), ppage, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+				return 0;
+			}
+
+			// now we are done with only_child_page, release lock on it
+			only_child_page_id = only_child_page.page_id;
+			release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+			if(*abort_error)
+				return 0;
+		}
 	}
 
 	// discard all tuples from the ppage
@@ -261,14 +277,13 @@ int level_down_page_table_page(persistent_page* ppage, const page_table_tuple_de
 	if(is_page_table_leaf_page(ppage, pttd_p) || get_non_NULL_PAGE_ID_count_in_page_table_page(ppage, pttd_p) != 1)
 		return 0;
 
-	// find the only child (only_child_page_id) of this ppage and its index on the page
-	uint32_t only_child_index = 0;
+	// find the only child (only_child_page_id) of this ppage
 	uint64_t only_child_page_id = pttd_p->pas_p->NULL_PAGE_ID;
-	for(;only_child_index < pttd_p->entries_per_page; only_child_index++)
+	for(uint32_t i = 0; i < pttd_p->entries_per_page; i++)
 	{
-		if(get_child_page_id_at_child_index_in_page_table_page(ppage, only_child_index, pttd_p) != pttd_p->pas_p->NULL_PAGE_ID)
+		if(get_child_page_id_at_child_index_in_page_table_page(ppage, i, pttd_p) != pttd_p->pas_p->NULL_PAGE_ID)
 		{
-			only_child_page_id = get_child_page_id_at_child_index_in_page_table_page(ppage, only_child_index, pttd_p);
+			only_child_page_id = get_child_page_id_at_child_index_in_page_table_page(ppage, i, pttd_p);
 			break;
 		}
 	}
