@@ -1,0 +1,6 @@
+#ifndef PAGE_TABLE_RANGE_LOCKER_PUBLIC_H
+#define PAGE_TABLE_RANGE_LOCKER_PUBLIC_H
+
+typedef struct page_table_range_locker page_table_range_locker;
+
+#endif
