@@ -1,11 +1,11 @@
 ** PICKED TASKS
 
 PAGE_TABLE_LOCKER_H
- * build a struct page_table_range_locker, storing persistent_page local_root, delegated_local_root_range and max_level_for_root.
- * macro to define DELEGATED_ROOT_RANGE that is from [0, UINT64_MAX]
-    * lock type, this is the lock type of the curr_local_root of the locker
+ * build a struct page_table_range_locker, storing persistent_page local_root, delegated_local_root_range and max_level_for_root (this is equal to local_root.parent.level-1).
+ * function to get lock type of the locker, this is the lock type of the curr_local_root of the locker
  * lock_range_for_page_table, with READ_LOCK or WRITE_LOCK
     * locks root and initializes its delegated range and calls minimize_lock_range_for_page_table
+    * for root of page table delegated_local_root = [0, UINT64_MAX], and max_level_for_root = max_page_table_height-1
  * for minimize, get and set function always test that the query falls within the delegated range of the root of the locker
  * minimize_lock_range_for_page_table
     * walks down, if the page table has only 1 child entry pointing to the query range, else breaks
