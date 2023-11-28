@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
-BUG FIX
- * the required capacity of the locked pages stack must be calculated as ceilt(log(UINT64_MAX + 1) base entries_per_page) instead of the level of the root page, using the power_table calculate the max height of the page_table and use that for all locked pages stack. to calculate the max height use the power table
-
 PAGE_TABLE_LOCKER_H
  * call page_table_locker as page_table_range_locker
  * build a struct page_table_locker, storing locked_pages_stack and delegated_root_range.
