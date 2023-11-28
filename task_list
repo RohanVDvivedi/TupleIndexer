@@ -1,28 +1,23 @@
 ** PICKED TASKS
 
 PAGE_TABLE_LOCKER_H
- * call page_table_locker as page_table_range_locker
- * page_table_locker does not need a locked_pages_stack, we can work with curr_local_root
-   * locked_pages_stack can be allocated for get and set functions as required on their stack
- * build a struct page_table_locker, storing locked_pages_stack and delegated_root_range.
+ * build a struct page_table_range_locker, storing persistent_page local_root, delegated_local_root_range and max_level_for_root.
  * macro to define DELEGATED_ROOT_RANGE that is from [0, UINT64_MAX]
-    * implement functions to get the lock range
-    * lock type, this is the lock type of the bottom of the tree
+    * lock type, this is the lock type of the curr_local_root of the locker
  * lock_range_for_page_table, with READ_LOCK or WRITE_LOCK
-    * locks root and initializes its delegated range and calls minimize_loc_range_for_page_table
- * for minimize, get and set fuinction always test that the query falls within the delegated range of the root of the locker
+    * locks root and initializes its delegated range and calls minimize_lock_range_for_page_table
+ * for minimize, get and set function always test that the query falls within the delegated range of the root of the locker
  * minimize_lock_range_for_page_table
     * walks down, if the page table has only 1 child entry pointing to the query range, else breaks
     * every walk down releases lock on the parent and delegated range is updated
  * get_from_page_table
-    * need only enough space as the level+1 of curr_local_root
+    * need only enough capacity as the local_root.level+1, for locked_pages_stack
     * lock all pages in read mode only, except the root
     * for the current top, if the actual range does not include the query_bucket_id, return NULL_PAGE_ID
     * if actual range includes query_bucket_id, then check that child entry, if its NULL_PAGE_ID, then return NULL_PAGE_ID
     * else if it is not NULL, then walk down if it is not leaf, else return that child_page_id
  * set_in_page_table
-    * here we need to calculate max stack stack space need for locked_pages_stack,
-      * ideally this would be local_curr_root.parent.level, and for root of the page table it would be max_page_table_height as given by pttd_p
+    * need only enough capacity as the max_level_for_root+1, for locked_pages_stack
     * fail if the locker is not open in write mode
     * lock all pages in write mode
     * TODO
