@@ -1,7 +1,11 @@
 ** PICKED TASKS
 
+ * print and destroy only need stack space enough of root.level + 1, so revert that change
+
 PAGE_TABLE_LOCKER_H
  * call page_table_locker as page_table_range_locker
+ * page_table_locker does not need a locked_pages_stack, we can work with curr_local_root
+   * locked_pages_stack can be allocated for get and set functions as required on their stack
  * build a struct page_table_locker, storing locked_pages_stack and delegated_root_range.
  * macro to define DELEGATED_ROOT_RANGE that is from [0, UINT64_MAX]
     * implement functions to get the lock range
