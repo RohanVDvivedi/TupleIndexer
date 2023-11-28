@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
 BUG FIX
- * the required capacity of the locked pages stack must be calculated as log(UINT64_MAX + 1) base entries_per_page instead of the level of the root page
+ * the required capacity of the locked pages stack must be calculated as ceilt(log(UINT64_MAX + 1) base entries_per_page) instead of the level of the root page
 
 PAGE_TABLE_LOCKER_H
  * call page_table_locker as page_table_range_locker
