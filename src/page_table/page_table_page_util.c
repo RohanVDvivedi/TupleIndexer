@@ -223,7 +223,7 @@ int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs
 			return 0;
 		}
 
-		// now we are donw with only_child_page, release lock on it
+		// now we are done with only_child_page, release lock on it
 		only_child_page_id = only_child_page.page_id;
 		release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
 		if(*abort_error)
