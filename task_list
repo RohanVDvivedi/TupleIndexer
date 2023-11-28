@@ -6,6 +6,7 @@ PAGE_TABLE_LOCKER_H
  * lock_range_for_page_table, with READ_LOCK or WRITE_LOCK
     * locks root and initializes its delegated range and calls minimize_lock_range_for_page_table
     * for root of page table delegated_local_root = [0, UINT64_MAX], and max_level_for_root = max_page_table_height-1
+ * make page_table_bucket_range and page_table_range_locker as public api header
  * for minimize, get and set function always test that the query falls within the delegated range of the root of the locker
  * minimize_lock_range_for_page_table
     * walks down, if the page table has only 1 child entry pointing to the query range, else breaks
