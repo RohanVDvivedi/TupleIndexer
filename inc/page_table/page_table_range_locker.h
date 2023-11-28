@@ -3,6 +3,8 @@
 
 #include<page_table_bucket_range.h>
 #include<persistent_page.h>
+#include<opaque_page_access_methods.h>
+#include<page_table_tuple_definitions.h>
 
 typedef struct page_table_range_locker page_table_range_locker;
 struct page_table_range_locker
@@ -19,6 +21,10 @@ struct page_table_range_locker
 
 	// local root of the range_locker, this page stays locked until you destroy the range_locker
 	persistent_page local_root;
+
+	const page_table_tuple_defs* pttd_p;
+
+	const page_access_methods* pam_p;
 };
 
 #endif
