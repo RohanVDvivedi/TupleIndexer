@@ -31,15 +31,20 @@ uint64_t get_new_page_table(const page_table_tuple_defs* pttd_p, const page_acce
 
 int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
-	// create a stack of capacity = max_page_table_height
+	// create a stack
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
-	initialize_locked_pages_stack(locked_pages_stack_p, pttd_p->max_page_table_height);
 
 	{
 		// get lock on the root page of the page_table
 		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
+
+		// pre cache level of the root_page
+		uint32_t root_page_level = get_level_of_page_table_page(&root_page, pttd_p);
+
+		// create a stack of capacity = levels
+		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
 
 		// push the root page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, 0));
@@ -116,15 +121,20 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 	// print the root page id of the page_table
 	printf("\n\nPage_table @ root_page_id = %"PRIu64"\n\n", root_page_id);
 
-	// create a stack of capacity = max_page_table_height
+	// create a stack
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
-	initialize_locked_pages_stack(locked_pages_stack_p, pttd_p->max_page_table_height);
 
 	{
 		// get lock on the root page of the page_table
 		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return;
+
+		// pre cache level of the root_page
+		uint32_t root_page_level = get_level_of_page_table_page(&root_page, pttd_p);
+
+		// create a stack of capacity = levels
+		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
 
 		// push the root page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, 0));
