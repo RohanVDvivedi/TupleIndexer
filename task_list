@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
- * if initialize_locked_pages_stack fails then exit(-1), through out the project
-
 PAGE_TABLE_LOCKER_H
  * lock_range_for_page_table, with READ_LOCK or WRITE_LOCK
     * locks root and initializes its delegated range and calls minimize_lock_range_for_page_table
