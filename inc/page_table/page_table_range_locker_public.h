@@ -2,6 +2,7 @@
 #define PAGE_TABLE_RANGE_LOCKER_PUBLIC_H
 
 #include<page_table_bucket_range.h>
+#include<opaque_page_modification_methods.h>
 
 typedef struct page_table_range_locker page_table_range_locker;
 
@@ -22,7 +23,7 @@ int is_writable_page_table_range_locker(const page_table_range_locker* ptrl_p);
 uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, const void* transaction_id, int* abort_error);
 
 // you may only set, if the bucket_id is within get_lock_range_for_page_table_range_locker() and if the ptrl is writable, returns 0 other wise
-int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error);
+int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // destroys the page_table_range_locker
 void destroy_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error);
