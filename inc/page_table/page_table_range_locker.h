@@ -31,4 +31,7 @@ struct page_table_range_locker
 	const page_access_methods* pam_p;
 };
 
+// all functions on page_table_range_locker are declared here, in this header file
+#include<page_table_range_locker_public.h>
+
 #endif
