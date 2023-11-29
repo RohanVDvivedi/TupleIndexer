@@ -13,6 +13,9 @@ struct page_table_bucket_range
 	uint64_t last_bucket_id;
 };
 
+// 64 bit range of all buckets in the page table
+#define WHOLE_PAGE_TABLE_BUCKET_RANGE ((page_table_bucket_range){.first_bucket_id = 0, .last_bucket_id = UINT64_MAX})
+
 // returns 1 if ptbr_p->first_bucket_id <= ptbr_p->last_bucket_id, else 0
 int is_valid_page_table_bucket_range(const page_table_bucket_range* ptbr_p);
 

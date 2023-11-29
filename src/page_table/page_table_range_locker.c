@@ -21,7 +21,7 @@ page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, 
 		exit(-1);
 
 	// start initializing the ptrl, making it point to and lock the actual root of the page_table
-	ptrl_p->delegated_local_root_range = (page_table_bucket_range){0, UINT64_MAX};
+	ptrl_p->delegated_local_root_range = WHOLE_PAGE_TABLE_BUCKET_RANGE;
 	ptrl_p->max_local_root_level = pttd_p->max_page_table_height - 1;
 	ptrl_p->local_root = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, root_page_id, lock_type, abort_error);
 	if(*abort_error)
