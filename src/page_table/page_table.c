@@ -5,6 +5,8 @@
 #include<persistent_page_functions.h>
 #include<locked_pages_stack.h>
 
+#include<stdlib.h>
+
 uint64_t get_new_page_table(const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	persistent_page root_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
@@ -44,7 +46,8 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 		uint32_t root_page_level = get_level_of_page_table_page(&root_page, pttd_p);
 
 		// create a stack of capacity = levels
-		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
+		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
+			exit(-1);
 
 		// push the root page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, 0));
@@ -134,7 +137,8 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 		uint32_t root_page_level = get_level_of_page_table_page(&root_page, pttd_p);
 
 		// create a stack of capacity = levels
-		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
+		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
+			exit(-1);
 
 		// push the root page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, 0));
