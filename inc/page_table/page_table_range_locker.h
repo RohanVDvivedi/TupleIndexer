@@ -22,6 +22,9 @@ struct page_table_range_locker
 	// local root of the range_locker, this page stays locked until you destroy the range_locker
 	persistent_page local_root;
 
+	// actual page_id of the root of the page_table, that we would be working with
+	uint64_t root_page_id;
+
 	const page_table_tuple_defs* pttd_p;
 
 	const page_access_methods* pam_p;
