@@ -19,7 +19,8 @@ struct page_table_range_locker
 	// for the root of the page_table this value is equal to (pttd_p->max_page_table_height-1)
 	uint32_t max_local_root_level;
 
-	// local root of the range_locker, this page stays locked until you destroy the range_locker
+	// local root of the range_locker, this page stays locked until you destroy the range_locker, unless in case of an abort
+	// you can only set a bucket_id if the lock_type of local_root is WRITE_LOCK
 	persistent_page local_root;
 
 	// actual page_id of the root of the page_table, that we would be working with

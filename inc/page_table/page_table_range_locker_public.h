@@ -3,11 +3,13 @@
 
 #include<page_table_bucket_range.h>
 #include<opaque_page_modification_methods.h>
+#include<persistent_page.h>
 
 typedef struct page_table_range_locker page_table_range_locker;
 
 // creates a new page_table_range_locker for the given range
-page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, page_table_bucket_range lock_range, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+// you want to call set then the lock_type must be WRITE_LOCK
+page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, page_table_bucket_range lock_range, int lock_type, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // minimizes the lock range of the range_locker
 int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptrl_p, page_table_bucket_range lock_range, const void* transaction_id, int* abort_error);
