@@ -4,6 +4,8 @@
 #include<page_table_page_util.h>
 #include<page_table_page_header.h>
 
+#include<stdlib.h>
+
 page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, page_table_bucket_range lock_range, int lock_type, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// fail if the lock range is invalid
@@ -15,6 +17,8 @@ page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, 
 		return NULL;
 
 	page_table_range_locker* ptrl_p = malloc(sizeof(page_table_range_locker));
+	if(ptrl_p == NULL)
+		exit(-1);
 
 	// start initializing the ptrl, making it point to and lock the actual root of the page_table
 	ptrl_p->delegated_local_root_range = (page_table_bucket_range){0, UINT64_MAX};
