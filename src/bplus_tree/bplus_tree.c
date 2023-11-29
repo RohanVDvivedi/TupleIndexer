@@ -65,7 +65,8 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 		}
 
 		// create a stack of capacity = levels
-		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
+		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
+			exit(-1);
 
 		// push the root page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, ALL_LEAST_KEYS_CHILD_INDEX));
@@ -165,7 +166,8 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
 
 		// create a stack of capacity = levels
-		initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1);
+		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
+			exit(-1);
 
 		// push the root page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, ALL_LEAST_KEYS_CHILD_INDEX));
