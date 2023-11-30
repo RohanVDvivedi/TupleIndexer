@@ -58,12 +58,7 @@ int main()
 	}
 
 	for(uint64_t i = 0; i < 10000; i += 500)
-	{
 		set_in_page_table(ptrl_p, i, i, pmm_p, transaction_id, &abort_error);
-
-		// print the constructed page table
-		print_page_table(root_page_id, 0, &pttd, pam_p, transaction_id, &abort_error);
-	}
 
 	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -71,6 +66,9 @@ int main()
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	// print the constructed page table
+	print_page_table(root_page_id, 0, &pttd, pam_p, transaction_id, &abort_error);
 
 	/* TESTS ENDED */
 
