@@ -430,7 +430,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 					if(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0) // then curr_page can not be the local_root, hence we can free it
 					{
 						// free the curr_page
-						release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(curr_page.ppage), NONE_OPTION, abort_error);
+						release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(curr_page.ppage), FREE_PAGE, abort_error);
 						if(*abort_error)
 							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
 
