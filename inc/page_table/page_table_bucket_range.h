@@ -13,6 +13,9 @@ struct page_table_bucket_range
 	uint64_t last_bucket_id;
 };
 
+// bucket_range for a singular bucket
+#define PAGE_TABLE_BUCKET_RANGE_FOR_BUCKET(bucket_id_val) ((page_table_bucket_range){.first_bucket_id = bucket_id_val, .last_bucket_id = bucket_id_val})
+
 // 64 bit range of all buckets in the page table
 #define WHOLE_PAGE_TABLE_BUCKET_RANGE ((page_table_bucket_range){.first_bucket_id = 0, .last_bucket_id = UINT64_MAX})
 
