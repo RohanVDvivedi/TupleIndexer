@@ -211,4 +211,36 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 	// TODO
 }
 
-void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error);
+void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
+{
+	// we will need to make a second pass from root to discard the local_root
+	// if there was no abort, and local_root is still locked
+	// local_root != actual_root
+	// local_root was write locked
+	// and the local_root is empty (i.e. has only NULL_PAGE_IDS)
+	int will_need_to_discard_if_empty = ((*abort_error) == 0) &&
+										(!is_persistent_page_NULL(&(ptrl_p->local_root), ptrl_p->pam_p)) &&
+										(ptrl_p->local_root.page_id != ptrl_p->root_page_id) &&
+										is_persistent_page_write_locked(&(ptrl_p->local_root)) &&
+										has_all_NULL_PAGE_ID_in_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p);
+
+	// you need to re enter using the root_page_id and go to this bucket_id to discard the local root
+	uint64_t discard_target = ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+	if(will_need_to_discard_if_empty)
+		discard_target = get_first_bucket_id_of_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p);
+
+	if(!is_persistent_page_NULL(&(ptrl_p->local_root), ptrl_p->pam_p))
+	{
+		release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(ptrl_p->local_root), NONE_OPTION, abort_error);
+		if(*abort_error)
+			will_need_to_discard_if_empty = 0;
+	}
+	free(ptrl_p);
+
+	if(will_need_to_discard_if_empty)
+	{
+		// descend from root, towards discard_target and eliminate it
+	}
+
+	return;
+}
