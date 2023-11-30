@@ -3,6 +3,8 @@
 #include<persistent_page_functions.h>
 #include<page_table_page_util.h>
 #include<page_table_page_header.h>
+#include<locked_pages_stack.h>
+#include<invalid_tuple_indices.h>
 
 #include<stdlib.h>
 
@@ -336,10 +338,161 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 			}
 		}
 	}
-	else
+	else // else we have to set bucket_id -> NULL_PAGE_ID
 	{
-		// TODO
-		return 0;
+		// create a stack of capacity = levels
+		locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
+		if(!initialize_locked_pages_stack(locked_pages_stack_p, ptrl_p->max_local_root_level + 1))
+			exit(-1);
+
+		// result to be returned
+		int result = 0;
+
+		// this will be set if reverse pass is required
+		int reverse_pass_required = 0;
+
+		// push local root onto the stack
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(ptrl_p->local_root, INVALID_TUPLE_INDEX));
+
+		// forward pass walking down the page_table
+		while(1)
+		{
+			locked_page_info* curr_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+
+			// actual range of curr_page
+			page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p);
+
+			// if bucket_id is not contained in the actual_range of the curr_page, then level_up the page
+			if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, bucket_id))
+			{
+				result = 1;
+				break;
+			}
+
+			// now the page must have its actual_range contain the bucket_id,
+			// hence a child_index must exist
+			curr_page->child_index = get_child_index_for_bucket_id_on_page_table_page(&(curr_page->ppage), bucket_id, ptrl_p->pttd_p);
+			uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p);
+
+			// if this child_page_id is NULL_PAGE_ID, then nothing needs to be done
+			if(child_page_id == ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+			{
+				result = 1;
+				break;
+			}
+
+			if(is_page_table_leaf_page(&(curr_page->ppage), ptrl_p->pttd_p))
+			{
+				set_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p->pas_p->NULL_PAGE_ID, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+				reverse_pass_required = 1;
+				result = 1;
+				break;
+			}
+			else
+			{
+				if(get_non_NULL_PAGE_ID_count_in_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p) > 1) // this page will exist even if one of its child is NULLed, so we can release lock on its parents
+				{
+					while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_page)
+					{
+						locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+						release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(bottom->ppage), ptrl_p, transaction_id, abort_error);
+						pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+						if(*abort_error)
+							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+					}
+				}
+
+				// grab write lock on child page, push it onto the stack and then continue
+				persistent_page child_page = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+				if(*abort_error)
+					goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
+
+				continue;
+			}
+		}
+
+		// if reverse pass is required then do it
+		if(reverse_pass_required == 1)
+		{
+			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+			{
+				locked_page_info curr_page = *get_top_of_locked_pages_stack(locked_pages_stack_p);
+				pop_from_locked_pages_stack(locked_pages_stack_p);
+
+				uint32_t child_entry_count_curr_page = get_non_NULL_PAGE_ID_count_in_page_table_page(&(curr_page.ppage), ptrl_p->pttd_p);
+
+				if(child_entry_count_curr_page == 0)
+				{
+					if(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0) // then curr_page can not be the local_root, hence we can free it
+					{
+						// free the curr_page
+						release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(curr_page.ppage), NONE_OPTION, abort_error);
+						if(*abort_error)
+							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+
+						// set NULL_PAGE_ID to its parent page entry
+						locked_page_info* parent_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+						set_child_page_id_at_child_index_in_page_table_page(&(parent_page->ppage), parent_page->child_index, ptrl_p->pttd_p->pas_p->NULL_PAGE_ID, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+						if(*abort_error)
+							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+					}
+					else // this page may be a local_root, so we can't free it
+					{
+						// write 0 to the level of the curr_page
+						page_table_page_header hdr = get_page_table_page_header(&(curr_page.ppage), ptrl_p->pttd_p);
+						hdr.level = 0;
+						set_page_table_page_header(&(curr_page.ppage), &hdr, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+						if(*abort_error)
+						{
+							release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page.ppage), ptrl_p, transaction_id, abort_error);
+							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+						}
+
+						// release lock on curr_page
+						release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page.ppage), ptrl_p, transaction_id, abort_error);
+						if(*abort_error)
+							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+					}
+				}
+				else if(child_entry_count_curr_page == 1)
+				{
+					// level down curr_page
+					level_down_page_table_page(&(curr_page.ppage), ptrl_p->pttd_p, ptrl_p->pam_p, pmm_p, transaction_id, abort_error);
+
+					// push curr_page back into the stack
+					push_to_locked_pages_stack(locked_pages_stack_p, &curr_page);
+				}
+				else
+					break;
+			}
+		}
+
+		// release locks bottom first
+		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(bottom->ppage), ptrl_p, transaction_id, abort_error);
+			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+			if(*abort_error)
+				goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+		}
+
+		return result;
+
+		RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR:;
+		// release all locks from stack bottom first
+		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(bottom->ppage), ptrl_p, transaction_id, abort_error);
+			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+		}
+		goto ABORT_ERROR;
 	}
 
 	ABORT_ERROR:
