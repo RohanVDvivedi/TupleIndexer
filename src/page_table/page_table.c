@@ -75,7 +75,7 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 			int pushed_child = 0;
 
 			// if child index is lesser than tuple_count
-			while(curr_locked_page->child_index < tuple_count)
+			while(curr_locked_page->child_index < tuple_count && pushed_child == 0)
 			{
 				// then push it's child at child_index onto the stack (with child_index = 0), while incrementing its child index
 				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, pttd_p);
@@ -171,7 +171,7 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 			int pushed_child = 0;
 
 			// if child index is lesser than tuple_count
-			while(curr_locked_page->child_index < tuple_count)
+			while(curr_locked_page->child_index < tuple_count && pushed_child == 0)
 			{
 				// then push it's child at child_index onto the stack (with child_index = 0), while incrementing its child index
 				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, pttd_p);
