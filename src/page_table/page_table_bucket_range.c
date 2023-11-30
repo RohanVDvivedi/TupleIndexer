@@ -1,8 +1,16 @@
 #include<page_table_bucket_range.h>
 
+#include<inttypes.h>
+#include<stdio.h>
+
 int is_valid_page_table_bucket_range(const page_table_bucket_range* ptbr_p)
 {
 	return ptbr_p->first_bucket_id <= ptbr_p->last_bucket_id;
+}
+
+void print_page_table_bucket_range(const page_table_bucket_range* ptbr_p)
+{
+	printf("[%"PRIu64", %"PRIu64"]", ptbr_p->first_bucket_id, ptbr_p->last_bucket_id);
 }
 
 int are_disjoint_page_table_bucket_range(const page_table_bucket_range* ptbr1_p, const page_table_bucket_range* ptbr2_p)
