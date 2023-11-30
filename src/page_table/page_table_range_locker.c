@@ -115,6 +115,19 @@ int is_writable_page_table_range_locker(const page_table_range_locker* ptrl_p)
 	return is_persistent_page_write_locked(&(ptrl_p->local_root));
 }
 
+// release lock on the persistent_page, and ensure that local_root is not unlocked
+// only used in get and set functions
+static void release_lock_on_persistent_page_while_preventing_local_root_unlocking(persistent_page* ppage, page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
+{
+	// if it is the local_root you are releasing lock on, then you only need to copy it back to local_root of ptrl
+	if(ppage->page_id == ptrl_p->local_root.page_id)
+	{
+		ptrl_p->local_root = (*ppage);
+		return;
+	}
+	release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, ppage, NONE_OPTION, abort_error);
+}
+
 uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, const void* transaction_id, int* abort_error)
 {
 	// fail if the bucket_id is not contained within the delegated range of the local_root
