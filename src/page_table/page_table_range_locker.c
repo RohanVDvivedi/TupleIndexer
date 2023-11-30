@@ -50,7 +50,59 @@ int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptr
 	if(!is_valid_page_table_bucket_range(&lock_range) || !is_contained_page_table_bucket_range(&(ptrl_p->delegated_local_root_range), &lock_range))
 		return 0;
 
-	// TODO
+	while(1)
+	{
+		// if the local_root is already a leaf page then quit
+		if(is_page_table_leaf_page(&(ptrl_p->local_root), ptrl_p->pttd_p))
+			break;
+
+		page_table_bucket_range actual_range = get_bucket_range_for_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p);
+
+		// if the actual_range is not contained within the lock_range provided then quit
+		if(!is_contained_page_table_bucket_range(&actual_range, &lock_range))
+			break;
+
+		uint32_t first_bucket_child_index = get_child_index_for_bucket_id_on_page_table_page(&(ptrl_p->local_root), lock_range.first_bucket_id, ptrl_p->pttd_p);
+		uint32_t last_bucket_child_index = get_child_index_for_bucket_id_on_page_table_page(&(ptrl_p->local_root), lock_range.last_bucket_id, ptrl_p->pttd_p);
+
+		// the lock_range must point to a single child on the local_root
+		if(first_bucket_child_index != last_bucket_child_index)
+			break;
+
+		// this is the child we must go to
+		// its delegated_range contains the lock_range
+		uint32_t child_index = first_bucket_child_index;
+
+		// get child_page_id to go to
+		uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(ptrl_p->local_root), child_index, ptrl_p->pttd_p);
+
+		// if this entry does not point to an existing child, then we can not make it the local root
+		if(child_page_id == ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+			break;
+
+		// update the local_root's delegated_range and max_level
+		ptrl_p->delegated_local_root_range = get_delegated_bucket_range_for_child_index_on_page_table_page(&(ptrl_p->local_root), child_index, ptrl_p->pttd_p);
+		ptrl_p->max_local_root_level = get_level_of_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p) - 1;
+
+		// acquire lock on new_local_root, then release lock on old local_root
+		persistent_page new_local_root = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, child_page_id, (is_persistent_page_write_locked(&(ptrl_p->local_root)) ? WRITE_LOCK : READ_LOCK), abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(ptrl_p->local_root), NONE_OPTION, abort_error);
+			return 0;
+		}
+		release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(ptrl_p->local_root), NONE_OPTION, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &new_local_root, NONE_OPTION, abort_error);
+			return 0;
+		}
+
+		// update the new local_root
+		ptrl_p->local_root = new_local_root;
+	}
+
+	return 1;
 }
 
 page_table_bucket_range get_lock_range_for_page_table_range_locker(const page_table_range_locker* ptrl_p)
