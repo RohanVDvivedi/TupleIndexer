@@ -126,6 +126,10 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 
 int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	// we cannot set if the ptrl is not locked for reading
+	if(!is_writable_page_table_range_locker(ptrl_p))
+		return 0;
+
 	// fail if the bucket_id is not contained within the delegated range of the local_root
 	if(!is_bucket_contained_page_table_bucket_range(&(ptrl_p->delegated_local_root_range), bucket_id))
 		return 0;
