@@ -148,7 +148,7 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 		{
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
 			if(*abort_error)
-				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+				goto ABORT_ERROR;
 			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
 		}
 
@@ -161,7 +161,7 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 		{
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
 			if(*abort_error)
-				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+				goto ABORT_ERROR;
 			return child_page_id;
 		}
 
@@ -170,7 +170,7 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 		{
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
 			if(*abort_error)
-				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+				goto ABORT_ERROR;
 			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
 		}
 
@@ -179,18 +179,23 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 		if(*abort_error)
 		{
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
-			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+			goto ABORT_ERROR;
 		}
 		release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
 		if(*abort_error)
 		{
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&child_page, ptrl_p, transaction_id, abort_error);
-			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+			goto ABORT_ERROR;
 		}
 
 		// now make child_page as the curr_page and loop over
 		curr_page = child_page;
 	}
+
+	ABORT_ERROR:;
+	// release lock on local root
+	release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(ptrl_p->local_root), NONE_OPTION, abort_error);
+	return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
 }
 
 int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
