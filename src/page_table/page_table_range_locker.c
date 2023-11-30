@@ -208,7 +208,140 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 	if(!is_bucket_contained_page_table_bucket_range(&(ptrl_p->delegated_local_root_range), bucket_id))
 		return 0;
 
-	// TODO
+	if(page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+	{
+		persistent_page curr_page = ptrl_p->local_root;
+		while(1)
+		{
+			// if the curr_page has been locked, then its delegated range will and must contain the bucket_id
+
+			// if the page we are looking at is empty, the re-purpose the page as a new leaf page that contains the bucket_id
+			if(has_all_NULL_PAGE_ID_in_page_table_page(&curr_page, ptrl_p->pttd_p))
+			{
+				page_table_page_header hdr = get_page_table_page_header(&curr_page, ptrl_p->pttd_p);
+				hdr.level = 0;
+				hdr.first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(0, bucket_id, ptrl_p->pttd_p);
+				set_page_table_page_header(&curr_page, &hdr, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				uint32_t child_index = get_child_index_for_bucket_id_on_page_table_page(&curr_page, bucket_id, ptrl_p->pttd_p);
+				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, page_id, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				return 1;
+			}
+
+			// actual range of curr_page
+			page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&curr_page, ptrl_p->pttd_p);
+
+			// if bucket_id is not contained in the actual_range of the curr_page, then level_up the page
+			if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, bucket_id))
+			{
+				level_up_page_table_page(&curr_page, ptrl_p->pttd_p, ptrl_p->pam_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+				continue;
+			}
+
+			// now the page must have its actual_range contain the bucket_id,
+			// hence a child_index must exist
+			uint32_t child_index = get_child_index_for_bucket_id_on_page_table_page(&curr_page, bucket_id, ptrl_p->pttd_p);
+
+			// if it is leaf page, then all we need to do is insert the new_entry, bucket_id->page_id, and we are done
+			if(is_page_table_leaf_page(&curr_page, ptrl_p->pttd_p))
+			{
+				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, page_id, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+				return 1;
+			}
+
+			// for an interior page, fetch the child_page_id that we must follow next
+			uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, ptrl_p->pttd_p);
+
+			// if that child_page_id is NULL, then insert a new leaf in the curr_page
+			if(child_page_id == ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+			{
+				persistent_page child_page = get_new_persistent_page_with_write_lock(ptrl_p->pam_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, child_page.page_id, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&child_page, ptrl_p, transaction_id, abort_error);
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&child_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				curr_page = child_page;
+
+				// initialize this new child page as if it is an empty page
+				// it will be repurposed in the next iteration
+				init_page_table_page(&curr_page, 0, 0, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				continue;
+			}
+			else // else if child_page_id != NULL_PAGE_ID, then go to this child and make it the curr_page
+			{
+				// we need to WRITE_LOCK the child_page, then release lock on the curr_page
+				persistent_page child_page = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&child_page, ptrl_p, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				// now make child_page as the curr_page and loop over
+				curr_page = child_page;
+			}
+		}
+	}
+	else
+	{
+		// TODO
+		return 0;
+	}
+
+	ABORT_ERROR:
+	// release lock on local root
+	release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(ptrl_p->local_root), NONE_OPTION, abort_error);
+	return 0;
 }
 
 void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
