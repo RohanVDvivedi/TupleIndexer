@@ -210,8 +210,8 @@ int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs
 	// if the ppage has atleast 1 non-NULL_PAGE_ID, then its contents have to preserved in its child
 	if(!has_all_NULL_PAGE_ID_in_page_table_page(ppage, pttd_p))
 	{
-		// we do not need to create a new child page, if the ppage has only 1 child
-		if(get_non_NULL_PAGE_ID_count_in_page_table_page(ppage, pttd_p) == 1)
+		// we do not need to create a new child page, if the ppage has only 1 child and ppage is not a leaf
+		if(get_non_NULL_PAGE_ID_count_in_page_table_page(ppage, pttd_p) == 1 && !is_page_table_leaf_page(ppage, pttd_p))
 		{
 			// find the only child (only_child_page_id) of this ppage
 			for(uint32_t i = 0; i < pttd_p->entries_per_page; i++)
