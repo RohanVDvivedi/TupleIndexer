@@ -123,6 +123,7 @@ static void release_lock_on_persistent_page_while_preventing_local_root_unlockin
 	if(ppage->page_id == ptrl_p->local_root.page_id)
 	{
 		ptrl_p->local_root = (*ppage);
+		(*ppage) = get_NULL_persistent_page(ptrl_p->pam_p);
 		return;
 	}
 	release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, ppage, NONE_OPTION, abort_error);
@@ -134,7 +135,62 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 	if(!is_bucket_contained_page_table_bucket_range(&(ptrl_p->delegated_local_root_range), bucket_id))
 		return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
 
-	// TODO
+	persistent_page curr_page = ptrl_p->local_root;
+	while(1)
+	{
+		// if the curr_page has been locked, then its delegated range will and must contain the bucket_id
+
+		// actual range of curr_page
+		page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&curr_page, ptrl_p->pttd_p);
+
+		// if bucket_id is not contained in the actual_range of the curr_page, then return NULL_PAGE_ID
+		if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, bucket_id))
+		{
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+			if(*abort_error)
+				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+		}
+
+		// get child_page_id to goto next
+		uint32_t child_index = get_child_index_for_bucket_id_on_page_table_page(&curr_page, bucket_id, ptrl_p->pttd_p);
+		uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, ptrl_p->pttd_p);
+
+		// if it is a leaf page, then we return the child_page_id
+		if(is_page_table_leaf_page(&curr_page, ptrl_p->pttd_p))
+		{
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+			if(*abort_error)
+				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+			return child_page_id;
+		}
+
+		// if not leaf and the child_page_id == NULL_PAGE_ID, then there can be no leaf that contains this bucket_id
+		if(child_page_id == ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+		{
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+			if(*abort_error)
+				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+		}
+
+		// we need to READ_LOCK the child_page, then release lock on the curr_page
+		persistent_page child_page = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+		}
+		release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&child_page, ptrl_p, transaction_id, abort_error);
+			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+		}
+
+		// now make child_page as the curr_page and loop over
+		curr_page = child_page;
+	}
 }
 
 int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
