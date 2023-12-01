@@ -491,6 +491,12 @@ static int upgrade_reader_lock_to_writer_lock_on_page(void* context, const void*
 	if(lock_upgraded == 0)
 		(*abort_error) = 1;
 
+	// if, we took a write lock on it, so copy the previous contents to the previous_page_memory
+	#ifdef CHECK_WAS_MODIFIED_BIT
+		if(lock_upgraded)
+			memory_move(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
+	#endif
+
 	return lock_upgraded;
 }
 
