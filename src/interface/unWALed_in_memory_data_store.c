@@ -275,6 +275,7 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 		{
 			// allocate page memory for this free page descriptor
 			page_desc->page_memory = allocate_page(cntxt->page_size);
+			memory_set(page_desc->page_memory, 0, cntxt->page_size);
 
 			#ifdef CHECK_WAS_MODIFIED_BIT
 				if(page_desc->page_memory != NULL)
