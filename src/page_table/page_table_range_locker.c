@@ -458,7 +458,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
 					}
 				}
-				else if(child_entry_count_curr_page == 1)
+				else if(child_entry_count_curr_page == 1 && !is_page_table_leaf_page(&(curr_page.ppage), ptrl_p->pttd_p)) // if you can level it down then do it
 				{
 					// level down curr_page
 					level_down_page_table_page(&(curr_page.ppage), ptrl_p->pttd_p, ptrl_p->pam_p, pmm_p, transaction_id, abort_error);
@@ -489,6 +489,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 				goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
 		}
 
+		deinitialize_locked_pages_stack(locked_pages_stack_p);
 		return result;
 
 		RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR:;
@@ -499,6 +500,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(bottom->ppage), ptrl_p, transaction_id, abort_error);
 			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 		}
+		deinitialize_locked_pages_stack(locked_pages_stack_p);
 		goto ABORT_ERROR;
 	}
 
