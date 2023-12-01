@@ -1,75 +1,17 @@
 ** PICKED TASKS
 
 PAGE_TABLE_LOCKER_H
- * lock_range_for_page_table, with READ_LOCK or WRITE_LOCK
-    * locks root and initializes its delegated range and calls minimize_lock_range_for_page_table
-    * for root of page table delegated_local_root = [0, UINT64_MAX], and max_level_for_root = max_page_table_height-1
- * for minimize, get and set function always test that the query falls within the delegated range of the root of the locker
- * minimize_lock_range_for_page_table
-    * walks down, if the page table has only 1 child entry pointing to the query range, else breaks
-    * every walk down releases lock on the parent and delegated range is updated
- * get_from_page_table
-    * need only enough capacity as the local_root.level+1, for locked_pages_stack
-    * lock all pages in read mode only, except the root
-    * for the current top, if the actual range does not include the query_bucket_id, return NULL_PAGE_ID
-    * if actual range includes query_bucket_id, then check that child entry, if its NULL_PAGE_ID, then return NULL_PAGE_ID
-    * else if it is not NULL, then walk down if it is not leaf, else return that child_page_id
- * set_in_page_table
-    * need only enough capacity as the max_level_for_root+1, for locked_pages_stack
-    * fail if the locker is not open in write mode
-    * lock all pages in write mode
-    * TODO
  * delete_page_table_range_locker
-    * release all locks from locked pages stack
+    * if necessary make final pass to ensure that the page local root does not need freeing
 
-PAGE_TABLE_PAGE_UTIL
- * test page_table_page_util's range and get child_index functions
- * test level up and level down functions
- * test page_table's get_new destroy and print functions
+PAGE_TABLE
+ * rigorous testing
 
 ADVANCED FEATURES
  * find first non_NULL bucket_id in the locked range
  * find next non_NULL bucket_id in locked range
  * find prev non_NULL bucket_id in locked range
  * find last non_NULL bucket_id in locked range
-
- * a page_table that maps a 64 bit integer to a page_id
-   * It is structured as a tree, starting with level 0 at the leaf, and then increasing towards root, like bplus tree.
-   * each page at any level is identical and contains list of page_ids, each of page_id_width, pointing to another page_table page (when its level > 0) OR something else (when its level = 0), all pages are identical.
-   * If there are E entries in each of the page, then that page is bound to point to E^(n+1) buckets/entries in all.
-   * A interior node with level n (n > 0), can have child with any level p (n > p >= 0).
-   * with each node there is associated start_entry_id and a level n, each of that page's entries point to another valid subtree reach leaf entries in range, [start_entry_id * i * (E^n), start_entry_id * (i+1) * (E^n)), where is the slot number of ith entry on that page. It is also true that the range of slots that the parent can point to is [start_entry_id, start_entry_id + E^(n+1))
-   * As shown in point above each node stores its level n and its own start_entry_id in the header.
-   * child pages are allocated as and when required, not upfront except for the root, which always stays where ever it is
-   * For instance, If the parent of the page has level n (n > q) with start entry id s, and the child at slot i has level q with start_entry_id p, then the child is allowed to expand to [s * i * (E^n), s * (i+1) * (E^n)). NOTE in this case it must be true that the range of the child [p, p + E^(q+1)) must fall within the range designated by the parent, ideally it is the range designated by the parent if (q == n-1) or a range of a child in its subtree (if it was fully populated).
-   * locking a node means locking the designated range of the node, not its actual range. designated range is given by the parent, not the headers of the node itself.
-   * a root node always has a deginated range of [0, 2^b) where b is the number of the bits used for entry_id
-   * If any page becomes all empty, then it is freed and an entry from its parent is discarded, shrinking the page_table up the chain.
-   * an entry_id X is pointed to by a page of level n in its subtree, with start_entry_id s, only if X lies in range [s, s + E^(n+1)). (here s is also a multiple of E^(n+1)) (The range given here, in this point is actual range not designated range, you can not get slot index for designated range.)
-     * where s = floor(X / (E^(n+1))) * E^(n+1)
-     * and the child slot pointing to X is at index i in the page where, i = floor((X - s) / (E^n)) = floor((X % (E^(n+1))) / (E^n))
-   * api:
-     * walk_down_page_table(uint64_t root_page_id, uint64_t start_entry_id, uint64_t last_entry_id, int leaf_lock_type (READ_LOCK or WRITE_LOCK), int create_if_absent);
-       * returns a struct that stores designated range given by the parent of the locked page, and a locked pages stack enough to hold any subtree of the range
-       * walks down latch coupling taking write locks, releasing parent locks when possible.
-       * walk down until leaf or 
-         * if actual range of the page does not encompass the proposed query range, then this page is what we want to lock and return.
-         * if actual range of the page encompasses the whole proposed range, then check how many indices do we need for the start and last entry_id of the query, if it is > 1, then go to child, else return with lock on this page.
-       * designated range is what we have locked, actual range may change while we have lock on that page, designated range for a page never changes. It can only copy its contents to children and increase its level on a set call.
-       * if all the entries in the actual range of the page that correspond to the proposed query range, then we return with lock on this page.
-     * allow reducing the locked range of the above struct, by going further down if possible, if the new query range is contained within the designated range of the locked page on the stack
-       * move down just like in the above case if possible, releasing lock on the previous locked page on the stack and changing the designated range of the page_table locker in context.
-     * set_entry_page_id and get_entry_page_id, to get and set values on the struct returned by the above struct
-       * they will use the designated range as the range that can be accessed, and the locked page as the root.
-       * they will create nodes and increase level of the nodes, rooted at the given locked node, as they like
-       * get will return NULL_PAGE_ID if the entry does not exists, while set can create and destry nodes and entries at will.
-     * shrink_page_table(uin64_t root_page_id, uint64_t entry_id);
-       * to be called when you write NULL_PAGE_ID to entry_id, it will shrink the page_table taking write locks all the way until leaf and freeeing pages on the path on the way up, if the page only consists of NULL_PAGE_ID's in it
-       * at the end if the root only has 1 entry at its first entry, then the contents of its only leaf are copied onto it, shrinking the tree up a level.
-       * think about optimizations like, when there are more than 1 valid non NULL entries in interior or leaf page, then release all parent locks.
-     * release_locks function to release page_table lock acquired by the walk_down_page_table function.
-     * check_is_root_locked
-       * check if we locked the root page
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
