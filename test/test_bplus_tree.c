@@ -164,7 +164,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
 	{
 		// read a record from the file
-		record r;
+		record r = {};
 		read_record_from_file(&r, f);
 
 		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
@@ -179,7 +179,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//print_record(&r);
 
 		// construct tuple from this record
-		char record_tuple[PAGE_SIZE];
+		char record_tuple[PAGE_SIZE] = {};
 		build_tuple_from_record_struct(bpttd_p->record_def, record_tuple, &r);
 
 		// printing built tuple
@@ -301,7 +301,7 @@ result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* f
 	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
 	{
 		// read a record from the file
-		record r;
+		record r = {};
 		read_record_from_file(&r, f);
 
 		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
@@ -316,7 +316,7 @@ result update_in_file(uint64_t root_page_id, const update_inspector* ui, char* f
 		//print_record(&r);
 
 		// construct tuple from this record
-		char record_tuple[PAGE_SIZE];
+		char record_tuple[PAGE_SIZE] = {};
 		build_tuple_from_record_struct(bpttd_p->record_def, record_tuple, &r);
 
 		// printing built tuple
@@ -377,7 +377,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
 	{
 		// read a record from the file
-		record r;
+		record r = {};
 		read_record_from_file(&r, f);
 
 		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
@@ -392,7 +392,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//print_record(&r);
 
 		// construct key tuple from this record
-		char key_tuple[PAGE_SIZE];
+		char key_tuple[PAGE_SIZE] = {};
 		build_key_tuple_from_record_struct(bpttd_p, key_tuple, &r);
 
 		// printing built key_tuple
@@ -517,7 +517,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
 	{
 		// read a record from the file
-		record r;
+		record r = {};
 		read_record_from_file(&r, f);
 
 		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
@@ -532,7 +532,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		print_record(&r);
 
 		// construct key tuple from this record
-		char key_tuple[PAGE_SIZE];
+		char key_tuple[PAGE_SIZE] = {};
 		build_key_tuple_from_record_struct(bpttd_p, key_tuple, &r);
 
 		find_position find_pos = (LESSER_THAN + (res.records_processed % 4));
