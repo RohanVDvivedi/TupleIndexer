@@ -8,7 +8,6 @@ PAGE_TABLE
  * rigorous testing
 
 ADVANCED FEATURES
- * move bplus_tree find position in a separate header
  * define struct page_table_entry {uint64_t bucket_id, uint64_t page_id};
  * uint64_t find_non_NULL_entry_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos);
  * a return value of NULL_PAGE_ID implies no bucket found
