@@ -510,6 +510,37 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 	return 0;
 }
 
+uint64_t find_non_NULL_entry_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos)
+{
+	// convert find_pos from LESSER_THAN to LESSER_THAN_EQUALS and GREATER_THAN to GREATER_THAN_EQUALS
+	switch(find_pos)
+	{
+		case LESSER_THAN :
+		{
+			if((*bucket_id) == 0)
+				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+			find_pos = LESSER_THAN_EQUALS;
+			(*bucket_id) -= 1;
+			break;
+		}
+		case GREATER_THAN :
+		{
+			if((*bucket_id) == UINT64_MAX)
+				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+			find_pos = GREATER_THAN_EQUALS;
+			(*bucket_id) += 1;
+			break;
+		}
+		case LESSER_THAN_EQUALS :
+		case GREATER_THAN_EQUALS :
+		{
+			break;
+		}
+	}
+
+	// TODO
+}
+
 void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
 {
 	// we will need to make a second pass from root to discard the local_root
