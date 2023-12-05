@@ -118,7 +118,7 @@ int is_writable_page_table_range_locker(const page_table_range_locker* ptrl_p)
 }
 
 // release lock on the persistent_page, and ensure that local_root is not unlocked
-// only used in get and set functions
+// only used in get and set functions (and find_non_NULL_in_page_table)
 static void release_lock_on_persistent_page_while_preventing_local_root_unlocking(persistent_page* ppage, page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
 {
 	// if it is the local_root you are releasing lock on, then you only need to copy it back to local_root of ptrl
@@ -533,9 +533,7 @@ uint64_t find_non_NULL_entry_in_page_table(page_table_range_locker* ptrl_p, uint
 		}
 		case LESSER_THAN_EQUALS :
 		case GREATER_THAN_EQUALS :
-		{
 			break;
-		}
 	}
 
 	// TODO
