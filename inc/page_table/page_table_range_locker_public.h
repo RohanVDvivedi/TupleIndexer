@@ -4,6 +4,7 @@
 #include<page_table_bucket_range.h>
 #include<opaque_page_modification_methods.h>
 #include<persistent_page.h>
+#include<find_position.h>
 
 typedef struct page_table_range_locker page_table_range_locker;
 
