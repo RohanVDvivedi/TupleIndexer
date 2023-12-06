@@ -91,25 +91,6 @@ int main()
 		exit(-1);
 	}
 
-	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, WRITE_LOCK, &pttd, pam_p, transaction_id, &abort_error);
-	if(abort_error)
-	{
-		printf("ABORTED\n");
-		exit(-1);
-	}
-
-	printf("setting every 500 to NULL_PAGE_ID\n\n");
-	for(uint64_t i = 0; i < 10000; i += 500)
-		set_in_page_table(ptrl_p, i, pam_p->pas.NULL_PAGE_ID, pmm_p, transaction_id, &abort_error);
-	printf("\n\n");
-
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
-	if(abort_error)
-	{
-		printf("ABORTED\n");
-		exit(-1);
-	}
-
 	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, READ_LOCK, &pttd, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
@@ -125,6 +106,25 @@ int main()
 		printf("%"PRIu64" -> %"PRIu64"\n", bucket_id, page_id);
 		page_id = find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_id, GREATER_THAN, transaction_id, &abort_error);
 	}
+	printf("\n\n");
+
+	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, WRITE_LOCK, &pttd, pam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	printf("setting every 500 to NULL_PAGE_ID\n\n");
+	for(uint64_t i = 0; i < 10000; i += 500)
+		set_in_page_table(ptrl_p, i, pam_p->pas.NULL_PAGE_ID, pmm_p, transaction_id, &abort_error);
 	printf("\n\n");
 
 	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
