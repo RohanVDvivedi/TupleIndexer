@@ -14,7 +14,7 @@
 #define SYSTEM_HEADER_SIZE   3
 
 #define START_BUCKET_ID 12
-#define DIFFR_BUCKET_ID 300 // must be multiple of 2
+#define DIFFR_BUCKET_ID 30 // must be multiple of 2
 #define COUNT_BUCKET_ID 100
 
 #define ith_bucket_id(i) (START_BUCKET_ID + (DIFFR_BUCKET_ID * i))
