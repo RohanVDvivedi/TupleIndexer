@@ -273,6 +273,10 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
 					goto ABORT_ERROR;
 				}
+
+				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
 				return 1;
 			}
 
