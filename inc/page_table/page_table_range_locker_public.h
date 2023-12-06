@@ -35,7 +35,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 // finds bucket_id in page_table that is find_pos compared to the given bucket_id
 // it will return the bucket_id (being an in-out parameter) and page_id
 // if page_id == NULL_PAGE_ID, then no such bucket_id found
-uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos);
+uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos, const void* transaction_id, int* abort_error);
 
 // deletes the page_table_range_locker, and releases lock on the local_root (if it is not NULL_persistent_page)
 // we may need to unlock the local_root and descend down from the actual root, if the local_root becomes empty

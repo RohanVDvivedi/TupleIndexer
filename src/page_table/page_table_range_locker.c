@@ -510,33 +510,211 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 	return 0;
 }
 
-uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos)
+uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos, const void* transaction_id, int* abort_error)
 {
 	// convert find_pos from LESSER_THAN to LESSER_THAN_EQUALS and GREATER_THAN to GREATER_THAN_EQUALS
-	switch(find_pos)
+	if(find_pos == LESSER_THAN)
 	{
-		case LESSER_THAN :
-		{
-			if((*bucket_id) == 0)
-				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
-			find_pos = LESSER_THAN_EQUALS;
-			(*bucket_id) -= 1;
-			break;
-		}
-		case GREATER_THAN :
-		{
-			if((*bucket_id) == UINT64_MAX)
-				return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
-			find_pos = GREATER_THAN_EQUALS;
-			(*bucket_id) += 1;
-			break;
-		}
-		case LESSER_THAN_EQUALS :
-		case GREATER_THAN_EQUALS :
-			break;
+		if((*bucket_id) == 0)
+			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+		find_pos = LESSER_THAN_EQUALS;
+		(*bucket_id) -= 1;
+	}
+	else if(find_pos == GREATER_THAN)
+	{
+		if((*bucket_id) == UINT64_MAX)
+			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+		find_pos = GREATER_THAN_EQUALS;
+		(*bucket_id) += 1;
 	}
 
-	// TODO
+	if(find_pos == LESSER_THAN_EQUALS)
+	{
+		if((*bucket_id) < ptrl_p->delegated_local_root_range.first_bucket_id)
+			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+	}
+	else if(find_pos == GREATER_THAN_EQUALS)
+	{
+		if((*bucket_id) > ptrl_p->delegated_local_root_range.last_bucket_id)
+			return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+	}
+
+	uint64_t result_page_id = ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
+
+	// create a stack of capacity = levels
+	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
+	if(!initialize_locked_pages_stack(locked_pages_stack_p, ptrl_p->max_local_root_level + 1))
+		exit(-1);
+
+	// push local root onto the stack
+	push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(ptrl_p->local_root, INVALID_TUPLE_INDEX));
+
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* curr_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+		uint32_t child_entry_count_curr_page = get_non_NULL_PAGE_ID_count_in_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p);
+
+		if(child_entry_count_curr_page == 0)
+		{
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), ptrl_p, transaction_id, abort_error);
+			pop_from_locked_pages_stack(locked_pages_stack_p);
+			if(*abort_error)
+				goto ABORT_ERROR;
+			continue;
+		}
+
+		// actual range of curr_page
+		page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p);
+
+		if(find_pos == LESSER_THAN_EQUALS)
+		{
+			if(curr_page->child_index == INVALID_TUPLE_INDEX)
+			{
+				if((*bucket_id) < curr_page_actual_range.first_bucket_id)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), ptrl_p, transaction_id, abort_error);
+					pop_from_locked_pages_stack(locked_pages_stack_p);
+					if(*abort_error)
+						goto ABORT_ERROR;
+					continue;
+				}
+				else if((*bucket_id) > curr_page_actual_range.last_bucket_id)
+					curr_page->child_index = get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)) - 1;
+				else
+					curr_page->child_index = get_child_index_for_bucket_id_on_page_table_page(&(curr_page->ppage), (*bucket_id), ptrl_p->pttd_p);
+			}
+
+			int pushed = 0;
+			while(pushed == 0 && curr_page->child_index == get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			{
+				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p);
+				if(child_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+				{
+					if(is_page_table_leaf_page(&(curr_page->ppage), ptrl_p->pttd_p))
+					{
+						(*bucket_id) = get_first_bucket_id_of_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p) + curr_page->child_index;
+						result_page_id = child_page_id;
+						break;
+					}
+					else
+					{
+						// grab read lock on child page, push it onto the stack and then continue
+						persistent_page child_page = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
+						if(*abort_error)
+							goto ABORT_ERROR;
+						push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
+						pushed = 1;
+					}
+				}
+
+				if(curr_page->child_index == 0)
+					curr_page->child_index = get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def));
+				else
+					curr_page->child_index--;
+			}
+
+			if(result_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+				break;
+
+			if(pushed)
+				continue;
+
+			if(curr_page->child_index == get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			{
+				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), ptrl_p, transaction_id, abort_error);
+				pop_from_locked_pages_stack(locked_pages_stack_p);
+				if(*abort_error)
+					goto ABORT_ERROR;
+				continue;
+			}
+		}
+		else if(find_pos == GREATER_THAN_EQUALS)
+		{
+			if(curr_page->child_index == INVALID_TUPLE_INDEX)
+			{
+				if((*bucket_id) > curr_page_actual_range.last_bucket_id)
+				{
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), ptrl_p, transaction_id, abort_error);
+					pop_from_locked_pages_stack(locked_pages_stack_p);
+					if(*abort_error)
+						goto ABORT_ERROR;
+					continue;
+				}
+				else if((*bucket_id) < curr_page_actual_range.first_bucket_id)
+					curr_page->child_index = 0;
+				else
+					curr_page->child_index = get_child_index_for_bucket_id_on_page_table_page(&(curr_page->ppage), (*bucket_id), ptrl_p->pttd_p);
+			}
+
+			int pushed = 0;
+			while(pushed == 0 && curr_page->child_index == get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			{
+				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p);
+				if(child_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+				{
+					if(is_page_table_leaf_page(&(curr_page->ppage), ptrl_p->pttd_p))
+					{
+						(*bucket_id) = get_first_bucket_id_of_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p) + curr_page->child_index;
+						result_page_id = child_page_id;
+						break;
+					}
+					else
+					{
+						// grab read lock on child page, push it onto the stack and then continue
+						persistent_page child_page = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
+						if(*abort_error)
+							goto ABORT_ERROR;
+						push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
+						pushed = 1;
+					}
+				}
+
+				curr_page->child_index++;
+			}
+
+			if(result_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
+				break;
+
+			if(pushed)
+				continue;
+
+			if(curr_page->child_index == get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			{
+				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), ptrl_p, transaction_id, abort_error);
+				pop_from_locked_pages_stack(locked_pages_stack_p);
+				if(*abort_error)
+					goto ABORT_ERROR;
+				continue;
+			}
+		}
+	}
+
+	// release all locks from stack bottom first
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(bottom->ppage), ptrl_p, transaction_id, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+	deinitialize_locked_pages_stack(locked_pages_stack_p);
+
+	return result_page_id;
+
+	ABORT_ERROR:
+	// release all locks from stack bottom first
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(bottom->ppage), ptrl_p, transaction_id, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
+	deinitialize_locked_pages_stack(locked_pages_stack_p);
+	// release lock on local root
+	release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(ptrl_p->local_root), NONE_OPTION, abort_error);
+	return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
 }
 
 void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
