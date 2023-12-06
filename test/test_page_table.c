@@ -13,6 +13,13 @@
 #define PAGE_SIZE          256
 #define SYSTEM_HEADER_SIZE   3
 
+#define START_BUCKET_ID 12
+#define DIFFR_BUCKET_ID 30 // must be multiple of 2
+#define COUNT_BUCKET_ID 100
+
+#define ith_bucket_id(i) (START_BUCKET_ID + (DIFFR_BUCKET_ID * i))
+#define i_by_2_th_bucket_id(i) (START_BUCKET_ID + ((DIFFR_BUCKET_ID/2) * i))
+
 // initialize transaction_id and abort_error
 const void* transaction_id = NULL;
 int abort_error = 0;
@@ -58,8 +65,11 @@ int main()
 	}
 
 	printf("setting every 500\n\n");
-	for(uint64_t i = 0; i < 10000; i += 500)
-		set_in_page_table(ptrl_p, i, i, pmm_p, transaction_id, &abort_error);
+	for(uint64_t i = 0; i < COUNT_BUCKET_ID; i++)
+	{
+		printf("LOL\n");
+		set_in_page_table(ptrl_p, ith_bucket_id(i), ith_bucket_id(i), pmm_p, transaction_id, &abort_error);
+	}
 	printf("\n\n");
 
 	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
@@ -80,8 +90,8 @@ int main()
 	}
 
 	printf("printing every 250\n\n");
-	for(uint64_t i = 0; i < 10000; i += 250)
-		printf("%"PRIu64 " -> %"PRIu64"\n", i, get_from_page_table(ptrl_p, i, transaction_id, &abort_error));
+	for(uint64_t i = 0; i < COUNT_BUCKET_ID * 2; i++)
+		printf("%"PRIu64 " -> %"PRIu64"\n", i_by_2_th_bucket_id(i), get_from_page_table(ptrl_p, i_by_2_th_bucket_id(i), transaction_id, &abort_error));
 	printf("\n\n");
 
 	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
@@ -133,8 +143,8 @@ int main()
 	}
 
 	printf("setting every 500 to NULL_PAGE_ID\n\n");
-	for(uint64_t i = 0; i < 10000; i += 500)
-		set_in_page_table(ptrl_p, i, pam_p->pas.NULL_PAGE_ID, pmm_p, transaction_id, &abort_error);
+	for(uint64_t i = 0; i < COUNT_BUCKET_ID; i++)
+		set_in_page_table(ptrl_p, ith_bucket_id(i), pam_p->pas.NULL_PAGE_ID, pmm_p, transaction_id, &abort_error);
 	printf("\n\n");
 
 	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
