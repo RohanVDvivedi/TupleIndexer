@@ -585,7 +585,7 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 			}
 
 			int pushed = 0;
-			while(pushed == 0 && curr_page->child_index == get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			while(pushed == 0 && curr_page->child_index != get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
 			{
 				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p);
 				if(child_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
@@ -647,7 +647,7 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 			}
 
 			int pushed = 0;
-			while(pushed == 0 && curr_page->child_index == get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			while(pushed == 0 && curr_page->child_index != get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
 			{
 				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p);
 				if(child_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
