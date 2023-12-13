@@ -898,7 +898,7 @@ void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const page_
 	// local_root != actual_root
 	// local_root was write locked
 	// and the local_root is empty (i.e. has only NULL_PAGE_IDS)
-	int will_need_to_discard_if_empty = ((*abort_error) == 0) &&
+	int will_need_to_discard_if_empty = (pmm_p != NULL) && ((*abort_error) == 0) &&
 										(!is_persistent_page_NULL(&(ptrl_p->local_root), ptrl_p->pam_p)) &&
 										(ptrl_p->local_root.page_id != ptrl_p->root_page_id) &&
 										is_persistent_page_write_locked(&(ptrl_p->local_root)) &&
