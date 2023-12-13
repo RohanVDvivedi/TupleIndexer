@@ -737,7 +737,7 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 
 	{
 		// get lock on the root page of the page_table
-		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
+		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, WRITE_LOCK, abort_error);
 		if(*abort_error)
 			return;
 
