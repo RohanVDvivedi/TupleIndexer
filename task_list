@@ -1,13 +1,5 @@
 ** PICKED TASKS
 
-PAGE_TABLE_LOCKER
- * delete_page_table_range_locker
- * if necessary make final pass to ensure that the page local root does not need freeing
-
-PAGE_TABLE
- * rigorous testing
-
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
    * bulk loading to accept bpttd_p, dam_p and pmm_p and allocate root page first
