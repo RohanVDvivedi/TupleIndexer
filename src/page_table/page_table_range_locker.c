@@ -366,7 +366,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 			// actual range of curr_page
 			page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p);
 
-			// if bucket_id is not contained in the actual_range of the curr_page, then level_up the page
+			// if bucket_id is not contained in the actual_range of the curr_page, then it is already NULL_PAGE_ID
 			if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, bucket_id))
 			{
 				result = 1;
@@ -721,7 +721,169 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 	return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
 }
 
-void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
+// we do not need to preserve local root in this function, since we are not working with range locker
+static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t discard_target, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// create a stack
+	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
+
+	{
+		// get lock on the root page of the page_table
+		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
+		if(*abort_error)
+			return;
+
+		// pre cache level of the root_page
+		uint32_t root_page_level = get_level_of_page_table_page(&root_page, pttd_p);
+
+		// create a stack of capacity = levels
+		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
+			exit(-1);
+
+		// push the root page onto the stack
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, 0));
+	}
+
+	// forward pass walking down the page_table
+	while(1)
+	{
+		locked_page_info* curr_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+
+		// actual range of curr_page
+		page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), pttd_p);
+
+		// if discard_target is not contained in the actual_range of the curr_page, then break ans start reverse pass
+		if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, discard_target))
+			break;
+
+		// now the page must have its actual_range contain the bucket_id,
+		// hence a child_index must exist
+		curr_page->child_index = get_child_index_for_bucket_id_on_page_table_page(&(curr_page->ppage), discard_target, pttd_p);
+		uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, pttd_p);
+
+		// if this child_page_id is NULL_PAGE_ID, then nothing needs to be done
+		if(child_page_id == pttd_p->pas_p->NULL_PAGE_ID)
+			break;
+
+		if(is_page_table_leaf_page(&(curr_page->ppage), pttd_p))
+			break;
+		else
+		{
+			if(get_non_NULL_PAGE_ID_count_in_page_table_page(&(curr_page->ppage), pttd_p) > 1) // this page will exist even if one of its child is NULLed, so we can release lock on its parents
+			{
+				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_page)
+				{
+					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+					release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+					if(*abort_error)
+						goto ABORT_ERROR;
+				}
+			}
+
+			// grab write lock on child page, push it onto the stack and then continue
+			persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
+
+			continue;
+		}
+	}
+
+	// reverse pass
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info curr_page = *get_top_of_locked_pages_stack(locked_pages_stack_p);
+		pop_from_locked_pages_stack(locked_pages_stack_p);
+
+		uint32_t child_entry_count_curr_page = get_non_NULL_PAGE_ID_count_in_page_table_page(&(curr_page.ppage), pttd_p);
+
+		if(child_entry_count_curr_page == 0)
+		{
+			if(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0) // then curr_page can not be the local_root, hence we can free it
+			{
+				// free the curr_page
+				release_lock_on_persistent_page(pam_p, transaction_id, &(curr_page.ppage), FREE_PAGE, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(pam_p, transaction_id, &(curr_page.ppage), NONE_OPTION, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				// set NULL_PAGE_ID to its parent page entry
+				locked_page_info* parent_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+				set_child_page_id_at_child_index_in_page_table_page(&(parent_page->ppage), parent_page->child_index, pttd_p->pas_p->NULL_PAGE_ID, pttd_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
+			else // this page may be a root, so we can't free it
+			{
+				// write 0 to the level of the curr_page
+				page_table_page_header hdr = get_page_table_page_header(&(curr_page.ppage), pttd_p);
+				hdr.level = 0;
+				set_page_table_page_header(&(curr_page.ppage), &hdr, pttd_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(pam_p, transaction_id, &(curr_page.ppage), NONE_OPTION, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				// release lock on curr_page
+				release_lock_on_persistent_page(pam_p, transaction_id, &(curr_page.ppage), NONE_OPTION, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
+		}
+		else if(child_entry_count_curr_page == 1 && !is_page_table_leaf_page(&(curr_page.ppage), pttd_p)) // if you can level it down then do it
+		{
+			// level down curr_page
+			level_down_page_table_page(&(curr_page.ppage), pttd_p, pam_p, pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &(curr_page.ppage), NONE_OPTION, abort_error);
+				goto ABORT_ERROR;
+			}
+
+			// push curr_page back into the stack
+			push_to_locked_pages_stack(locked_pages_stack_p, &curr_page);
+		}
+		else
+		{
+			// release lock on curr_page
+			release_lock_on_persistent_page(pam_p, transaction_id, &(curr_page.ppage), NONE_OPTION, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			break;
+		}
+	}
+
+	// release locks bottom first and exit
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+	deinitialize_locked_pages_stack(locked_pages_stack_p);
+
+	ABORT_ERROR:;
+	// release all locks from stack bottom first
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
+	deinitialize_locked_pages_stack(locked_pages_stack_p);
+}
+
+void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// we will need to make a second pass from root to discard the local_root
 	// if there was no abort, and local_root is still locked
@@ -745,12 +907,11 @@ void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void*
 		if(*abort_error)
 			will_need_to_discard_if_empty = 0;
 	}
-	free(ptrl_p);
 
-	if(will_need_to_discard_if_empty)
-	{
-		// descend from root, towards discard_target and eliminate it
-	}
+	if(!will_need_to_discard_if_empty)
+		backward_pass_to_free_local_root(ptrl_p->root_page_id, discard_target, ptrl_p->pttd_p, ptrl_p->pam_p, pmm_p, transaction_id, abort_error);
+
+	free(ptrl_p);
 
 	return;
 }
