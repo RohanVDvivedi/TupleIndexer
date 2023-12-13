@@ -916,7 +916,7 @@ void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const page_
 			will_need_to_discard_if_empty = 0;
 	}
 
-	if(!will_need_to_discard_if_empty)
+	if(will_need_to_discard_if_empty)
 		backward_pass_to_free_local_root(ptrl_p->root_page_id, discard_target, ptrl_p->pttd_p, ptrl_p->pam_p, pmm_p, transaction_id, abort_error);
 
 	free(ptrl_p);
