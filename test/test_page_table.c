@@ -69,7 +69,7 @@ int main()
 		set_in_page_table(ptrl_p, ith_bucket_id(i), ith_bucket_id(i), pmm_p, transaction_id, &abort_error);
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -91,7 +91,7 @@ int main()
 		printf("%"PRIu64 " -> %"PRIu64"\n", i_by_2_th_bucket_id(i), get_from_page_table(ptrl_p, i_by_2_th_bucket_id(i), transaction_id, &abort_error));
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -125,7 +125,7 @@ int main()
 	}
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -144,7 +144,7 @@ int main()
 		set_in_page_table(ptrl_p, ith_bucket_id(i), pam_p->pas.NULL_PAGE_ID, pmm_p, transaction_id, &abort_error);
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
