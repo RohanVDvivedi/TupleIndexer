@@ -1,9 +1,13 @@
 # TupleIndexer
-A c library that enables you to build a bplus_tree (a b+ tree) for your data, over a data store accessible in fixed sized pages (either persistent or non-persistent store) using your own page_access_methods (a struct of functions). It also allows you to implement your own page_modification_methods (again a struct of functions) to intercept calls to page modifications in case if you would like to log the changes to pages, to make them redo-able and undo-able.
+A c library that enables you to build data base index structures a b_plus_tree and a page_table.
+
+a bplus_tree (a b+ tree) for your data, over a data store accessible in fixed sized pages (either persistent or non-persistent store) using your own page_access_methods (a struct of functions). It also allows you to implement your own page_modification_methods (again a struct of functions) to intercept calls to page modifications in case if you would like to log the changes to pages, to make them redo-able and undo-able.
+
+Similarly a page_table structure that provides a dynamic mapping between a 64-bit bucket_id to a page_id. It will be further used to support a hash index on top of it.
 
 Sample implementationd of page_access_methods (unWALed_in_memory_data_store.c) and page_modification_methods (unWALed_page_modification_methods.c) have been provided for reference in src/interface directory.
 
-The Indexes provided (only a b+tree, as of now) are thread safe (using standard latch coupling mechanism), provided correct and api conforming implementation of your own page_access_methods. Yes, page_access_methods struct will be used by TupleIndexer to request access for a page with a READ_LOCK or a WRITE_LOCK, explicitly.
+The Indexes provided (only a b+tree and a page_table (using page_table_range_locker), as of now) are thread safe (using standard latch coupling mechanism), provided correct and api conforming implementation of your own page_access_methods. Yes, page_access_methods struct will be used by TupleIndexer to request access for a page with a READ_LOCK or a WRITE_LOCK, explicitly.
 
 The tuple is laid out as per specifications of TupleStore library.
 
