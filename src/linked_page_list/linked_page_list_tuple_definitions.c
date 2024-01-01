@@ -1,7 +1,50 @@
 #include<linked_page_list_tuple_definitions.h>
 
-int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p, const page_access_specs* pas_p, const tuple_def* record_def);
+int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p, const page_access_specs* pas_p, const tuple_def* record_def)
+{
+	// basic parameter check
+	if(get_element_def_count_tuple_def(record_def) == 0)
+		return 0;
 
-void deinit_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p);
+	// check id page_access_specs struct is valid
+	if(!is_valid_page_access_specs(pas_p))
+		return 0;
 
-void print_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p);
+	// TODO
+	// check if the record_def's record's min_size fits the page
+	// if it does not then fail with 0
+
+	// initialize page_access_specs fo the bpttd
+	lpltd_p->pas_p = pas_p;
+
+	// initialize record_def from the record_def provided
+	lpltd_p->record_def = clone_tuple_def(record_def);
+	finalize_tuple_def(lpltd_p->record_def);
+
+	return 1;
+}
+
+void deinit_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p)
+{
+	// delete tuple_def if it exists
+	if(lpltd_p->record_def)
+		delete_tuple_def(lpltd_p->record_def);
+
+	// reset all attributes to NULL or 0
+	lpltd_p->pas_p = NULL;
+	lpltd_p->record_def = NULL;
+}
+
+void print_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p)
+{
+	printf("Linked_page_list tuple defs:\n");
+
+	if(lpltd_p->pas_p)
+		print_page_access_specs(lpltd_p->pas_p);
+
+	printf("record_def = ");
+	if(lpltd_p->record_def)
+		print_tuple_def(lpltd_p->record_def);
+	else
+		printf("NULL\n");
+}
