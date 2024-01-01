@@ -1,6 +1,11 @@
 #ifndef LINKED_PAGE_LIST_TUPLE_DEFINITIONS
 #define LINKED_PAGE_LIST_TUPLE_DEFINITIONS
 
+#include<tuple.h>
+#include<inttypes.h>
+
+#include<page_access_specification.h>
+
 typedef struct linked_page_list_tuple_defs linked_page_list_tuple_defs;
 struct linked_page_list_tuple_defs
 {
