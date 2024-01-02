@@ -19,8 +19,14 @@ int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p
 
 	// check if the record_def's record's min_size fits the page
 	uint32_t space_allotted_for_records = get_space_to_be_allotted_to_all_tuples_on_persistent_page(sizeof_LINKED_PAGE_LIST_PAGE_HEADER(lpltd_p), pas_p->page_size, &(record_def->size_def));
-	if(space_allotted_for_records < get_minimum_tuple_size(record_def) + get_additional_space_overhead_per_tuple_on_persistent_page(pas_p->page_size, &(record_def->size_def)))
+	uint32_t space_additional_for_record = get_additional_space_overhead_per_tuple_on_persistent_page(pas_p->page_size, &(record_def->size_def));
+	if(space_allotted_for_records < get_minimum_tuple_size(record_def) + space_additional_for_record)
 		return 0;
+
+	// calculate maximum record size that can can fit on this linked_page_list
+	lpltd_p->max_record_size = space_allotted_for_records - space_additional_for_record;
+	if(is_fixed_sized_tuple_def(record_def))
+		lpltd_p->max_record_size = record_def->size_def.size;
 
 	// initialize record_def from the record_def provided
 	lpltd_p->record_def = clone_tuple_def(record_def);
@@ -38,6 +44,7 @@ void deinit_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lplt
 	// reset all attributes to NULL or 0
 	lpltd_p->pas_p = NULL;
 	lpltd_p->record_def = NULL;
+	lpltd_p->max_record_size = 0;
 }
 
 void print_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p)
