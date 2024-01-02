@@ -13,20 +13,20 @@ struct linked_page_list_page_header
 
 	// linked_page_list is a circular linked_list of pages
 
-	// page_id of previous page of this page
-	uint64_t prev_page_id;
-
 	// page_id of next page of this page
 	uint64_t next_page_id;
+
+	// page_id of previous page of this page
+	uint64_t prev_page_id;
 };
 
 #define sizeof_LINKED_PAGE_LIST_PAGE_HEADER get_offset_to_end_of_linked_page_list_page_header
 
 uint32_t get_offset_to_end_of_linked_page_list_page_header(const linked_page_list_tuple_defs* lpltd_p);
 
-uint64_t get_prev_page_id_of_linked_page_list_page(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p);
-
 uint64_t get_next_page_id_of_linked_page_list_page(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p);
+
+uint64_t get_prev_page_id_of_linked_page_list_page(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p);
 
 linked_page_list_page_header get_linked_page_list_page_header(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p);
 
