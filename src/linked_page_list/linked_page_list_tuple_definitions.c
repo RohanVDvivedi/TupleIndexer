@@ -1,5 +1,9 @@
 #include<linked_page_list_tuple_definitions.h>
 
+#include<linked_page_list_page_header.h>
+
+#include<persistent_page_functions.h>
+
 int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p, const page_access_specs* pas_p, const tuple_def* record_def)
 {
 	// basic parameter check
@@ -10,12 +14,13 @@ int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p
 	if(!is_valid_page_access_specs(pas_p))
 		return 0;
 
-	// TODO
-	// check if the record_def's record's min_size fits the page
-	// if it does not then fail with 0
-
 	// initialize page_access_specs fo the bpttd
 	lpltd_p->pas_p = pas_p;
+
+	// check if the record_def's record's min_size fits the page
+	uint32_t space_allotted_for_records = get_space_to_be_allotted_to_all_tuples_on_persistent_page(sizeof_LINKED_PAGE_LIST_PAGE_HEADER(lpltd_p), pas_p->page_size, &(record_def->size_def));
+	if(space_allotted_for_records < get_minimum_tuple_size(record_def) + get_additional_space_overhead_per_tuple_on_persistent_page(pas_p->page_size, &(record_def->size_def)))
+		return 0;
 
 	// initialize record_def from the record_def provided
 	lpltd_p->record_def = clone_tuple_def(record_def);
