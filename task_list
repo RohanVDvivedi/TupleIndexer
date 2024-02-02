@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
+  * implement function to insert and remove between any 2 pages, given locks have already been acquired, logic to decide order of taking locks is left to user of this functions
   * head remains at fixed page_id
   * read iteratotor locks a page and latch crabs to the next or previous, until the head or tail
   * simple inserts occurs at the tail OR head
