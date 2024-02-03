@@ -34,9 +34,9 @@ int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persisten
 	return hdr.prev_page_id == ppage_test_prev->page_id;
 }
 
-int is_singular_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+int is_singular_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
 
-int is_dual_node_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+int is_dual_node_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
 
 persistent_page lock_and_get_next_ppage_in_linked_page_list(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
