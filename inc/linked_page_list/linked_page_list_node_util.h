@@ -25,8 +25,8 @@ int is_free_linked_page_list_node(const persistent_page* ppage_head, const linke
 
 // lock and get next or previous of ppage, you need to ensure that the next or previous of the ppage is not already locked by you
 // returns NULL_PERSISTENT_PAGE, if the linked_page_list is is_singular_head_linked_page_list
-persistent_page lock_and_get_next_ppage_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
-persistent_page lock_and_get_prev_ppage_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+persistent_page lock_and_get_next_page_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+persistent_page lock_and_get_prev_page_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // with the below functions you can use, even singular_head OR dual_node linked_page_lists
 

@@ -55,7 +55,7 @@ int is_free_linked_page_list_node(const persistent_page* ppage_head, const linke
 	return hdr.next_page_id == lpltd_p->pas_p->NULL_PAGE_ID && hdr.prev_page_id == lpltd_p->pas_p->NULL_PAGE_ID;
 }
 
-persistent_page lock_and_get_next_ppage_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+persistent_page lock_and_get_next_page_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// calling this function is an error, if it is the only node in the linked_page_list
 	if(is_singular_head_linked_page_list(ppage, lpltd_p))
@@ -66,7 +66,7 @@ persistent_page lock_and_get_next_ppage_in_linked_page_list(const persistent_pag
 	return acquire_persistent_page_with_lock(pam_p, transaction_id, hdr.next_page_id, lock_type, abort_error);
 }
 
-persistent_page lock_and_get_prev_ppage_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+persistent_page lock_and_get_prev_page_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// calling this function is an error, if it is the only node in the linked_page_list
 	if(is_singular_head_linked_page_list(ppage, lpltd_p))
