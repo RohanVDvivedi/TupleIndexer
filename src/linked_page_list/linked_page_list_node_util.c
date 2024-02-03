@@ -48,6 +48,13 @@ int is_dual_node_linked_page_list(const persistent_page* ppage_head, const linke
 	return hdr.next_page_id == hdr.prev_page_id && hdr.next_page_id != ppage_head->page_id;
 }
 
+int is_free_linked_page_list_node(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p)
+{
+	linked_page_list_page_header hdr = get_linked_page_list_page_header(ppage_head, lpltd_p);
+	// a node is free if it's next and prev both point to NULL_PAGE_ID
+	return hdr.next_page_id == lpltd_p->pas_p->NULL_PAGE_ID && hdr.prev_page_id == lpltd_p->pas_p->NULL_PAGE_ID;
+}
+
 persistent_page lock_and_get_next_ppage_in_linked_page_list(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 persistent_page lock_and_get_prev_ppage_in_linked_page_list(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);

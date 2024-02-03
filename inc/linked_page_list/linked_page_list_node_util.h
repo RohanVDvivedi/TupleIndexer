@@ -20,6 +20,9 @@ int is_singular_head_linked_page_list(const persistent_page* ppage_head, const l
 // true, if not is_singular_head_linked_page_list AND ppage_head->next == ppage_head->prev
 int is_dual_node_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
 
+// check if the next and prev both point to NULL_PAGE_ID
+int is_free_linked_page_list_node(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
+
 // lock and get next or previous of ppage, you need to ensure that the next or previous of the ppage is not already locked by you
 // returns NULL_PERSISTENT_PAGE, if the linked_page_list is is_singular_head_linked_page_list
 persistent_page lock_and_get_next_ppage_in_linked_page_list(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
