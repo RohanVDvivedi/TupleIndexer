@@ -22,9 +22,17 @@ int init_linked_page_list_page(persistent_page* ppage, const linked_page_list_tu
 	return 1;
 }
 
-int is_next_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_next, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+int is_next_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_next, const linked_page_list_tuple_defs* lpltd_p)
+{
+	linked_page_list_page_header hdr = get_linked_page_list_page_header(ppage, lpltd_p);
+	return hdr.next_page_id == ppage_test_next->page_id;
+}
 
-int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_prev, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_prev, const linked_page_list_tuple_defs* lpltd_p)
+{
+	linked_page_list_page_header hdr = get_linked_page_list_page_header(ppage, lpltd_p);
+	return hdr.prev_page_id == ppage_test_prev->page_id;
+}
 
 int is_singular_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
