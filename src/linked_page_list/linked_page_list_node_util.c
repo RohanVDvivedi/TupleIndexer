@@ -79,8 +79,45 @@ persistent_page lock_and_get_prev_page_in_linked_page_list(const persistent_page
 
 int insert_page_in_between_linked_page_list(persistent_page* ppage_xist1, persistent_page* ppage_xist2,  persistent_page* ppage_to_ins, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	// the linked_page_list has no nodes existing
+	if(ppage_xist1 == NULL && ppage_xist2 == NULL)
+	{
+		linked_page_list_page_header hdr_to_ins = get_linked_page_list_page_header(ppage_to_ins, lpltd_p);
+
+		// in this case we will just insert the ppage_to_ins as a singular head
+		hdr_to_ins.next_page_id = ppage_to_ins->page_id;
+		hdr_to_ins.prev_page_id = ppage_to_ins->page_id;
+
+		set_linked_page_list_page_header(ppage_to_ins, &hdr_to_ins, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+
+		return 1;
+	}
+	// this implies that the node page_xist1 must be singular head in the linked_page_list
+	else if(ppage_xist1 == ppage_xist2 && is_singular_head_linked_page_list(ppage_xist1, lpltd_p))
+	{
+		linked_page_list_page_header hdr1 = get_linked_page_list_page_header(ppage_xist1, lpltd_p);
+
+		linked_page_list_page_header hdr_to_ins = get_linked_page_list_page_header(ppage_to_ins, lpltd_p);
+
+		// perform pointer manipulations, to make it into a dual-node linked_page_list
+		hdr1.next_page_id = ppage_to_ins->page_id;
+		hdr1.prev_page_id = ppage_to_ins->page_id;
+		hdr_to_ins.next_page_id = ppage_xist1->page_id;
+		hdr_to_ins.prev_page_id = ppage_xist1->page_id;
+
+		set_linked_page_list_page_header(ppage_xist1, &hdr1, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+		set_linked_page_list_page_header(ppage_to_ins, &hdr_to_ins, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+
+		return 1;
+	}
 	// ppage_xist1 and ppage_xist2 are 2 different locked persistent pages
-	if(ppage_xist1 != ppage_xist2)
+	else if(ppage_xist1 != ppage_xist2)
 	{
 		linked_page_list_page_header hdr1 = get_linked_page_list_page_header(ppage_xist1, lpltd_p);
 		linked_page_list_page_header hdr2 = get_linked_page_list_page_header(ppage_xist2, lpltd_p);
@@ -93,35 +130,14 @@ int insert_page_in_between_linked_page_list(persistent_page* ppage_xist1, persis
 
 		// perform pointer manipulations
 		hdr1.next_page_id = ppage_to_ins->page_id;
-		hdr_to_ins.next_page_id = ppage_xist2->page_id;
 		hdr2.prev_page_id = ppage_to_ins->page_id;
+		hdr_to_ins.next_page_id = ppage_xist2->page_id;
 		hdr_to_ins.prev_page_id = ppage_xist1->page_id;
 
 		set_linked_page_list_page_header(ppage_xist1, &hdr1, lpltd_p, pmm_p, transaction_id, abort_error);
 		if((*abort_error))
 			return 0;
 		set_linked_page_list_page_header(ppage_xist2, &hdr2, lpltd_p, pmm_p, transaction_id, abort_error);
-		if((*abort_error))
-			return 0;
-		set_linked_page_list_page_header(ppage_to_ins, &hdr_to_ins, lpltd_p, pmm_p, transaction_id, abort_error);
-		if((*abort_error))
-			return 0;
-
-		return 1;
-	}
-	else if(is_singular_head_linked_page_list(ppage_xist1, lpltd_p)) // this implies that the node must be singular head in the linked_page_list
-	{
-		linked_page_list_page_header hdr1 = get_linked_page_list_page_header(ppage_xist1, lpltd_p);
-
-		linked_page_list_page_header hdr_to_ins = get_linked_page_list_page_header(ppage_to_ins, lpltd_p);
-
-		// perform pointer manipulations, to make it into a 
-		hdr1.next_page_id = ppage_to_ins->page_id;
-		hdr_to_ins.next_page_id = ppage_xist1->page_id;
-		hdr1.prev_page_id = ppage_to_ins->page_id;
-		hdr_to_ins.prev_page_id = ppage_xist1->page_id;
-
-		set_linked_page_list_page_header(ppage_xist1, &hdr1, lpltd_p, pmm_p, transaction_id, abort_error);
 		if((*abort_error))
 			return 0;
 		set_linked_page_list_page_header(ppage_to_ins, &hdr_to_ins, lpltd_p, pmm_p, transaction_id, abort_error);
