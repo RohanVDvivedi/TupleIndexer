@@ -265,6 +265,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 
 	// iterate next or previous in bplus_tree_iterator, based on the f_type
 	// this is not required for MIN_TUPLE and MAX_TUPLE
+	// if the initial leaf page is empty, then a single next or previous is necessary to be called, based on where you want to move
 	switch(f_type)
 	{
 		case LESSER_THAN_KEY :
