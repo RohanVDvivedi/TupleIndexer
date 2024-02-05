@@ -219,6 +219,12 @@ int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_
 								abort_error
 							);
 
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &(curr_locked_page.ppage), NONE_OPTION, abort_error);
+				break;
+			}
+
 			if(curr_locked_page.ppage.page_id == root_page_id)
 			{
 				// curr_locked_page is the root_page, get its level
@@ -258,6 +264,8 @@ int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_
 				}
 
 				release_lock_on_persistent_page(pam_p, transaction_id, &(curr_locked_page.ppage), NONE_OPTION, abort_error);
+				//if(*abort_error) // -> we need to do the same thing even on an abort
+				//	break;
 				break;
 			}
 
@@ -266,6 +274,8 @@ int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_
 			if(is_page_more_than_half_full(&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, bpttd_p->index_def))
 			{
 				release_lock_on_persistent_page(pam_p, transaction_id, &(curr_locked_page.ppage), NONE_OPTION, abort_error);
+				//if(*abort_error) // -> we need to do the same thing even on an abort
+				//	break;
 				break;
 			}
 
