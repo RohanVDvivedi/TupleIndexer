@@ -55,7 +55,7 @@ int walk_down_locking_parent_pages_for_update_using_record(uint64_t root_page_id
 			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
 			if(*abort_error)
-					goto ABORT_ERROR;
+				goto ABORT_ERROR;
 
 			(*release_for_split)--;
 			(*release_for_merge)--;
