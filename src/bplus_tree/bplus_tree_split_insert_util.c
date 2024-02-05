@@ -112,6 +112,8 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 			if(found)
 			{
 				release_lock_on_persistent_page(pam_p, transaction_id, &(curr_locked_page.ppage), NONE_OPTION, abort_error);
+				//if(*abort_error) // -> we need to do the same thing even on an abort
+				//	break;
 				break;
 			}
 
