@@ -6,8 +6,9 @@
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 
-// initialize linked_page_list page, with next_page and prev_page pointing to NULL_PAGE_IDs
-int init_linked_page_list_page(persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+// initialize linked_page_list page, with next_page and prev_page pointing to NULL_PAGE_IDs (is_self_referencing == 0)
+// if is_self_referencing == 1, then the next_page and prev_page, points to the page itself
+int init_linked_page_list_page(persistent_page* ppage, int is_self_referencing, const linked_page_list_tuple_defs* lpltd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // test if the ppage_test is next/prev of the ppage, i.e. test if ppage->next/prev == ppage_test_*
 // only page_id of page_test_* is used

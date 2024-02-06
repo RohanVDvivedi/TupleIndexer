@@ -4,7 +4,7 @@
 
 #include<persistent_page_functions.h>
 
-int init_linked_page_list_page(persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int init_linked_page_list_page(persistent_page* ppage, int is_self_referencing, const linked_page_list_tuple_defs* lpltd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	int inited = init_persistent_page(pmm_p, transaction_id, ppage, lpltd_p->pas_p->page_size, sizeof_LINKED_PAGE_LIST_PAGE_HEADER(lpltd_p), &(lpltd_p->record_def->size_def), abort_error);
 	if((*abort_error) || !inited)
@@ -13,8 +13,8 @@ int init_linked_page_list_page(persistent_page* ppage, const linked_page_list_tu
 	// get the header, initialize it and set it back on to the page
 	linked_page_list_page_header hdr = get_linked_page_list_page_header(ppage, lpltd_p);
 	hdr.parent.type = LINKED_PAGE_LIST_PAGE;
-	hdr.next_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
-	hdr.prev_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
+	hdr.next_page_id = (is_self_referencing ? ppage->page_id : lpltd_p->pas_p->NULL_PAGE_ID);
+	hdr.prev_page_id = (is_self_referencing ? ppage->page_id : lpltd_p->pas_p->NULL_PAGE_ID);
 	set_linked_page_list_page_header(ppage, &hdr, lpltd_p, pmm_p, transaction_id, abort_error);
 	if((*abort_error))
 		return 0;
