@@ -396,6 +396,8 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 			}
 			else
 			{
+				// below piece of code releases locks on all parents of curr_page, if the curr_page will never become empty, even after NULL-ing the child_index on that page
+				// this is an optimization to release early locks, you can remove this part and the functionality will still be identical 
 				if(get_non_NULL_PAGE_ID_count_in_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p) > 1) // this page will exist even if one of its child is NULLed, so we can release lock on its parents
 				{
 					while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_page)
