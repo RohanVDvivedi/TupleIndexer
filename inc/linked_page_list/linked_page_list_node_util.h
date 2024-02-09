@@ -30,6 +30,8 @@ persistent_page lock_and_get_next_page_in_linked_page_list(const persistent_page
 persistent_page lock_and_get_prev_page_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // with the below functions you can use, even singular_head OR dual_node linked_page_lists
+// The below functions only perform validity checks and perform pointer manipulations
+// They do not acquire any locks, this allows the caller to decide locking behaviour, i.e. order of acquiring locks
 
 // insert a page in between ppage_xist1 and ppage_xist2, given that ppage_xist1->next = ppage_xist2 (else it fails)
 int insert_page_in_between_linked_page_list(persistent_page* ppage_xist1, persistent_page* ppage_xist2,  persistent_page* ppage_to_ins, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
