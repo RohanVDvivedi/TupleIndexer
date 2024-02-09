@@ -152,5 +152,73 @@ int insert_page_in_between_linked_page_list(persistent_page* ppage_xist1, persis
 
 int remove_page_in_linked_page_list(persistent_page* ppage_xist1, persistent_page* ppage_xist2, persistent_page* ppage_xist3, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	if(ppage_xist1 == ppage_xist2 && ppage_xist2 == ppage_xist3 && is_singular_head_linked_page_list(ppage_xist2, lpltd_p)) // removal of the only node of the linked_page_list
+	{
+		linked_page_list_page_header hdr2 = get_linked_page_list_page_header(ppage_xist2, lpltd_p);
+
+		hdr2.prev_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
+		hdr2.next_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
+
+		set_linked_page_list_page_header(ppage_xist2, &hdr2, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+
+		return 1;
+	}
+	else if(ppage_xist1 == ppage_xist3) // removing a node from dual node linked_page_list
+	{
+		linked_page_list_page_header hdr1 = get_linked_page_list_page_header(ppage_xist1, lpltd_p);
+		linked_page_list_page_header hdr2 = get_linked_page_list_page_header(ppage_xist2, lpltd_p);
+
+		// make sure that it is a dual node linked_page_list, consisting of ppage_xist1 and ppage_xist2
+		if(!(hdr2.next_page_id == ppage_xist1->page_id && hdr2.prev_page_id == ppage_xist1->page_id
+		&& hdr1.next_page_id == ppage_xist2->page_id && hdr1.prev_page_id == ppage_xist2->page_id))
+			return 0;
+
+		// perform pointer manipulations, to make ppage_xist1 as a singular head
+		hdr1.next_page_id = ppage_xist1->page_id;
+		hdr1.prev_page_id = ppage_xist1->page_id;
+		hdr2.prev_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
+		hdr2.next_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
+
+		set_linked_page_list_page_header(ppage_xist1, &hdr1, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+		set_linked_page_list_page_header(ppage_xist2, &hdr2, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+
+		return 1;
+	}
+	else if(ppage_xist1 != ppage_xist2 && ppage_xist2 != ppage_xist3 && ppage_xist1 != ppage_xist3) // all 3 are distinct nodes
+	{
+		linked_page_list_page_header hdr1 = get_linked_page_list_page_header(ppage_xist1, lpltd_p);
+		linked_page_list_page_header hdr2 = get_linked_page_list_page_header(ppage_xist2, lpltd_p);
+		linked_page_list_page_header hdr3 = get_linked_page_list_page_header(ppage_xist3, lpltd_p);
+
+		// ensure valid params
+		if(!(hdr1.next_page_id == ppage_xist2->page_id && hdr2.next_page_id == ppage_xist3->page_id 
+		 && hdr3.prev_page_id == ppage_xist2->page_id && hdr2.prev_page_id == ppage_xist1->page_id))
+			return 0;
+
+		// perform pointer manipulations
+		hdr1.next_page_id = ppage_xist2->page_id;
+		hdr3.prev_page_id = ppage_xist1->page_id;
+		hdr2.prev_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
+		hdr2.next_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
+
+		set_linked_page_list_page_header(ppage_xist1, &hdr1, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+		set_linked_page_list_page_header(ppage_xist2, &hdr2, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+		set_linked_page_list_page_header(ppage_xist3, &hdr3, lpltd_p, pmm_p, transaction_id, abort_error);
+		if((*abort_error))
+			return 0;
+
+		return 1;
+	}
+	else // 
+		return 0;
 }
