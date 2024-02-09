@@ -34,7 +34,7 @@ persistent_page lock_and_get_prev_page_in_linked_page_list(const persistent_page
 // insert a page in between ppage_xist1 and ppage_xist2, given that ppage_xist1->next = ppage_xist2 (else it fails)
 int insert_page_in_between_linked_page_list(persistent_page* ppage_xist1, persistent_page* ppage_xist2,  persistent_page* ppage_to_ins, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
-// remove a ppage_xist2 from in between ppage_xist1 and ppage_xist3, given that ppage_xist1->next = ppage_xist2 && ppage_xist2->next = ppage_xist3 (else it fails)
-int remove_page_in_linked_page_list(persistent_page* ppage_xist1, persistent_page* ppage_xist2, persistent_page* ppage_xist3, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+// remove a ppage_xist2 from in-between ppage_xist1 and ppage_xist3, given that ppage_xist1->next = ppage_xist2 && ppage_xist2->next = ppage_xist3 (else it fails)
+int remove_page_from_between_linked_page_list(persistent_page* ppage_xist1, persistent_page* ppage_xist2, persistent_page* ppage_xist3, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 #endif
