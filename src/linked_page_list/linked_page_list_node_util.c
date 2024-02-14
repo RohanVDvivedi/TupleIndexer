@@ -202,7 +202,7 @@ int remove_page_from_between_linked_page_list(persistent_page* ppage_xist1, pers
 			return 0;
 
 		// perform pointer manipulations
-		hdr1.next_page_id = ppage_xist2->page_id;
+		hdr1.next_page_id = ppage_xist3->page_id;
 		hdr3.prev_page_id = ppage_xist1->page_id;
 		hdr2.prev_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
 		hdr2.next_page_id = lpltd_p->pas_p->NULL_PAGE_ID;
