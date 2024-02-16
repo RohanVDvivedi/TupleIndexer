@@ -1,14 +1,12 @@
 ** PICKED TASKS
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
-  * implement function to insert and remove between any 2 pages, given locks have already been acquired, logic to decide order of taking locks is left to user of this functions
   * head remains at fixed page_id
   * read iteratotor locks a page and latch crabs to the next or previous, until the head or tail
-  * simple inserts occurs at the tail OR head
-  * simple deletes remove the element at head or tail
-  * write iterator can insert in the middle or deletes from the middle, it locks the previous page by default
+  * write iterator locks 2 pages prior and curr, and can move prior and curr
     * deletes will remove a page in the middle if it becomes empty
     * inserts will add page in the middle if necessary
+  * util functions to push/pop/peek to/from/_ head/tail
   * this can work as both stack and queue
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
