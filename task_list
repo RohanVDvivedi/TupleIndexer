@@ -1,7 +1,30 @@
 ** PICKED TASKS
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
-  * head remains at fixed page_id
+  * struct linked_page_list_iterator
+    {
+      persistent_page curr_page;
+      uint32_t curr_tuple_index;
+
+      // head_page_id never changes
+      uint64_t head_page_id;
+
+      const linked_page_list_tuple_defs* lpltd_p;
+      const page_access_methods* pam_p;
+    }
+    * implement functionality to
+      * int is_writable_linked_page_list_iterator(const linked_page_list_iterator* bpi_p);
+      * insert INSERT_BEFORE, INSERT_AFTER
+      * remove
+      * update
+      * int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
+      * int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
+      * const void* get_tuple_bplus_tree_iterator(const linked_page_list_iterator* lpli_p);
+    * it must support functionality like
+      * push_to_head_of_linked_page_list  - stack
+      * pop_from_head_of_linked_page_list - stack queue
+      * peek_head_of_linked_page_list     - stack queue
+      * push_to_tail_of_linked_page_list  -       queue
   * read iteratotor locks a page and latch crabs to the next or previous, until the head or tail
   * write iterator locks 2 pages prior and curr, and can move prior and curr
     * deletes will remove a page in the middle if it becomes empty
