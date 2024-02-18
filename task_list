@@ -14,8 +14,8 @@
     }
     * implement functionality to
       * int is_writable_linked_page_list_iterator(const linked_page_list_iterator* bpi_p);
-      * insert INSERT_BEFORE, INSERT_AFTER
-      * remove
+      * insert INSERT_BEFORE/INSERT_AFTER, EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV -> when at head, you can only INSERT_TOWARDS_NEXT
+      * remove GO_NEXT/GO_PREV
       * update
       * int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
       * int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
