@@ -1,6 +1,12 @@
 ** PICKED TASKS
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
+  * linked_page_list_page_tuples_util
+    * check if 2 pages can be merged
+    * merge 2 adjacent pages in to page1 or page2
+    * build a linked_page_list_virtual_unsplitted_persistent_page
+    * split virtual_unsplitted_persistent_page into prev new page or next new page
+      * with full left page, full right page or equal split
   * struct linked_page_list_iterator
     {
       persistent_page curr_page;
