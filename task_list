@@ -4,6 +4,7 @@
   * linked_page_list_page_tuples_util.h, linked_page_list_page_tuples_util.c
     * build a linked_page_list_virtual_unsplitted_persistent_page and use it to split the page
       * or put virtual_unsplitted_persistent_page, into a commons directory and strip it of all the bplus_tree functionality.
+      * BUG FIX :: handle case when tuple_to_insert is NULL.
     * int must_split_for_insert_linked_page_list_page(const persistent_page* page1, const void* tuple_to_insert, const linked_page_list_tuple_defs* lpltd_p);
     * persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, int split_upper_half/lower_half, int vacant_in_upper_half/vacant_page2/OR_equal_split, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
     * int can_merge_linked_page_list_pages(const persistent_page* page1, const persistent_page* page2, const linked_page_list_tuple_defs* lpltd_p);
