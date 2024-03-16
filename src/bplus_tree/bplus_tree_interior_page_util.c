@@ -147,11 +147,11 @@ int must_split_for_insert_bplus_tree_interior_page(const persistent_page* page1,
 
 	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
 	// if tuple_to_insert can fit on the page after a compaction, then you should not be splitting the page
-	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->index_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_to_be_occupied_by_new_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def), tuple_to_insert);
 	uint32_t space_available_page1 = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) - get_space_occupied_by_all_tuples_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 
 	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
-	if(space_available_page1 >= space_occupied_by_new_tuple)
+	if(space_available_page1 >= space_to_be_occupied_by_new_tuple)
 		return 0;
 
 	return 1;
@@ -388,12 +388,10 @@ int can_merge_bplus_tree_interior_pages(const persistent_page* page1, const void
 	if(get_child_page_id_from_index_tuple(separator_parent_tuple, bpttd_p) != page2->page_id)
 		return 0;
 
-	uint32_t separator_tuple_size = get_tuple_size(bpttd_p->index_def, separator_parent_tuple);
-
 	// check if a merge is possible, by comparing the total space requirement
 	uint32_t total_space_page1 = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
-	uint32_t space_to_be_occupied_by_separator_tuple = separator_tuple_size + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
+	uint32_t space_to_be_occupied_by_separator_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def), separator_parent_tuple);
 	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_persistent_page(page2, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
 
 	// the page1 must be able to accomodate all its current tuples, the separator tuple and the tuples of page2
