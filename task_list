@@ -1,5 +1,8 @@
 ** PICKED TASKS
 
+BUG fix
+ * algorithm to generate separator parent tuple is buggy for descending sort order cases
+
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * linked_page_list_page_tuples_util.h, linked_page_list_page_tuples_util.c
     * build a linked_page_list_virtual_unsplitted_persistent_page and use it to split the page
