@@ -124,11 +124,11 @@ int must_split_for_insert_bplus_tree_leaf_page(const persistent_page* page1, con
 
 	// we need to make sure that the new_tuple will not be fitting on the page even after a compaction
 	// if tuple_to_insert can fit on the page after a compaction, then you should not be splitting the page
-	uint32_t space_occupied_by_new_tuple = get_tuple_size(bpttd_p->record_def, tuple_to_insert) + get_additional_space_overhead_per_tuple_on_persistent_page(bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t space_to_be_occupied_by_new_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), tuple_to_insert);
 	uint32_t space_available_page1 = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)) - get_space_occupied_by_all_tuples_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
 
 	// we fail here because the new tuple can be accomodated in page1, if you had considered compacting the page
-	if(space_available_page1 >= space_occupied_by_new_tuple)
+	if(space_available_page1 >= space_to_be_occupied_by_new_tuple)
 		return 0;
 
 	return 1;
