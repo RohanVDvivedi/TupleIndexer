@@ -39,6 +39,8 @@ uint32_t get_space_occupied_by_all_tuples_on_persistent_page(const persistent_pa
 
 uint32_t get_space_occupied_by_all_tomb_stones_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d);
 
+uint32_t get_space_to_be_occupied_by_tuple_on_persistent_page(uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple);
+
 uint32_t get_space_allotted_to_all_tuples_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d);
 
 uint32_t get_space_to_be_allotted_to_all_tuples_on_persistent_page(uint32_t page_header_size, uint32_t page_size, const tuple_size_def* tpl_sz_d);
