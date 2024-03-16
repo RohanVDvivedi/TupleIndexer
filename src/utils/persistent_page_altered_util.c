@@ -12,7 +12,7 @@ int append_tuple_on_persistent_page_resiliently(const page_modification_methods*
 		return 1;
 
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
-	uint32_t space_required_by_external_tuple = ((external_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(tpl_sz_d, external_tuple)) + get_additional_space_overhead_per_tuple_on_persistent_page(page_size, tpl_sz_d);
+	uint32_t space_required_by_external_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(page_size, tpl_sz_d, external_tuple);
 
 	// check suggests that there is not enough space on page
 	if(space_required_by_external_tuple > unused_space_on_page)
@@ -37,7 +37,7 @@ int insert_tuple_on_persistent_page_resiliently(const page_modification_methods*
 		return 1;
 
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
-	uint32_t space_required_by_external_tuple = ((external_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(tpl_sz_d, external_tuple)) + get_additional_space_overhead_per_tuple_on_persistent_page(page_size, tpl_sz_d);
+	uint32_t space_required_by_external_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(page_size, tpl_sz_d, external_tuple);
 
 	// check suggests that there is not enough space on page
 	if(space_required_by_external_tuple > unused_space_on_page)
@@ -63,15 +63,14 @@ int update_tuple_on_persistent_page_resiliently(const page_modification_methods*
 
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
 
-	// get size of existing tuple (at index = index)
-	const void* existing_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, tpl_sz_d, index);
-	uint32_t existing_tuple_size = ((existing_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(tpl_sz_d, existing_tuple));
+	// get space occupied by existing tuple (tuple at index = index)
+	uint32_t space_occupied_by_existing_tuple = get_space_occupied_by_tuples_on_persistent_page(ppage, page_size, tpl_sz_d, index, index);
 
-	// get size of external_tuple
-	uint32_t external_tuple_size = ((external_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(tpl_sz_d, external_tuple));
+	// get space required by external tuple on the page
+	uint32_t space_required_by_external_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(page_size, tpl_sz_d, external_tuple);
 
 	// check suggests that there is not enough space on page
-	if(external_tuple_size > unused_space_on_page + existing_tuple_size)
+	if(space_required_by_external_tuple > unused_space_on_page + space_occupied_by_existing_tuple)
 		return 0;
 
 	// place tomb_stone for the old tuple at the index
