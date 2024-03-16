@@ -50,7 +50,7 @@ uint32_t get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(cons
 		res += get_space_occupied_by_tuples_on_persistent_page(vupp_p->ppage, vupp_p->page_size, &(vupp_p->tpl_d->size_def), start_index_on_ppage, last_index_on_ppage);
 
 	if(start_index <= vupp_p->insertion_index && vupp_p->insertion_index <= last_index)
-		res += get_tuple_size(vupp_p->tpl_d, vupp_p->tuple_to_insert) + get_additional_space_overhead_per_tuple_on_persistent_page(vupp_p->page_size, &(vupp_p->tpl_d->size_def));
+		res += get_space_to_be_occupied_by_tuple_on_persistent_page(vupp_p->page_size, &(vupp_p->tpl_d->size_def), vupp_p->tuple_to_insert);
 
 	return res;
 }
