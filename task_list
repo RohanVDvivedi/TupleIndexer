@@ -2,7 +2,6 @@
 
 BUG fix
  * algorithm to generate separator parent tuple is buggy for descending sort order cases
- * add code and revert to complete key building for index entry and test everything
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * linked_page_list_page_tuples_util.h, linked_page_list_page_tuples_util.c
