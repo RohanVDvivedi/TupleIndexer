@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
 BUG fix
- * algorithm to generate separator parent tuple is buggy for descending sort order cases
+ * current suffix_truncation logic in bplus_tree_leaf_page_util.c is buggy and is so turned off, implement correct logic all over again
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * linked_page_list_page_tuples_util.h, linked_page_list_page_tuples_util.c
