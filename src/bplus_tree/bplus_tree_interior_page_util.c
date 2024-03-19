@@ -79,7 +79,7 @@ uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t
 static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// construct a virtual unsplitted persistent page to work on
-	virtual_unsplitted_persistent_page vupp = get_virtual_unsplitted_persistent_page(page1, bpttd_p->pas_p->page_size, tuple_to_insert, tuple_to_insert_at, bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count);
+	virtual_unsplitted_persistent_page vupp = get_virtual_unsplitted_persistent_page(page1, bpttd_p->pas_p->page_size, tuple_to_insert, tuple_to_insert_at, bpttd_p->index_def);
 
 	// get total tuple count that we would be dealing with
 	uint32_t total_tuple_count = get_tuple_count_on_virtual_unsplitted_persistent_page(&vupp);
