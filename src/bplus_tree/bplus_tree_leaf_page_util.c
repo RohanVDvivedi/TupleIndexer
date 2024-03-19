@@ -5,7 +5,7 @@
 #include<bplus_tree_index_tuple_functions_util.h>
 
 #include<persistent_page_functions.h>
-#include<bplus_tree_virtual_unsplitted_persistent_page.h>
+#include<virtual_unsplitted_persistent_page.h>
 #include<tuple.h>
 
 #include<stdlib.h>
