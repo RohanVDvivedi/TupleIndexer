@@ -1,4 +1,4 @@
-#include<bplus_tree_virtual_unsplitted_persistent_page.h>
+#include<virtual_unsplitted_persistent_page.h>
 
 virtual_unsplitted_persistent_page get_virtual_unsplitted_persistent_page(const persistent_page* ppage, uint32_t page_size, const void* tuple_to_insert, uint32_t insertion_index, const tuple_def* tpl_d)
 {
