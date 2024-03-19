@@ -1,6 +1,6 @@
 #include<bplus_tree_virtual_unsplitted_persistent_page.h>
 
-virtual_unsplitted_persistent_page get_virtual_unsplitted_persistent_page(const persistent_page* ppage, uint32_t page_size, const void* tuple_to_insert, uint32_t insertion_index, const tuple_def* tpl_d, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count)
+virtual_unsplitted_persistent_page get_virtual_unsplitted_persistent_page(const persistent_page* ppage, uint32_t page_size, const void* tuple_to_insert, uint32_t insertion_index, const tuple_def* tpl_d)
 {
 	return (virtual_unsplitted_persistent_page){
 		.ppage = ppage,
@@ -8,9 +8,6 @@ virtual_unsplitted_persistent_page get_virtual_unsplitted_persistent_page(const 
 		.tuple_to_insert = tuple_to_insert,
 		.insertion_index = insertion_index,
 		.tpl_d = tpl_d,
-		.key_element_ids = key_element_ids,
-		.key_compare_direction = key_compare_direction,
-		.key_element_count = key_element_count,
 	};
 }
 
@@ -35,7 +32,7 @@ uint32_t get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(cons
 	if(start_index > last_index || last_index >= get_tuple_count_on_virtual_unsplitted_persistent_page(vupp_p))
 		return 0;
 
-	// cauculate indices for the tuple on the page
+	// calculate indices for the tuple on the page
 	uint32_t start_index_on_ppage = start_index;
 	if(start_index > vupp_p->insertion_index)
 		start_index_on_ppage--;
