@@ -43,6 +43,8 @@ uint32_t get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(cons
 
 	uint32_t res = 0;
 
+	// when start_index = insertion_index and last_index = insertion_index, i.e. the caller only request for space_occupied by tuple_to_insert
+	// then the start_index_on_ppage to last_index_on_ppage, (the on-page range) range becomes invalid -> resulting in branch to not be taken
 	if(start_index_on_ppage <= last_index_on_ppage && last_index_on_ppage < get_tuple_count_on_persistent_page(vupp_p->ppage, vupp_p->page_size, &(vupp_p->tpl_d->size_def)))
 		res += get_space_occupied_by_tuples_on_persistent_page(vupp_p->ppage, vupp_p->page_size, &(vupp_p->tpl_d->size_def), start_index_on_ppage, last_index_on_ppage);
 
