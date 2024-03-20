@@ -6,7 +6,6 @@
 
 #include<persistent_page_functions.h>
 #include<virtual_unsplitted_persistent_page.h>
-#include<tuple.h>
 
 int init_bplus_tree_leaf_page(persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
