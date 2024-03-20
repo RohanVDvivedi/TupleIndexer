@@ -33,7 +33,7 @@ int can_merge_linked_page_list_pages(const persistent_page* page1, const persist
 
 	// check if a merge can be performed, by comparing the used space in both the pages
 	// NOTE :: it is assumed here that all pages of linked_page_list have identical format, and hence will have same total_space for tuples
-	uint32_t total_space_page1_OR_page2 = get_space_allotted_to_all_tuples_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def));
+	uint32_t total_space_page1_OR_page2 = get_space_to_be_allotted_to_all_tuples_on_persistent_page(sizeof_LINKED_PAGE_LIST_PAGE_HEADER(lpltd_p), lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def));
 	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def));
 	uint32_t space_in_use_page2 = get_space_occupied_by_all_tuples_on_persistent_page(page2, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def));
 
