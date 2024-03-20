@@ -5,7 +5,6 @@
 
 #include<persistent_page_functions.h>
 //#include<virtual_unsplitted_persistent_page.h>
-//#include<tuple.h>
 
 #include<stdlib.h>
 
