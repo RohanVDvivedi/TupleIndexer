@@ -10,8 +10,6 @@
 
 #include<cutlery_stds.h>
 
-#include<stdlib.h>
-
 int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	int inited = init_persistent_page(pmm_p, transaction_id, ppage, bpttd_p->pas_p->page_size, sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def), abort_error);
