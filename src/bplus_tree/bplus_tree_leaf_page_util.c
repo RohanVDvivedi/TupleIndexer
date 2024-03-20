@@ -451,6 +451,15 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 
 int can_merge_bplus_tree_leaf_pages(const persistent_page* page1, const persistent_page* page2, const bplus_tree_tuple_defs* bpttd_p)
 {
+	// read headers of page1 and page2
+	bplus_tree_leaf_page_header page1_hdr = get_bplus_tree_leaf_page_header(page1, bpttd_p);
+	bplus_tree_leaf_page_header page2_hdr = get_bplus_tree_leaf_page_header(page2, bpttd_p);
+
+	// and then make sure that the next of page1 is page2 and the prev of page2 is page1
+	if(page1_hdr.next_page_id != page2->page_id
+	|| page2_hdr.prev_page_id != page1->page_id)
+		return 0;
+
 	// check if a merge can be performed, by comparing the used space in both the pages
 	uint32_t total_space_page1 = get_space_allotted_to_all_tuples_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
 	uint32_t space_in_use_page1 = get_space_occupied_by_all_tuples_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
