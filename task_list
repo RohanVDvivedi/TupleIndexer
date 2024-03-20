@@ -34,6 +34,7 @@ B_PLUS_TREE BUG fix
       * int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
       * int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
       * merging happens while going next or prev
+      * you need to handle logic to reposition the iterator after splits and merges
       * const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
     * it must support functionality like
     * this must work as both stack and queue
