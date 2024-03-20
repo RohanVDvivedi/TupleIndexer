@@ -6,8 +6,6 @@
 #include<persistent_page_functions.h>
 //#include<virtual_unsplitted_persistent_page.h>
 
-#include<stdlib.h>
-
 int must_split_for_insert_linked_page_list_page(const persistent_page* page1, const void* tuple_to_insert, const linked_page_list_tuple_defs* lpltd_p)
 {
 	// do not perform a split if the page can accomodate the new tuple
