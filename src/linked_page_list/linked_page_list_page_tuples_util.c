@@ -52,16 +52,28 @@ int merge_linked_page_list_pages(persistent_page* page1, persistent_page* page2,
 	// perform merge by copying tuples, in the direction of the merge
 	switch(merge_into)
 	{
-		// append all tuples of page2 to the end of page1, starting with the first tuple
 		case MERGE_INTO_PAGE1 :
 		{
-			// TODO
+			// append all tuples of page2 to the end of page1, starting with the first tuple
+			for(uint32_t i2 = 0; i2 < get_tuple_count_on_persistent_page(page2, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)); i2++)
+			{
+				const void* t2 = get_nth_tuple_on_persistent_page(page2, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def), i2);
+				append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def), t2, abort_error);
+				if(*abort_error)
+					return 0;
+			}
 			break;
 		}
-		// insert all tuples of page1 to the index 0 of page2, starting with the last tuple
 		case MERGE_INTO_PAGE2 :
 		{
-			// TODO
+			// insert all tuples of page1 to the index 0 of page2, starting with the last tuple
+			for(uint32_t i1 = get_tuple_count_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)) - 1; i1 != UINT32_MAX; i1--)
+			{
+				const void* t1 = get_nth_tuple_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def), i1);
+				insert_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, page2, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def), 0, t1, abort_error);
+				if(*abort_error)
+					return 0;
+			}
 			break;
 		}
 	}
