@@ -49,6 +49,7 @@ int merge_linked_page_list_pages(persistent_page* page1, persistent_page* page2,
 	if(!can_merge_linked_page_list_pages(page1, page2, lpltd_p))
 		return 0;
 
+	// perform merge by copying tuples, in the direction of the merge
 	switch(merge_into)
 	{
 		// append all tuples of page2 to the end of page1, starting with the first tuple
