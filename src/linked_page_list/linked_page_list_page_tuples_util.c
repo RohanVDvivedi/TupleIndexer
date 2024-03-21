@@ -42,3 +42,28 @@ int can_merge_linked_page_list_pages(const persistent_page* page1, const persist
 
 	return 1;
 }
+
+int merge_linked_page_list_pages(persistent_page* page1, persistent_page* page2, int merge_into, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// ensure that we can merge
+	if(!can_merge_linked_page_list_pages(page1, page2, lpltd_p))
+		return 0;
+
+	switch(merge_into)
+	{
+		// append all tuples of page2 to the end of page1, starting with the first tuple
+		case MERGE_INTO_PAGE1 :
+		{
+			// TODO
+			break;
+		}
+		// insert all tuples of page1 to the index 0 of page2, starting with the last tuple
+		case MERGE_INTO_PAGE2 :
+		{
+			// TODO
+			break;
+		}
+	}
+
+	return 1;
+}
