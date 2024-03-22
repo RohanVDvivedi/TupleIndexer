@@ -24,6 +24,15 @@ int must_split_for_insert_linked_page_list_page(const persistent_page* page1, co
 	return 1;
 }
 
+persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, int split_type, int split_organization, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// check if a page must split to accomodate the new tuple
+	if(!must_split_for_insert_linked_page_list_page(page1, tuple_to_insert, lpltd_p))
+		return 0;
+
+	// TODO
+}
+
 int can_merge_linked_page_list_pages(const persistent_page* page1, const persistent_page* page2, const linked_page_list_tuple_defs* lpltd_p)
 {
 	// make sure that the next of page1 is page2 and the prev of page2 is page1
