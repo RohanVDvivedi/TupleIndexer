@@ -48,6 +48,7 @@ int must_split_for_insert_bplus_tree_interior_page(const persistent_page* page1,
 // you may call this function only if you are sure that the new_tuple will not fit on the page even after a compaction
 // it returns 0, on failure if the tuple was not inserted, and the split was not performed
 // This function MUST be called only if the direct insert (OR a compaction + insert) to this page fails, (else it will fail the split regardless)
+// the failure may also result due to failure to allocate a new page
 // lock on page1 is not released, all other pages locked in the scope of this function are unlocked in the same scope
 int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert);
 
