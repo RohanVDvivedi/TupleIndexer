@@ -28,7 +28,7 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 {
 	// check if a page must split to accomodate the new tuple
 	if(!must_split_for_insert_linked_page_list_page(page1, tuple_to_insert, lpltd_p))
-		return 0;
+		return get_NULL_persistent_page(pam_p);
 
 	// TODO
 }
