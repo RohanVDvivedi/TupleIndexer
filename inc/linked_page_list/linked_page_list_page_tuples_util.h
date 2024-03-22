@@ -25,10 +25,10 @@ int must_split_for_insert_linked_page_list_page(const persistent_page* page1, co
 // The split organization decides the tuple percentage that go to the new page
 // Even after the successful return of this function, the new page is not added to the linked_page_list in context, as explained earlier, this is the job of linked_page_list_node_util source and header files
 // It is you who need to add new_page after the page1 in case of SPLIT_LOWER_HALF, else before page1 in case of SPLIT_UPPER_HALF
-// split type
+// split_type param values
 #define SPLIT_LOWER_HALF 0 // lower_half of tuples of page1 go to new_page
 #define SPLIT_UPPER_HALF 1 // upper_half of tuples of page1 go to new_page
-// split organization
+// split_organization param values
 #define EQUAL_SPLIT     0
 #define FULL_UPPER_HALF 1
 #define FULL_LOWER_HALF 2
