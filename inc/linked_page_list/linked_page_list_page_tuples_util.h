@@ -30,6 +30,7 @@ int can_merge_linked_page_list_pages(const persistent_page* page1, const persist
 // if MERGE_INTO_PAGE1 is called, then upon a successfull merge tuples of page2 are copied at the end of page1, contents of page2 are untouched
 // else if MERGE_INTO_PAGE2 is called, then upon a successfull merge tuples of page1 are copied at the beginning of page2, contents of page1 are untouched
 // even after a successful merge none of the pages, are removed from the linkage of linked_page_list, as explained earlier, this is the job of linked_page_list_node_util source and header files
+// and hence not calling released_lock(page1/page2, FREE_PAGE) on any of the pages
 #define MERGE_INTO_PAGE1 0
 #define MERGE_INTO_PAGE2 1
 int merge_linked_page_list_pages(persistent_page* page1, persistent_page* page2, int merge_into, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
