@@ -27,6 +27,7 @@ int must_split_for_insert_linked_page_list_page(const persistent_page* page1, co
 uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(const persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, int split_organization, const linked_page_list_tuple_defs* lpltd_p)
 {
 	// TODO
+	// calculate number of tuples that go into upper_half of the split of page1
 }
 
 persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, int split_type, int split_organization, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
@@ -64,10 +65,16 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 	if(*abort_error)
 		return get_NULL_persistent_page(pam_p);
 
-	// TODO
 	// initialize page and page_header, if this fails release lock on it and fail
+	init_linked_page_list_page(&new_page, 0, lpltd_p, pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+		return get_NULL_persistent_page(pam_p);
+	}
 
 	// TODO
+	// perform actual split based on split type
 }
 
 int can_merge_linked_page_list_pages(const persistent_page* page1, const persistent_page* page2, const linked_page_list_tuple_defs* lpltd_p)
