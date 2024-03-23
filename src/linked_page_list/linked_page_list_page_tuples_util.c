@@ -77,7 +77,7 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 	if(*abort_error)
 		return get_NULL_persistent_page(pam_p);
 
-	// initialize page and page_header, if this fails release lock on it and fail
+	// initialize page and page_header (with is_self_referencing = 0), if this fails release lock on it and fail
 	init_linked_page_list_page(&new_page, 0, lpltd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
