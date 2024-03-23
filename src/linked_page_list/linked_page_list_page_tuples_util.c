@@ -30,6 +30,29 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 	if(!must_split_for_insert_linked_page_list_page(page1, tuple_to_insert, lpltd_p))
 		return get_NULL_persistent_page(pam_p);
 
+	// current tuple count of the page to be split
+	uint32_t page1_tuple_count = get_tuple_count_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
+
+	// total number of tuples we would be dealing with
+	uint32_t total_tuple_count = page1_tuple_count + 1;
+
+	// final tuple count in the upper half split
+	uint32_t final_tuple_count_in_upper_half_split = calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(page1, tuple_to_insert, tuple_to_insert_at, bpttd_p);
+
+	// final tuple count in the lower_half split
+	uint32_t final_tuple_count_in_lower_half_split = total_tuple_count - final_tuple_count_in_upper_half_split;
+
+	// figure out if the new tuple (tuple_to_insert) will go to upper_half or the lower_half
+	int new_tuple_goes_to_upper_half = (tuple_to_insert_at < final_tuple_count_in_upper_half_split);
+
+	// number of tuples of page1 that will become part of upper_half split
+	uint32_t final_upper_half_tuples_from_page1 = final_tuple_count_in_upper_half_split;
+	if(new_tuple_goes_to_upper_half)
+		final_upper_half_tuples_from_page1--;
+
+	// number of tuples of page1 that will become part of lower_half split
+	uint32_t final_lower_half_tuples_from_page1 = page1_tuple_count - final_upper_half_tuples_from_page1;
+
 	// TODO
 }
 
