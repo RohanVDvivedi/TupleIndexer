@@ -24,6 +24,11 @@ int must_split_for_insert_linked_page_list_page(const persistent_page* page1, co
 	return 1;
 }
 
+uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(const persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, int split_organization, const linked_page_list_tuple_defs* lpltd_p)
+{
+	// TODO
+}
+
 persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, int split_type, int split_organization, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// check if a page must split to accomodate the new tuple
@@ -31,13 +36,13 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 		return get_NULL_persistent_page(pam_p);
 
 	// current tuple count of the page to be split
-	uint32_t page1_tuple_count = get_tuple_count_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
+	uint32_t page1_tuple_count = get_tuple_count_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def));
 
 	// total number of tuples we would be dealing with
 	uint32_t total_tuple_count = page1_tuple_count + 1;
 
 	// final tuple count in the upper half split
-	uint32_t final_tuple_count_in_upper_half_split = calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(page1, tuple_to_insert, tuple_to_insert_at, bpttd_p);
+	uint32_t final_tuple_count_in_upper_half_split = calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(page1, tuple_to_insert, tuple_to_insert_at, split_organization, lpltd_p);
 
 	// final tuple count in the lower_half split
 	uint32_t final_tuple_count_in_lower_half_split = total_tuple_count - final_tuple_count_in_upper_half_split;
