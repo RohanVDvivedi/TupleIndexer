@@ -58,6 +58,15 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 	// number of tuples of page1 that will become part of lower_half split
 	uint32_t final_lower_half_tuples_from_page1 = page1_tuple_count - final_upper_half_tuples_from_page1;
 
+	// allocate a new page, it will accomodate tuples of lower_half if, split_type == SPLIT_LOWER_HALF
+	// else if split_type == SPLIT_UPPER_HALF, then it will accomodate tuples of UPPER_HALF of the split
+	persistent_page new_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
+	if(*abort_error)
+		return get_NULL_persistent_page(pam_p);
+
+	// TODO
+	// initialize page and page_header, if this fails release lock on it and fail
+
 	// TODO
 }
 
