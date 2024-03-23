@@ -4,7 +4,7 @@
 #include<linked_page_list_node_util.h>
 
 #include<persistent_page_functions.h>
-//#include<virtual_unsplitted_persistent_page.h>
+#include<virtual_unsplitted_persistent_page.h>
 
 int must_split_for_insert_linked_page_list_page(const persistent_page* page1, const void* tuple_to_insert, const linked_page_list_tuple_defs* lpltd_p)
 {
@@ -26,8 +26,20 @@ int must_split_for_insert_linked_page_list_page(const persistent_page* page1, co
 
 uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(const persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, int split_organization, const linked_page_list_tuple_defs* lpltd_p)
 {
-	// TODO
-	// calculate number of tuples that go into upper_half of the split of page1
+	// construct a virtual unsplitted persistent page to work on
+	virtual_unsplitted_persistent_page vupp = get_virtual_unsplitted_persistent_page(page1, lpltd_p->pas_p->page_size, tuple_to_insert, tuple_to_insert_at, lpltd_p->record_def);
+
+	// get total tuple count that we would be dealing with
+	uint32_t total_tuple_count = get_tuple_count_on_virtual_unsplitted_persistent_page(&vupp);
+
+	if(is_fixed_sized_tuple_def(lpltd_p->record_def))
+	{
+		// TODO
+	}
+	else
+	{
+		// TODO
+	}
 }
 
 persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, int split_type, int split_organization, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
