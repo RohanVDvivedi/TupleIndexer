@@ -97,6 +97,7 @@ uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(con
 
 				uint32_t space_occupied_until = 0;
 
+				// iterate over tuples in reverse order, this is reverse of the FULL_UPPER_HALF case above
 				for(uint32_t i = total_tuple_count - 1; i != UINT32_MAX; i--)
 				{
 					// process the ith tuple
