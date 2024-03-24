@@ -93,7 +93,25 @@ uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(con
 			}
 			case FULL_LOWER_HALF:
 			{
-				// TODO
+				uint32_t limit = space_allotted_to_tuples;
+
+				uint32_t space_occupied_until = 0;
+
+				for(uint32_t i = total_tuple_count - 1; i != UINT32_MAX; i--)
+				{
+					// process the ith tuple
+					uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(&vupp, i, i);
+					space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
+					if(space_occupied_until <= limit)
+						result++;
+					if(space_occupied_until >= limit)
+						break;
+				}
+
+				// here result = number of tuples that go to lower_half of the split of the page
+				// hence, (total_tuple_count - result) = tuples that go to upper_half split
+				result = total_tuple_count - result;
+
 				break;
 			}
 		}
