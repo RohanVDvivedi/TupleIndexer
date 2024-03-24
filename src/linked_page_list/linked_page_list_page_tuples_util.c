@@ -46,7 +46,59 @@ uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(con
 	}
 	else
 	{
-		// TODO
+		// this is the total space available to you to store the tuples
+		uint32_t space_allotted_to_tuples = get_space_allotted_to_all_tuples_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def));
+
+		// this is the result number of tuple that should go to upper half split of page1
+		uint32_t result = 0;
+
+		switch(split_organization)
+		{
+			case EQUAL_SPLIT:
+			{
+				uint32_t limit = space_allotted_to_tuples / 2;
+
+				uint32_t space_occupied_until = 0;
+
+				for(uint32_t i = 0; i < total_tuple_count; i++)
+				{
+					// process the ith tuple
+					uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(&vupp, i, i);
+					space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
+					result++;
+					if(space_occupied_until > limit)
+						break;
+				}
+
+				break;
+			}
+			case FULL_UPPER_HALF:
+			{
+				uint32_t limit = space_allotted_to_tuples;
+
+				uint32_t space_occupied_until = 0;
+
+				for(uint32_t i = 0; i < total_tuple_count; i++)
+				{
+					// process the ith tuple
+					uint32_t space_occupied_by_ith_tuple = get_space_occupied_by_tuples_on_virtual_unsplitted_persistent_page(&vupp, i, i);
+					space_occupied_until = space_occupied_by_ith_tuple + space_occupied_until;
+					if(space_occupied_until <= limit)
+						result++;
+					if(space_occupied_until >= limit)
+						break;
+				}
+
+				break;
+			}
+			case FULL_LOWER_HALF:
+			{
+				// TODO
+				break;
+			}
+		}
+
+		return result;
 	}
 }
 
