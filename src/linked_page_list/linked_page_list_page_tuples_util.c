@@ -34,7 +34,15 @@ uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(con
 
 	if(is_fixed_sized_tuple_def(lpltd_p->record_def))
 	{
-		// TODO
+		switch(split_organization)
+		{
+			case EQUAL_SPLIT:
+				return total_tuple_count / 2;
+			case FULL_UPPER_HALF:
+				return total_tuple_count - 1;
+			case FULL_LOWER_HALF:
+				return 1;
+		}
 	}
 	else
 	{
