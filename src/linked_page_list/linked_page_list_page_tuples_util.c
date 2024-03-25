@@ -161,9 +161,6 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 	if(*abort_error)
 		goto ABORT_ERROR;
 
-	// TODO
-	// perform actual split based on split type
-
 	// let the below 2 pointer point to page1 and new_page, according to what contains what part of the page1's tuples
 	persistent_page* upper_half_split = NULL;
 	persistent_page* lower_half_split = NULL;
@@ -192,6 +189,30 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 			lower_half_split = page1;
 			break;
 		}
+	}
+
+	// insert the new tuple (tuple_to_insert) to upper_half_split or lower_half_split based on "new_tuple_goes_to_upper_half", as calculated earlier
+	if(new_tuple_goes_to_upper_half)
+	{
+		// insert the tuple_to_insert (the new tuple) at the desired index in the upper_half_split
+		insert_tuple_on_persistent_page_resiliently(pmm_p, transaction_id,
+									upper_half_split, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def),
+									tuple_to_insert_at, tuple_to_insert,
+									abort_error);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+	else
+	{
+		// insert the tuple_to_insert (the new tuple) at the desired index in the lower_half_split
+		insert_tuple_on_persistent_page_resiliently(pmm_p, transaction_id,
+									lower_half_split, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def),
+									tuple_to_insert_at - final_upper_half_tuples_from_page1, tuple_to_insert,
+									abort_error);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
 	}
 
 	// if not an abort_error, return new_page (persistent_page by value)
