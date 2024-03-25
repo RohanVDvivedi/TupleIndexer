@@ -159,13 +159,18 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 	// initialize page and page_header (with is_self_referencing = 0), if this fails release lock on it and fail
 	init_linked_page_list_page(&new_page, 0, lpltd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
-	{
-		release_lock_on_persistent_page(pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
-		return get_NULL_persistent_page(pam_p);
-	}
+		goto ABORT_ERROR;
 
 	// TODO
 	// perform actual split based on split type
+
+	// if not an abort_error, return new_page (persistent_page by value)
+	return new_page;
+
+	// on abort just release lock on the new_page and return NULL_persistent_page
+	ABORT_ERROR:;
+	release_lock_on_persistent_page(pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+	return get_NULL_persistent_page(pam_p);
 }
 
 int can_merge_linked_page_list_pages(const persistent_page* page1, const persistent_page* page2, const linked_page_list_tuple_defs* lpltd_p)
