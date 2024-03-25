@@ -164,6 +164,36 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 	// TODO
 	// perform actual split based on split type
 
+	// let the below 2 pointer point to page1 and new_page, according to what contains what part of the page1's tuples
+	persistent_page* upper_half_split = NULL;
+	persistent_page* lower_half_split = NULL;
+
+	switch(split_type)
+	{
+		case SPLIT_LOWER_HALF :
+		{
+			// TODO
+			// move tuples in lower_half of page1 to new_page
+
+			// now tuples in lower_half of page1 are in new_page
+			// while tuples in upper_half remain in page1
+			upper_half_split = page1;
+			lower_half_split = &new_page;
+			break;
+		}
+		case SPLIT_UPPER_HALF :
+		{
+			// TODO
+			// move tuples in upper_half of page1 to new_page
+
+			// now tuples in upper_half of page1 are in new_page
+			// while tuples in lower_half remain in page1
+			upper_half_split = &new_page;
+			lower_half_split = page1;
+			break;
+		}
+	}
+
 	// if not an abort_error, return new_page (persistent_page by value)
 	return new_page;
 
