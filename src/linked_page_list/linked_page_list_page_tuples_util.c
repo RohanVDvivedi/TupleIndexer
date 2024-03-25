@@ -36,6 +36,7 @@ uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(con
 	{
 		switch(split_organization)
 		{
+			default: // default behaviour is EQUAL_SPLIT
 			case EQUAL_SPLIT:
 				return total_tuple_count / 2;
 			case FULL_UPPER_HALF:
@@ -54,6 +55,7 @@ uint32_t calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(con
 
 		switch(split_organization)
 		{
+			default: // default behaviour is EQUAL_SPLIT
 			case EQUAL_SPLIT:
 			{
 				uint32_t limit = space_allotted_to_tuples / 2;
@@ -167,6 +169,8 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 
 	switch(split_type)
 	{
+		// default behaviour is SPLIT_LOWER_HALF
+		default:
 		case SPLIT_LOWER_HALF :
 		{
 			// TODO
