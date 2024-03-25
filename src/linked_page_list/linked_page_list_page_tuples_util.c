@@ -169,8 +169,7 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 
 	switch(split_type)
 	{
-		// default behaviour is SPLIT_LOWER_HALF
-		default:
+		default: // default behaviour is SPLIT_LOWER_HALF
 		case SPLIT_LOWER_HALF :
 		{
 			// TODO
