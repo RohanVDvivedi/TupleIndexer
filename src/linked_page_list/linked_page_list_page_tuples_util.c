@@ -133,13 +133,13 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 	uint32_t page1_tuple_count = get_tuple_count_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def));
 
 	// total number of tuples we would be dealing with
-	uint32_t total_tuple_count = page1_tuple_count + 1;
+	//uint32_t total_tuple_count = page1_tuple_count + 1;
 
 	// final tuple count in the upper half split
 	uint32_t final_tuple_count_in_upper_half_split = calculate_final_tuple_count_in_upper_half_split_of_page_to_be_split(page1, tuple_to_insert, tuple_to_insert_at, split_organization, lpltd_p);
 
 	// final tuple count in the lower_half split
-	uint32_t final_tuple_count_in_lower_half_split = total_tuple_count - final_tuple_count_in_upper_half_split;
+	//uint32_t final_tuple_count_in_lower_half_split = total_tuple_count - final_tuple_count_in_upper_half_split;
 
 	// figure out if the new tuple (tuple_to_insert) will go to upper_half or the lower_half
 	int new_tuple_goes_to_upper_half = (tuple_to_insert_at < final_tuple_count_in_upper_half_split);
@@ -172,8 +172,27 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 		default: // default behaviour is SPLIT_LOWER_HALF
 		case SPLIT_LOWER_HALF :
 		{
-			// TODO
 			// move tuples in lower_half of page1 to new_page
+			for(uint32_t i = 0; i < final_lower_half_tuples_from_page1; i++)
+			{
+				// we need to move tuple at (index = final_upper_half_tuples_from_page1) from page1 to new_page
+				const void* tuple_to_move = get_nth_tuple_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def),
+																			final_upper_half_tuples_from_page1);
+
+				append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id,
+															&new_page, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def),
+															tuple_to_move,
+															abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				discard_tuple_on_persistent_page(pmm_p, transaction_id,
+												page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def),
+												final_upper_half_tuples_from_page1,
+												abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
 
 			// now tuples in lower_half of page1 are in new_page
 			// while tuples in upper_half remain in page1
@@ -183,8 +202,27 @@ persistent_page split_insert_bplus_tree_interior_page(persistent_page* page1, co
 		}
 		case SPLIT_UPPER_HALF :
 		{
-			// TODO
 			// move tuples in upper_half of page1 to new_page
+			for(uint32_t i = 0; i < final_upper_half_tuples_from_page1; i++)
+			{
+				// we need to move tuple at (index = 0) from page1 to new_page
+				const void* tuple_to_move = get_nth_tuple_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def),
+																			0);
+
+				append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id,
+															&new_page, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def),
+															tuple_to_move,
+															abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				discard_tuple_on_persistent_page(pmm_p, transaction_id,
+												page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def),
+												0,
+												abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
 
 			// now tuples in upper_half of page1 are in new_page
 			// while tuples in lower_half remain in page1
