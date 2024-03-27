@@ -6,6 +6,7 @@ B_PLUS_TREE BUG fix
 * in bplus_tree test cases convert sex column into a bit field, to show case usecase of bit_field of tuple store
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
+  * review linked_page_list.c source code
   * add linked_page_list to public api headers, and build simple test case to print empty linked_page_list
   * struct linked_page_list_iterator
     {
