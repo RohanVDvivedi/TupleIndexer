@@ -47,7 +47,10 @@ int destroy_linked_page_list(uint64_t head_page_id, const linked_page_list_tuple
 		// attempt to free the page, if it fails, just release lock and exit with failure
 		release_lock_on_persistent_page(pam_p, transaction_id, &ppage, FREE_PAGE, abort_error);
 		if(*abort_error)
+		{
 			release_lock_on_persistent_page(pam_p, transaction_id, &ppage, NONE_OPTION, abort_error);
+			return 0;
+		}
 	}
 	while(page_id != head_page_id); // continue until you reach head_page again
 
