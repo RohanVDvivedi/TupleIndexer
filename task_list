@@ -7,7 +7,6 @@ B_PLUS_TREE BUG fix
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * linked_page_list.h and linked_page_list.c
-    * uint64_t get_new_linked_page_list(const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
     * int destroy_linked_page_list(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
     * void print_linked_page_list(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
   * struct linked_page_list_iterator
