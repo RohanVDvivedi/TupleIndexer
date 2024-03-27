@@ -16,7 +16,7 @@
 int init_linked_page_list_page(persistent_page* ppage, int is_self_referencing, const linked_page_list_tuple_defs* lpltd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // prints linked_page_list page
-void print_bplus_tree_interior_page(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p);
+void print_linked_page_list_page(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p);
 
 // test if the ppage_test is next/prev of the ppage, i.e. test if ppage->next/prev == ppage_test_*
 // only page_id of page_test_* is used

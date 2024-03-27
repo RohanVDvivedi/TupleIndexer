@@ -22,7 +22,7 @@ int init_linked_page_list_page(persistent_page* ppage, int is_self_referencing, 
 	return 1;
 }
 
-void print_bplus_tree_interior_page(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p)
+void print_linked_page_list_page(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p)
 {
 	print_linked_page_list_page_header(ppage, lpltd_p);
 	print_persistent_page(ppage, lpltd_p->pas_p->page_size, lpltd_p->record_def);
