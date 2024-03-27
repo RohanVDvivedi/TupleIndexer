@@ -65,12 +65,14 @@ void print_linked_page_list(uint64_t head_page_id, const linked_page_list_tuple_
 	// lock the head page, it always exists
 	persistent_page ppage = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, READ_LOCK, abort_error);
 	if(*abort_error)
-		return 0;
+		return;
 
 	while(1)
 	{
-		// print the current ppage
-		// TODO
+		// print this page and its page_id
+		printf("page_id : %"PRIu64"\n\n", ppage.page_id);
+		print_linked_page_list_page(&ppage, lpltd_p);
+		printf("xxxxxxxxxxxxx\n\n");
 
 		// get it's next_page_id
 		uint64_t next_page_id = get_next_page_id_of_linked_page_list_page(&ppage, lpltd_p);
@@ -79,28 +81,26 @@ void print_linked_page_list(uint64_t head_page_id, const linked_page_list_tuple_
 		{
 			release_lock_on_persistent_page(pam_p, transaction_id, &ppage, NONE_OPTION, abort_error);
 			if(*abort_error)
-				return 0;
+				return;
 			break;
 		}
 		else
 		{
-			next_ppage = acquire_persistent_page_with_lock(pam_p, transaction_id, next_page_id, READ_LOCK, abort_error);
+			persistent_page next_ppage = acquire_persistent_page_with_lock(pam_p, transaction_id, next_page_id, READ_LOCK, abort_error);
 			if(*abort_error)
 			{
 				release_lock_on_persistent_page(pam_p, transaction_id, &ppage, NONE_OPTION, abort_error);
-				return 0;
+				return;
 			}
 
 			release_lock_on_persistent_page(pam_p, transaction_id, &ppage, NONE_OPTION, abort_error);
 			if(*abort_error)
 			{
 				release_lock_on_persistent_page(pam_p, transaction_id, &next_ppage, NONE_OPTION, abort_error);
-				return 0;
+				return;
 			}
 
 			ppage = next_ppage;
 		}
 	}
-
-	return 1;
 }
