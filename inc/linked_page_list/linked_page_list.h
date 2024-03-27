@@ -1,6 +1,10 @@
 #ifndef LINKED_PAGE_LIST_H
 #define LINKED_PAGE_LIST_H
 
+#include<linked_page_list_tuple_definitions.h>
+#include<opaque_page_access_methods.h>
+#include<opaque_page_modification_methods.h>
+
 // returns pointer to the root page of the newly created linked_page_list
 uint64_t get_new_linked_page_list(const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
