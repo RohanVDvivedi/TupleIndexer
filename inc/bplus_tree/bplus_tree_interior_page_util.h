@@ -17,7 +17,7 @@
 
 int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
-// prints of bplus_tree interior page
+// prints bplus_tree interior page
 void print_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
 // use this child index to access the all_least_keys_page_id
