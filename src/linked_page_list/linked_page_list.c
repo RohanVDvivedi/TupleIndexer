@@ -59,6 +59,9 @@ int destroy_linked_page_list(uint64_t head_page_id, const linked_page_list_tuple
 
 void print_linked_page_list(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	// print the head page id of the linked page list
+	printf("\n\nLinked_page_list @ head_page_id = %"PRIu64"\n\n", head_page_id);
+
 	// lock the head page, it always exists
 	persistent_page ppage = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, READ_LOCK, abort_error);
 	if(*abort_error)

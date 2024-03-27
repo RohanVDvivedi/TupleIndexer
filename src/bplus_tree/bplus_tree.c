@@ -150,7 +150,7 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 
 void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
-	// print the root page id of the bplsu tree
+	// print the root page id of the bplus tree
 	printf("\n\nBplus_tree @ root_page_id = %"PRIu64"\n\n", root_page_id);
 
 	// create a stack
