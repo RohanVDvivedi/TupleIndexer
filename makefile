@@ -9,6 +9,7 @@ DOWNLOAD_DIR:=/usr/local
 # list of public api headers (only these headers will be installed)
 PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions.h bplus_tree/bplus_tree_iterator_public.h \
 				page_table/page_table.h page_table/page_table_tuple_definitions.h page_table/page_table_range_locker_public.h page_table/page_table_bucket_range.h \
+				linked_page_list/linked_page_list.h linked_page_list/linked_page_list_tuple_definitions.h \
 				interface/page_access_methods.h interface/page_access_methods_options.h interface/opaque_page_access_methods.h interface/unWALed_in_memory_data_store.h\
 				interface/page_modification_methods.h interface/opaque_page_modification_methods.h interface/unWALed_page_modification_methods.h \
 				utils/persistent_page.h \
