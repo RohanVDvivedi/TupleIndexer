@@ -19,6 +19,7 @@
 //#define KEY_INDEX_PHONE
 //#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
+//#define KEY_SEX_EMAIL
 
 #define TEST_DATA_FILE         "./testdata.csv"
 #define TEST_DATA_RANDOM_FILE  "./testdata_random.csv"
@@ -39,6 +40,10 @@
 	#define KEY_ELEMENTS_COUNT			3
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){4,2,3}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC,ASC}
+#elif defined KEY_SEX_EMAIL
+	#define KEY_ELEMENTS_COUNT			2
+	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){3,4}
+	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #endif
 
 // attributes of the page_access_specs suggestions for creating page_access_methods
