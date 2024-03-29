@@ -3,8 +3,6 @@
 B_PLUS_TREE BUG fix
  * current suffix_truncation logic in bplus_tree_leaf_page_util.c is buggy and is so turned off, implement correct logic all over again
 
-* in bplus_tree test cases convert sex column into a bit field, to show case usecase of bit_field of tuple store
-
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * struct linked_page_list_iterator
     {
