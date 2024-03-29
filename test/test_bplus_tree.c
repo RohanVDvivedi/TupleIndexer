@@ -86,7 +86,7 @@ tuple_def* get_tuple_definition()
 	insert_element_def(def, "index", INT, 4, 0, NULL_USER_VALUE);
 	insert_element_def(def, "name", VAR_STRING, 1, 0, NULL_USER_VALUE);
 	insert_element_def(def, "age", UINT, 1, 0, NULL_USER_VALUE);
-	insert_element_def(def, "sex", UINT, 1, 0, NULL_USER_VALUE);
+	insert_element_def(def, "sex", BIT_FIELD, 1, 0, NULL_USER_VALUE);
 	insert_element_def(def, "email", VAR_STRING, 1, 0, NULL_USER_VALUE);
 	insert_element_def(def, "phone", STRING, 14, 0, NULL_USER_VALUE);
 	insert_element_def(def, "score", UINT, 1, 0, NULL_USER_VALUE);
@@ -112,7 +112,7 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 	set_element_in_tuple(def, 0, tuple, &((user_value){.int_value = r->index}));
 	set_element_in_tuple(def, 1, tuple, &((user_value){.data = r->name, .data_size = strlen(r->name)}));
 	set_element_in_tuple(def, 2, tuple, &((user_value){.uint_value = r->age}));
-	set_element_in_tuple(def, 3, tuple, &((user_value){.uint_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}));
+	set_element_in_tuple(def, 3, tuple, &((user_value){.bit_field_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}));
 	set_element_in_tuple(def, 4, tuple, &((user_value){.data = r->email, .data_size = strlen(r->email)}));
 	set_element_in_tuple(def, 5, tuple, &((user_value){.data = r->phone, .data_size = strlen(r->phone)}));
 	set_element_in_tuple(def, 6, tuple, &((user_value){.uint_value = r->score}));
@@ -134,7 +134,7 @@ void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 	r->age = get_value_from_element_from_tuple(tpl_d, 2, tupl).uint_value;
 	uint8_t sex = 0;
 	strcpy(r->sex, "Female");
-	sex = get_value_from_element_from_tuple(tpl_d, 3, tupl).uint_value;
+	sex = get_value_from_element_from_tuple(tpl_d, 3, tupl).bit_field_value;
 	if(sex)
 		strcpy(r->sex, "Male");
 	user_value email_data = get_value_from_element_from_tuple(tpl_d, 4, tupl);
