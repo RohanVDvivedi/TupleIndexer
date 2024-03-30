@@ -58,6 +58,18 @@ uint32_t find_child_index_for_record(const persistent_page* ppage, const void* r
 	return (child_index == NO_TUPLE_FOUND) ? ALL_LEAST_KEYS_CHILD_INDEX : child_index;
 }
 
+uint32_t find_child_index_for_key_s_predecessor(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// find preceding in the interior pages, by comparing against all index entries
+	uint32_t child_index = find_preceding_in_sorted_packed_page(
+										ppage, bpttd_p->pas_p->page_size,
+										bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned,
+										key, bpttd_p->key_def, NULL
+									);
+
+	return (child_index == NO_TUPLE_FOUND) ? ALL_LEAST_KEYS_CHILD_INDEX : child_index;
+}
+
 uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t index, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// if the index is ALL_LEAST_KEYS_CHILD_INDEX, return the page_id stored in the header
