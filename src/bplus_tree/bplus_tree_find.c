@@ -98,12 +98,16 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 				curr_locked_page->child_index = -1;
 				break;
 			}
-			case LESSER_THAN_KEY :
 			case LESSER_THAN_EQUALS_KEY :
-			case GREATER_THAN_EQUALS_KEY :
 			case GREATER_THAN_KEY :
 			{
 				curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key, key_element_count_concerned, bpttd_p);
+				break;
+			}
+			case LESSER_THAN_KEY :
+			case GREATER_THAN_EQUALS_KEY :
+			{
+				curr_locked_page->child_index = find_child_index_for_key_s_predecessor(&(curr_locked_page->ppage), key, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case MAX_TUPLE :
@@ -180,7 +184,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	// extract the top page
 	persistent_page* leaf_page = &(get_top_of_locked_pages_stack(&lps)->ppage);
 
-	// lps mus not be accessed from this point on
+	// lps must not be accessed from this point on
 
 	// find the leaf_tuple_index for the iterator to start with
 	uint32_t leaf_tuple_index = 0;
