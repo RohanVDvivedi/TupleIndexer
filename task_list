@@ -2,9 +2,6 @@
 
 B_PLUS_TREE BUG fix
  * current suffix_truncation logic in bplus_tree_leaf_page_util.c is buggy and is so turned off, implement correct logic all over again
- * need to fix partial key searches, not finding all the necessary keys
-   * for this test with KEY_SEX_EMAIL and DESC, ASC sort ordering
-   * write go_prceeding_function using key functionality, as a second function for find and use it with LESSER_THAN and GREATER_THAN_EQUALS find calls
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * struct linked_page_list_iterator
