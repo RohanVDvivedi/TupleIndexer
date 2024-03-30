@@ -25,17 +25,23 @@ void print_bplus_tree_interior_page(const persistent_page* ppage, const bplus_tr
 // so logically (ALL_LEAST_KEYS_CHILD_INDEX+1) == 0, i.e. first tuple on the page
 #define ALL_LEAST_KEYS_CHILD_INDEX INVALID_TUPLE_INDEX
 
-// this the index of the tuple in the interior page that you should follow
+// this the index of the tuple in the interior page that you should follow to reach the key
 // you may cache this, it may help in case of a split
 // the constrained parameter key_element_count_concerned <= bpttd_p->bpttd_p->key_element_count
 // allows you to consider lesser number of key columns for your operation
 uint32_t find_child_index_for_key(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
 
-// this the index of the tuple in the interior page that you should follow
+// this the index of the tuple in the interior page that you should follow to reach the key
 // you may cache this, it may help in case of a split
 // the constrained parameter key_element_count_concerned <= bpttd_p->bpttd_p->key_element_count
 // allows you to consider lesser number of key columns for your operation
 uint32_t find_child_index_for_record(const persistent_page* ppage, const void* record, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
+
+// this the index of the tuple in the interior page that you should follow to reach the predecessor of the key
+// the constrained parameter key_element_count_concerned <= bpttd_p->bpttd_p->key_element_count
+// allows you to consider lesser number of key columns for your operation
+// THIS FUNCTION IS PROVIDED TO BE ONLY USED WITH FIND LESSER_THAN AND GREATER_THAN_EQUALS
+uint32_t find_child_index_for_key_s_predecessor(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
 
 // returns the page_id stored with the corresponding tuple at index, in its attribute "child_page_id" 
 uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t index, const bplus_tree_tuple_defs* bpttd_p);
