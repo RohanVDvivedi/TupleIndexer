@@ -20,6 +20,7 @@
 //#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
 //#define KEY_SEX_EMAIL
+//#define KEY_SCORE_INDEX
 
 #define TEST_DATA_FILE         "./testdata.csv"
 #define TEST_DATA_RANDOM_FILE  "./testdata_random.csv"
@@ -43,6 +44,10 @@
 #elif defined KEY_SEX_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){3,4}
+	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
+#elif defined KEY_SCORE_INDEX
+	#define KEY_ELEMENTS_COUNT			2
+	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){6,0}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #endif
 
