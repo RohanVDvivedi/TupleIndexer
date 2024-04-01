@@ -528,6 +528,9 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 
 uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos, const void* transaction_id, int* abort_error)
 {
+	// This function makes use of the fact that entries_per_page != INVALID_INDEX (UINT32_MAX)
+	// i.e. entries_per_page < INVALID_INDEX (UINT32_MAX)
+
 	// convert find_pos from LESSER_THAN to LESSER_THAN_EQUALS and GREATER_THAN to GREATER_THAN_EQUALS
 	if(find_pos == LESSER_THAN)
 	{
