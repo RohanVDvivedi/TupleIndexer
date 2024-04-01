@@ -584,6 +584,10 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 
 		if(find_pos == LESSER_THAN_EQUALS)
 		{
+			// inside this if clause
+			// curr_page->child_index == INVALID_TUPLE_INDEX -> the page iteration has not been initialized
+			// curr_page->child_index == pttd_p->entries_per_page -> the page iteration has been completed
+			// else we need to visit the curr_page->child_index child on the curr_page
 			if(curr_page->child_index == INVALID_TUPLE_INDEX)
 			{
 				if((*bucket_id) < curr_page_actual_range.first_bucket_id)
@@ -595,13 +599,13 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 					continue;
 				}
 				else if((*bucket_id) > curr_page_actual_range.last_bucket_id)
-					curr_page->child_index = get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)) - 1;
+					curr_page->child_index = ptrl_p->pttd_p->entries_per_page - 1;
 				else
 					curr_page->child_index = get_child_index_for_bucket_id_on_page_table_page(&(curr_page->ppage), (*bucket_id), ptrl_p->pttd_p);
 			}
 
 			int pushed = 0;
-			while(pushed == 0 && curr_page->child_index != get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			while(pushed == 0 && curr_page->child_index != ptrl_p->pttd_p->entries_per_page)
 			{
 				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p);
 				if(child_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
@@ -623,10 +627,10 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 					}
 				}
 
-				if(curr_page->child_index == 0)
-					curr_page->child_index = get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def));
-				else
+				if(curr_page->child_index != 0)
 					curr_page->child_index--;
+				else
+					curr_page->child_index = ptrl_p->pttd_p->entries_per_page;
 			}
 
 			if(result_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
@@ -635,7 +639,8 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 			if(pushed)
 				continue;
 
-			if(curr_page->child_index == get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			// if nothing is pushed and all children of the page have been seen, then pop the curr_page
+			if(curr_page->child_index == ptrl_p->pttd_p->entries_per_page)
 			{
 				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), ptrl_p, transaction_id, abort_error);
 				pop_from_locked_pages_stack(locked_pages_stack_p);
@@ -646,6 +651,10 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 		}
 		else if(find_pos == GREATER_THAN_EQUALS)
 		{
+			// inside this if clause
+			// curr_page->child_index == INVALID_TUPLE_INDEX -> the page iteration has not been initialized
+			// curr_page->child_index == pttd_p->entries_per_page -> the page iteration has been completed
+			// else we need to visit the curr_page->child_index child on the curr_page
 			if(curr_page->child_index == INVALID_TUPLE_INDEX)
 			{
 				if((*bucket_id) > curr_page_actual_range.last_bucket_id)
@@ -663,7 +672,7 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 			}
 
 			int pushed = 0;
-			while(pushed == 0 && curr_page->child_index != get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			while(pushed == 0 && curr_page->child_index != ptrl_p->pttd_p->entries_per_page)
 			{
 				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p);
 				if(child_page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
@@ -694,7 +703,8 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 			if(pushed)
 				continue;
 
-			if(curr_page->child_index == get_tuple_count_on_persistent_page(&(curr_page->ppage), ptrl_p->pttd_p->pas_p->page_size, &(ptrl_p->pttd_p->entry_def->size_def)))
+			// if nothing is pushed and all children of the page have been seen, then pop the curr_page
+			if(curr_page->child_index == ptrl_p->pttd_p->entries_per_page)
 			{
 				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), ptrl_p, transaction_id, abort_error);
 				pop_from_locked_pages_stack(locked_pages_stack_p);
