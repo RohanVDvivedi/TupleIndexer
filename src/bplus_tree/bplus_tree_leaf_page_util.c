@@ -532,7 +532,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	const void* first_tuple_page2 = get_nth_tuple_on_persistent_page(&page2, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), 0);
 
 	//build_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
-	// below call turns suffix truncation for the keys, but as of now the code is buggy
+	// below call turns on suffix truncation for the keys, if you encounter a bug, then replace it with the call on the line above
 	build_suffix_truncated_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
 
 	// release lock on the page2
