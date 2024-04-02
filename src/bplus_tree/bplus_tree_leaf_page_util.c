@@ -159,21 +159,42 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 	// init the index_entry
 	init_tuple(bpttd_p->index_def, index_entry);
 
-	// copy all the elements from record to the index_tuple, except for the child_page_id
-	int res = 1;
-	int cmp = 0; // result of comparison
-	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1 && cmp == 0; i++)
+	// loop iterator, also the elements processed
+	uint32_t i = 0;
+
+	int cmp_ltp1_ie = 0; // result of comparison between last_tuple_page1 and index_entry for the first i elements
+	int cmp_ie_ftp2 = 0; // result of comparison between last_tuple_page1 and index_entry for the first i elements
+
+	while(i < bpttd_p->key_element_count && cmp_ltp1_ie == 0)
 	{
+		// comparison results with ith element having the uninitialized values in index_entry
+		int new_cmp_ltp1_ie = cmp_ltp1_ie;
+		if(new_cmp_ltp1_ie == 0)
+			new_cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, i);
+		int new_cmp_ie_ftp2 = cmp_ie_ftp2;
+		if(new_cmp_ie_ftp2 == 0)
+			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+
+		if(new_cmp_ltp1_ie == -1 && (new_cmp_ie_ftp2 == -1 || new_cmp_ie_ftp2 == 0))
+		{
+			new_cmp_ltp1_ie = cmp_ltp1_ie;
+			new_cmp_ie_ftp2 = cmp_ie_ftp2;
+			i++;
+			break;
+		}
+
 		const element_def* ele_d = get_element_def_by_id(bpttd_p->index_def, i);
 
-		// cache the comparison result
-		cmp = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+		// compare the current elements of ith keys in last_tuple_page1 and first_tuple_page2
+		int cmp = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
 
 		// if the corresponding elements in the record tuples are equal OR
 		// if the elements are not VAR_STRING or VAR_BLOB, then proceed as usual
 		if(0 == cmp || (ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB))
 		{
-			res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+			// if not set, fail
+			if(!set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2))
+				return 0;
 		}
 		else // we can only suffix truncate VAR_STRING or VAR_BLOB
 		{
@@ -190,7 +211,9 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				case ASC:
 				{
 					first_tuple_page2_element.data_size = match_lengths + 1;
-					set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element);
+					// if not set, fail
+					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element))
+						return 0;
 					break;
 				}
 				case DESC :
@@ -198,23 +221,91 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 					if(match_lengths + 1 < last_tuple_page1_element.data_size) // to ensure that index_entry does not become equal to last_tuple_page1's index representation
 					{
 						last_tuple_page1_element.data_size = match_lengths + 1;
-						set_element_in_tuple(bpttd_p->index_def, i, index_entry, &last_tuple_page1_element);
+						// if not set, fail
+						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &last_tuple_page1_element))
+							return 0;
 					}
 					else // bad edge case, no truncation can be done now
 					{
-						set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element);
+						// if not set, fail
+						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element))
+							return 0;
 					}
 					break;
 				}
 			}
 		}
+
+		if(cmp_ltp1_ie == 0)
+			cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, i);
+		if(cmp_ie_ftp2 == 0)
+			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+
+		i++;
+	}
+
+	// now at this point, last_tuple_page1 and index_entry are not equal for the first i elements
+
+	while(i < bpttd_p->key_element_count && cmp_ie_ftp2 == 0)
+	{
+		int new_cmp_ie_ftp2 = cmp_ie_ftp2;
+		if(new_cmp_ie_ftp2 == 0)
+			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+
+		if(new_cmp_ie_ftp2 == -1)
+		{
+			cmp_ie_ftp2 = new_cmp_ie_ftp2;
+			i++;
+			break;
+		}
+
+		const element_def* ele_d = get_element_def_by_id(bpttd_p->index_def, i);
+
+		switch(bpttd_p->key_compare_direction[i])
+		{
+			// min value of element always exists, set it
+			case ASC:
+			{
+				user_value min_val = get_MIN_user_value(ele_d);
+				// if not set, fail
+				if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &min_val))
+					return 0;
+				break;
+			}
+			// if max value exists then set it, else set the last_tuple_page2's ith element
+			case DESC :
+			{
+				// max values of *STRING and *BLOB types do not exist
+				if(ele_d->type != STRING && ele_d->type != BLOB
+				&& ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB)
+				{
+					// if not set, fail
+					user_value max_val = get_MAX_user_value_for_numeral_element_def(ele_d);
+					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &max_val))
+						return 0;
+				}
+				else // bad edge case, no truncation can be done now, set the corresponding value from first_tuple_page2
+				{
+					// if not set, fail
+					if(!set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2))
+						return 0;
+				}
+				break;
+			}
+		}
+
+		if(cmp_ie_ftp2 == 0)
+			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+
+		i++;
 	}
 
 	// copy the child_page_id to the last element in the index entry
-	if(res == 1)
-		res = set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((const user_value){.uint_value = child_page_id}));
+	if(!set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((const user_value){.uint_value = child_page_id})))
+		return 0;
 
-	return res;
+	// success
+	return 1;
 }
 
 int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
