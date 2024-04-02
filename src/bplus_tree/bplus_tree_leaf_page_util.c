@@ -175,10 +175,10 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		// comparison results with ith element having the uninitialized values in index_entry
 		int new_cmp_ltp1_ie = cmp_ltp1_ie;
 		if(new_cmp_ltp1_ie == 0)
-			new_cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, i);
+			new_cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, i) * bpttd_p->key_compare_direction[i];
 		int new_cmp_ie_ftp2 = cmp_ie_ftp2;
 		if(new_cmp_ie_ftp2 == 0)
-			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
 
 		if(new_cmp_ltp1_ie == -1 && (new_cmp_ie_ftp2 == -1 || new_cmp_ie_ftp2 == 0))
 		{
@@ -190,7 +190,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 
 		const element_def* ele_d = get_element_def_by_id(bpttd_p->index_def, i);
 
-		// compare the current elements of ith keys in last_tuple_page1 and first_tuple_page2
+		// raw compare result (without compare direction) of the current elements of ith keys in last_tuple_page1 and first_tuple_page2
 		int cmp = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
 
 		// if the corresponding elements in the record tuples are equal OR
@@ -242,9 +242,9 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		}
 
 		if(cmp_ltp1_ie == 0)
-			cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, i);
+			cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, i) * bpttd_p->key_compare_direction[i];
 		if(cmp_ie_ftp2 == 0)
-			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
 
 		i++;
 	}
@@ -255,7 +255,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 	{
 		int new_cmp_ie_ftp2 = cmp_ie_ftp2;
 		if(new_cmp_ie_ftp2 == 0)
-			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
 
 		if(new_cmp_ie_ftp2 == -1)
 		{
@@ -300,7 +300,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		}
 
 		if(cmp_ie_ftp2 == 0)
-			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
+			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
 
 		i++;
 	}
@@ -531,9 +531,9 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	const void* last_tuple_page1 = get_nth_tuple_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), get_tuple_count_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)) - 1);
 	const void* first_tuple_page2 = get_nth_tuple_on_persistent_page(&page2, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), 0);
 
-	build_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
+	//build_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
 	// below call turns suffix truncation for the keys, but as of now the code is buggy
-	//build_suffix_truncated_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
+	build_suffix_truncated_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
 
 	// release lock on the page2
 	release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
