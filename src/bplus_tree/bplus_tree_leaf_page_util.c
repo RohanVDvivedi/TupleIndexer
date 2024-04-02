@@ -164,6 +164,11 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 
 	int cmp_ltp1_ie = 0; // result of comparison between last_tuple_page1 and index_entry for the first i elements
 	int cmp_ie_ftp2 = 0; // result of comparison between last_tuple_page1 and index_entry for the first i elements
+	// we finally want the inequality last_tuple_page1 < index_entry <= first_tuple_page1 to be satisfied
+
+	// as we iterate over the key columns given by key_element_ids
+	// the index entry will first diverge from the last_tuple_page1 in the first loop
+	// and then will diverge from first_tuple_page2 in the second loop
 
 	while(i < bpttd_p->key_element_count && cmp_ltp1_ie == 0)
 	{
