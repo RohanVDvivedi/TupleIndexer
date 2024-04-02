@@ -195,7 +195,9 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 
 		// if the corresponding elements in the record tuples are equal OR
 		// if the elements are not VAR_STRING or VAR_BLOB, then proceed as usual
-		if(0 == cmp || (ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB))
+		// Even in case of STRING and BLOB, we can reduce the compare lengths using suffix-truncation, hence try that
+		if(0 == cmp || (ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB
+				&& ele_d->type != STRING && ele_d->type != BLOB))
 		{
 			// if not set, fail
 			if(!set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2))
