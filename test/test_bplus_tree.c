@@ -15,12 +15,13 @@
 #include<executor.h>
 
 // uncomment based on the keys that you want to test with
-#define KEY_NAME_EMAIL
+//#define KEY_NAME_EMAIL
 //#define KEY_INDEX_PHONE
 //#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
 //#define KEY_SEX_EMAIL
 //#define KEY_SCORE_INDEX
+#define KEY_SCORE_NAME
 
 #define TEST_DATA_FILE         "./testdata.csv"
 #define TEST_DATA_RANDOM_FILE  "./testdata_random.csv"
@@ -48,6 +49,10 @@
 #elif defined KEY_SCORE_INDEX
 	#define KEY_ELEMENTS_COUNT			2
 	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){6,0}
+	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
+#elif defined KEY_SCORE_NAME
+	#define KEY_ELEMENTS_COUNT			2
+	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){6,1}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #endif
 
