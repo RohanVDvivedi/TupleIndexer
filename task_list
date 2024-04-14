@@ -1,10 +1,9 @@
 ** PICKED TASKS
 
- * suffic truncation optimization,
-   in loop number 2, if DESC and type == STRING or VAR_STRING, then
-     convert bytes[] to bytes[] such that if the value is between 1 to CHAR_MAX - 1 (both inclusive), then covert to byte + 1
-   while if type == BLOB or VAR_BLOB, then convert bytes to bytes, only if byte < CHAR_MAX, then byte = byte + 1
-   make size = last appended byte
+ * suffix truncation optimization,
+   in loop number 2, if DESC and type == STRING or VAR_STRING or BLOB or VAR_BLOB, then
+   count number of prefix characters that are equal to CHAR_MAX as matched_chars,
+   make user_value uval = "\x7f\x7f\x7f..." (CHAR_MAX = 0x7f), which has length = min(matched_chars + 1, first_tuple_page2_element->length)
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * struct linked_page_list_iterator
