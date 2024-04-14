@@ -207,8 +207,8 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		{
 			uint32_t match_lengths = 0;
 
-			user_value last_tuple_page1_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
-			user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+			const user_value last_tuple_page1_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
+			const user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 			// compute the number of characters matched
 			for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && ((const char*)(last_tuple_page1_element.data))[match_lengths] == ((const char*)(first_tuple_page2_element.data))[match_lengths]; match_lengths++);
@@ -217,9 +217,10 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 			{
 				case ASC:
 				{
-					first_tuple_page2_element.data_size = match_lengths + 1;
+					user_value first_tuple_page2_element_copy = first_tuple_page2_element;
+					first_tuple_page2_element_copy.data_size = match_lengths + 1;
 					// if not set, fail
-					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element))
+					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element_copy))
 						return 0;
 					break;
 				}
@@ -227,9 +228,10 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				{
 					if(match_lengths + 1 < last_tuple_page1_element.data_size) // to ensure that index_entry does not become equal to last_tuple_page1's index representation
 					{
-						last_tuple_page1_element.data_size = match_lengths + 1;
+						user_value last_tuple_page1_element_copy = last_tuple_page1_element;
+						last_tuple_page1_element_copy.data_size = match_lengths + 1;
 						// if not set, fail
-						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &last_tuple_page1_element))
+						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &last_tuple_page1_element_copy))
 							return 0;
 					}
 					else // bad edge case, no truncation can be done now
@@ -273,7 +275,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 			// min value of element always exists, set it
 			case ASC:
 			{
-				user_value min_val = get_MIN_user_value(ele_d);
+				const user_value min_val = get_MIN_user_value(ele_d);
 				// if not set, fail
 				if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &min_val))
 					return 0;
@@ -287,7 +289,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				&& ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB)
 				{
 					// if not set, fail
-					user_value max_val = get_MAX_user_value_for_numeral_element_def(ele_d);
+					const user_value max_val = get_MAX_user_value_for_numeral_element_def(ele_d);
 					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &max_val))
 						return 0;
 				}
