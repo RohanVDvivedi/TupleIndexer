@@ -1,5 +1,11 @@
 ** PICKED TASKS
 
+ * suffic truncation optimization,
+   in loop number 2, if DESC and type == STRING or VAR_STRING, then
+     convert bytes[] to bytes[] such that if the value is between 1 to CHAR_MAX - 1 (both inclusive), then covert to byte + 1
+   while if type == BLOB or VAR_BLOB, then convert bytes to bytes, only if byte < CHAR_MAX, then byte = byte + 1
+   make size = last appended byte
+
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * struct linked_page_list_iterator
     {
