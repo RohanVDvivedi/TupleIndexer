@@ -9,6 +9,8 @@
 
 #include<tuple.h>
 
+#include<stdlib.h>
+
 int init_bplus_tree_leaf_page(persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	int inited = init_persistent_page(pmm_p, transaction_id, ppage, bpttd_p->pas_p->page_size, sizeof_BPLUS_TREE_LEAF_PAGE_HEADER(bpttd_p), &(bpttd_p->record_def->size_def), abort_error);
@@ -284,7 +286,8 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 			// if max value exists then set it, else set the last_tuple_page2's ith element
 			case DESC :
 			{
-				// max values of *STRING and *BLOB types do not exist
+				// max values of *STRING and *BLOB types are difficult to compute
+				// handling the numeral element case first
 				if(ele_d->type != STRING && ele_d->type != BLOB
 				&& ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB)
 				{
@@ -293,11 +296,29 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &max_val))
 						return 0;
 				}
-				else // bad edge case, no truncation can be done now, set the corresponding value from first_tuple_page2
+				else
 				{
+					const user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+
+					// count the number of CHAR_MAX characters in the prefix of the first_tuple_page2_element
+					uint32_t maximum_char_value_prefix_count = 0;
+					while(maximum_char_value_prefix_count < first_tuple_page2_element.data_size
+						&& ((const char*)(first_tuple_page2_element.data))[maximum_char_value_prefix_count] == SIGNED_MAX_VALUE_OF(char))
+						maximum_char_value_prefix_count++;
+
+					// build max value element, and if memory allocation fails then quit
+					int memory_allocation_error = 0;
+					user_value max_val = get_MAX_user_value_for_string_OR_blob_element_def(ele_d, min(maximum_char_value_prefix_count + 1, first_tuple_page2_element.data_size), &memory_allocation_error);
+					if(memory_allocation_error)
+						exit(-1);
+
 					// if not set, fail
-					if(!set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2))
+					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &max_val))
+					{
+						free((void*)max_val.data);
 						return 0;
+					}
+					free((void*)max_val.data);
 				}
 				break;
 			}
