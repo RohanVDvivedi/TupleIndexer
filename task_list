@@ -1,11 +1,5 @@
 ** PICKED TASKS
 
- * suffix truncation optimization,
-   in loop number 2, if DESC and type == STRING or VAR_STRING or BLOB or VAR_BLOB, then
-   count number of prefix characters that are equal to CHAR_MAX as matched_chars,
-   make user_value uval = "\x7f\x7f\x7f..." (CHAR_MAX = 0x7f), which has length = min(matched_chars + 1, first_tuple_page2_element->length)
-   * use the TupleStore function user_value get_MAX_user_value_for_string_OR_blob_element_def(const element_def* ele_d, uint32_t max_length);
-
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * struct linked_page_list_iterator
     {
