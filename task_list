@@ -8,26 +8,20 @@
 
       union
       {
-        // for EMPTY_SINGULAR_HEAD_LINKED_PAGE_LIST and SINGULAR_HEAD_LINKED_PAGE_LIST
-        struct
-        {
-          persistent_page head_page;
-          uint32_t curr_tuple_index;
-        };
+        // for SINGULAR_HEAD_LINKED_PAGE_LIST
+        persistent_page head_only_page;
         // for DUAL_NODE_LINKED_PAGE_LIST
         struct
         {
           persistent_page dual_node_pages[2]; // head page at index 0, and tail page is at index 1
-          uint32_t curr_page_index;
-          uint32_t curr_tuple_index;
+          uint32_t curr_page_index; // curr_page in context
         };
         // for MULTI_NODE_LINKED_PAGE_LIST
-        struct
-        {
-          persistent_page curr_page;
-          uint32_t curr_tuple_index;
-        };
+        persistent_page curr_page;
       };
+
+      // tuple we are pointing at
+      uint32_t curr_tuple_index;
 
       // head_page_id never changes
       uint64_t head_page_id;
@@ -37,11 +31,11 @@
     }
     enum linked_page_list_state
     {
-      EMPTY_SINGULAR_HEAD_LINKED_PAGE_LIST,
-      SINGULAR_HEAD_LINKED_PAGE_LIST,
-      DUAL_NODE_LINKED_PAGE_LIST,
-      MULTI_NODE_LINKED_PAGE_LIST,
+      SINGULAR_HEAD_LINKED_PAGE_LIST = 1, // only 1 node in linked_page_list
+      DUAL_NODE_LINKED_PAGE_LIST = 2, // only 2 nodes in linked_page_list
+      MULTI_NODE_LINKED_PAGE_LIST = 3 // 3 or more nodes in linked_page_list
     };
+    * as you insert more tuples, the linked_page_list_state increases and as it will reduce as you remove more tuples
     * implement functionality to
       * int is_writable_linked_page_list_iterator(const linked_page_list_iterator* bpi_p);
       * insert INSERT_BEFORE/INSERT_AFTER, EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV -> when at head, you can only INSERT_TOWARDS_NEXT
