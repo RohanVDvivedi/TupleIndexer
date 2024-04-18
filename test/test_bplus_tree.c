@@ -15,13 +15,13 @@
 #include<executor.h>
 
 // uncomment based on the keys that you want to test with
-#define KEY_NAME_EMAIL
+//#define KEY_NAME_EMAIL
 //#define KEY_INDEX_PHONE
 //#define KEY_PHONE_SCORE
 //#define KEY_EMAIL_AGE_SEX
 //#define KEY_SEX_EMAIL
 //#define KEY_SCORE_INDEX
-//#define KEY_SCORE_NAME
+#define KEY_SCORE_NAME
 
 #define TEST_DATA_FILE         "./testdata.csv"
 #define TEST_DATA_RANDOM_FILE  "./testdata_random.csv"
@@ -60,6 +60,10 @@
 #define PAGE_ID_WIDTH        3
 #define PAGE_SIZE          256
 #define SYSTEM_HEADER_SIZE   3
+
+// below attribute must be between 1 and KEY_ELEMENTS_COUNT, both inclusive
+// to beused only for find_from_file() functon
+#define DEFAULT_FIND_KEY_COUNT_CONCERNED 1
 
 #define DEFAULT_FIND_LEAF_LOCK_TYPE READ_LOCK
 #define DEFAULT_FIND_IS_STACKED 0
@@ -756,7 +760,7 @@ int main()
 	printf("performing finds in an empty bplus_tree\n\n");
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 10, 5, 8, 16, 1, &bpttd, pam_p);
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 10, 5, 8, 16, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -788,7 +792,7 @@ int main()
 	// perfrom find 12 times on tuples from TEST_DATA_FILE on all tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 64, 1, &bpttd, pam_p);
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -809,7 +813,7 @@ int main()
 	// perfrom find on remaining tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 9, 64, 1, &bpttd, pam_p);
+	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 9, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -833,7 +837,7 @@ int main()
 	// perfrom find on remaining tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 9, 64, 1, &bpttd, pam_p);
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 9, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
