@@ -39,13 +39,18 @@
     * implement functionality to
       * int is_writable_linked_page_list_iterator(const linked_page_list_iterator* bpi_p);
       * insert INSERT_BEFORE/INSERT_AFTER, EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV -> when at head, you can only INSERT_TOWARDS_NEXT
-      * remove GO_NEXT/GO_PREV
+        * can not split head page towards previous direction (EXPAND_TOWARDS_PREV), as this will add a page that goes before head and this is not allowed
+      * remove GO_NEXT/GO_PREV -> will only delete the tuple that we aould be pointing to and then appropriately call next_* or prev_* function
       * update
       * int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
       * int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
       * merging happens while going next or prev
+        * can not merge if the result of the merge would require removing the head page from the linked_page_list
+          * this happens while moving prev from the 2nd page and the contents of head page could fit on tail or the 2nd page
       * you need to handle logic to reposition the iterator after splits and merges
       * const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+      * int update_tuple and update_element to update a tuple or element the iterator is pointing to.
+        * ensure that the new tuple does not exceed the max record size allowed, which is half of the space allotted to tuple on the page
     * it must support functionality like
     * this must work as both stack and queue
       * push_to_head_of_linked_page_list  - stack
