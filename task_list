@@ -3,22 +3,8 @@
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * struct linked_page_list_iterator
     {
-      // current state of linked_page_list
-      linked_page_list_state state;
-
-      union
-      {
-        // for SINGULAR_HEAD_LINKED_PAGE_LIST
-        persistent_page head_only_page;
-        // for DUAL_NODE_LINKED_PAGE_LIST
-        struct
-        {
-          persistent_page dual_node_pages[2]; // head page at index 0, and tail page is at index 1
-          uint32_t curr_page_index; // curr_page in context
-        };
-        // for MULTI_NODE_LINKED_PAGE_LIST
-        persistent_page curr_page;
-      };
+      // current page that weare pointing to
+      persistent_page curr_page;
 
       // tuple we are pointing at
       uint32_t curr_tuple_index;
@@ -27,32 +13,30 @@
       uint64_t head_page_id;
 
       const linked_page_list_tuple_defs* lpltd_p;
+
       const page_access_methods* pam_p;
-      const page_modification_methods* pmm_p;
-    }
-    enum linked_page_list_state
-    {
-      SINGULAR_HEAD_LINKED_PAGE_LIST = 1, // only 1 node in linked_page_list
-      DUAL_NODE_LINKED_PAGE_LIST = 2, // only 2 nodes in linked_page_list
-      MULTI_NODE_LINKED_PAGE_LIST = 3 // 3 or more nodes in linked_page_list
     };
-    * as you insert more tuples, the linked_page_list_state increases and as it will reduce as you remove more tuples
     * implement functionality to
-      * linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+      * add comment that: a global lock necesary to concurrently write without a dead lock, readers can coexist
+      * linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, int lock_type, int start_with_head, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
       * void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
-      * int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
-      * insert INSERT_BEFORE/INSERT_AFTER, EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV -> when at head, you can only INSERT_TOWARDS_NEXT
-        * can not split head page towards previous direction (EXPAND_TOWARDS_PREV), as this will add a page that goes before head and this is not allowed
-      * remove GO_NEXT/GO_PREV -> will only delete the tuple that we aould be pointing to and then appropriately call next_* or prev_* function
-      * update
+      * int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p); // check if the curr_page is write locked
+      * similarly you can also call is_singular_head_linked_page_list OR is_dual_node_linked_page_list, to know about the current state of the linked_page_list
+      * insert INSERT_BEFORE/INSERT_AFTER, EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV
+        * can not split head page towards previous direction (EXPAND_TOWARDS_PREV), as this will add a page that goes before head and this is not allowed, an error must be returned if this occurs
+        * EXPAND_TOWARDS_* only comes into picture if the page can not accomodate the new tuple.
+        * if splitting head/tail page try keeping the new head/tail page empty.
+      * remove GO_NEXT/GO_PREV -> will only delete the tuple that we would be pointing to and then appropriately call next_* or prev_* function, to go to next or previous tuple of the deleted tuple.
       * int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
       * int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
       * merging happens while going next or prev
-        * can not merge if the result of the merge would require removing the head page from the linked_page_list
-          * this happens while moving prev from the 2nd page and the contents of head page could fit on tail or the 2nd page
-      * you need to handle logic to reposition the iterator after splits and merges
+        * first get lock on the next or previous page, and check if a merge of curr_page and the next/prev_page can be performed (explaining the case, when the tuple has 3 or more pages in the linked_page_list)
+        * if the next_page or prev_page is head page then a merge can not be performed
+        * if yes, then grab a lock on the next_next_page or prev_prev_page, merge contents of next/prev_page into the curr_page, remove next_page or prev_page from the linked_page_list and free it, then finally release lock on the next_next_page or prev_prev_page, and then try again to go next or prev on the newly moved tuples
+        * if still no tuples were moved then start over
       * const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
-      * int update_tuple and update_element to update a tuple or element the iterator is pointing to.
+      * int update_tuple and update_element -> to update a tuple or element the iterator is pointing to.
+        * update_tuple takes EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV as params and performs accordingly.
         * ensure that the new tuple does not exceed the max record size allowed, which is half of the space allotted to tuple on the page
     * it must support functionality like
     * this must work as both stack and queue
