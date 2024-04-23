@@ -32,10 +32,9 @@
       * void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
       * int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p); // check if the curr_page is write locked
       * similarly you can also call is_singular_head_linked_page_list OR is_dual_node_linked_page_list, to know about the current state of the linked_page_list
-      * insert INSERT_BEFORE/INSERT_AFTER, EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV
-        * can not split head page towards previous direction (EXPAND_TOWARDS_PREV), as this will add a page that goes before head and this is not allowed, an error must be returned if this occurs
-        * EXPAND_TOWARDS_* only comes into picture if the page can not accomodate the new tuple.
-        * if splitting head/tail page try keeping the new head/tail page empty.
+      * insert INSERT_BEFORE/INSERT_AFTER
+        * if splitting head/tail page try keeping the new head/tail page as empty as possible to allow easy insertions.
+        * always insert new page after the curr_page, so as to avoid inserting before the head_page
       * remove GO_NEXT/GO_PREV -> will only delete the tuple that we would be pointing to and then appropriately call next_* or prev_* function, to go to next or previous tuple of the deleted tuple.
         * remove discards the empty page immediately, unless state == HEAD_ONLY, but does not actively attempt to merge.
       * int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
