@@ -3,7 +3,7 @@
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
   * struct linked_page_list_iterator
     {
-      // current page that weare pointing to
+      // current page that we are pointing to
       persistent_page curr_page;
 
       // tuple we are pointing at
