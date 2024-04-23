@@ -63,14 +63,27 @@ int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, 
 	if(child_index >= pttd_p->entries_per_page)
 		return 0;
 
+	// the child_page_id at child_index is already the desired value, then return 1 (success)
+	// this allows us to not insert redundant write-ahead_log records
+	if(child_page_id == get_child_page_id_at_child_index_in_page_table_page(ppage, child_index, pttd_p))
+		return 1;
+
 	if(child_page_id == pttd_p->pas_p->NULL_PAGE_ID)
 	{
 		// we need to set NULL at child_index
 		// we do not need to use the update_resiliently, because entry_def is fixed width tuple with only 1 element
 		// if the child_index is greater than or equal to the tuple_count on the page, then this function fails and we do not need to take care of it, since the tuple still get read as NULL by the getter function above
-		update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), child_index, NULL, abort_error);
+		int updated_to_null = update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), child_index, NULL, abort_error);
 		if(*abort_error)
 			return 0;
+
+		// if the entry was update to null and the child_index happens to be at the last tuple then we discard trailing tomb stones
+		if(updated_to_null && child_index == (get_tuple_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def)) - 1))
+		{
+			discard_trailing_tomb_stones_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), abort_error);
+			if(*abort_error)
+				return 0;
+		}
 	}
 	else
 	{
