@@ -40,17 +40,17 @@ int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persisten
 	return hdr.prev_page_id == ppage_test_prev->page_id;
 }
 
-int is_singular_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p)
+int is_only_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p)
 {
 	linked_page_list_page_header hdr = get_linked_page_list_page_header(ppage_head, lpltd_p);
 	// the page if it is the only node, must point to itself
-	return hdr.next_page_id == ppage_head->page_id && hdr.prev_page_id == ppage_head->page_id;
+	return hdr.next_page_id == hdr.prev_page_id && hdr.next_page_id == ppage_head->page_id;
 }
 
 int is_dual_node_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p)
 {
 	linked_page_list_page_header hdr = get_linked_page_list_page_header(ppage_head, lpltd_p);
-	// for a dual node linked_page_list, the next and prev of head both point to some other node (not itself)
+	// for a dual node linked_page_list, the next and prev of head (and the other node) both point to some other node (not itself)
 	return hdr.next_page_id == hdr.prev_page_id && hdr.next_page_id != ppage_head->page_id;
 }
 
@@ -64,7 +64,7 @@ int is_free_linked_page_list_node(const persistent_page* ppage_head, const linke
 persistent_page lock_and_get_next_page_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// calling this function is an error, if it is the only node in the linked_page_list
-	if(is_singular_head_linked_page_list(ppage, lpltd_p))
+	if(is_only_head_linked_page_list(ppage, lpltd_p))
 		return get_NULL_persistent_page(pam_p);
 
 	// get next_page_id and get lock on this next page
@@ -75,7 +75,7 @@ persistent_page lock_and_get_next_page_in_linked_page_list(const persistent_page
 persistent_page lock_and_get_prev_page_in_linked_page_list(const persistent_page* ppage, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// calling this function is an error, if it is the only node in the linked_page_list
-	if(is_singular_head_linked_page_list(ppage, lpltd_p))
+	if(is_only_head_linked_page_list(ppage, lpltd_p))
 		return get_NULL_persistent_page(pam_p);
 
 	// get prev_page_id and get lock on this next page
@@ -101,7 +101,7 @@ int insert_page_in_between_linked_page_list(persistent_page* ppage_xist1, persis
 		return 1;
 	}
 	// this implies that the node page_xist1 must be singular head in the linked_page_list
-	else if(ppage_xist1 == ppage_xist2 && is_singular_head_linked_page_list(ppage_xist1, lpltd_p))
+	else if(ppage_xist1 == ppage_xist2 && is_only_head_linked_page_list(ppage_xist1, lpltd_p))
 	{
 		linked_page_list_page_header hdr1 = get_linked_page_list_page_header(ppage_xist1, lpltd_p);
 
@@ -158,7 +158,7 @@ int insert_page_in_between_linked_page_list(persistent_page* ppage_xist1, persis
 
 int remove_page_from_between_linked_page_list(persistent_page* ppage_xist1, persistent_page* ppage_xist2, persistent_page* ppage_xist3, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	if(ppage_xist1 == ppage_xist2 && ppage_xist2 == ppage_xist3 && is_singular_head_linked_page_list(ppage_xist2, lpltd_p)) // removal of the only node of the linked_page_list
+	if(ppage_xist1 == ppage_xist2 && ppage_xist2 == ppage_xist3 && is_only_head_linked_page_list(ppage_xist2, lpltd_p)) // removal of the only node of the linked_page_list
 	{
 		linked_page_list_page_header hdr2 = get_linked_page_list_page_header(ppage_xist2, lpltd_p);
 

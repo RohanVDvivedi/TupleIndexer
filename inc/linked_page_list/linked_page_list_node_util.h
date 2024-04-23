@@ -24,9 +24,10 @@ int is_next_of_in_linked_page_list(const persistent_page* ppage, const persisten
 int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_prev, const linked_page_list_tuple_defs* lpltd_p);
 
 // test if ppage_head->next = ppage_head and ppage_head->prev = ppage_head
-int is_singular_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
+int is_only_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
 
-// true, if not is_singular_head_linked_page_list AND ppage_head->next == ppage_head->prev
+// in the below function the ppage_head may not be the head page of the linked_page_list
+// true, if ppage_head->next == ppage_head->prev and ppage_head->next != ppage_head->page_id
 int is_dual_node_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
 
 // check if the next and prev both point to NULL_PAGE_ID
