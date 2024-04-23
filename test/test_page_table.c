@@ -17,8 +17,8 @@
 #define DIFFR_BUCKET_ID 30 // must be multiple of 2
 #define COUNT_BUCKET_ID 100
 
-#define ith_bucket_id(i) (START_BUCKET_ID + (DIFFR_BUCKET_ID * i))
-#define i_by_2_th_bucket_id(i) (START_BUCKET_ID + ((DIFFR_BUCKET_ID/2) * i))
+#define ith_bucket_id(i) ((START_BUCKET_ID) + ((DIFFR_BUCKET_ID) * (i)))
+#define i_by_2_th_bucket_id(i) ((START_BUCKET_ID) + (((DIFFR_BUCKET_ID)/2) * (i)))
 
 // initialize transaction_id and abort_error
 const void* transaction_id = NULL;
