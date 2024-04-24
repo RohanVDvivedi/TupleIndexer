@@ -1,27 +1,6 @@
 ** PICKED TASKS
 
 * linked_page_list a doubly circular linkedlist of pages with tuple on them
-  * struct linked_page_list_iterator
-    {
-      // current page that we are pointing to
-      persistent_page curr_page;
-
-      // tuple we are pointing at
-      uint32_t curr_tuple_index;
-
-      // head_page_id never changes
-      uint64_t head_page_id;
-
-      const linked_page_list_tuple_defs* lpltd_p;
-
-      const page_access_methods* pam_p;
-    };
-    enum linked_page_list_state
-    {
-      HEAD_ONLY_LINKED_PAGE_LIST,
-      DUAL_NODE_LINKED_PAGE_LIST,
-      MANY_NODE_LINKED_PAGE_LIST
-    };
     * implement functionality to
       * function to return the current state of the linked_page_list, and this function will be used internally to take locks and perform functions inside switch cases
       * functions to return 1 if we are at the head or tail of linked_page_list
