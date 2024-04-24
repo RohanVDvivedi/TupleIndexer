@@ -1,6 +1,7 @@
 #include<linked_page_list_iterator.h>
 
 #include<persistent_page_functions.h>
+#include<linked_page_list_node_util.h>
 
 #include<stdlib.h>
 
@@ -29,14 +30,27 @@ linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_
 	return lpli_p;
 }
 
-// this returns 1, if the curr_page is locked with a WRITE_LOCK
-int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
+{
+	return is_persistent_page_write_locked(&(lpli_p->curr_page));
+}
 
-// get the current state that the linked_page_list is in
-linked_page_list_state get_state_for_linked_page_list(const linked_page_list_iterator* lpli_p);
+linked_page_list_state get_state_for_linked_page_list(const linked_page_list_iterator* lpli_p)
+{
+	if(is_only_head_linked_page_list(&(lpli_p->curr_page), lpli_p->lpltd_p))
+		return HEAD_ONLY_LINKED_PAGE_LIST;
+	else if(is_dual_node_linked_page_list(&(lpli_p->curr_page), lpli_p->lpltd_p))
+		return DUAL_NODE_LINKED_PAGE_LIST;
+	else
+		return MANY_NODE_LINKED_PAGE_LIST;
+}
 
 // if state == HEAD_ONLY_LINKED_PAGE_LIST and the curr_page has tuple_count == 0
-int is_empty_linked_page_list(const linked_page_list_iterator* lpli_p);
+int is_empty_linked_page_list(const linked_page_list_iterator* lpli_p)
+{
+	return HEAD_ONLY_LINKED_PAGE_LIST == get_state_for_linked_page_list(lpli_p)
+		&& 0 == get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
+}
 
 // curr_page.page_id == head_page_id
 int is_at_head_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
