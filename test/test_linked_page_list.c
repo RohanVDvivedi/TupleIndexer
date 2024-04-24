@@ -74,6 +74,29 @@ int main()
 
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
+	/* CREATE A SAMPLE LINKED_PAGE_LIST_ITERATOR AND USE IT */
+
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, WRITE_LOCK, &lpltd, pam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	printf("is_writable = %d\n", is_writable_linked_page_list_iterator(lpli_p));
+	printf("state = %d\n", get_state_for_linked_page_list(lpli_p));
+	printf("is_empty = %d\n", is_empty_linked_page_list(lpli_p));
+	printf("is_at_head_page = %d\n", is_at_head_page_linked_page_list_iterator(lpli_p));
+	printf("is_at_tail_page = %d\n", is_at_tail_page_linked_page_list_iterator(lpli_p));
+	printf("is_as_head_tuple = %d\n", is_at_head_tuple_linked_page_list_iterator(lpli_p));
+	printf("is_at_tail_tuple = %d\n", is_at_tail_tuple_linked_page_list_iterator(lpli_p));
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 
 	/* CLEANUP */
 
