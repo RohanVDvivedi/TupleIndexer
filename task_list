@@ -24,6 +24,7 @@
     };
     * implement functionality to
       * function to return the current state of the linked_page_list, and this function will be used internally to take locks and perform functions inside switch cases
+      * functions to return 1 if we are at the head or tail of linked_page_list
       * add comment that: a global lock necesary to concurrently write without a dead lock, readers can coexist
       * linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
         * linked_page_list_iterator always starts with head page and point to its first tuple
