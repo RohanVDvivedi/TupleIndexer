@@ -55,15 +55,12 @@ int is_empty_linked_page_list(const linked_page_list_iterator* lpli_p)
 
 int is_at_head_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
 {
-	// check if the page_id of curr_page is head_page_id
-	return lpli_p->curr_page.page_id == lpli_p->head_page_id;
+	return is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p);
 }
 
 int is_at_tail_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
 {
-	// check if the next_page_id of curr_page is head_page_id
-	linked_page_list_page_header hdr = get_linked_page_list_page_header(&(lpli_p->curr_page), lpli_p->lpltd_p);
-	return hdr.next_page_id == lpli_p->head_page_id;
+	return is_tail_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p);
 }
 
 int is_at_head_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
