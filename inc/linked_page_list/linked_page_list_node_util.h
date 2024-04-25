@@ -18,17 +18,6 @@ int init_linked_page_list_page(persistent_page* ppage, int is_self_referencing, 
 // prints linked_page_list page
 void print_linked_page_list_page(const persistent_page* ppage, const linked_page_list_tuple_defs* lpltd_p);
 
-// test if the ppage_test is next/prev of the ppage, i.e. test if ppage->next/prev == ppage_test_*
-// only page_id of page_test_* is used
-int is_next_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_next, const linked_page_list_tuple_defs* lpltd_p);
-int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_prev, const linked_page_list_tuple_defs* lpltd_p);
-
-// test if the ppage is head or tail page of the linked_page_list
-// is head page if ppage.page_id == head_page_id
-// is tail page if ppage.next_page_id == head_page_id
-int is_head_page_of_linked_page_list(const persistent_page* ppage, uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p);
-int is_tail_page_of_linked_page_list(const persistent_page* ppage, uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p);
-
 // test if ppage_head->next = ppage_head and ppage_head->prev = ppage_head
 int is_only_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
 
@@ -36,8 +25,19 @@ int is_only_head_linked_page_list(const persistent_page* ppage_head, const linke
 // true, if ppage_head->next == ppage_head->prev and ppage_head->next != ppage_head->page_id
 int is_dual_node_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
 
+// test if the ppage is head or tail page of the linked_page_list
+// is head page if ppage.page_id == head_page_id
+// is tail page if ppage.next_page_id == head_page_id
+int is_head_page_of_linked_page_list(const persistent_page* ppage, uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p);
+int is_tail_page_of_linked_page_list(const persistent_page* ppage, uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p);
+
 // check if the next and prev both point to NULL_PAGE_ID
 int is_free_linked_page_list_node(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
+
+// test if the ppage_test is next/prev of the ppage, i.e. test if ppage->next/prev == ppage_test_*
+// only page_id of page_test_* is used
+int is_next_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_next, const linked_page_list_tuple_defs* lpltd_p);
+int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_prev, const linked_page_list_tuple_defs* lpltd_p);
 
 // lock and get next or previous of ppage, you need to ensure that the next or previous of the ppage is not already locked by you
 // returns NULL_PERSISTENT_PAGE, if the linked_page_list is is_singular_head_linked_page_list
