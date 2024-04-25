@@ -40,6 +40,19 @@ int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persisten
 	return hdr.prev_page_id == ppage_test_prev->page_id;
 }
 
+int is_head_page_of_linked_page_list(const persistent_page* ppage, uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p)
+{
+	// check if the page_id of ppage is head_page_id
+	return ppage->page_id == head_page_id;
+}
+
+int is_tail_page_of_linked_page_list(const persistent_page* ppage, uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p)
+{
+	// check if the next_page_id of ppage is head_page_id
+	linked_page_list_page_header hdr = get_linked_page_list_page_header(ppage, lpltd_p);
+	return hdr.next_page_id == head_page_id;
+}
+
 int is_only_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p)
 {
 	linked_page_list_page_header hdr = get_linked_page_list_page_header(ppage_head, lpltd_p);

@@ -23,6 +23,12 @@ void print_linked_page_list_page(const persistent_page* ppage, const linked_page
 int is_next_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_next, const linked_page_list_tuple_defs* lpltd_p);
 int is_prev_of_in_linked_page_list(const persistent_page* ppage, const persistent_page* ppage_test_prev, const linked_page_list_tuple_defs* lpltd_p);
 
+// test if the ppage is head or tail page of the linked_page_list
+// is head page if ppage.page_id == head_page_id
+// is tail page if ppage.next_page_id == head_page_id
+int is_head_page_of_linked_page_list(const persistent_page* ppage, uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p);
+int is_tail_page_of_linked_page_list(const persistent_page* ppage, uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p);
+
 // test if ppage_head->next = ppage_head and ppage_head->prev = ppage_head
 int is_only_head_linked_page_list(const persistent_page* ppage_head, const linked_page_list_tuple_defs* lpltd_p);
 
