@@ -15,7 +15,6 @@
         * in case of curr_page == head page always pick next_page, and if curr_page == tail, then always pick prev_page
         * now, move contents of next_page or prev_page into the curr_page, and then take lock on the next_next_page or prev_prev_page and remove next_page or prev_page from the linked_page_list and free it
         * if still no tuples were moved then start over
-      * const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
       * int update_tuple and update_element -> to update a tuple or element the iterator is pointing to.
         * update_tuple takes EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV as params and performs accordingly.
         * ensure that the new tuple does not exceed the max record size allowed, which is half of the space allotted to tuple on the page
