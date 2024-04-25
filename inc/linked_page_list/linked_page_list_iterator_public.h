@@ -39,6 +39,9 @@ int is_at_head_tuple_linked_page_list_iterator(const linked_page_list_iterator* 
 // !is_empty && is_at_tail_page && curr_tuple_index == (curr_page.tuple_count - 1)
 int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
 
+// get tuple at curr_tuple_index of the curr_page for the linked_page_list iterator
+const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+
 void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
 
 #endif

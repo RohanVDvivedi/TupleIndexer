@@ -83,6 +83,11 @@ int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* 
 		&& (lpli_p->curr_tuple_index == (get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1));
 }
 
+const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
+{
+	return get_nth_tuple_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index);
+}
+
 void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
 {
 	if(!is_persistent_page_NULL(&(lpli_p->curr_page), lpli_p->pam_p))
