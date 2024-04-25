@@ -18,12 +18,6 @@
       * int update_tuple and update_element -> to update a tuple or element the iterator is pointing to.
         * update_tuple takes EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV as params and performs accordingly.
         * ensure that the new tuple does not exceed the max record size allowed, which is half of the space allotted to tuple on the page
-    * it must support functionality like
-    * this must work as both stack and queue
-      * push_to_head_of_linked_page_list  - stack
-      * pop_from_head_of_linked_page_list - stack queue
-      * peek_head_of_linked_page_list     - stack queue
-      * push_to_tail_of_linked_page_list  -       queue
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
