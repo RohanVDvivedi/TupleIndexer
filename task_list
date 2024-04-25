@@ -19,7 +19,6 @@
       * int update_tuple and update_element -> to update a tuple or element the iterator is pointing to.
         * update_tuple takes EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV as params and performs accordingly.
         * ensure that the new tuple does not exceed the max record size allowed, which is half of the space allotted to tuple on the page
-      * int is_head_of_linked_page_list and is_tail_of_linked_page_list -> if the tuples that the iterator is currently pointing to is first or last tuple of the linked_page_list
     * it must support functionality like
     * this must work as both stack and queue
       * push_to_head_of_linked_page_list  - stack
