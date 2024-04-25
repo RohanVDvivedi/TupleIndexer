@@ -1,6 +1,6 @@
 ** PICKED TASKS
 
-* linked_page_list a doubly circular linkedlist of pages with tuple on them
+* linked_page_list_iterator
     * implement functionality to
       * insert INSERT_BEFORE/INSERT_AFTER
         * if splitting head/tail page try keeping the new head/tail page as empty as possible to allow easy insertions.
@@ -24,7 +24,6 @@
       * pop_from_head_of_linked_page_list - stack queue
       * peek_head_of_linked_page_list     - stack queue
       * push_to_tail_of_linked_page_list  -       queue
-    * add linked_page_list_iterator to public api headers
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
