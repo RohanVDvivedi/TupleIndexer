@@ -36,7 +36,6 @@ void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transact
 // below functions can be used with only writable iterator
 // you can use it to update only a fixed length non-key column
 
-#include<opaque_page_modification_methods.h>
 #include<stdint.h>
 #include<user_value.h>
 

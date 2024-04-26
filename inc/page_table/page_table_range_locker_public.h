@@ -2,7 +2,6 @@
 #define PAGE_TABLE_RANGE_LOCKER_PUBLIC_H
 
 #include<page_table_bucket_range.h>
-#include<opaque_page_modification_methods.h>
 #include<persistent_page.h>
 #include<find_position.h>
 
