@@ -76,7 +76,7 @@ int main()
 
 	/* CREATE A SAMPLE LINKED_PAGE_LIST_ITERATOR AND USE IT */
 
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, WRITE_LOCK, &lpltd, pam_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, &lpltd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
