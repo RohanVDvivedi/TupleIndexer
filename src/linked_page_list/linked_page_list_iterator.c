@@ -123,5 +123,35 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 		return 1;
 	}
 
-	// TODO ONLY_HEAD, DUAL_NODE and MANY_NODE cases
+	// calculate insertion index for this new tuple
+	uint32_t insert_at_pos = lpli_p->curr_tuple_index + rel_pos;
+
+	// update the curr_tuple_index
+	lpli_p->curr_tuple_index += (1U - rel_pos);
+
+	// perform a resilient insert at that index
+	int inserted = insert_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), insert_at_pos, tuple, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		return 0;
+	}
+	// if inserted, return success
+	if(inserted)
+		return 1;
+
+	switch(get_state_for_linked_page_list(lpli_p))
+	{
+		case HEAD_ONLY_LINKED_PAGE_LIST :
+		{
+			// TODO
+			break;
+		}
+		case DUAL_NODE_LINKED_PAGE_LIST :
+		case MANY_NODE_LINKED_PAGE_LIST :
+		{
+			// TODO
+			break;
+		}
+	}
 }
