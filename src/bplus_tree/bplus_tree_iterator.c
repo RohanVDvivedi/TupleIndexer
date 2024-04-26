@@ -35,7 +35,7 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		// attempt to lock the next_leaf_page, if locked successfully, push it onto the stack
 		if(next_page_id != bpi_p->bpttd_p->pas_p->NULL_PAGE_ID)
 		{
-			persistent_page next_leaf_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, next_page_id, bpi_p->leaf_lock_type, abort_error);
+			persistent_page next_leaf_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, next_page_id, (is_writable_bplus_tree_iterator(bpi_p) ? WRITE_LOCK : READ_LOCK), abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(next_leaf_page, INVALID_TUPLE_INDEX));
@@ -85,7 +85,7 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			{
 				// then lock the page at child_index, and push it onto the stack
 				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpi_p->bpttd_p);
-				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, child_page_id, ((curr_page_level == 1) ? bpi_p->leaf_lock_type : READ_LOCK), abort_error);
+				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, child_page_id, ((curr_page_level == 1) ? (is_writable_bplus_tree_iterator(bpi_p) ? WRITE_LOCK : READ_LOCK) : READ_LOCK), abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
@@ -142,7 +142,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		// attempt to lock the prev_leaf_page, if locked successfully, push it onto the stack
 		if(prev_page_id != bpi_p->bpttd_p->pas_p->NULL_PAGE_ID)
 		{
-			persistent_page prev_leaf_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, prev_page_id, bpi_p->leaf_lock_type, abort_error);
+			persistent_page prev_leaf_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, prev_page_id, (is_writable_bplus_tree_iterator(bpi_p) ? WRITE_LOCK : READ_LOCK), abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 			push_to_locked_pages_stack(&(bpi_p->lps), &INIT_LOCKED_PAGE_INFO(prev_leaf_page, INVALID_TUPLE_INDEX));
@@ -192,7 +192,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 			{
 				// then lock the page at child_index, and push it onto the stack
 				uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpi_p->bpttd_p);
-				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, child_page_id, ((curr_page_level == 1) ? bpi_p->leaf_lock_type : READ_LOCK), abort_error);
+				persistent_page child_page = acquire_persistent_page_with_lock(bpi_p->pam_p, transaction_id, child_page_id, ((curr_page_level == 1) ? (is_writable_bplus_tree_iterator(bpi_p) ? WRITE_LOCK : READ_LOCK) : READ_LOCK), abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
@@ -229,7 +229,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 	return 0;
 }
 
-bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p)
+bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
@@ -243,6 +243,12 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 	if(!is_bplus_tree_leaf_page(&(get_top_of_locked_pages_stack(&lps)->ppage), bpttd_p))
 		return NULL;
 
+	// if pmm_p == NULL, then the top page must be read locked, otherwise return NULL
+	// and if pmm_p != NULL, then the top page must be write locked, otherwise return NULL
+	if((pmm_p == NULL && is_persistent_page_write_locked(&(get_top_of_locked_pages_stack(&lps)->ppage))) ||
+		(pmm_p != NULL && (!is_persistent_page_write_locked(&(get_top_of_locked_pages_stack(&lps)->ppage)))))
+		return NULL;
+
 	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
 	if(bpi_p == NULL)
 		exit(-1);
@@ -251,6 +257,7 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 	bpi_p->curr_tuple_index = curr_tuple_index;
 	bpi_p->bpttd_p = bpttd_p;
 	bpi_p->pam_p = pam_p;
+	bpi_p->pmm_p = pmm_p;
 
 	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
 	if(bpi_p->curr_tuple_index == LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE)
@@ -262,7 +269,6 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 			bpi_p->curr_tuple_index = tuple_count_on_curr_leaf_page - 1;
 	}
 
-	bpi_p->leaf_lock_type = is_persistent_page_write_locked(curr_leaf_page) ? WRITE_LOCK : READ_LOCK;
 	bpi_p->is_stacked = get_element_count_locked_pages_stack(&lps) > 1;
 
 	return bpi_p;
@@ -270,7 +276,7 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 
 int is_writable_bplus_tree_iterator(const bplus_tree_iterator* bpi_p)
 {
-	return bpi_p->leaf_lock_type == WRITE_LOCK;
+	return bpi_p->pmm_p != NULL;
 }
 
 int is_stacked_bplus_tree_iterator(const bplus_tree_iterator* bpi_p)
@@ -388,10 +394,10 @@ void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transact
 	free(bpi_p);
 }
 
-int update_non_key_value_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int update_non_key_value_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
 	// cannot update non WRITE_LOCKed bplus_tree_iterator
-	if(bpi_p->leaf_lock_type != WRITE_LOCK)
+	if(!is_writable_bplus_tree_iterator(bpi_p))
 		return 0;
 
 	// make sure that the element that the user is trying to update in place is not a key for the bplus_tree
@@ -408,5 +414,5 @@ int update_non_key_value_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bp
 		return 0;
 
 	// perform the inplace update
-	return set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index, element_index, element_value, abort_error);
+	return set_element_in_tuple_in_place_on_persistent_page(bpi_p->pmm_p, transaction_id, curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index, element_index, element_value, abort_error);
 }

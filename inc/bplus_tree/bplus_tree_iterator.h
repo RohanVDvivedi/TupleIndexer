@@ -20,10 +20,6 @@ struct bplus_tree_iterator
 	// in the curr_page (a bplus_tree_leaf page)
 	uint32_t curr_tuple_index;
 
-	// WRITE_LOCK or READ_LOCK, for the leaves
-	// all interior pages in case of a stacked_iterator are only READ_LOCK-ed
-	int leaf_lock_type;
-
 	// if this attribute is 1, then the iteration occurrs using the parent pages, else it happens through the next and prev page pointers on the leaf page
 	int is_stacked;
 
@@ -31,6 +27,9 @@ struct bplus_tree_iterator
 
 	const page_access_methods* pam_p;
 
+	// WRITE_LOCK or READ_LOCK, for the leaves, is identified by pmm_p == NULL or not
+	// i.e. if pmm_p == NULL ? READ_LOCK : WRITE_LOCK for leaf pages
+	// all interior pages in case of a stacked_iterator are only READ_LOCK-ed
 	const page_modification_methods* pmm_p;
 	// for a read-only page_table_range_locker, pmm_p = NULL
 };
@@ -45,6 +44,6 @@ struct bplus_tree_iterator
 // and lps gets deinitialized by the bplus_tree_iterator only after delete_bplus_tree_iterator() call
 bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p);
 
-#include<bplus_tree_iterator.h>
+#include<bplus_tree_iterator_public.h>
 
 #endif
