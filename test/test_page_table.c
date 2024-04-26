@@ -57,7 +57,7 @@ int main()
 	// print the constructed page table
 	print_page_table(root_page_id, 0, &pttd, pam_p, transaction_id, &abort_error);
 
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, WRITE_LOCK, &pttd, pam_p, transaction_id, &abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &pttd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -66,10 +66,10 @@ int main()
 
 	printf("setting every 500\n\n");
 	for(uint64_t i = 0; i < COUNT_BUCKET_ID; i++)
-		set_in_page_table(ptrl_p, ith_bucket_id(i), ith_bucket_id(i), pmm_p, transaction_id, &abort_error);
+		set_in_page_table(ptrl_p, ith_bucket_id(i), ith_bucket_id(i), transaction_id, &abort_error);
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, pmm_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -79,7 +79,7 @@ int main()
 	// print the constructed page table
 	print_page_table(root_page_id, 1, &pttd, pam_p, transaction_id, &abort_error);
 
-	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, READ_LOCK, &pttd, pam_p, transaction_id, &abort_error);
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &pttd, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -91,14 +91,14 @@ int main()
 		printf("%"PRIu64 " -> %"PRIu64"\n", i_by_2_th_bucket_id(i), get_from_page_table(ptrl_p, i_by_2_th_bucket_id(i), transaction_id, &abort_error));
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, pmm_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
 
-	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, READ_LOCK, &pttd, pam_p, transaction_id, &abort_error);
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &pttd, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -125,14 +125,14 @@ int main()
 	}
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, pmm_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
 
-	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, WRITE_LOCK, &pttd, pam_p, transaction_id, &abort_error);
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &pttd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -141,10 +141,10 @@ int main()
 
 	printf("setting every 500 to NULL_PAGE_ID\n\n");
 	for(uint64_t i = 0; i < COUNT_BUCKET_ID; i++)
-		set_in_page_table(ptrl_p, ith_bucket_id(i), pam_p->pas.NULL_PAGE_ID, pmm_p, transaction_id, &abort_error);
+		set_in_page_table(ptrl_p, ith_bucket_id(i), pam_p->pas.NULL_PAGE_ID, transaction_id, &abort_error);
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, pmm_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -153,9 +153,6 @@ int main()
 
 	// print the constructed page table
 	print_page_table(root_page_id, 1, &pttd, pam_p, transaction_id, &abort_error);
-
-	// print the constructed page table
-	//print_page_table(root_page_id, 1, &pttd, pam_p, transaction_id, &abort_error);
 
 	/* TESTS ENDED */
 
