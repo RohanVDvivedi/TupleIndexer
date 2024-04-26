@@ -8,7 +8,7 @@
 
 #include<stdlib.h>
 
-page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, page_table_bucket_range lock_range, int lock_type, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, page_table_bucket_range lock_range, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// fail if the lock range is invalid
 	if(!is_valid_page_table_bucket_range(&lock_range))
@@ -25,7 +25,7 @@ page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, 
 	// start initializing the ptrl, making it point to and lock the actual root of the page_table
 	ptrl_p->delegated_local_root_range = WHOLE_PAGE_TABLE_BUCKET_RANGE;
 	ptrl_p->max_local_root_level = pttd_p->max_page_table_height - 1;
-	ptrl_p->local_root = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, lock_type, abort_error);
+	ptrl_p->local_root = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, ((pmm_p == NULL) ? READ_LOCK : WRITE_LOCK), abort_error);
 	if(*abort_error)
 	{
 		free(ptrl_p);
@@ -34,6 +34,7 @@ page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, 
 	ptrl_p->root_page_id = root_page_id;
 	ptrl_p->pttd_p = pttd_p;
 	ptrl_p->pam_p = pam_p;
+	ptrl_p->pmm_p = pmm_p;
 
 	// minimize the lock range, from [0,UINT64_MAX] to lock_range
 	minimize_lock_range_for_page_table_range_locker(ptrl_p, lock_range, transaction_id, abort_error);
@@ -87,7 +88,7 @@ int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptr
 		ptrl_p->max_local_root_level = get_level_of_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p) - 1;
 
 		// acquire lock on new_local_root, then release lock on old local_root
-		persistent_page new_local_root = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, child_page_id, (is_persistent_page_write_locked(&(ptrl_p->local_root)) ? WRITE_LOCK : READ_LOCK), abort_error);
+		persistent_page new_local_root = acquire_persistent_page_with_lock(ptrl_p->pam_p, transaction_id, child_page_id, (is_writable_page_table_range_locker(ptrl_p) ? WRITE_LOCK : READ_LOCK), abort_error);
 		if(*abort_error)
 		{
 			release_lock_on_persistent_page(ptrl_p->pam_p, transaction_id, &(ptrl_p->local_root), NONE_OPTION, abort_error);
@@ -114,7 +115,8 @@ page_table_bucket_range get_lock_range_for_page_table_range_locker(const page_ta
 
 int is_writable_page_table_range_locker(const page_table_range_locker* ptrl_p)
 {
-	return is_persistent_page_write_locked(&(ptrl_p->local_root));
+	// the range_locker is writable if we have a non-null pmm_p
+	return ptrl_p->pmm_p != NULL;
 }
 
 // release lock on the persistent_page, and ensure that local_root is not unlocked
@@ -200,7 +202,7 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 	return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
 }
 
-int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error)
 {
 	// we cannot set if the ptrl is not locked for reading
 	if(!is_writable_page_table_range_locker(ptrl_p))
@@ -223,7 +225,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 				page_table_page_header hdr = get_page_table_page_header(&curr_page, ptrl_p->pttd_p);
 				hdr.level = 0;
 				hdr.first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(0, bucket_id, ptrl_p->pttd_p);
-				set_page_table_page_header(&curr_page, &hdr, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				set_page_table_page_header(&curr_page, &hdr, ptrl_p->pttd_p, ptrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
@@ -231,7 +233,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 				}
 
 				uint32_t child_index = get_child_index_for_bucket_id_on_page_table_page(&curr_page, bucket_id, ptrl_p->pttd_p);
-				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, page_id, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, page_id, ptrl_p->pttd_p, ptrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
@@ -251,7 +253,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 			// if bucket_id is not contained in the actual_range of the curr_page, then level_up the page
 			if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, bucket_id))
 			{
-				level_up_page_table_page(&curr_page, ptrl_p->pttd_p, ptrl_p->pam_p, pmm_p, transaction_id, abort_error);
+				level_up_page_table_page(&curr_page, ptrl_p->pttd_p, ptrl_p->pam_p, ptrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
@@ -267,7 +269,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 			// if it is leaf page, then all we need to do is insert the new_entry, bucket_id->page_id, and we are done
 			if(is_page_table_leaf_page(&curr_page, ptrl_p->pttd_p))
 			{
-				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, page_id, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, page_id, ptrl_p->pttd_p, ptrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
@@ -293,7 +295,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 					goto ABORT_ERROR;
 				}
 
-				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, child_page.page_id, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				set_child_page_id_at_child_index_in_page_table_page(&curr_page, child_index, child_page.page_id, ptrl_p->pttd_p, ptrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&child_page, ptrl_p, transaction_id, abort_error);
@@ -312,7 +314,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 
 				// initialize this new child page as if it is an empty page
 				// it will be repurposed in the next iteration
-				init_page_table_page(&curr_page, 0, 0, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				init_page_table_page(&curr_page, 0, 0, ptrl_p->pttd_p, ptrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
@@ -387,7 +389,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 
 			if(is_page_table_leaf_page(&(curr_page->ppage), ptrl_p->pttd_p))
 			{
-				set_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p->pas_p->NULL_PAGE_ID, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+				set_child_page_id_at_child_index_in_page_table_page(&(curr_page->ppage), curr_page->child_index, ptrl_p->pttd_p->pas_p->NULL_PAGE_ID, ptrl_p->pttd_p, ptrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
 				reverse_pass_required = 1;
@@ -447,7 +449,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 
 						// set NULL_PAGE_ID to its parent page entry
 						locked_page_info* parent_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-						set_child_page_id_at_child_index_in_page_table_page(&(parent_page->ppage), parent_page->child_index, ptrl_p->pttd_p->pas_p->NULL_PAGE_ID, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+						set_child_page_id_at_child_index_in_page_table_page(&(parent_page->ppage), parent_page->child_index, ptrl_p->pttd_p->pas_p->NULL_PAGE_ID, ptrl_p->pttd_p, ptrl_p->pmm_p, transaction_id, abort_error);
 						if(*abort_error)
 							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
 					}
@@ -456,7 +458,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 						// write 0 to the level of the curr_page
 						page_table_page_header hdr = get_page_table_page_header(&(curr_page.ppage), ptrl_p->pttd_p);
 						hdr.level = 0;
-						set_page_table_page_header(&(curr_page.ppage), &hdr, ptrl_p->pttd_p, pmm_p, transaction_id, abort_error);
+						set_page_table_page_header(&(curr_page.ppage), &hdr, ptrl_p->pttd_p, ptrl_p->pmm_p, transaction_id, abort_error);
 						if(*abort_error)
 						{
 							release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page.ppage), ptrl_p, transaction_id, abort_error);
@@ -472,7 +474,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 				else if(child_entry_count_curr_page == 1 && !is_page_table_leaf_page(&(curr_page.ppage), ptrl_p->pttd_p)) // if you can level it down then do it
 				{
 					// level down curr_page
-					level_down_page_table_page(&(curr_page.ppage), ptrl_p->pttd_p, ptrl_p->pam_p, pmm_p, transaction_id, abort_error);
+					level_down_page_table_page(&(curr_page.ppage), ptrl_p->pttd_p, ptrl_p->pam_p, ptrl_p->pmm_p, transaction_id, abort_error);
 					if(*abort_error)
 					{
 						release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page.ppage), ptrl_p, transaction_id, abort_error);
@@ -912,17 +914,15 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
 }
 
-void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
 {
 	// we will need to make a second pass from root to discard the local_root
-	// if there was no abort, and local_root is still locked
+	// if, the range_locker is writable, there was no abort, and local_root is still locked
 	// local_root != actual_root
-	// local_root was write locked
 	// and the local_root is empty (i.e. has only NULL_PAGE_IDS)
-	int will_need_to_discard_if_empty = (pmm_p != NULL) && ((*abort_error) == 0) &&
+	int will_need_to_discard_if_empty = (ptrl_p->pmm_p != NULL) && ((*abort_error) == 0) &&
 										(!is_persistent_page_NULL(&(ptrl_p->local_root), ptrl_p->pam_p)) &&
 										(ptrl_p->local_root.page_id != ptrl_p->root_page_id) &&
-										is_persistent_page_write_locked(&(ptrl_p->local_root)) &&
 										has_all_NULL_PAGE_ID_in_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p);
 
 	// you need to re enter using the root_page_id and go to this bucket_id to discard the local root
@@ -938,7 +938,7 @@ void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const page_
 	}
 
 	if(will_need_to_discard_if_empty)
-		backward_pass_to_free_local_root(ptrl_p->root_page_id, discard_target, ptrl_p->pttd_p, ptrl_p->pam_p, pmm_p, transaction_id, abort_error);
+		backward_pass_to_free_local_root(ptrl_p->root_page_id, discard_target, ptrl_p->pttd_p, ptrl_p->pam_p, ptrl_p->pmm_p, transaction_id, abort_error);
 
 	free(ptrl_p);
 

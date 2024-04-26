@@ -3,8 +3,9 @@
 
 #include<page_table_bucket_range.h>
 #include<persistent_page.h>
-#include<opaque_page_access_methods.h>
 #include<page_table_tuple_definitions.h>
+#include<opaque_page_access_methods.h>
+#include<opaque_page_modification_methods.h>
 
 typedef struct page_table_range_locker page_table_range_locker;
 struct page_table_range_locker
@@ -29,6 +30,9 @@ struct page_table_range_locker
 	const page_table_tuple_defs* pttd_p;
 
 	const page_access_methods* pam_p;
+
+	const page_modification_methods* pmm_p;
+	// for a read-only page_table_range_locker, pmm_p = NULL
 };
 
 // all functions on page_table_range_locker are declared here, in this header file
