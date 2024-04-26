@@ -161,7 +161,7 @@ locked_pages_stack walk_down_for_find_using_key(uint64_t root_page_id, const voi
 	return ((locked_pages_stack){});
 }
 
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int leaf_lock_type, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// if the user wants to consider all the key elements then
 	// set key_element_count_concerned to bpttd_p->key_element_count
@@ -177,7 +177,8 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	else
 		f_type = LESSER_THAN_KEY + (find_pos - LESSER_THAN);
 
-	locked_pages_stack lps = walk_down_for_find_using_key(root_page_id, key, f_type, key_element_count_concerned, leaf_lock_type, is_stacked, bpttd_p, pam_p, transaction_id, abort_error);
+	// READ_LOCK the leaf pages if pmm_p == NULL
+	locked_pages_stack lps = walk_down_for_find_using_key(root_page_id, key, f_type, key_element_count_concerned, ((pmm_p == NULL) ? READ_LOCK : WRITE_LOCK), is_stacked, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error) // on abort, all pages would have already been locked by this function
 		return NULL;
 
@@ -250,7 +251,7 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	// if the initial leaf_page is empty, then we need to go next or prev immediately after creating the bplus_tree_iterator
 	int is_initial_leaf_page_empty = (0 == get_tuple_count_on_persistent_page(leaf_page, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)));
 
-	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(lps, leaf_tuple_index, bpttd_p, pam_p);
+	bplus_tree_iterator* bpi_p = get_new_bplus_tree_iterator(lps, leaf_tuple_index, bpttd_p, pam_p, pmm_p);
 
 	// if we couldn't initialize a bplus_tree_iterator, then just unlock all the pages, deinitialize the stack and exit
 	if(bpi_p == NULL)
