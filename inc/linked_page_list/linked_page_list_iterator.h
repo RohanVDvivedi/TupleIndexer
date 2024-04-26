@@ -2,8 +2,9 @@
 #define LINKED_PAGE_LIST_ITERATOR_H
 
 #include<persistent_page.h>
-#include<opaque_page_access_methods.h>
 #include<linked_page_list_tuple_definitions.h>
+#include<opaque_page_access_methods.h>
+#include<opaque_page_modification_methods.h>
 
 typedef struct linked_page_list_iterator linked_page_list_iterator;
 struct linked_page_list_iterator
@@ -20,6 +21,9 @@ struct linked_page_list_iterator
 	const linked_page_list_tuple_defs* lpltd_p;
 
 	const page_access_methods* pam_p;
+
+	const page_modification_methods* pmm_p;
+	// for a read-only linked_page_list_iterator, pmm_p = NULL
 };
 
 #include<linked_page_list_iterator_public.h>

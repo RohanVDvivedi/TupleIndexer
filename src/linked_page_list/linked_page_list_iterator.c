@@ -6,7 +6,7 @@
 
 #include<stdlib.h>
 
-linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, int lock_type, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(lpltd_p == NULL || pam_p == NULL)
@@ -17,7 +17,7 @@ linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_
 	if(lpli_p == NULL)
 		exit(-1);
 
-	lpli_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, lock_type, abort_error);
+	lpli_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, ((pmm_p == NULL) ? READ_LOCK : WRITE_LOCK), abort_error);
 	if(*abort_error)
 	{
 		free(lpli_p);
@@ -27,13 +27,14 @@ linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_
 	lpli_p->head_page_id = head_page_id;
 	lpli_p->lpltd_p = lpltd_p;
 	lpli_p->pam_p = pam_p;
+	lpli_p->pmm_p = pmm_p;
 
 	return lpli_p;
 }
 
 int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
 {
-	return is_persistent_page_write_locked(&(lpli_p->curr_page));
+	return lpli_p->pmm_p != NULL;
 }
 
 linked_page_list_state get_state_for_linked_page_list(const linked_page_list_iterator* lpli_p)
@@ -99,7 +100,7 @@ void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const v
 	free(lpli_p);
 }
 
-int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, linked_page_list_relative_insert_pos rel_pos, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, linked_page_list_relative_insert_pos rel_pos, const void* transaction_id, int* abort_error)
 {
 	// fail if this is not a writable iterator
 	if(!is_writable_linked_page_list_iterator(lpli_p))
@@ -113,7 +114,7 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	// if the linked_page_list is empty, the directly perform an insert and quit
 	if(is_empty_linked_page_list(lpli_p))
 	{
-		append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), tuple, abort_error);
+		append_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), tuple, abort_error);
 		if(*abort_error)
 		{
 			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
@@ -130,7 +131,7 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	lpli_p->curr_tuple_index += (1U - rel_pos);
 
 	// perform a resilient insert at that index
-	int inserted = insert_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), insert_at_pos, tuple, abort_error);
+	int inserted = insert_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), insert_at_pos, tuple, abort_error);
 	if(*abort_error)
 	{
 		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);

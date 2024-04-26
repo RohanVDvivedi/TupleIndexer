@@ -31,7 +31,7 @@ struct bplus_tree_iterator
 	// i.e. if pmm_p == NULL ? READ_LOCK : WRITE_LOCK for leaf pages
 	// all interior pages in case of a stacked_iterator are only READ_LOCK-ed
 	const page_modification_methods* pmm_p;
-	// for a read-only page_table_range_locker, pmm_p = NULL
+	// for a read-only bplus_tree_iterator, pmm_p = NULL
 };
 
 #define LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE UINT32_MAX
