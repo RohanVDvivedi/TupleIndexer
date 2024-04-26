@@ -98,3 +98,30 @@ void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const v
 	}
 	free(lpli_p);
 }
+
+int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, linked_page_list_relative_insert_pos rel_pos, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// fail if this is not a writable iterator
+	if(!is_writable_linked_page_list_iterator(lpli_p))
+		return 0;
+
+	// can not insert a tuple greater than the record def on the page
+	// if tuple == NULL, then it can always be inserted
+	if(tuple != NULL && lpli_p->lpltd_p->max_record_size < get_tuple_size(lpli_p->lpltd_p->record_def, tuple))
+		return 0;
+
+	// if the linked_page_list is empty, the directly perform an insert and quit
+	if(is_empty_linked_page_list(lpli_p))
+	{
+		append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), tuple, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+			return 0;
+		}
+		lpli_p->curr_tuple_index = 0;
+		return 1;
+	}
+
+	// TODO ONLY_HEAD, DUAL_NODE and MANY_NODE cases
+}

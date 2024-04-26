@@ -42,6 +42,10 @@ int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* 
 // get tuple at curr_tuple_index of the curr_page for the linked_page_list iterator
 const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
 
+void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
+
+#include<opaque_page_modification_methods.h>
+
 typedef enum linked_page_list_relative_insert_pos linked_page_list_relative_insert_pos;
 enum linked_page_list_relative_insert_pos
 {
@@ -51,7 +55,5 @@ enum linked_page_list_relative_insert_pos
 
 // insert tuple in linked_page_list at the position the linked_page_list_iterator points to, either INSERT_BEFORE or INSERT_AFTER
 int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, linked_page_list_relative_insert_pos rel_pos, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
-
-void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
 
 #endif
