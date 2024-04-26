@@ -1,8 +1,7 @@
 ** PICKED TASKS
 
-* make pmm part of iterators
-
 * linked_page_list_iterator
+  * make pmm part of linked_page_list_iterator
   * insert INSERT_BEFORE/INSERT_AFTER
     * if splitting head/tail page try keeping the new head/tail page as empty as possible to allow easy insertions.
     * always insert new page after the curr_page, so as to avoid inserting before the head_page
