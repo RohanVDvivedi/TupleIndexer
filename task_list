@@ -29,9 +29,7 @@
  * hash_table, a page_table points a linked_page_list
    * with (duplicate keys allowed)
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
-     * we let the page_table mnage shrinking, keeping the root_page at fixed page_id
- * linked_page_list push_tuple_at_head, push_tuple_at_tail, get_head_tuple, get_tail_tuple, pop_tuple_from_head and pop_tuple_from_tail as its access functions and an iterator from head to tail or the other way around. it will be a doubly linkedlist of tuples
- * all inserts to linked_page_list have a flag to PRESERVE_ROOT_PAGE_ID
+   * need to see how, to make bucket count dynamic, extendible hashing or linear hashing (I would prefer the later)
  * sort
    * it accepts record in the bplus_tree_bulkloading like interface
    * puts tuples in a page, sorts them and inserts it into a page_table
