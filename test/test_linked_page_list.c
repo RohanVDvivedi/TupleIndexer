@@ -58,7 +58,9 @@ const char* names[] = {
 	"Devashree Dvivedi",
 	"Devashree Joshi",
 	"Jumbo Dvivedi",
-	"Sai Dvivedi"
+	"Sai Dvivedi",
+	"Aegon Joshi",
+	"My Dear Jijaji"
 };
 
 int main()
