@@ -102,12 +102,13 @@ int main()
 		exit(-1);
 	}
 
-	for(int i = 0; i < sizeof(names)/sizeof(names[0]); i++)
+	for(int i = 0; i < 2/*sizeof(names)/sizeof(names[0])*/; i++)
 	{
 		printf("inserting -> %d, %s\n", i, names[i]);
 		char tuple[64] = {};
 		initialize_tuple(record_def, tuple, i, names[i]);
-		insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
+		int inserted = insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
+		printf("inserted = %d\n", inserted);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
