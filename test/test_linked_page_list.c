@@ -14,7 +14,7 @@
 
 // attributes of the page_access_specs suggestions for creating page_access_methods
 #define PAGE_ID_WIDTH        3
-#define PAGE_SIZE          256
+#define PAGE_SIZE           64
 #define SYSTEM_HEADER_SIZE   3
 
 // initialize transaction_id and abort_error
@@ -41,6 +41,25 @@ tuple_def* get_tuple_definition()
 	printf("\n\n");
 	return def;
 }
+
+void initialize_tuple(tuple_def* def, char* tuple, int index, const char* name)
+{
+	init_tuple(def, tuple);
+
+	set_element_in_tuple(def, 0, tuple, &((user_value){.int_value = index}));
+	set_element_in_tuple(def, 1, tuple, &((user_value){.data = name, .data_size = strlen(name)}));
+}
+
+const char* names[] = {
+	"Vipulkumar Bhanuprasad Dvivedi",
+	"Rohan Vipulkumar Dvivedi",
+	"Rupa Vipulkumar Dvivedi",
+	"Manan Yogesh Joshi",
+	"Devashree Vipulkumar Dvivedi"
+	"Devashree Manan Joshi",
+	"Jumbo Dvivedi",
+	"Sai Dvivedi"
+};
 
 int main()
 {
@@ -83,13 +102,18 @@ int main()
 		exit(-1);
 	}
 
-	printf("is_writable = %d\n", is_writable_linked_page_list_iterator(lpli_p));
-	printf("state = %d\n", get_state_for_linked_page_list(lpli_p));
-	printf("is_empty = %d\n", is_empty_linked_page_list(lpli_p));
-	printf("is_at_head_page = %d\n", is_at_head_page_linked_page_list_iterator(lpli_p));
-	printf("is_at_tail_page = %d\n", is_at_tail_page_linked_page_list_iterator(lpli_p));
-	printf("is_as_head_tuple = %d\n", is_at_head_tuple_linked_page_list_iterator(lpli_p));
-	printf("is_at_tail_tuple = %d\n", is_at_tail_tuple_linked_page_list_iterator(lpli_p));
+	for(int i = 0; i < sizeof(names)/sizeof(names[0]); i++)
+	{
+		printf("inserting -> %d, %s\n", i, names[i]);
+		char tuple[64] = {};
+		initialize_tuple(record_def, tuple, i, names[i]);
+		insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
 
 	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -99,6 +123,8 @@ int main()
 	}
 
 	/* CLEANUP */
+
+	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
 	// destroy linked_page_list
 	destroy_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
