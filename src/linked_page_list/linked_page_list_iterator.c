@@ -116,10 +116,7 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	{
 		append_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), tuple, abort_error);
 		if(*abort_error)
-		{
-			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-			return 0;
-		}
+			goto ABORT_ERROR;
 		lpli_p->curr_tuple_index = 0;
 		return 1;
 	}
@@ -133,26 +130,99 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	// perform a resilient insert at that index
 	int inserted = insert_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), insert_at_pos, tuple, abort_error);
 	if(*abort_error)
-	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-		return 0;
-	}
+		goto ABORT_ERROR;
 	// if inserted, return success
 	if(inserted)
 		return 1;
 
+	// a resilient insert failed, so now we will need to split this page
+
+	// if the page is head page and not a tail page, then keep FULL_LOWER_HALF
+	// else if the page is tail page and not a head page, then keep FULL_UPPER_HALF
+	int split_organization = EQUAL_SPLIT;
+	if(is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p) && !is_tail_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p))
+		split_organization = FULL_LOWER_HALF;
+	else if(!is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p) && is_tail_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p))
+		split_organization = FULL_UPPER_HALF;
+
+	// split the contents of the curr_page, with the later/tail contents going to new_page
+	persistent_page new_page = split_insert_bplus_tree_interior_page(&(lpli_p->curr_page), tuple, insert_at_pos, SPLIT_LOWER_HALF, split_organization, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// add new_page into the linked_page_list, right after the curr_page
 	switch(get_state_for_linked_page_list(lpli_p))
 	{
 		case HEAD_ONLY_LINKED_PAGE_LIST :
 		{
-			// TODO
+			insert_page_in_between_linked_page_list(&(lpli_p->curr_page), &(lpli_p->curr_page),  &new_page, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+				goto ABORT_ERROR;
+			}
 			break;
 		}
 		case DUAL_NODE_LINKED_PAGE_LIST :
 		case MANY_NODE_LINKED_PAGE_LIST :
 		{
-			// TODO
+			// grab lock on the next_page of the curr_page
+			persistent_page next_page = lock_and_get_next_page_in_linked_page_list(&(lpli_p->curr_page), WRITE_LOCK, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+				goto ABORT_ERROR;
+			}
+
+			// insert new_page, between curr_page and next_page
+			insert_page_in_between_linked_page_list(&(lpli_p->curr_page), &next_page,  &new_page, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+				goto ABORT_ERROR;
+			}
+
+			// release lock on next_page
+			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+				goto ABORT_ERROR;
+			}
 			break;
 		}
 	}
+
+	// decide which of lpli_p->curr_page or new_page becomes the new curr_page
+	uint32_t new_curr_page_tuple_count = ;
+
+	// if curr_tuple_index is within bounds, then the curr_page remains as is
+	if(lpli_p->curr_tuple_index < new_curr_page_tuple_count)
+	{
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+	// else new_page becomes the curr_page
+	else
+	{
+		lpli_p->curr_tuple_index -= new_curr_page_tuple_count;
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+			return 0;
+		}
+
+		lpli_p->curr_page = new_page;
+		new_page = get_NULL_persistent_page(lpli_p->pam_p);
+	}
+
+	return 1;
+
+	// on an abort error, relase lock on curr_page and exit
+	ABORT_ERROR:
+	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+	return 0;
 }
