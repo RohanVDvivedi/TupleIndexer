@@ -14,7 +14,7 @@
 
 // attributes of the page_access_specs suggestions for creating page_access_methods
 #define PAGE_ID_WIDTH        3
-#define PAGE_SIZE           64
+#define PAGE_SIZE           80
 #define SYSTEM_HEADER_SIZE   3
 
 // initialize transaction_id and abort_error
@@ -51,12 +51,12 @@ void initialize_tuple(tuple_def* def, char* tuple, int index, const char* name)
 }
 
 const char* names[] = {
-	"Vipulkumar Bhanuprasad Dvivedi",
-	"Rohan Vipulkumar Dvivedi",
-	"Rupa Vipulkumar Dvivedi",
-	"Manan Yogesh Joshi",
-	"Devashree Vipulkumar Dvivedi"
-	"Devashree Manan Joshi",
+	"Vipul Dvivedi",
+	"Rohan Dvivedi",
+	"Rupa Dvivedi",
+	"Manan Joshi",
+	"Devashree Dvivedi",
+	"Devashree Joshi",
 	"Jumbo Dvivedi",
 	"Sai Dvivedi"
 };
@@ -102,13 +102,12 @@ int main()
 		exit(-1);
 	}
 
-	for(int i = 0; i < 2/*sizeof(names)/sizeof(names[0])*/; i++)
+	for(int i = 0; i < sizeof(names)/sizeof(names[0]); i++)
 	{
-		printf("inserting -> %d, %s\n", i, names[i]);
 		char tuple[64] = {};
 		initialize_tuple(record_def, tuple, i, names[i]);
 		int inserted = insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
-		printf("inserted = %d\n", inserted);
+		printf("insert -> %d, %s -> %d\n", i, names[i], inserted);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
