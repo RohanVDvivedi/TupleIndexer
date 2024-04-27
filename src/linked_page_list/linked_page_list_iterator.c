@@ -196,6 +196,8 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	}
 
 	// decide which of lpli_p->curr_page or new_page becomes the new curr_page
+
+	// for this grab the new tuple_count on curr_page
 	uint32_t new_curr_page_tuple_count = get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
 
 	// if curr_tuple_index is within bounds, then the curr_page remains as is
