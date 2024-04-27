@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
 * linked_page_list_iterator
-  * remove GO_NEXT/GO_PREV -> will only delete the tuple that we would be pointing to and then appropriately call next_* or prev_* function, to go to next or previous tuple of the deleted tuple.
+  * int discard_if_points_to_empty_page with GO_NEXT/GO_PREV -> if the linked_page_list_iterator points to an empty page, then it is discarded
     * remove discards the empty page immediately, unless state == HEAD_ONLY, but does not actively attempt to merge.
     * to remove an empty page that is not head_page in a HEAD_ONLY_LPL, first take lock on next_page and prev_page, then remove empty page right from the middle, and then make the cursor point to the next or the prev.
       * if the head page becomes empty, then take lock on the next_page and next_next_page, then copy contents of the next_page to head_page and then remove the next_page from the middle, then go to next or prev tuple.
@@ -14,6 +14,7 @@
     * now, move contents of next_page or prev_page into the curr_page merging them in order, and then take lock on the next_next_page or prev_prev_page and remove next_page or prev_page from the linked_page_list and free it
     * no page can be empty so no need to do the above in a loop.
     * all in all if you call next(), you will either go to next page OR if possible copy contents of next_page into curr_page and then point to its tuples.
+  * remove GO_NEXT/GO_PREV -> will only delete the tuple that we would be pointing to and then appropriately call next_* or prev_* function, to go to next or previous tuple of the deleted tuple. if the page becomes empty then it is discarded immidiately using the discard_if_points_to_empty_page function
   * int update_tuple and update_element -> to update a tuple or element the iterator is pointing to.
     * update_tuple takes EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV as params and performs accordingly.
     * ensure that the new tuple does not exceed the max record size allowed, which is half of the space allotted to tuple on the page
