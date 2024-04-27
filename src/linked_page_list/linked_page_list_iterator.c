@@ -1,8 +1,9 @@
 #include<linked_page_list_iterator.h>
 
 #include<persistent_page_functions.h>
-#include<linked_page_list_node_util.h>
 #include<linked_page_list_page_header.h>
+#include<linked_page_list_node_util.h>
+#include<linked_page_list_page_tuples_util.h>
 
 #include<stdlib.h>
 
@@ -195,7 +196,7 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	}
 
 	// decide which of lpli_p->curr_page or new_page becomes the new curr_page
-	uint32_t new_curr_page_tuple_count = ;
+	uint32_t new_curr_page_tuple_count = get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
 
 	// if curr_tuple_index is within bounds, then the curr_page remains as is
 	if(lpli_p->curr_tuple_index < new_curr_page_tuple_count)
