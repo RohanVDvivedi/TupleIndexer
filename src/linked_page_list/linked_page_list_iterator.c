@@ -229,3 +229,10 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
 	return 0;
 }
+
+// discards the curr_page of the linked_page_list_iterator if it is empty
+// this function fails if the curr_page is not empty, OR if the empty page is the only head of the linked_page_list
+// after the empty page is discarded it will make the iterator point to first_tuple after discarded page if aft_op = GO_NEXT_AFTER_*_OPERATION,
+// else it will point to the immediate previous tuple
+// on an abort error, it releases all locks including the lock on the curr_page of the iterator, making the iterator unusable
+static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_page_list_go_after_operation aft_op, const void* transaction_id, int* abort_error);
