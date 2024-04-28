@@ -259,7 +259,16 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 		}
 		case MANY_NODE_LINKED_PAGE_LIST :
 		{
-			// TODO
+			// if curr_page is head page, then clone contents of the 2nd page into the head page and remove that 2nd page instead
+			if(is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p))
+			{
+				// TODO
+			}
+			// else lock prev_page and curr_page, then discard the curr_page from their between
+			else
+			{
+				// TODO
+			}
 			break;
 		}
 	}
