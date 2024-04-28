@@ -235,4 +235,32 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 // after the empty page is discarded it will make the iterator point to first_tuple after discarded page if aft_op = GO_NEXT_AFTER_*_OPERATION,
 // else it will point to the immediate previous tuple
 // on an abort error, it releases all locks including the lock on the curr_page of the iterator, making the iterator unusable
-static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_page_list_go_after_operation aft_op, const void* transaction_id, int* abort_error);
+static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_page_list_go_after_operation aft_op, const void* transaction_id, int* abort_error)
+{
+	// fail if this is not a writable iterator
+	if(!is_writable_linked_page_list_iterator(lpli_p))
+		return 0;
+
+	// if the page is not empty, then quit with 0
+	if(0 == get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
+		return 0;
+
+	switch(get_state_for_linked_page_list(lpli_p))
+	{
+		// head of a head only empty linked_page_list, can not be removed
+		case HEAD_ONLY_LINKED_PAGE_LIST :
+			return 0;
+		case DUAL_NODE_LINKED_PAGE_LIST :
+		{
+			// take on the other page of the dual node linked_page_list and modify it such that
+			// all the contents are only present in the head page
+			// TODO
+			break;
+		}
+		case MANY_NODE_LINKED_PAGE_LIST :
+		{
+			// TODO
+			break;
+		}
+	}
+}
