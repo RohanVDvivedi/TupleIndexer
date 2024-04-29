@@ -1,8 +1,7 @@
 ** PICKED TASKS
 
 * linked_page_list_iterator
-  * int merge_dual_nodes_into_only_head(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_erorr); -> that merges a dual node linked_page_list into a head only linked_page_list, making curr_page and curr_tuple_index, point to the same tuple
-    * this can be used in discard_curr_page_if_empty, next and prev calls, when we want to merge dual_node_linked_page_list into a head_only_linked_page_list
+  * merge_dual_nodes_into_only_head can be used in discard_curr_page_if_empty, next and prev calls, when we want to merge dual_node_linked_page_list into a head_only_linked_page_list
   * int discard_if_points_to_empty_page with GO_NEXT/GO_PREV -> if the linked_page_list_iterator points to an empty page, then it is discarded
     * remove discards the empty page immediately, unless state == HEAD_ONLY, but does not actively attempt to merge.
     * to remove an empty page that is not head_page in a HEAD_ONLY_LPL, first take lock on next_page and prev_page, then remove empty page right from the middle, and then make the cursor point to the next or the prev.
@@ -11,15 +10,19 @@
   * int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
     * as explained earlier next of the first tuple on the head page is last tuple on the tail page, and similarly next of tail page's last tuple is head page's first tuple -> This is due to circular nature of the linked_page_list
   * merging happens while going next or prev, when the tuple is write locked
-    * first get lock on the next or prev page, and check if a merge of curr_page and the next/prev_page can be performed (explaining the case, when state = MANY_NODE)
+    * first get lock on the next or prev page, and check if a merge of curr_page and the next/prev_page can be performed (explaining only the case, when state = MANY_NODE, for DUAL_node use merge_dual_nodes_into_only_head)
     * you can not merge if the curr_page and the prev_page/next_page, becomes the pair head,tail or tail,head.
     * now, move contents of next_page or prev_page into the curr_page merging them in order, and then take lock on the next_next_page or prev_prev_page and remove next_page or prev_page from the linked_page_list and free it
     * no page can be empty so no need to do the above in a loop.
     * all in all if you call next(), you will either go to next page OR if possible copy contents of next_page into curr_page and then point to its tuples.
   * remove GO_NEXT/GO_PREV -> will only delete the tuple that we would be pointing to and then appropriately call next_* or prev_* function, to go to next or previous tuple of the deleted tuple. if the page becomes empty then it is discarded immidiately using the discard_if_points_to_empty_page function
-  * int update_tuple and update_element -> to update a tuple or element the iterator is pointing to.
-    * update_tuple takes EXPAND_TOWARDS_NEXT/EXPAND_TOWARDS_PREV as params and performs accordingly.
-    * ensure that the new tuple does not exceed the max record size allowed, which is half of the space allotted to tuple on the page
+  * update_tuple
+    * first attempt to update_resiliently
+    * if it fails (this happens only if there are more than 1 tuple on the curr_page),
+    * then discard the curr tuple on the page
+    * and then insert_at_linked_page_list_iterator with INSERT_BEFORE or INSERT_AFTER respectively
+  * update_element
+    * copy implementation from the bplus_tree_iterator
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
