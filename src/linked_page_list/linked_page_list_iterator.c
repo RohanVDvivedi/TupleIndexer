@@ -334,58 +334,10 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 			return 0;
 		case DUAL_NODE_LINKED_PAGE_LIST :
 		{
-			// take on the other page of the dual node linked_page_list and modify it such that
-			// all the contents are only present in the head page
-
-			// take lock on the other page, this will the next/prev page of the curr_page
-			persistent_page other_page = lock_and_get_next_page_in_linked_page_list(&(lpli_p->curr_page), WRITE_LOCK, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+			// on an abort error here, nothing needs to be done
+			merge_dual_nodes_into_only_head(lpli_p, transaction_id, abort_error);
 			if(*abort_error)
-			{
-				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
 				return 0;
-			}
-
-			// the curr_page must be the head_page, if not swap curr_page and other_page
-			if(!is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p))
-			{
-				persistent_page temp = lpli_p->curr_page;
-				lpli_p->curr_page = other_page;
-				other_page = temp;
-			}
-
-			// move all tuples from other_page and append them to the curr_page,
-			// curr_page is now the head page, you know right?
-			for(uint32_t i = 0; i < get_tuple_count_on_persistent_page(&other_page, lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)); i++)
-			{
-				const void* tuple = get_nth_tuple_on_persistent_page(&other_page, lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), i);
-				append_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), tuple, abort_error);
-				if(*abort_error)
-				{
-					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, NONE_OPTION, abort_error);
-					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-					return 0;
-				}
-			}
-
-			// remove other_page from the linked_page_list
-			remove_page_from_between_linked_page_list(&(lpli_p->curr_page), &other_page, &(lpli_p->curr_page), lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
-			if(*abort_error)
-			{
-				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, NONE_OPTION, abort_error);
-				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-				return 0;
-			}
-
-			// now we may free the other_page
-			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, FREE_PAGE, abort_error);
-			if(*abort_error)
-			{
-				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, NONE_OPTION, abort_error);
-				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-				return 0;
-			}
-
-			// now, from here on the other_page is free and obviously not locked, you may not access it from here on
 
 			// fix the curr_tuple_index
 			switch(aft_op)
