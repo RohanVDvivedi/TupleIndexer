@@ -230,6 +230,11 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	return 0;
 }
 
+// merges DUAL_NODE_LINKED_PAGE_LIST's pages in to a HEAD_ONLY_LINKED_PAGE_LIST
+// it will also make curr_page point to the only head, and curr_tuple_index point to the same tuple it was pointing to (if it was valid prior to this call)
+// on an abort error, it releases all locks including the lock on the curr_page of the iterator, making the iterator unusable
+static int merge_dual_nodes_into_only_head(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_erorr);
+
 // discards the curr_page of the linked_page_list_iterator if it is empty
 // this function fails if the curr_page is not empty, OR if the empty page is the only head of the linked_page_list
 // after the empty page is discarded it will make the iterator point to first_tuple after discarded page if aft_op = GO_NEXT_AFTER_*_OPERATION,
