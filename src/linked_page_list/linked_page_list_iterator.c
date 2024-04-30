@@ -403,6 +403,9 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 					return 0;
 				}
 
+				// now we only have lock on the next_page and prev_page, the iterator's curr_page is freed
+				// we will make the iterator point accoding to the passed aft_op option
+
 				// fix the curr_tuple_index and curr_page (curr_page is NULL_persistent_page as of now)
 				switch(aft_op)
 				{
