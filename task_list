@@ -16,6 +16,11 @@
     * no page can be empty so no need to do the above in a loop.
     * all in all if you call next(), you will either go to next page OR if possible copy contents of next_page into curr_page and then point to its tuples.
   * remove GO_NEXT/GO_PREV -> will only delete the tuple that we would be pointing to and then appropriately call next_* or prev_* function, to go to next or previous tuple of the deleted tuple. if the page becomes empty then it is discarded immidiately using the discard_if_points_to_empty_page function
+    * discard the tuple at curr_tuple_index on the curr_page
+    * if the page becomes empty, then discard_if_points_to_empty_page and quit
+    * if GO_PREV is set, the curr_tuple_index--;
+    * if(curr_tuple_index == INVALID_TUPLE_INDEX), then curr_tuple_index = 0 and then call prev_*
+    * else if(curr_tuple_index == tuple_count on curr_page), then curr_tuple_index = tuple_count - 1and then call next_*
   * update_tuple
     * first attempt to update_resiliently
     * if it fails (this happens only if there are more than 1 tuple on the curr_page),
