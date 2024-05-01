@@ -2,10 +2,6 @@
 
 * linked_page_list_iterator
   * merge_dual_nodes_into_only_head can be used in discard_curr_page_if_empty, next and prev calls, when we want to merge dual_node_linked_page_list into a head_only_linked_page_list
-  * int discard_if_points_to_empty_page with GO_NEXT/GO_PREV -> if the linked_page_list_iterator points to an empty page, then it is discarded
-    * remove discards the empty page immediately, unless state == HEAD_ONLY, but does not actively attempt to merge.
-    * to remove an empty page that is not head_page in a HEAD_ONLY_LPL, first take lock on next_page and prev_page, then remove empty page right from the middle, and then make the cursor point to the next or the prev.
-      * if the head page becomes empty, then take lock on the next_page and next_next_page, then copy contents of the next_page to head_page and then remove the next_page from the middle, then go to next or prev tuple.
   * int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
   * int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
     * as explained earlier next of the first tuple on the head page is last tuple on the tail page, and similarly next of tail page's last tuple is head page's first tuple -> This is due to circular nature of the linked_page_list
