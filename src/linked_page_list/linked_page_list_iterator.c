@@ -107,7 +107,7 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	if(!is_writable_linked_page_list_iterator(lpli_p))
 		return 0;
 
-	// can not insert a tuple greater than the record def on the page
+	// can not insert a tuple greater than the max_record_size on the page
 	// if tuple == NULL, then it can always be inserted
 	if(tuple != NULL && lpli_p->lpltd_p->max_record_size < get_tuple_size(lpli_p->lpltd_p->record_def, tuple))
 		return 0;
@@ -361,7 +361,95 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 			// if curr_page is head page, then clone contents of the 2nd page into the head page and remove that 2nd page instead
 			if(is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p))
 			{
-				// TODO
+				// grab lock on the next_page
+				persistent_page next_page = lock_and_get_next_page_in_linked_page_list(&(lpli_p->curr_page), WRITE_LOCK, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+					return 0;
+				}
+
+				// grab lock on the next_next_page
+				persistent_page next_next_page = lock_and_get_next_page_in_linked_page_list(&next_page, WRITE_LOCK, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+					return 0;
+				}
+
+				// move contents of next_page to curr_page
+				merge_linked_page_list_pages(&(lpli_p->curr_page), &next_page, MERGE_INTO_PAGE1, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_next_page, NONE_OPTION, abort_error);
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+					return 0;
+				}
+
+				// remove next_page from the linked_page_list
+				remove_page_from_between_linked_page_list(&(lpli_p->curr_page), &next_page, &next_next_page, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_next_page, NONE_OPTION, abort_error);
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+					return 0;
+				}
+
+				// free the next_page
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, FREE_PAGE, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_next_page, NONE_OPTION, abort_error);
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+					return 0;
+				}
+
+				// next_page is not freed and must not be accessed
+
+				// release lock on the next_next_page
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_next_page, NONE_OPTION, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+					return 0;
+				}
+
+				// now you only have lock on the curr_page, which is infact the next page
+				switch(aft_op)
+				{
+					// make iterator point to head of the linked_page_list
+					case GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION :
+					{
+						lpli_p->curr_tuple_index = 0;
+						break;
+					}
+					case GO_PREV_AFTER_LINKED_PAGE_ITERATOR_OPERATION :
+					{
+						// grab lock on the prev_page
+						persistent_page prev_page = lock_and_get_prev_page_in_linked_page_list(&(lpli_p->curr_page), WRITE_LOCK, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+						if(*abort_error)
+						{
+							release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+							return 0;
+						}
+
+						// release lock on the curr_page
+						release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+						if(*abort_error)
+						{
+							release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &prev_page, NONE_OPTION, abort_error);
+							return 0;
+						}
+
+						lpli_p->curr_page = prev_page; prev_page = get_NULL_persistent_page(lpli_p->pam_p);
+						lpli_p->curr_tuple_index = get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1;
+						break;
+					}
+				}
 
 				return 1;
 			}
