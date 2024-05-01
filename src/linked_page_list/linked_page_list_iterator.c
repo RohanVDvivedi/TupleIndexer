@@ -362,6 +362,8 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 			if(is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p))
 			{
 				// TODO
+
+				return 1;
 			}
 			// else lock prev_page and curr_page, then discard the curr_page from their between
 			else
@@ -438,8 +440,9 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 						break;
 					}
 				}
+
+				return 1;
 			}
-			return 1;
 		}
 	}
 }
