@@ -534,3 +534,91 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 		}
 	}
 }
+
+int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
+{
+	// if the linked_page_list is empty, the fail
+	if(is_empty_linked_page_list(lpli_p))
+		return 0;
+
+	// increment curr_tuple_index
+	lpli_p->curr_tuple_index++;
+
+	// if the curr_tuple_index is within bounds, then return with a success
+	if(0 <= lpli_p->curr_tuple_index && lpli_p->curr_tuple_index < get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
+		return 1;
+
+	// if it is HEAD_ONLY_LINKED_PAGE_LIST, then we don't have to go next
+	if(get_state_for_linked_page_list(lpli_p) == HEAD_ONLY_LINKED_PAGE_LIST)
+	{
+		lpli_p->curr_tuple_index = 0;
+		return 1;
+	}
+
+	// merge must not be attempted, for a HEAD_ONLY linked_page_list OR a read-only iterator OR if the curr_page is tail
+	int must_not_attempt_merge = (!is_writable_linked_page_list_iterator(lpli)) ||
+								(is_tail_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p));
+
+	// lock types to acquire
+	int lock_type = is_writable_linked_page_list_iterator(lpli) ? WRITE_LOCK : READ_LOCK;
+
+	switch(get_state_for_linked_page_list(lpli_p))
+	{
+		case DUAL_NODE_LINKED_PAGE_LIST :
+		{
+			// TODO
+			return 1;
+		}
+		case MANY_NODE_LINKED_PAGE_LIST :
+		{
+			// TODO
+			return 1;
+		}
+		default : // this will never occur
+			return 0;
+	}
+}
+
+int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
+{
+	// if the linked_page_list is empty, the fail
+	if(is_empty_linked_page_list(lpli_p))
+		return 0;
+
+	// decrement curr_tuple_index
+	lpli_p->curr_tuple_index--;
+
+	// if the curr_tuple_index is within bounds, then return with a success
+	if(0 <= lpli_p->curr_tuple_index && lpli_p->curr_tuple_index < get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
+		return 1;
+
+	// if it is HEAD_ONLY_LINKED_PAGE_LIST, then we don't have to go prev
+	if(get_state_for_linked_page_list(lpli_p) == HEAD_ONLY_LINKED_PAGE_LIST)
+	{
+		lpli_p->curr_tuple_index = get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1;
+		return 1;
+	}
+
+	// merge must not be attempted, for a HEAD_ONLY linked_page_list OR a read-only iterator OR if the curr_page is head
+	int must_not_attempt_merge = (!is_writable_linked_page_list_iterator(lpli)) ||
+								(is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p));
+
+	// lock types to acquire
+	int lock_type = is_writable_linked_page_list_iterator(lpli) ? WRITE_LOCK : READ_LOCK;
+
+	switch(get_state_for_linked_page_list(lpli_p))
+	{
+		case DUAL_NODE_LINKED_PAGE_LIST :
+		{
+			// TODO
+			return 1;
+		}
+		case MANY_NODE_LINKED_PAGE_LIST :
+		{
+			// TODO
+			return 1;
+		}
+		default : // this will never occur
+			return 0;
+	}
+}
