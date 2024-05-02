@@ -611,7 +611,36 @@ int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 		}
 		case MANY_NODE_LINKED_PAGE_LIST :
 		{
+			// grab lock on the next page
+			persistent_page next_page = lock_and_get_next_page_in_linked_page_list(&(lpli_p->curr_page), lock_type, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+				return 0;
+			}
+
 			// TODO
+			// if may_attempt_merge && can_merge_linked_page_list_pages
+				// grab lock on the next_next_page
+				// merge curr_page and next_page into curr_page
+				// remove next_page from between curr_page and next_next_page
+				// free next_page
+				// release lock on next_next_page
+				// curr_tuple_index remains as is
+				// return 1
+
+			// now we can release lock on the curr_page
+			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+				return 0;
+			}
+
+			// make curr_page the next_page
+			lpli_p->curr_page = next_page; next_page = get_NULL_persistent_page(lpli_p->pam_p);
+			lpli_p->curr_tuple_index = 0;
+
 			return 1;
 		}
 		default : // this will never occur
@@ -695,7 +724,38 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 		}
 		case MANY_NODE_LINKED_PAGE_LIST :
 		{
+			// grab lock on the prev page
+			persistent_page prev_page = lock_and_get_prev_page_in_linked_page_list(&(lpli_p->curr_page), lock_type, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+				return 0;
+			}
+
+			uint32_t original_tuple_count_prev_page = get_tuple_count_on_persistent_page(&prev_page, lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
+
 			// TODO
+			// if may_attempt_merge && can_merge_linked_page_list_pages
+				// grab lock on the prev_prev_page
+				// merge prev_page and curr_page into curr_page
+				// remove prev_page from between prev_prev_page and curr_page
+				// free prev_page
+				// release lock on prev_prev_page
+				// curr_tuple_index = original_tuple_count_prev_page - 1
+				// return 1
+
+			// now we can release lock on the curr_page
+			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &prev_page, NONE_OPTION, abort_error);
+				return 0;
+			}
+
+			// make curr_page the next_page
+			lpli_p->curr_page = prev_page; prev_page = get_NULL_persistent_page(lpli_p->pam_p);
+			lpli_p->curr_tuple_index = 0;
+
 			return 1;
 		}
 		default : // this will never occur
