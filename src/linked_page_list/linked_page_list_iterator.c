@@ -556,17 +556,57 @@ int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 	}
 
 	// merge must not be attempted, for a HEAD_ONLY linked_page_list OR a read-only iterator OR if the curr_page is tail
-	int must_not_attempt_merge = (!is_writable_linked_page_list_iterator(lpli)) ||
+	int must_not_attempt_merge = (!is_writable_linked_page_list_iterator(lpli_p)) ||
 								(is_tail_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p));
 
+	int may_attempt_merge = !must_not_attempt_merge;
+
 	// lock types to acquire
-	int lock_type = is_writable_linked_page_list_iterator(lpli) ? WRITE_LOCK : READ_LOCK;
+	int lock_type = is_writable_linked_page_list_iterator(lpli_p) ? WRITE_LOCK : READ_LOCK;
 
 	switch(get_state_for_linked_page_list(lpli_p))
 	{
 		case DUAL_NODE_LINKED_PAGE_LIST :
 		{
-			// TODO
+			if(may_attempt_merge)
+			{
+				// attempt a merge
+				int merged = merge_dual_nodes_into_only_head(lpli_p, transaction_id, abort_error);
+				if(*abort_error)
+					return 0;
+
+				// if merged, now it is HEAD_ONLY_LINKED_PAGE_LIST, we can delegate the call
+				if(merged)
+				{
+					next_linked_page_list_iterator(lpli_p, transaction_id, abort_error);
+					if(*abort_error)
+						return 0;
+					return 1;
+				}
+			}
+
+			// if somehow we couldn't merge, then simply get next_page and point to its first tuple
+
+			// grab lock on the next page
+			persistent_page next_page = lock_and_get_next_page_in_linked_page_list(&(lpli_p->curr_page), lock_type, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+				return 0;
+			}
+
+			// now we can release lock on the curr_page
+			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+				return 0;
+			}
+
+			// make curr_page the next_page
+			lpli_p->curr_page = next_page; next_page = get_NULL_persistent_page(lpli_p->pam_p);
+			lpli_p->curr_tuple_index = 0;
+
 			return 1;
 		}
 		case MANY_NODE_LINKED_PAGE_LIST :
@@ -600,17 +640,57 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 	}
 
 	// merge must not be attempted, for a HEAD_ONLY linked_page_list OR a read-only iterator OR if the curr_page is head
-	int must_not_attempt_merge = (!is_writable_linked_page_list_iterator(lpli)) ||
+	int must_not_attempt_merge = (!is_writable_linked_page_list_iterator(lpli_p)) ||
 								(is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p));
 
+	int may_attempt_merge = !must_not_attempt_merge;
+
 	// lock types to acquire
-	int lock_type = is_writable_linked_page_list_iterator(lpli) ? WRITE_LOCK : READ_LOCK;
+	int lock_type = is_writable_linked_page_list_iterator(lpli_p) ? WRITE_LOCK : READ_LOCK;
 
 	switch(get_state_for_linked_page_list(lpli_p))
 	{
 		case DUAL_NODE_LINKED_PAGE_LIST :
 		{
-			// TODO
+			if(may_attempt_merge)
+			{
+				// attempt a merge
+				int merged = merge_dual_nodes_into_only_head(lpli_p, transaction_id, abort_error);
+				if(*abort_error)
+					return 0;
+
+				// if merged, now it is HEAD_ONLY_LINKED_PAGE_LIST, we can delegate the call
+				if(merged)
+				{
+					prev_linked_page_list_iterator(lpli_p, transaction_id, abort_error);
+					if(*abort_error)
+						return 0;
+					return 1;
+				}
+			}
+
+			// if somehow we couldn't merge, then simply get prev_page and point to its last tuple
+
+			// grab lock on the prev page
+			persistent_page prev_page = lock_and_get_prev_page_in_linked_page_list(&(lpli_p->curr_page), lock_type, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+				return 0;
+			}
+
+			// now we can release lock on the curr_page
+			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &prev_page, NONE_OPTION, abort_error);
+				return 0;
+			}
+
+			// make curr_page the next_page
+			lpli_p->curr_page = prev_page; prev_page = get_NULL_persistent_page(lpli_p->pam_p);
+			lpli_p->curr_tuple_index = 0;
+
 			return 1;
 		}
 		case MANY_NODE_LINKED_PAGE_LIST :
