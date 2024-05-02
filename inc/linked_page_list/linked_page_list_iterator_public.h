@@ -62,4 +62,14 @@ enum linked_page_list_go_after_operation
 	GO_PREV_AFTER_LINKED_PAGE_ITERATOR_OPERATION = 1,
 };
 
+// go to the next tuple of the current tuple
+// returns 1 for success, it returns 0, if there are no tuples in the linked_page_list
+// on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
+int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
+
+// go to the prev tuple of the current tuple
+// returns 1 for success, it returns 0, if there are no tuples in the linked_page_list
+// on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
+int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
+
 #endif
