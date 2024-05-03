@@ -124,6 +124,42 @@ int main()
 		exit(-1);
 	}
 
+	lpli_p = get_new_linked_page_list_iterator(head_page_id, &lpltd, pam_p, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	do
+	{
+		print_tuple(record_def, get_tuple_linked_page_list_iterator(lpli_p));
+		next_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}while(!is_at_head_tuple_linked_page_list_iterator(lpli_p));
+	prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	do
+	{
+		print_tuple(record_def, get_tuple_linked_page_list_iterator(lpli_p));
+		prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}while(!is_at_tail_tuple_linked_page_list_iterator(lpli_p));
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
 	/* CLEANUP */
 
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
