@@ -1,16 +1,6 @@
 ** PICKED TASKS
 
 * linked_page_list_iterator
-  * merge_dual_nodes_into_only_head can be used in discard_curr_page_if_empty, next and prev calls, when we want to merge dual_node_linked_page_list into a head_only_linked_page_list
-  * int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
-  * int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
-    * as explained earlier next of the first tuple on the head page is last tuple on the tail page, and similarly next of tail page's last tuple is head page's first tuple -> This is due to circular nature of the linked_page_list
-  * merging happens while going next or prev, when the tuple is write locked
-    * first get lock on the next or prev page, and check if a merge of curr_page and the next/prev_page can be performed (explaining only the case, when state = MANY_NODE, for DUAL_node use merge_dual_nodes_into_only_head)
-    * you can not merge if the curr_page and the prev_page/next_page, becomes the pair head,tail or tail,head.
-    * now, move contents of next_page or prev_page into the curr_page merging them in order, and then take lock on the next_next_page or prev_prev_page and remove next_page or prev_page from the linked_page_list and free it
-    * no page can be empty so no need to do the above in a loop.
-    * all in all if you call next(), you will either go to next page OR if possible copy contents of next_page into curr_page and then point to its tuples.
   * remove GO_NEXT/GO_PREV -> will only delete the tuple that we would be pointing to and then appropriately call next_* or prev_* function, to go to next or previous tuple of the deleted tuple. if the page becomes empty then it is discarded immidiately using the discard_if_points_to_empty_page function
     * discard the tuple at curr_tuple_index on the curr_page
     * if the page becomes empty, then discard_if_points_to_empty_page and quit
