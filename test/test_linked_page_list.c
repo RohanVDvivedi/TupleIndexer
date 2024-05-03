@@ -126,6 +126,10 @@ int main()
 
 	printf("-----inserions completed-----\n");
 
+	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
+
+	printf("-----printing complete -------\n");
+
 	lpli_p = get_new_linked_page_list_iterator(head_page_id, &lpltd, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
