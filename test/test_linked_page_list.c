@@ -124,6 +124,8 @@ int main()
 		exit(-1);
 	}
 
+	printf("-----inserions completed-----\n");
+
 	lpli_p = get_new_linked_page_list_iterator(head_page_id, &lpltd, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
@@ -134,6 +136,7 @@ int main()
 	do
 	{
 		print_tuple(record_def, get_tuple_linked_page_list_iterator(lpli_p));
+		printf("\n");
 		next_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
@@ -145,6 +148,7 @@ int main()
 	do
 	{
 		print_tuple(record_def, get_tuple_linked_page_list_iterator(lpli_p));
+		printf("\n");
 		prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
