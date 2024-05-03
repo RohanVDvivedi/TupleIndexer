@@ -139,7 +139,7 @@ int main()
 
 	do
 	{
-		print_tuple(record_def, get_tuple_linked_page_list_iterator(lpli_p));
+		print_tuple(get_tuple_linked_page_list_iterator(lpli_p), record_def);
 		printf("\n");
 		next_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
 		if(abort_error)
@@ -151,7 +151,7 @@ int main()
 	prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
 	do
 	{
-		print_tuple(record_def, get_tuple_linked_page_list_iterator(lpli_p));
+		print_tuple(get_tuple_linked_page_list_iterator(lpli_p), record_def);
 		printf("\n");
 		prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
 		if(abort_error)
