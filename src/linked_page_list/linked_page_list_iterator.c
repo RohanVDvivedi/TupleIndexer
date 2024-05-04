@@ -533,6 +533,8 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 			}
 		}
 	}
+
+	return 0;
 }
 
 int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
