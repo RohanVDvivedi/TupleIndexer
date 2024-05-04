@@ -14,7 +14,7 @@
 
 // attributes of the page_access_specs suggestions for creating page_access_methods
 #define PAGE_ID_WIDTH        3
-#define PAGE_SIZE           96
+#define PAGE_SIZE          128
 #define SYSTEM_HEADER_SIZE   3
 
 // initialize transaction_id and abort_error
