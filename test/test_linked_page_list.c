@@ -50,18 +50,142 @@ void initialize_tuple(tuple_def* def, char* tuple, int index, const char* name)
 	set_element_in_tuple(def, 1, tuple, &((user_value){.data = name, .data_size = strlen(name)}));
 }
 
-const char* names[] = {
-	"Vipul Dvivedi",
-	"Rohan Dvivedi",
-	"Rupa Dvivedi",
-	"Manan Joshi",
-	"Devashree Dvivedi",
-	"Devashree Joshi",
-	"Jumbo Dvivedi",
-	"Sai Dvivedi",
-	"Aegon Joshi",
-	"My Dear Jijaji"
-};
+int insert_counter = 0;
+
+void push_at_head(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	char tuple[64] = {};
+	initialize_tuple(lpltd_p->record_def, tuple, insert_counter++, name);
+	insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
+void push_at_tail(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	char tuple[64] = {};
+	initialize_tuple(lpltd_p->record_def, tuple, insert_counter++, name);
+	insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
+void print_all_forward(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p)
+{
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	if(is_empty_linked_page_list(lpli_p))
+		printf("EMPTY_LINKED_PAGE_LIST");
+	else
+	{
+		do
+		{
+			print_tuple(get_tuple_linked_page_list_iterator(lpli_p), lpltd_p->record_def);
+			next_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+		}
+		while(!is_at_head_tuple_linked_page_list_iterator(lpli_p));
+	}
+	printf("\n");
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
+void print_all_reverse(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p)
+{
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	if(is_empty_linked_page_list(lpli_p))
+		printf("EMPTY_LINKED_PAGE_LIST");
+	else
+	{
+		prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		do
+		{
+			print_tuple(get_tuple_linked_page_list_iterator(lpli_p), lpltd_p->record_def);
+			prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+		}
+		while(!is_at_tail_tuple_linked_page_list_iterator(lpli_p));
+	}
+	printf("\n");
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
 
 int main()
 {
@@ -95,78 +219,21 @@ int main()
 
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
-	/* CREATE A SAMPLE LINKED_PAGE_LIST_ITERATOR AND USE IT */
+	/* TESTS */
 
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, &lpltd, pam_p, pmm_p, transaction_id, &abort_error);
-	if(abort_error)
-	{
-		printf("ABORTED\n");
-		exit(-1);
-	}
+	push_at_head(head_page_id, "Rohan Dvivedi", &lpltd,  pam_p, pmm_p);
+	push_at_head(head_page_id, "Rupa Dvivedi", &lpltd,  pam_p, pmm_p);
+	push_at_head(head_page_id, "Milan Dvivedi", &lpltd,  pam_p, pmm_p);
 
-	for(int i = 0; i < sizeof(names)/sizeof(names[0]); i++)
-	{
-		char tuple[64] = {};
-		initialize_tuple(record_def, tuple, i, names[i]);
-		int inserted = insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
-		printf("insert -> %d, %s -> %d\n", i, names[i], inserted);
-		if(abort_error)
-		{
-			printf("ABORTED\n");
-			exit(-1);
-		}
-	}
+	print_all_forward(head_page_id, &lpltd, pam_p);
+	print_all_reverse(head_page_id, &lpltd, pam_p);
 
-	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
-	if(abort_error)
-	{
-		printf("ABORTED\n");
-		exit(-1);
-	}
+	push_at_tail(head_page_id, "Rohan Dvivedi", &lpltd,  pam_p, pmm_p);
+	push_at_tail(head_page_id, "Rupa Dvivedi", &lpltd,  pam_p, pmm_p);
+	push_at_tail(head_page_id, "Milan Dvivedi", &lpltd,  pam_p, pmm_p);
 
-	printf("-----inserions completed-----\n");
-
-	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
-
-	printf("-----printing complete -------\n");
-
-	lpli_p = get_new_linked_page_list_iterator(head_page_id, &lpltd, pam_p, NULL, transaction_id, &abort_error);
-	if(abort_error)
-	{
-		printf("ABORTED\n");
-		exit(-1);
-	}
-
-	do
-	{
-		print_tuple(get_tuple_linked_page_list_iterator(lpli_p), record_def);
-		printf("\n");
-		next_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
-		if(abort_error)
-		{
-			printf("ABORTED\n");
-			exit(-1);
-		}
-	}while(!is_at_head_tuple_linked_page_list_iterator(lpli_p));
-	prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
-	do
-	{
-		print_tuple(get_tuple_linked_page_list_iterator(lpli_p), record_def);
-		printf("\n");
-		prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
-		if(abort_error)
-		{
-			printf("ABORTED\n");
-			exit(-1);
-		}
-	}while(!is_at_tail_tuple_linked_page_list_iterator(lpli_p));
-
-	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
-	if(abort_error)
-	{
-		printf("ABORTED\n");
-		exit(-1);
-	}
+	print_all_forward(head_page_id, &lpltd, pam_p);
+	print_all_reverse(head_page_id, &lpltd, pam_p);
 
 	/* CLEANUP */
 
