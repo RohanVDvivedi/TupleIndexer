@@ -187,6 +187,72 @@ void print_all_reverse(uint64_t head_page_id, const linked_page_list_tuple_defs*
 	}
 }
 
+void pop_from_head(uint64_t head_page_id, int to_pop, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	while(to_pop > 0 && !is_empty_linked_page_list(lpli_p))
+	{
+		printf("popping : ");
+		print_tuple(get_tuple_linked_page_list_iterator(lpli_p), lpltd_p->record_def);
+		remove_from_linked_page_list_iterator(lpli_p, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		to_pop--;
+	}
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
+void pop_from_tail(uint64_t head_page_id, int to_pop, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	prev_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+	while(to_pop > 0 && !is_empty_linked_page_list(lpli_p))
+	{
+		printf("popping : ");
+		print_tuple(get_tuple_linked_page_list_iterator(lpli_p), lpltd_p->record_def);
+		remove_from_linked_page_list_iterator(lpli_p, GO_PREV_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		to_pop--;
+	}
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -234,6 +300,12 @@ int main()
 
 	print_all_forward(head_page_id, &lpltd, pam_p);
 	print_all_reverse(head_page_id, &lpltd, pam_p);
+
+	pop_from_head(head_page_id, 2, &lpltd, pam_p, pmm_p);
+	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
+
+	pop_from_tail(head_page_id, 2, &lpltd, pam_p, pmm_p);
+	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
 	/* CLEANUP */
 
