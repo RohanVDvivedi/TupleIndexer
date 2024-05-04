@@ -324,7 +324,7 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 		return 0;
 
 	// if the page is not empty, then quit with 0
-	if(0 == get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
+	if(0 != get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
 		return 0;
 
 	switch(get_state_for_linked_page_list(lpli_p))
@@ -853,5 +853,60 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 		}
 		default : // this will never occur
 			return 0;
+	}
+}
+
+int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, linked_page_list_go_after_operation aft_op, const void* transaction_id, int* abort_error)
+{
+	// if not writable, we can not discard the current tuple
+	if(!is_writable_linked_page_list_iterator(lpli_p))
+		return 0;
+
+	// if the linked_page_list is empty then fail, removal
+	if(is_empty_linked_page_list(lpli_p))
+		return 0;
+
+	// discard current tuple
+	discard_tuple_on_persistent_page(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		return 0;
+	}
+
+	// handle case if the page becomes newly empty
+	if(0 == get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
+	{
+		discard_curr_page_if_empty(lpli_p, aft_op, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+		return 1;
+	}
+
+	// we by default went next, upon discarding the tuple on the page, so if we are required to go prev, we do that adjusting the tuple
+	if(aft_op == GO_PREV_AFTER_LINKED_PAGE_ITERATOR_OPERATION)
+		lpli_p->curr_tuple_index--;
+
+	// if the curr_tuple_index is within bounds, then return with a success
+	if(0 <= lpli_p->curr_tuple_index && lpli_p->curr_tuple_index < get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
+		return 1;
+
+	// the curr_tuple_index is not within bounds
+	// so appropriately fix it
+	if(aft_op == GO_PREV_AFTER_LINKED_PAGE_ITERATOR_OPERATION)
+	{
+		lpli_p->curr_tuple_index = 0;
+		prev_linked_page_list_iterator(lpli_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+		return 1;
+	}
+	else
+	{
+		lpli_p->curr_tuple_index = get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1;
+		next_linked_page_list_iterator(lpli_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+		return 1;
 	}
 }
