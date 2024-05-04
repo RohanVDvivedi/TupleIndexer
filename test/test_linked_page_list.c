@@ -14,7 +14,7 @@
 
 // attributes of the page_access_specs suggestions for creating page_access_methods
 #define PAGE_ID_WIDTH        3
-#define PAGE_SIZE           80
+#define PAGE_SIZE           96
 #define SYSTEM_HEADER_SIZE   3
 
 // initialize transaction_id and abort_error
@@ -301,10 +301,22 @@ int main()
 	print_all_forward(head_page_id, &lpltd, pam_p);
 	print_all_reverse(head_page_id, &lpltd, pam_p);
 
+	push_at_tail(head_page_id, "My Dear Jijaji", &lpltd,  pam_p, pmm_p);
+	push_at_tail(head_page_id, "Devashree joshi", &lpltd,  pam_p, pmm_p);
+	push_at_tail(head_page_id, "Devashree Dvivedi", &lpltd,  pam_p, pmm_p);
+
+	push_at_head(head_page_id, "Manan Joshi", &lpltd,  pam_p, pmm_p);
+	push_at_head(head_page_id, "Vipulkumar Dvivedi", &lpltd,  pam_p, pmm_p);
+
+	print_all_forward(head_page_id, &lpltd, pam_p);
+
 	pop_from_head(head_page_id, 2, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
 	pop_from_tail(head_page_id, 2, &lpltd, pam_p, pmm_p);
+	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
+
+	pop_from_tail(head_page_id, 20, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
 	/* CLEANUP */
