@@ -941,3 +941,8 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 		return 1;
 	}
 }
+
+int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}

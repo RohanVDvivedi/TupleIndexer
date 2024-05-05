@@ -78,6 +78,6 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 
 // update the curr_tuple being pointed at by the linked_page_list_iterator with the parameter tuple
 // on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
-int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, const void* transaction_id, int* abort_error)
+int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, const void* transaction_id, int* abort_error);
 
 #endif
