@@ -253,6 +253,55 @@ void pop_from_tail(uint64_t head_page_id, int to_pop, const linked_page_list_tup
 	}
 }
 
+void update_from_head(uint64_t head_page_id, int index, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	if(is_empty_linked_page_list(lpli_p))
+		printf("EMPTY_LINKED_PAGE_LIST");
+	else
+	{
+		while(index)
+		{
+			next_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			index--;
+		}
+
+		printf("updated from : ");
+		print_tuple(get_tuple_linked_page_list_iterator(lpli_p), lpltd_p->record_def);
+
+		char tuple[64] = {};
+		initialize_tuple(lpltd_p->record_def, tuple, insert_counter++, name);
+		update_at_linked_page_list_iterator(lpli_p, tuple, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		printf("updated to : ");
+		print_tuple(get_tuple_linked_page_list_iterator(lpli_p), lpltd_p->record_def);
+	}
+	printf("\n");
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 int main()
 {
 	/* SETUP STARTED */
