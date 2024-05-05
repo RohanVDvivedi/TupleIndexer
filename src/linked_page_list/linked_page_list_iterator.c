@@ -253,6 +253,7 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	lpli_p->curr_tuple_index += (1U - rel_pos);
 
 	// perform a insert / split_insert at that index
+	// only an abort error or a invalid parameter can result in failure
 	int result = insert_OR_split_insert_on_page_of_linked_page_list(lpli_p, insert_at_pos, tuple, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
@@ -957,10 +958,30 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	if(tuple != NULL && lpli_p->lpltd_p->max_record_size < get_tuple_size(lpli_p->lpltd_p->record_def, tuple))
 		return 0;
 
-	// TODO
-	// try update_resiliently
-	// if successful, quit with return 1
-	// then leave curr_tuple_index as is and set insert_pos = curr_tuple_index
-	// then discard tuple at insert_at_pos
+	// try update_resiliently, first
+	int updated = update_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, tuple, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		return 0;
+	}
+	if(updated)
+		return 1;
+
+	// discard tuple at curr_tuple_index
+	int discarded = discard_tuple_on_persistent_page(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		return 0;
+	}
+	if(!discarded) // this must never occur
+		return 0;
+
 	// then call split_insert with same curr_tuple_index and insert_at_pos
+	// only an abort error or a invalid parameter can result in failure
+	int result = insert_OR_split_insert_on_page_of_linked_page_list(lpli_p, lpli_p->curr_tuple_index, tuple, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+	return result;
 }
