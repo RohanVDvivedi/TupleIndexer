@@ -1,5 +1,10 @@
 ** PICKED TASKS
 
+* bplus_tree edge case
+ * in inspected_update, cache the key of the new_tuple as new_tuple_key before calling update_inspect,
+ * and ensure that the new_tuple after update_inspect has the same key values as the new_tuple_key
+ * after this change no need to compare old_tuple and new_tuple
+
 * linked_page_list_iterator
   * update_element
     * copy implementation from the bplus_tree_iterator
