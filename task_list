@@ -1,11 +1,6 @@
 ** PICKED TASKS
 
 * linked_page_list_iterator
-  * update_tuple
-    * first attempt to update_resiliently
-    * if it fails (this happens only if there are more than 1 tuple on the curr_page),
-    * then discard the curr tuple on the page
-    * and then insert_at_linked_page_list_iterator with INSERT_BEFORE or INSERT_AFTER respectively
   * update_element
     * copy implementation from the bplus_tree_iterator
 
