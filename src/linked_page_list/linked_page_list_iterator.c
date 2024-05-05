@@ -101,32 +101,22 @@ void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const v
 	free(lpli_p);
 }
 
-int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, linked_page_list_relative_insert_pos rel_pos, const void* transaction_id, int* abort_error)
+// before calling this function, we assume that lpli_p->curr_tuple_index has been set to the correct value as if the insertion has already been done
+// the tuple will be inserted at insert_at_pos on the curr_page
+// after insertion OR split insertion, the linked_page_list iterator is adjusted to make the iterator point to curr_tuple_index
+// the curr_tuple_index and the insert_at_pos, but must be in range [0, total_tuple_count), where total_tuple_count is the tuple count of the curr_page after a successfull insertion
+// on an abort error, it releases all locks including the lock on the curr_page of the iterator, making the iterator unusable
+int insert_OR_split_insert_on_page_of_linked_page_list(linked_page_list_iterator* lpli_p, uint32_t insert_at_pos, const void* tuple, const void* transaction_id, int* abort_error)
 {
-	// fail if this is not a writable iterator
-	if(!is_writable_linked_page_list_iterator(lpli_p))
+	// the curr_tuple_index and the insert_at_pos, but must be in range [0, total_tuple_count)
+	// total_tuple_count is the tuple count of the curr_page after a successfull insertion
+	// total_tuple_count = tuple_count(curr_page) + 1
+	// passing a wrong value for these parameters defeats the purpose of this function
+	uint32_t total_tuple_count = get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) + 1;
+	if(total_tuple_count <= insert_at_pos)
 		return 0;
-
-	// can not insert a tuple greater than the max_record_size on the page
-	// if tuple == NULL, then it can always be inserted
-	if(tuple != NULL && lpli_p->lpltd_p->max_record_size < get_tuple_size(lpli_p->lpltd_p->record_def, tuple))
+	if(total_tuple_count <= lpli_p->curr_tuple_index)
 		return 0;
-
-	// if the linked_page_list is empty, the directly perform an insert and quit
-	if(is_empty_linked_page_list(lpli_p))
-	{
-		append_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), tuple, abort_error);
-		if(*abort_error)
-			goto ABORT_ERROR;
-		lpli_p->curr_tuple_index = 0;
-		return 1;
-	}
-
-	// calculate insertion index for this new tuple
-	uint32_t insert_at_pos = lpli_p->curr_tuple_index + rel_pos;
-
-	// update the curr_tuple_index
-	lpli_p->curr_tuple_index += (1U - rel_pos);
 
 	// perform a resilient insert at that index
 	int inserted = insert_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), insert_at_pos, tuple, abort_error);
@@ -228,6 +218,45 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	ABORT_ERROR:
 	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
 	return 0;
+}
+
+int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, linked_page_list_relative_insert_pos rel_pos, const void* transaction_id, int* abort_error)
+{
+	// fail if this is not a writable iterator
+	if(!is_writable_linked_page_list_iterator(lpli_p))
+		return 0;
+
+	// can not insert a tuple greater than the max_record_size on the page
+	// if tuple == NULL, then it can always be inserted
+	if(tuple != NULL && lpli_p->lpltd_p->max_record_size < get_tuple_size(lpli_p->lpltd_p->record_def, tuple))
+		return 0;
+
+	// if the linked_page_list is empty, the directly perform an insert and quit
+	if(is_empty_linked_page_list(lpli_p))
+	{
+		append_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), tuple, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+			return 0;
+		}
+		lpli_p->curr_tuple_index = 0;
+		return 1;
+	}
+
+	// calculate insert_at_pos and curr_tuple_index as if the tuple has already been inserted
+
+	// calculate insertion index for this new tuple
+	uint32_t insert_at_pos = lpli_p->curr_tuple_index + rel_pos;
+
+	// update the curr_tuple_index
+	lpli_p->curr_tuple_index += (1U - rel_pos);
+
+	// perform a insert / split_insert at that index
+	int result = insert_OR_split_insert_on_page_of_linked_page_list(lpli_p, insert_at_pos, tuple, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+	return result;
 }
 
 // merges DUAL_NODE_LINKED_PAGE_LIST's pages in to a HEAD_ONLY_LINKED_PAGE_LIST
