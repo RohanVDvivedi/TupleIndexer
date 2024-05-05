@@ -362,6 +362,10 @@ int main()
 	pop_from_head(head_page_id, 2, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
+	// test below case with index values = 3 or 7
+	update_from_head(head_page_id, 3, "Rohan Devashree", &lpltd, pam_p, pmm_p);
+	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
+
 	pop_from_tail(head_page_id, 2, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
