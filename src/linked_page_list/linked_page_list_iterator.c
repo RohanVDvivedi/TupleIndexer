@@ -944,5 +944,23 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 
 int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, const void* transaction_id, int* abort_error)
 {
+	// fail if this is not a writable iterator
+	if(!is_writable_linked_page_list_iterator(lpli_p))
+		return 0;
+
+	// if the linked_page_list is empty then fail, removal
+	if(is_empty_linked_page_list(lpli_p))
+		return 0;
+
+	// can not insert a tuple greater than the max_record_size on the page
+	// if tuple == NULL, then it can always be inserted
+	if(tuple != NULL && lpli_p->lpltd_p->max_record_size < get_tuple_size(lpli_p->lpltd_p->record_def, tuple))
+		return 0;
+
 	// TODO
+	// try update_resiliently
+	// if successful, quit with return 1
+	// then leave curr_tuple_index as is and set insert_pos = curr_tuple_index
+	// then discard tuple at insert_at_pos
+	// then call split_insert with same curr_tuple_index and insert_at_pos
 }
