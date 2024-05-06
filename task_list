@@ -8,10 +8,6 @@
  * add necessary comment for update_non_key_value to update_non_key_element in bplus_tree_iterator
  * handle abort error there and discard redundant checks
 
-* linked_page_list_iterator
-  * update_element
-    * copy implementation from the bplus_tree_iterator
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
    * bulk loading to accept bpttd_p, dam_p and pmm_p and allocate root page first
