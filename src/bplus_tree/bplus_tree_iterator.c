@@ -394,7 +394,7 @@ void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transact
 	free(bpi_p);
 }
 
-int update_non_key_value_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
+int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
 	// cannot update non WRITE_LOCKed bplus_tree_iterator
 	if(!is_writable_bplus_tree_iterator(bpi_p))
@@ -413,6 +413,18 @@ int update_non_key_value_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bp
 	if(curr_leaf_page == NULL || bpi_p->curr_tuple_index >= get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 		return 0;
 
-	// perform the inplace update
-	return set_element_in_tuple_in_place_on_persistent_page(bpi_p->pmm_p, transaction_id, curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index, element_index, element_value, abort_error);
+	// perform the inplace update, on an abort release all locks
+	int updated = set_element_in_tuple_in_place_on_persistent_page(bpi_p->pmm_p, transaction_id, curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index, element_index, element_value, abort_error);
+	if(*abort_error)
+	{
+		while(get_element_count_locked_pages_stack(&(bpi_p->lps)) > 0)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
+			release_lock_on_persistent_page(bpi_p->pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(&(bpi_p->lps));
+		}
+		return 0;
+	}
+
+	return updated;
 }
