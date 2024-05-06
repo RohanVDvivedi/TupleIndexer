@@ -80,10 +80,10 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 // on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
 int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, const void* transaction_id, int* abort_error);
 
-// update a column inplace at the place that the bplus_tree_iterator is pointing to
+// update a column inplace at the place that the linked_page_list_iterator is pointing to
 // ADVISED 	:: only update columns that do not change the tuple size on the page, else the page may become less than half full and this can not be fixed without a merge, and you can not mrege with an iterator
 //			:: also attempting to update to a element value that can increase the tuple size, may even fail, because the slot for the tuple is not big enough
 // on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
-int update_element_in_place_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
+int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
 
 #endif
