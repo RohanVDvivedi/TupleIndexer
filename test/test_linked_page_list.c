@@ -302,6 +302,59 @@ void update_from_head(uint64_t head_page_id, int index, char* name, const linked
 	}
 }
 
+int reindex_all(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	int updated = 0;
+
+	if(is_empty_linked_page_list(lpli_p))
+		printf("EMPTY_LINKED_PAGE_LIST");
+	else
+	{
+		do
+		{
+			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, 0, &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			if(name != NULL)
+			{
+				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, 1, &((user_value){.data = name, .data_size = strlen(name)}), transaction_id, &abort_error);
+				if(abort_error)
+				{
+					printf("ABORTED\n");
+					exit(-1);
+				}
+			}
+			next_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+		}
+		while(!is_at_head_tuple_linked_page_list_iterator(lpli_p));
+	}
+	printf("\n");
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	return updated;
+}
+
 int main()
 {
 	/* SETUP STARTED */
