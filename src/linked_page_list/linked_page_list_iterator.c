@@ -988,5 +988,21 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 
 int update_element_in_place_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// fail if this is not a writable iterator
+	if(!is_writable_linked_page_list_iterator(lpli_p))
+		return 0;
+
+	// if the linked_page_list is empty then fail, removal
+	if(is_empty_linked_page_list(lpli_p))
+		return 0;
+
+	// perform the inplace update, on an abort release lock on the curr_page and fail
+	int updated = set_element_in_tuple_in_place_on_persistent_page(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), bpi_p->bpttd_p->pas_p->page_size, bpi_p->bpttd_p->record_def, bpi_p->curr_tuple_index, element_index, element_value, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		return 0;
+	}
+
+	return updated;
 }
