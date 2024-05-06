@@ -5,8 +5,6 @@
  * and ensure that the new_tuple after update_inspect has the same key values as the new_tuple_key
  * after this change no need to compare old_tuple and new_tuple
  * build_index_entry_from_record_tuple, in function build_index_entry_from_record_tuples_for_split, and test for all test cases
- * add necessary comment for update_non_key_value to update_non_key_element in bplus_tree_iterator
- * handle abort error there and discard redundant checks
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
