@@ -985,3 +985,8 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 		return 0;
 	return result;
 }
+
+int update_element_in_place_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
