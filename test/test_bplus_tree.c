@@ -658,7 +658,7 @@ void update_UPDATE_column_for_all_tuples_with_iterator(uint64_t root_page_id, ch
 		memmove(data_bytes, old_value.data, old_value.data_size);
 		user_value new_value = {.data = data_bytes, .data_size = old_value.data_size};
 		((char*)(new_value.data))[0] = first_byte;
-		update_non_key_value_in_place_at_bplus_tree_iterator(bpi_p, 7, &new_value, transaction_id, &abort_error);
+		update_non_key_element_in_place_at_bplus_tree_iterator(bpi_p, 7, &new_value, transaction_id, &abort_error);
 
 		if(is_forward)
 			next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
