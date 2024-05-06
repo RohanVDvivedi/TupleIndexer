@@ -602,6 +602,9 @@ int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 		{
 			if(may_attempt_merge)
 			{
+				// revert back to original state of the curr_tuple_index, before this next call
+				lpli_p->curr_tuple_index--;
+
 				// attempt a merge
 				int merged = merge_dual_nodes_into_only_head(lpli_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -615,6 +618,8 @@ int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 						return 0;
 					return 1;
 				}
+				else
+					lpli_p->curr_tuple_index++;
 			}
 
 			// if somehow we couldn't merge, then simply get next_page and point to its first tuple
@@ -761,6 +766,9 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 		{
 			if(may_attempt_merge)
 			{
+				// revert back to original state of the curr_tuple_index, before this next call
+				lpli_p->curr_tuple_index++;
+
 				// attempt a merge
 				int merged = merge_dual_nodes_into_only_head(lpli_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -774,6 +782,8 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 						return 0;
 					return 1;
 				}
+				else
+					lpli_p->curr_tuple_index--;
 			}
 
 			// if somehow we couldn't merge, then simply get prev_page and point to its last tuple
