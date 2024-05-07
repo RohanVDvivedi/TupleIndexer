@@ -561,7 +561,7 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	#ifndef USE_SUFFIX_TRUNCATION
 		// build_index_entry call when suffix_truncation is disabled
 		build_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
-	#elif
+	#else
 		// build_index_entry call when suffix_truncation is enabled
 		build_suffix_truncated_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
 	#endif
