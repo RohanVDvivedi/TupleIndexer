@@ -498,8 +498,13 @@ int main()
 	pop_from_tail(head_page_id, 2, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
+	int total_updates = reindex_all(head_page_id, 3, "X", &lpltd, pam_p, pmm_p);
+	//int total_updates = reindex_all_reverse(head_page_id, 3, "X", &lpltd, pam_p, pmm_p);
+	printf("total_updates = %d\n\n", total_updates);
+	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
+
 	//int total_updates = reindex_all(head_page_id, 3, "X", &lpltd, pam_p, pmm_p);
-	int total_updates = reindex_all_reverse(head_page_id, 3, "X", &lpltd, pam_p, pmm_p);
+	int total_updates = reindex_all_reverse(head_page_id, 10, "Y", &lpltd, pam_p, pmm_p);
 	printf("total_updates = %d\n\n", total_updates);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
