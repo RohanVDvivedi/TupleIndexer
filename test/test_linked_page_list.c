@@ -302,7 +302,8 @@ void update_from_head(uint64_t head_page_id, int index, char* name, const linked
 	}
 }
 
-int reindex_all(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+// at max count rows are updated
+int reindex_all(uint64_t head_page_id, int count, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -319,6 +320,9 @@ int reindex_all(uint64_t head_page_id, char* name, const linked_page_list_tuple_
 	{
 		do
 		{
+			if(count == 0)
+				break;
+
 			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, 0, &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
 			if(abort_error)
 			{
@@ -340,6 +344,8 @@ int reindex_all(uint64_t head_page_id, char* name, const linked_page_list_tuple_
 				printf("ABORTED\n");
 				exit(-1);
 			}
+
+			count--;
 		}
 		while(!is_at_head_tuple_linked_page_list_iterator(lpli_p));
 	}
@@ -355,7 +361,8 @@ int reindex_all(uint64_t head_page_id, char* name, const linked_page_list_tuple_
 	return updated;
 }
 
-int reindex_all_reverse(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+// at max count rows are updated
+int reindex_all_reverse(uint64_t head_page_id, int count, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -378,6 +385,9 @@ int reindex_all_reverse(uint64_t head_page_id, char* name, const linked_page_lis
 		}
 		do
 		{
+			if(count == 0)
+				break;
+
 			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, 0, &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
 			if(abort_error)
 			{
@@ -399,6 +409,8 @@ int reindex_all_reverse(uint64_t head_page_id, char* name, const linked_page_lis
 				printf("ABORTED\n");
 				exit(-1);
 			}
+
+			count--;
 		}
 		while(!is_at_tail_tuple_linked_page_list_iterator(lpli_p));
 	}
@@ -486,8 +498,8 @@ int main()
 	pop_from_tail(head_page_id, 2, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
-	int total_updates = reindex_all(head_page_id, "X", &lpltd, pam_p, pmm_p);
-	//int total_updates = reindex_all_reverse(head_page_id, "X", &lpltd, pam_p, pmm_p);
+	//int total_updates = reindex_all(head_page_id, 3, "X", &lpltd, pam_p, pmm_p);
+	int total_updates = reindex_all_reverse(head_page_id, 3, "X", &lpltd, pam_p, pmm_p);
 	printf("total_updates = %d\n\n", total_updates);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
