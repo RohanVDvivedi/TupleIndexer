@@ -135,7 +135,7 @@ int must_split_for_insert_bplus_tree_leaf_page(const persistent_page* page1, con
 	return 1;
 }
 
-//#define USE_SUFFIX_TRUNCATION
+#define USE_SUFFIX_TRUNCATION
 
 // for this function it is assumed, that last_tuple_page1 <= first_tuple_page2, on comparing key elements (at indices key_element_ids) sorted by key_compare_direction
 static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple_defs* bpttd_p, const void* last_tuple_page1, const void* first_tuple_page2, uint64_t child_page_id, void* index_entry)
