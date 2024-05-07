@@ -135,6 +135,8 @@ int must_split_for_insert_bplus_tree_leaf_page(const persistent_page* page1, con
 	return 1;
 }
 
+#define USE_SUFFIX_TRUNCATION
+
 // for this function it is assumed, that last_tuple_page1 <= first_tuple_page2, on comparing key elements (at indices key_element_ids) sorted by key_compare_direction
 static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple_defs* bpttd_p, const void* last_tuple_page1, const void* first_tuple_page2, uint64_t child_page_id, void* index_entry)
 {
@@ -556,9 +558,13 @@ int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_
 	const void* last_tuple_page1 = get_nth_tuple_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), get_tuple_count_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)) - 1);
 	const void* first_tuple_page2 = get_nth_tuple_on_persistent_page(&page2, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), 0);
 
-	//build_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
-	// below call turns on suffix truncation for the keys, if you encounter a bug, then replace it with the call on the line above
-	build_suffix_truncated_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
+	#ifndef USE_SUFFIX_TRUNCATION
+		// build_index_entry call when suffix_truncation is disabled
+		build_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
+	#elif
+		// build_index_entry call when suffix_truncation is enabled
+		build_suffix_truncated_index_entry_from_record_tuples_for_split(bpttd_p, last_tuple_page1, first_tuple_page2, page2.page_id, output_parent_insert);
+	#endif
 
 	// release lock on the page2
 	release_lock_on_persistent_page(pam_p, transaction_id, &page2, NONE_OPTION, abort_error);
