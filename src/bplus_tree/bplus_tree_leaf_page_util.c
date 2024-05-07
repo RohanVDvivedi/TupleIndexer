@@ -135,27 +135,13 @@ int must_split_for_insert_bplus_tree_leaf_page(const persistent_page* page1, con
 	return 1;
 }
 
-#define USE_SUFFIX_TRUNCATION
+//#define USE_SUFFIX_TRUNCATION
 
 // for this function it is assumed, that last_tuple_page1 <= first_tuple_page2, on comparing key elements (at indices key_element_ids) sorted by key_compare_direction
 static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple_defs* bpttd_p, const void* last_tuple_page1, const void* first_tuple_page2, uint64_t child_page_id, void* index_entry)
 {
 	// directly build_index_entry from the (first_tuple_page2, child_page_id)
 	return build_index_entry_from_record_tuple(bpttd_p, first_tuple_page2, child_page_id, index_entry);
-
-	// init the index_entry
-	init_tuple(bpttd_p->index_def, index_entry);
-
-	// copy all the elements from first_tuple_page2 record to the index_tuple, except for the child_page_id
-	int res = 1;
-	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
-		res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
-
-	// copy the child_page_id to the last element in the index entry
-	if(res == 1)
-		res = set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((const user_value){.uint_value = child_page_id}));
-
-	return res;
 }
 
 // for this function it is assumed, that last_tuple_page1 <= first_tuple_page2, on comparing key elements (at indices key_element_ids) sorted by key_compare_direction
