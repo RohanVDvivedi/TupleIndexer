@@ -1,10 +1,6 @@
 ** PICKED TASKS
 
-* bplus_tree edge cases/refactoring and name fixing
- * in inspected_update, cache the key of the new_tuple as new_tuple_key before calling update_inspect,
- * and ensure that the new_tuple (if not equal to NULL) after update_inspect has the same key values as the new_tuple_key
- * after this above change, no need to compare old_tuple's and new_tuple's key attributes
-
+** bplus_tree suffix truncation handle NULLs either in last_tuple_page1 or first_tuple_page2
  * NULL case, when a tuple has an element = NULL, handling in suffix truncation
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
