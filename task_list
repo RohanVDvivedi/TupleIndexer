@@ -5,6 +5,8 @@
  * and ensure that the new_tuple (if not equal to NULL) after update_inspect has the same key values as the new_tuple_key
  * after this above change, no need to compare old_tuple's and new_tuple's key attributes
 
+ * NULL case, when a tuple has an element = NULL, handling in suffix truncation
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bplus_tree bulk loading
    * bulk loading to accept bpttd_p, dam_p and pmm_p and allocate root page first
