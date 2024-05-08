@@ -122,6 +122,8 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	{
 		// extarct key from the new_record prior to the update_inspect
 		char* new_record_key = malloc(bpttd_p->max_index_record_size); // key will never be bigger than the largest index_record
+		if(new_record_key == NULL)
+			exit(-1);
 		extract_key_from_record_tuple(bpttd_p, new_record, new_record_key);
 
 		cancel_update_callback_context cuc_cntxt = {.update_canceled = 0, .locked_pages_stack_p = locked_pages_stack_p, .pam_p = pam_p};
