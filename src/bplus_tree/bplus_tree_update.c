@@ -119,12 +119,43 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	// as you could guess, you can discard this piece of code
 	// OPTIMIZATION - end
 
-	cancel_update_callback_context cuc_cntxt = {.update_canceled = 0, .locked_pages_stack_p = locked_pages_stack_p, .pam_p = pam_p};
-	int ui_res = ui_p->update_inspect(ui_p->context, bpttd_p->record_def, old_record, &new_record, cancel_update_callback, &cuc_cntxt, transaction_id, abort_error);
-	if((*abort_error) || cuc_cntxt.update_canceled == 1 || ui_res == 0)
 	{
-		result = 0;
-		goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
+		// extarct key from the new_record prior to the update_inspect
+		char* new_record_key = malloc(bpttd_p->max_index_record_size); // key will never be bigger than the largest index_record
+		extract_key_from_record_tuple(bpttd_p, new_record, new_record_key);
+
+		cancel_update_callback_context cuc_cntxt = {.update_canceled = 0, .locked_pages_stack_p = locked_pages_stack_p, .pam_p = pam_p};
+		int ui_res = ui_p->update_inspect(ui_p->context, bpttd_p->record_def, old_record, &new_record, cancel_update_callback, &cuc_cntxt, transaction_id, abort_error);
+		if((*abort_error) || cuc_cntxt.update_canceled == 1 || ui_res == 0)
+		{
+			free(new_record_key);
+			result = 0;
+			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
+		}
+
+		// if the new_record is not NULL (insert or update case), then the below checks must pass
+		if(new_record != NULL)
+		{
+			// compare key elements of new_record and new_record_key, to be sure that the key elements of the new_record were not changed
+			int key_elements_compare = compare_tuples(new_record, bpttd_p->record_def, bpttd_p->key_element_ids, new_record_key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, bpttd_p->key_element_count);
+			free(new_record_key);
+
+			// fail if key elements of the new_record were changed
+			if(key_elements_compare)
+			{
+				result = 0;
+				goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
+			}
+
+			// check again if the new_record is small enough to be inserted on the page
+			if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
+			{
+				result = 0;
+				goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
+			}
+		}
+		else
+			free(new_record_key);
 	}
 
 	// if old_record did not exist and the new_record is set to NULL (i.e. a request for deletion, then do nothing)
@@ -135,13 +166,6 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	}
 	else if(old_record == NULL && new_record != NULL) // insert case
 	{
-		// check again if the new_record is small enough to be inserted on the page
-		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
-		{
-			result = 0;
-			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
-		}
-
 		// we can release lock on release_for_split number of parent pages
 		while(release_for_split > 0)
 		{
@@ -200,20 +224,6 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 	}
 	else // update
 	{
-		// fail if the keys of old_record and new_record, do not match then quit
-		if(0 != compare_tuples(old_record, bpttd_p->record_def, bpttd_p->key_element_ids, new_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count))
-		{
-			result = 0;
-			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
-		}
-
-		// check again if the new_record is small enough to be inserted on the page
-		if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
-		{
-			result = 0;
-			goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;
-		}
-
 		// compute the size of the new record
 		uint32_t new_record_size = get_tuple_size(bpttd_p->record_def, new_record);
 
