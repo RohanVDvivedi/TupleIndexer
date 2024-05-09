@@ -175,8 +175,8 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 
 		if(new_cmp_ltp1_ie == -1 && (new_cmp_ie_ftp2 == -1 || new_cmp_ie_ftp2 == 0))
 		{
-			new_cmp_ltp1_ie = cmp_ltp1_ie;
-			new_cmp_ie_ftp2 = cmp_ie_ftp2;
+			cmp_ltp1_ie = new_cmp_ltp1_ie;
+			cmp_ie_ftp2 = new_cmp_ie_ftp2;
 			i++;
 			break;
 		}
