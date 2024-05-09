@@ -1,5 +1,8 @@
 ** PICKED TASKS
 
+BPTTD, PTTD, LPLTD FIX
+  * failing on any malloc failures on creating tuple defs
+
 ** bplus_tree suffix truncation handle NULLs either in last_tuple_page1 or first_tuple_page2
  * NULL case, when a tuple has an element = NULL, handling in suffix truncation
  * create EMPTY_USER_VALUE = {.data = NULL, .data_size = 0} in TupleStore
@@ -9,20 +12,19 @@
   at line 292 -> if first_tuple_page2 element is NULL, then set the corresponding element in index entry to EMPTY_USER_VALUE
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * bplus_tree bulk loading
-   * bulk loading to accept bpttd_p, dam_p and pmm_p and allocate root page first
-   * api to accept accept records, tuple by tuple
-   * on build_call, generate interior pages
-   * for building ith level of interior page, from the i-1th level, we copy the 1st row from the page with page id of the page, we will use the least_keys_page_id to link the level of the interior pages. for building tuple for iterior page level 1, we will use the suffix compression also to build the index tuple, while for other levels we will only use the same index tuple as in the first row of the interior page.
-   * in the last pass, we will revisit all the interior pages using dfs and move the first row's page_id to least_keys_page_id and discard the first row.
- * hash_table, a page_table points a linked_page_list
-   * with (duplicate keys allowed)
+ * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
    * need to see how, to make bucket count dynamic, extendible hashing or linear hashing (I would prefer the later)
  * sort
-   * it accepts record in the bplus_tree_bulkloading like interface
+   * it accepts record by record,
    * puts tuples in a page, sorts them and inserts it into a page_table
-   * it will then merge adjacent runs until the page_table contains only 1 entry
+   * after a process() call, it will then merge adjacent runs until the page_table contains only 1 entry
+   * then discards the page_tuple and returns tuples 1 by 1 from the linked_page_list 1 by 1
+ * bplus_tree bulk loading
+   * api to accept accept records, tuple by tuple
+   * on process() call, generate interior pages (and returns root page id)
+   * for building ith level of interior page, from the i-1th level, we copy the 1st row from the page with page id of the page, we will use the least_keys_page_id to link the level of the interior pages. for building tuple for iterior page level 1, we will use the suffix compression also to build the index tuple, while for other levels we will only use the same index tuple as in the first row of the interior page.
+   * in the last pass, we will revisit all the interior pages using dfs and move the first row's page_id to least_keys_page_id and discard the first row.
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
@@ -46,8 +48,6 @@ LEFT FOR LATER TASKS
 DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if you need this, with current hashtable design we have, we do not need this)
   * uint64_t allocate_contiguous_pages(uint64_t page_count), returning first page id of the allocated pages.
   * free_contiguous_pages will not be supported, since we need to be aware that the page must not be locked or waiting to be locked, while doing this, and so we would need a lot to do to undo in case if a page can not be freed, hence only allocate_contiguous_pages will be the only thing close to what we will support in dam api.
-BPTTD FIX
-  * failing on any malloc failures
 
 ** OPTIMIZATION (THIS MAY NEVER MAKE IT TO THE PROJECT)
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
