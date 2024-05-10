@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
-BPTTD, PTTD, LPLTD FIX
-  * failing on any malloc failures on creating tuple defs
-
 ** bplus_tree suffix truncation handle NULLs either in last_tuple_page1 or first_tuple_page2
  * NULL case, when a tuple has an element = NULL, handling in suffix truncation
  * create EMPTY_USER_VALUE = {.data = NULL, .data_size = 0} in TupleStore
