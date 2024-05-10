@@ -4,6 +4,8 @@
 
 #include<persistent_page_functions.h>
 
+#include<stdlib.h>
+
 int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p, const page_access_specs* pas_p, const tuple_def* record_def)
 {
 	// basic parameter check
@@ -30,7 +32,7 @@ int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p
 
 	// initialize record_def from the record_def provided
 	lpltd_p->record_def = clone_tuple_def(record_def);
-	if(bpttd_p->record_def == NULL) // memory allocation failed
+	if(lpltd_p->record_def == NULL) // memory allocation failed
 		exit(-1);
 	finalize_tuple_def(lpltd_p->record_def);
 

@@ -6,6 +6,8 @@
 
 #include<cutlery_math.h>
 
+#include<stdlib.h>
+
 int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_access_specs* pas_p)
 {
 	// check id page_access_specs struct is valid
