@@ -35,12 +35,16 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	memcpy(bpttd_p->key_compare_direction, key_compare_direction, sizeof(compare_direction) * bpttd_p->key_element_count);
 
 	bpttd_p->record_def = clone_tuple_def(record_def);
+	if(bpttd_p->record_def == NULL) // memory allocation failed
+		exit(-1);
 	finalize_tuple_def(bpttd_p->record_def);
 
 	// initialize index_def
 
 	// allocate memory for index def and initialize it
 	bpttd_p->index_def = get_new_tuple_def("temp_index_def", key_element_count + 1, bpttd_p->pas_p->page_size);
+	if(bpttd_p->index_def == NULL) // memory allocation failed
+		exit(-1);
 
 	// result of inserting element_definitions to index def
 	int res = 1;
@@ -67,6 +71,8 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 
 	// allocate memory for key_def and initialize it
 	bpttd_p->key_def = get_new_tuple_def("temp_key_def", key_element_count, bpttd_p->pas_p->page_size);
+	if(bpttd_p->key_def == NULL) // memory allocation failed
+		exit(-1);
 
 	// result of inserting element_definitions to key_def
 	res = 1;

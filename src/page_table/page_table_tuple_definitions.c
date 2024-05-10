@@ -24,11 +24,8 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 
 	// initialize entry_def
 	pttd_p->entry_def = get_new_tuple_def("temp_entry_def", 1, pttd_p->pas_p->page_size);
-	if(pttd_p->entry_def == NULL)
-	{
-		deinit_page_table_tuple_definitions(pttd_p);
-		return 0;
-	}
+	if(pttd_p->entry_def == NULL) // memory allocation failed
+		exit(-1);
 	res = insert_element_def(pttd_p->entry_def, "child_page_id", UINT, pttd_p->pas_p->page_id_width, 1, &((user_value){.uint_value = pttd_p->pas_p->NULL_PAGE_ID}));
 	if(res == 0)
 	{
