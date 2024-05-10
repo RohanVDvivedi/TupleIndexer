@@ -29,9 +29,13 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	bpttd_p->key_element_count = key_element_count;
 
 	bpttd_p->key_element_ids = malloc(sizeof(uint32_t) * bpttd_p->key_element_count);
+	if(bpttd_p->key_element_ids == NULL) // memory allocation failed
+		exit(-1);
 	memcpy(bpttd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * bpttd_p->key_element_count);
 
 	bpttd_p->key_compare_direction = malloc(sizeof(compare_direction) * bpttd_p->key_element_count);
+	if(bpttd_p->key_compare_direction == NULL) // memory allocation failed
+		exit(-1);
 	memcpy(bpttd_p->key_compare_direction, key_compare_direction, sizeof(compare_direction) * bpttd_p->key_element_count);
 
 	bpttd_p->record_def = clone_tuple_def(record_def);

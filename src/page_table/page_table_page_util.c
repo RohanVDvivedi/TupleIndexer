@@ -99,6 +99,8 @@ int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, 
 
 		// construct a tuple in temporary memory and make it point to child_page_id
 		void* new_child_tuple = malloc(get_minimum_tuple_size(pttd_p->entry_def)); // minimum size of fixed width tuple is same as its size
+		if(new_child_tuple == NULL)  // memory allocation failed
+			exit(-1);
 		init_tuple(pttd_p->entry_def, new_child_tuple);
 		set_element_in_tuple(pttd_p->entry_def, 0, new_child_tuple, &((user_value){.uint_value = child_page_id}));
 
