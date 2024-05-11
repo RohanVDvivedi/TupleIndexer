@@ -198,18 +198,29 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		}
 		else // we can only suffix truncate VAR_STRING or VAR_BLOB
 		{
-			uint32_t match_lengths = 0;
-
 			const user_value last_tuple_page1_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
 			const user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
-
-			// compute the number of characters matched
-			for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && ((const char*)(last_tuple_page1_element.data))[match_lengths] == ((const char*)(first_tuple_page2_element.data))[match_lengths]; match_lengths++);
 
 			switch(bpttd_p->key_compare_direction[i])
 			{
 				case ASC:
 				{
+					// last_tuple_page1_element != first_tuple_page2_element, for sure
+					// and since the ordering is ASC, only last_tuple_page1_element may be NULL
+					if(is_user_value_NULL(&last_tuple_page1_element))
+					{
+						// if last_tuple_page1_element is NULL, then set the corresponding index_entry_element to EMPTY_USER_VALUE
+						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, EMPTY_USER_VALUE))
+							return 0;
+						break;
+					}
+
+					// case when none of them is NULL
+
+					// compute the number of characters matched
+					uint32_t match_lengths = 0;
+					for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && ((const char*)(last_tuple_page1_element.data))[match_lengths] == ((const char*)(first_tuple_page2_element.data))[match_lengths]; match_lengths++);
+
 					user_value first_tuple_page2_element_copy = first_tuple_page2_element;
 					first_tuple_page2_element_copy.data_size = match_lengths + 1;
 					// if not set, fail
@@ -219,6 +230,22 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				}
 				case DESC :
 				{
+					// last_tuple_page1_element != first_tuple_page2_element, for sure
+					// and since the ordering is DESC, only first_tuple_page2_element may be NULL
+					if(is_user_value_NULL(&first_tuple_page2_element))
+					{
+						// if first_tuple_page2_element is NULL, then set the corresponding index_entry_element to NULL_USER_VALUE
+						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, NULL_USER_VALUE))
+							return 0;
+						break;
+					}
+
+					// case when none of them is NULL
+
+					// compute the number of characters matched
+					uint32_t match_lengths = 0;
+					for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && ((const char*)(last_tuple_page1_element.data))[match_lengths] == ((const char*)(first_tuple_page2_element.data))[match_lengths]; match_lengths++);
+
 					if(match_lengths + 1 < last_tuple_page1_element.data_size) // to ensure that index_entry does not become equal to last_tuple_page1's index representation
 					{
 						user_value last_tuple_page1_element_copy = last_tuple_page1_element;
