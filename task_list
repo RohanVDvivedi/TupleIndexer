@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
 ** bplus_tree suffix truncation handle NULLs either in last_tuple_page1 or first_tuple_page2
+  * handle cases if INT, UINT, LARGE_UINT, BIT_FIELD, if unequal on ASC-> then set element to last_tuple_page1 element + 1 (to min element if NULL), if unequal on DESC-> then set element to last_tuple_page1 element - 1
   at line 213 -> if ASCENDING and last_tuple_page1 element is NULL, then set the index element to EMPTY_USER_VALUE else do the default thing (last_tuple_page1 and first_tuple_page2 can not be NULL, else they would be equal)
   at line 222 -> if DESCENDING and first_tuple_page2 element is NULL, then set the index element to NULL_USER_VALUE else do the default thing (last_tuple_page1 and first_tuple_page2 can not be NULL, else they would be equal)
   at line 271 -> check if the value is NULL_USER_VALUE, then break out of switch. if set to NULL_USER_VALUE, on success then break out of switch. if nothing succeeds, then set to min_user_value.
