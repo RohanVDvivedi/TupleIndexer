@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
-** bplus_tree suffix truncation handle NULLs either in last_tuple_page1 or first_tuple_page2
-  * OPTIMIZATION:: handle cases if INT, UINT, LARGE_UINT, BIT_FIELD, if unequal on ASC-> then set element to last_tuple_page1 element + 1 (to min element if NULL), if unequal on DESC-> then set element to last_tuple_page1 element - 1, if the last_tuple_page1_element is not the min value, else set it to NULL
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
@@ -83,6 +80,7 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
       bytes_to_read = new_bytes_to_read;
     }
     return stack.reverse();
+ * OPTIMIZATION in suffix truncation :: handle cases if INT, UINT, LARGE_UINT, BIT_FIELD, in loop 1, if unequal on ASC-> then set element to last_tuple_page1 element + 1 (to min element if NULL), if unequal on DESC-> then set element to last_tuple_page1 element - 1, if the last_tuple_page1_element is not the min value, else set it to NULL
 
 * think about future project (THIS WILL BE PROJECTS THAT WILL DEPEND ON THIS PROJECT)
  * think about how to do undo and redo logging
