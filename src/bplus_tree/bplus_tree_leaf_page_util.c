@@ -329,6 +329,14 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				{
 					const user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
+					if(is_user_value_NULL(&first_tuple_page2_element))
+					{
+						// the shortest string greater than NULL, is an empty string
+						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, EMPTY_USER_VALUE))
+							return 0;
+						break;
+					}
+
 					// count the number of CHAR_MAX characters in the prefix of the first_tuple_page2_element
 					uint32_t maximum_char_value_prefix_count = 0;
 					while(maximum_char_value_prefix_count < first_tuple_page2_element.data_size
