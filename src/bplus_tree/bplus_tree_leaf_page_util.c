@@ -295,6 +295,17 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 			// min value of element always exists, set it
 			case ASC:
 			{
+				// NULL is the least value of any type
+				// check if index entry element is NULL
+				if(is_NULL_in_tuple(bpttd_p->index_def, i, index_entry))
+					break;
+
+				// if not NULL, then set it to NULL
+				// this may fail if the element is non-nullable
+				if(set_element_in_tuple(bpttd_p->index_def, i, index_entry, NULL_USER_VALUE))
+					break;
+
+				// else set it to min_val for that element
 				const user_value min_val = get_MIN_user_value(ele_d);
 				// if not set, fail
 				if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &min_val))
