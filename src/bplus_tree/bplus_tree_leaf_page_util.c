@@ -210,6 +210,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 					if(is_user_value_NULL(&last_tuple_page1_element))
 					{
 						// if last_tuple_page1_element is NULL, then set the corresponding index_entry_element to EMPTY_USER_VALUE
+						// first_tuple_page2 is bound to be greater than or equal to EMPTY_USER_VALUE
 						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, EMPTY_USER_VALUE))
 							return 0;
 						break;
