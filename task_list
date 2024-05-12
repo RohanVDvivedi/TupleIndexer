@@ -16,6 +16,9 @@
      composed of page_table_tuple_definitions and linked_page_list_tuple_definitions
      and key_element_ids, and key_def
    * insert, update, remove, find, iterate_on_all_of_hash_value
+   * pick a function to hash into a 64 bit integers
+   * implement function to figure out split_index(N) -> N = number of buckets, then we only need to split split_index(N) and N
+   * implement i = get_floor_of_log_base_2(uint64_t N)
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * sort
