@@ -521,6 +521,8 @@ int main()
 	pop_from_tail(head_page_id, 20, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
+	push_at_tail(head_page_id, "My Dear, Manan Jijaji", &lpltd,  pam_p, pmm_p);
+
 	/* CLEANUP */
 
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);

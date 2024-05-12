@@ -919,6 +919,10 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 	// handle case if the page becomes newly empty
 	if(0 == get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
 	{
+		// since currently there is no tuple to point to, we will just reset the curr_tuple_index
+		lpli_p->curr_tuple_index = 0;
+		// below function only discards the page, if there are other pages in the linked_page_list
+		// i.e. if the linked_page_list itself became empty, then the below function call is a NOP, returning 0
 		discard_curr_page_if_empty(lpli_p, aft_op, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
