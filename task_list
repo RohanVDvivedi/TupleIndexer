@@ -15,7 +15,10 @@
    * build hash_table_tuple_definitions
      composed of page_table_tuple_definitions and linked_page_list_tuple_definitions
      and key_element_ids, and key_def
-   * insert, update, remove, find, iterate_on_all_of_hash_value
+   * insert, find -> find returns an iterator for tuples that may compare equal
+   * hash_table_iterator includes a linked_page_list_iterator over a bucket's linked_page_list and a page_table_range_locker over the bucket pointer
+   * this iterator allows update (complete tuple (key elements remain the same), or update_element (for no key elements)) and remove
+   * insert will take a flag fail_on_duplicate_key, which if set, fails insertion, if a dupicate is found, else it will just insert at head
    * pick a function to hash into a 64 bit integers
    * implement function to figure out split_index(N) -> N = number of buckets, then we only need to split split_index(N) and N
    * implement i = get_floor_of_log_base_2(uint64_t N)
