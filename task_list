@@ -3,15 +3,16 @@
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
    * Use linear hashing to dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
-   * if N is the number of buckets, then let there be i = floor( log(N) base 2 )
+   * define floor_log_base_2 = flb2(N) = floor( log(N) base 2 )
+   * define split_index(N) = N % (2 ^ flb2(N)) = index that is to be split, if there are currently N buckets
    * for insert if the hash value is H
      * then bucket b that the corresponding tuple goes to is
-     * b = H % (2 ^ i)
-     * if b < N % (2 ^ i) == split_index
-       * then b = H % (2 ^ (i+1))
+     * b = H % (2 ^ flb2(N))
+     * if b < split_index(N)
+       * then b = H % (2 ^ (flb2(N)+1))
    * for bucket spliting and there be N buckets, then
-     * split bucket no. split_index = (N % (2^i)) -> split tuples of split_index into split_index and N -> with hash function H % (2^(i+1)), then N++
-   * for merging merge (N-1) and ((N-1) % (2^k)) where k = floor( log(N-1) base 2 ) then N--
+     * expand by splitting bucket split_index(N) into buckets split_index(N) and N, using b = H % (2 ^ (flb2(N) + 1)), then N++ (also N must not be equal to UINT64_MAX)
+   * for merging then merge split_index(N - 1) and (N - 1), into split_index(N - 1), then N-- (also N must not be 1)
    * build hash_table_tuple_definitions
      composed of page_table_tuple_definitions and linked_page_list_tuple_definitions
      and key_element_ids, and key_def
