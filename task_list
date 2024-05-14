@@ -1,15 +1,39 @@
 ** PICKED TASKS
 
+* implement linked_page_list_iterator2
+ * that always holds the head_page locked inside its struct
+ * run concurrent tests on it
+ * to be developed only for hashtable
+ * struct will have head_page instead of head_page_id
+ * all other persistent_page will be persistent_page_reference
+ * struct persistent_page_reference
+ {
+    int points_to_head_page; // then return &(lpli_p->head_page), when accessed
+    persistent_page other_page; // to be accessed if points_to_head_page is 0
+ }
+ * keep this as internal struct
+ * even the curr_page is same as this struct
+ * get_persistent_page_from_reference(persistent_page_reference* ref, lpli_p){
+    if(ref->points_to_head_page)
+      return &(lpli_p->head_page);
+    return &(ref->other_page);
+ }
+ * this iterator has functions to get_next, get_prev and release_lock functions overloaded
+ * check if the next/prev is a head page, if so, then do not take new lock and instead return with points_to_head_page = 1
+ * if their points_to_head_page is set to true, then don't release it, set pointed_to_head_page = 0, and other_page = NULL_persistent_page.
+ * this persistent_page reference can be directly and safely copied from one variable to another, using = operator
+ * copy current implementation of linked_page_list_iterator and then refactor wisely.
+
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
    * Use linear hashing to dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
-   * define floor_log_base_2 = flb2(N) = floor( log(N) base 2 )
+   * define floor_log_base_2 = flb2(N) = floor( log(N) base 2 ) -> N must never equal 0
    * define split_index(N) = N % (2 ^ flb2(N)) = index that is to be split, if there are currently N buckets
    * for insert if the hash value is H
      * then bucket b that the corresponding tuple goes to is
      * b = H % (2 ^ flb2(N))
      * if b < split_index(N)
-       * then b = H % (2 ^ (flb2(N)+1))
+       * then b = H % (2 ^ (flb2(N)+1)) or H if(flb2(N)+1 == 64)
    * for bucket spliting and there be N buckets, then
      * expand by splitting bucket split_index(N) into buckets split_index(N) and N, using b = H % (2 ^ (flb2(N) + 1)), then N++ (also N must not be equal to UINT64_MAX)
    * for merging then merge split_index(N - 1) and (N - 1), into split_index(N - 1), then N-- (also N must not be 1)
@@ -18,11 +42,9 @@
      and key_element_ids, and key_def
    * insert, find -> find returns an iterator for tuples that may compare equal
    * hash_table_iterator includes a linked_page_list_iterator over a bucket's linked_page_list and a page_table_range_locker over the bucket pointer
-   * this iterator allows update (complete tuple (key elements remain the same), or update_element (for no key elements)) and remove
+   * this iterator allows update (complete tuple (key elements remain the same), or update_element (for non key elements)) and remove
    * insert will take a flag fail_on_duplicate_key, which if set, fails insertion, if a dupicate is found, else it will just insert at head
-   * pick a function to hash into a 64 bit integers
-   * implement function to figure out split_index(N) -> N = number of buckets, then we only need to split split_index(N) and N
-   * implement i = get_floor_of_log_base_2(uint64_t N)
+   * pick a function to hash into a 64 bit unsigned integers
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * sort
