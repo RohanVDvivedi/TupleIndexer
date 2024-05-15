@@ -1024,20 +1024,22 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 		return 0;
 
 	// try update_resiliently, first
-	int updated = update_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, tuple, abort_error);
+	int updated = update_tuple_on_persistent_page_resiliently(lpli_p->pmm_p, transaction_id, get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, tuple, abort_error);
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
 		return 0;
 	}
 	if(updated)
 		return 1;
 
 	// discard tuple at curr_tuple_index
-	int discarded = discard_tuple_on_persistent_page(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, abort_error);
+	int discarded = discard_tuple_on_persistent_page(lpli_p->pmm_p, transaction_id, get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, abort_error);
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
 		return 0;
 	}
 	if(!discarded) // this must never occur
