@@ -10,6 +10,18 @@
 // this function will never modify page_ref or the iterator
 #define get_from_ref(page_ref) (((page_ref)->points_to_iterator_head) ? (&(lpli_p->head_page)) : (&((page_ref)->non_head_page)))
 
+static int release_lock_on_reference_while_holding_head_lock(persistent_page_reference* page_ref, const linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
+{
+	if(page_ref->points_to_iterator_head) // make it not point to the iterator head
+	{
+		page_ref->points_to_iterator_head = 0;
+		page_ref->non_head_page = get_NULL_persistent_page(lpli_p->pam_p);
+		return 1;
+	}
+	else
+		return release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(page_ref->non_head_page), NONE_OPTION, abort_error);
+}
+
 linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
@@ -92,14 +104,11 @@ const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator*
 
 void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
 {
-	if(!is_persistent_page_NULL(&(lpli_p->curr_page), lpli_p->pam_p))
+	if(!is_persistent_page_NULL(&(lpli_p->head_page), lpli_p->pam_p))
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-		if(*abort_error)
-		{
-			// even if there is an abort_error, there is nothing else that you need to do here
-			// you must ofcourse free the allocated memory
-		}
+		release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
+		// even if any of the above function gives an abort error, we still will need to release the other lock, so not handling abort error here is the best thing to be done
 	}
 	free(lpli_p);
 }
