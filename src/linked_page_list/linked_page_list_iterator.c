@@ -22,6 +22,36 @@ static int release_lock_on_reference_while_holding_head_lock(persistent_page_ref
 		return release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(page_ref->non_head_page), NONE_OPTION, abort_error);
 }
 
+static persistent_page_reference lock_and_get_next_page_reference(persistent_page_reference* page_ref, int lock_type, linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
+{
+	// if the user is requesting a head page, then return a reference to it
+	if(is_next_of_in_linked_page_list(get_from_ref(page_ref), &(lpli_p->head_page), lpli_p->lpltd_p))
+		return (persistent_page_reference){
+			.points_to_iterator_head = 1,
+			.non_head_page = get_NULL_persistent_page(lpli_p->pam_p)
+		};
+	else
+		return (persistent_page_reference){
+			.points_to_iterator_head = 0,
+			.non_head_page = lock_and_get_next_page_in_linked_page_list(get_from_ref(page_ref), lock_type, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error)
+		};
+}
+
+static persistent_page_reference lock_and_get_prev_page_reference(persistent_page_reference* page_ref, int lock_type, linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
+{
+	// if the user is requesting a head page, then return a reference to it
+	if(is_prev_of_in_linked_page_list(get_from_ref(page_ref), &(lpli_p->head_page), lpli_p->lpltd_p))
+		return (persistent_page_reference){
+			.points_to_iterator_head = 1,
+			.non_head_page = get_NULL_persistent_page(lpli_p->pam_p)
+		};
+	else
+		return (persistent_page_reference){
+			.points_to_iterator_head = 0,
+			.non_head_page = lock_and_get_prev_page_in_linked_page_list(get_from_ref(page_ref), lock_type, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error)
+		};
+}
+
 linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
