@@ -1067,7 +1067,8 @@ int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterat
 	int updated = set_element_in_tuple_in_place_on_persistent_page(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, lpli_p->lpltd_p->record_def, lpli_p->curr_tuple_index, element_index, element_value, abort_error);
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
 		return 0;
 	}
 
