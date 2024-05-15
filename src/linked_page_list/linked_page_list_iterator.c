@@ -7,6 +7,14 @@
 
 #include<stdlib.h>
 
+// this function will never modify page_ref or the iterator
+static persistent_page* get_persistent_page_from_reference(persistent_page_reference* page_ref, linked_page_list_iterator* lpli_p)
+{
+	if(page_ref->points_to_iterator_head)
+		return &(lpli_p->head_page);
+	return &(page_ref->non_head_page);
+}
+
 linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
@@ -18,14 +26,14 @@ linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_
 	if(lpli_p == NULL)
 		exit(-1);
 
-	lpli_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, ((pmm_p == NULL) ? READ_LOCK : WRITE_LOCK), abort_error);
+	lpli_p->head_page = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, ((pmm_p == NULL) ? READ_LOCK : WRITE_LOCK), abort_error);
 	if(*abort_error)
 	{
 		free(lpli_p);
 		return NULL;
 	}
+	lpli_p->curr_page = (persistent_page_reference){.points_to_iterator_head = 1, .non_head_page = get_NULL_persistent_page(pam_p)};
 	lpli_p->curr_tuple_index = 0;
-	lpli_p->head_page_id = head_page_id;
 	lpli_p->lpltd_p = lpltd_p;
 	lpli_p->pam_p = pam_p;
 	lpli_p->pmm_p = pmm_p;
