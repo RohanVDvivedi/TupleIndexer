@@ -8,12 +8,7 @@
 #include<stdlib.h>
 
 // this function will never modify page_ref or the iterator
-static persistent_page* get_persistent_page_from_reference(persistent_page_reference* page_ref, linked_page_list_iterator* lpli_p)
-{
-	if(page_ref->points_to_iterator_head)
-		return &(lpli_p->head_page);
-	return &(page_ref->non_head_page);
-}
+#define get_from_ref(page_ref) (((page_ref)->points_to_iterator_head) ? (&(lpli_p->head_page)) : (&((page_ref)->non_head_page)))
 
 linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
@@ -48,9 +43,9 @@ int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_
 
 linked_page_list_state get_state_for_linked_page_list(const linked_page_list_iterator* lpli_p)
 {
-	if(is_only_head_linked_page_list(&(lpli_p->curr_page), lpli_p->lpltd_p))
+	if(is_only_head_linked_page_list(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p))
 		return HEAD_ONLY_LINKED_PAGE_LIST;
-	else if(is_dual_node_linked_page_list(&(lpli_p->curr_page), lpli_p->lpltd_p))
+	else if(is_dual_node_linked_page_list(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p))
 		return DUAL_NODE_LINKED_PAGE_LIST;
 	else
 		return MANY_NODE_LINKED_PAGE_LIST;
@@ -60,17 +55,17 @@ int is_empty_linked_page_list(const linked_page_list_iterator* lpli_p)
 {
 	// check if the only page of the linked_page_list is empty
 	return HEAD_ONLY_LINKED_PAGE_LIST == get_state_for_linked_page_list(lpli_p)
-		&& 0 == get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
+		&& 0 == get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
 }
 
 int is_at_head_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
 {
-	return is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p);
+	return is_head_page_of_linked_page_list(get_from_ref(&(lpli_p->curr_page)), lpli_p->head_page.page_id, lpli_p->lpltd_p);
 }
 
 int is_at_tail_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
 {
-	return is_tail_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p);
+	return is_tail_page_of_linked_page_list(get_from_ref(&(lpli_p->curr_page)), lpli_p->head_page.page_id, lpli_p->lpltd_p);
 }
 
 int is_at_head_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
@@ -87,12 +82,12 @@ int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* 
 	// check that the linked_page_list is not empty
 	// and we must be pointing to the last tuple on the tail page
 	return (!is_empty_linked_page_list(lpli_p)) && is_at_tail_page_linked_page_list_iterator(lpli_p)
-		&& (lpli_p->curr_tuple_index == (get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1));
+		&& (lpli_p->curr_tuple_index == (get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1));
 }
 
 const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
 {
-	return get_nth_tuple_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index);
+	return get_nth_tuple_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index);
 }
 
 void delete_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
