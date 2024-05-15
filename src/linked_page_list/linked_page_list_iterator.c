@@ -960,15 +960,16 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 		return 0;
 
 	// discard current tuple
-	discard_tuple_on_persistent_page(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, abort_error);
+	discard_tuple_on_persistent_page(lpli_p->pmm_p, transaction_id, get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index, abort_error);
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
+		release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
+		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
 		return 0;
 	}
 
 	// handle case if the page becomes newly empty
-	if(0 == get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
+	if(0 == get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
 	{
 		// since currently there is no tuple to point to, we will just reset the curr_tuple_index
 		lpli_p->curr_tuple_index = 0;
@@ -985,7 +986,7 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 		lpli_p->curr_tuple_index--;
 
 	// if the curr_tuple_index is within bounds, then return with a success
-	if(0 <= lpli_p->curr_tuple_index && lpli_p->curr_tuple_index < get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
+	if(0 <= lpli_p->curr_tuple_index && lpli_p->curr_tuple_index < get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)))
 		return 1;
 
 	// the curr_tuple_index is not within bounds
@@ -1000,7 +1001,7 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 	}
 	else
 	{
-		lpli_p->curr_tuple_index = get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1;
+		lpli_p->curr_tuple_index = get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1;
 		next_linked_page_list_iterator(lpli_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
@@ -1064,7 +1065,7 @@ int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterat
 		return 0;
 
 	// perform the inplace update, on an abort release lock on the curr_page and fail
-	int updated = set_element_in_tuple_in_place_on_persistent_page(lpli_p->pmm_p, transaction_id, &(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, lpli_p->lpltd_p->record_def, lpli_p->curr_tuple_index, element_index, element_value, abort_error);
+	int updated = set_element_in_tuple_in_place_on_persistent_page(lpli_p->pmm_p, transaction_id, get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, lpli_p->lpltd_p->record_def, lpli_p->curr_tuple_index, element_index, element_value, abort_error);
 	if(*abort_error)
 	{
 		release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
