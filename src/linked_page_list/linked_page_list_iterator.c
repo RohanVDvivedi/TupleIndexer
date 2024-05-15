@@ -256,6 +256,7 @@ int insert_OR_split_insert_on_page_of_linked_page_list(linked_page_list_iterator
 			return 0;
 		}
 
+		// such an assignment for persistent_page_reference works
 		lpli_p->curr_page = new_page;
 		new_page = get_NULL_persistent_page_reference(lpli_p->pam_p);
 	}
