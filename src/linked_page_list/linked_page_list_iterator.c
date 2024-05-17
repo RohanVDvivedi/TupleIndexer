@@ -621,7 +621,7 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 
 int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
 {
-	// if the linked_page_list is empty, the fail
+	// if the linked_page_list is empty, then fail
 	if(is_empty_linked_page_list(lpli_p))
 		return 0;
 
@@ -787,7 +787,7 @@ int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 
 int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
 {
-	// if the linked_page_list is empty, the fail
+	// if the linked_page_list is empty, then fail
 	if(is_empty_linked_page_list(lpli_p))
 		return 0;
 
@@ -857,7 +857,7 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 				goto ABORT_ERROR_1;
 			}
 
-			// make curr_page the next_page
+			// make curr_page the prev_page
 			lpli_p->curr_page = prev_page; prev_page = get_NULL_persistent_page_reference(lpli_p->pam_p);
 			lpli_p->curr_tuple_index = get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1;
 
@@ -878,7 +878,7 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 				(!is_head_page_of_linked_page_list(get_from_ref(&prev_page), lpli_p->head_page.page_id, lpli_p->lpltd_p)) &&
 				can_merge_linked_page_list_pages(get_from_ref(&prev_page), get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p))
 			{
-				// cahce the tuple_count of the prev_page
+				// cache the tuple_count of the prev_page
 				uint32_t original_tuple_count_prev_page = get_tuple_count_on_persistent_page(get_from_ref(&prev_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
 
 				// grab lock on the prev_prev_page
@@ -938,7 +938,7 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 				goto ABORT_ERROR_1;
 			}
 
-			// make curr_page the next_page
+			// make curr_page the prev_page
 			lpli_p->curr_page = prev_page; prev_page = get_NULL_persistent_page_reference(lpli_p->pam_p);
 			lpli_p->curr_tuple_index = get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1;
 
