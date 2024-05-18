@@ -326,18 +326,17 @@ static int merge_dual_nodes_into_only_head(linked_page_list_iterator* lpli_p, co
 		return 0;
 
 	// take lock on the other page, this will be the next/prev page of the curr_page
-	persistent_page other_page = lock_and_get_next_page_in_linked_page_list(&(lpli_p->curr_page), WRITE_LOCK, lpli_p->lpltd_p, lpli_p->pam_p, transaction_id, abort_error);
+	persistent_page_reference other_page = lock_and_get_next_page_reference(&(lpli_p->curr_page), WRITE_LOCK, lpli_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-		return 0;
+		goto ABORT_ERROR;
 	}
 
 	// check if they can be merged, they are already adjacent pages
-	if(!can_merge_linked_page_list_pages(&(lpli_p->curr_page), &other_page, lpli_p->lpltd_p))
+	if(!can_merge_linked_page_list_pages(get_from_ref(&(lpli_p->curr_page)), get_from_ref(&other_page), lpli_p->lpltd_p))
 	{
 		// if not release lock on the other page and quit with 0
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, NONE_OPTION, abort_error);
+		release_lock_on_reference_while_holding_head_lock(&other_page, lpli_p, transaction_id, abort_error);
 		return 0;
 	}
 
@@ -347,9 +346,9 @@ static int merge_dual_nodes_into_only_head(linked_page_list_iterator* lpli_p, co
 
 	// so now we make head_page the curr_page, and tail page the other_page
 	// the curr_page must be the head_page, if not swap curr_page and other_page
-	if(!is_head_page_of_linked_page_list(&(lpli_p->curr_page), lpli_p->head_page_id, lpli_p->lpltd_p))
+	if(!is_head_page_of_linked_page_list(get_from_ref(&(lpli_p->curr_page)), lpli_p->head_page.page_id, lpli_p->lpltd_p))
 	{
-		persistent_page temp = lpli_p->curr_page;
+		persistent_page_reference temp = lpli_p->curr_page;
 		lpli_p->curr_page = other_page;
 		other_page = temp;
 
@@ -359,39 +358,42 @@ static int merge_dual_nodes_into_only_head(linked_page_list_iterator* lpli_p, co
 		// as we know now head_page is the curr_page
 		// this is the final value of curr_tuple_index after the merge
 		// note:: we do not need to do this if the curr_page was already the head_page
-		lpli_p->curr_tuple_index += get_tuple_count_on_persistent_page(&(lpli_p->curr_page), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
+		lpli_p->curr_tuple_index += get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def));
 	}
 
 	// now merge the curr_page and other_page, into the curr_page
-	merge_linked_page_list_pages(&(lpli_p->curr_page), &other_page, MERGE_INTO_PAGE1, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
+	merge_linked_page_list_pages(get_from_ref(&(lpli_p->curr_page)), get_from_ref(&other_page), MERGE_INTO_PAGE1, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, NONE_OPTION, abort_error);
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-		return 0;
+		release_lock_on_reference_while_holding_head_lock(&other_page, lpli_p, transaction_id, abort_error);
+		goto ABORT_ERROR;
 	}
 
 	// remove other_page from the linked_page_list
-	remove_page_from_between_linked_page_list(&(lpli_p->curr_page), &other_page, &(lpli_p->curr_page), lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
+	remove_page_from_between_linked_page_list(get_from_ref(&(lpli_p->curr_page)), get_from_ref(&other_page), get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, NONE_OPTION, abort_error);
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-		return 0;
+		release_lock_on_reference_while_holding_head_lock(&other_page, lpli_p, transaction_id, abort_error);
+		goto ABORT_ERROR;
 	}
 
 	// now we may free the other_page
-	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, FREE_PAGE, abort_error);
+	// we also know that the other_page is not head_page
+	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, get_from_ref(&other_page), FREE_PAGE, abort_error);
 	if(*abort_error)
 	{
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &other_page, NONE_OPTION, abort_error);
-		release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->curr_page), NONE_OPTION, abort_error);
-		return 0;
+		release_lock_on_reference_while_holding_head_lock(&other_page, lpli_p, transaction_id, abort_error);
+		goto ABORT_ERROR;
 	}
 
 	// we already fixed the curr_tuple_index, remember??
 
 	return 1;
+
+	ABORT_ERROR:;
+	release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
+	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
+	return 0;
 }
 
 // discards the curr_page of the linked_page_list_iterator if it is empty
