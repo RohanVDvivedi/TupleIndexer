@@ -1,26 +1,5 @@
 ** PICKED TASKS
 
-* modifications to linked_page_list_iterator
- * that always holds the head_page (as persistent_page) locked inside its struct, instead of just head_page_id
- * all other local persistent_page and the curr_page of lpli, will infact be persistent_page_reference (defined later here)
- * struct persistent_page_reference
- {
-    int points_to_head_page; // then return &(lpli_p->head_page), when accessed
-    persistent_page other_page; // to be accessed if points_to_head_page is 0
- }
- * keep this as internal struct, in its own source file, not made public
- * persistent_page* get_persistent_page_from_reference(persistent_page_reference* ref, lpli_p){
-    if(ref->points_to_head_page)
-      return &(lpli_p->head_page);
-    return &(ref->other_page);
- }
- * also implement functions like get_NULL_persistent_page_reference and is_NULL_persistent_page_reference
- * this persistent_page reference can be directly and safely copied from one variable to another, using = operator, to transfer ownership
- * this persistent_page_reference has functions to get_next, get_prev and release_lock functions overloaded
- * check if the next/prev is a head page, if so, then do not take new lock and instead return persistence_page_reference that has points_to_head_page = 1, other_page = NULL_persistent_page
- * if their points_to_head_page is set to true, then don't release it, set pointed_to_head_page = 0, and other_page = NULL_persistent_page.
- * refactor linked_page_list_iterator wisely, one function at a time, to use persistent_page_reference
-
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
    * Use linear hashing to dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
