@@ -432,6 +432,50 @@ int reindex_all_reverse(uint64_t head_page_id, int count, char* name, const link
 	return updated;
 }
 
+// this function will block you forever (just or test)
+void test_concurrency(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	linked_page_list_iterator* lpli1_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	prev_linked_page_list_iterator(lpli1_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	printf("lpli1 is at tail page = %d\n", is_at_tail_page_linked_page_list_iterator(lpli1_p));
+
+	// this will block here forever, if pmm_p != NULL
+	linked_page_list_iterator* lpli2_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	printf("lpli2 is at head page = %d\n", is_at_head_page_linked_page_list_iterator(lpli2_p));
+
+	delete_linked_page_list_iterator(lpli1_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	delete_linked_page_list_iterator(lpli2_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -488,6 +532,10 @@ int main()
 	push_at_head(head_page_id, "Vipulkumar Dvivedi", &lpltd,  pam_p, pmm_p);
 
 	print_all_forward(head_page_id, &lpltd, pam_p, NULL);
+
+	// below lines blocks because of write locks, if pmm_p != NULL
+	//print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
+	//test_concurrency(head_page_id, &lpltd, pam_p, NULL);
 
 	pop_from_head(head_page_id, 2, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
