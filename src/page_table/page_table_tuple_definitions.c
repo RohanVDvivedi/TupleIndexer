@@ -84,7 +84,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 
 int get_power_of_entries_per_page_using_page_table_tuple_definitions(const page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result)
 {
-	*result = 1;
+	(*result) = 1;
 
 	// This is a very use of the power_table for entries_per_page ^ exp
 	// break exp into its binary representation and product all components
