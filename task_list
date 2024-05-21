@@ -1,5 +1,11 @@
 ** PICKED TASKS
 
+ * bplus_tree_tuple_definitions
+  * all bplus_tree_tuple_definition functions must have bplus_tree_tuple_definition as suffix
+
+ * page_table_tuple_definitions
+  * all page_table_tuple_definition functions must have page_table_tuple_definition as suffix
+
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
    * Use linear hashing to dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
