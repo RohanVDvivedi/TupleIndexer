@@ -43,6 +43,7 @@
         * ensure that it is empty
         * if empty, close the iterator, delete this linked_page_list
         * and set the page_table_range_locker entry to NULL, then quit
+    * support get_next, get_prev, using the key that we stored in the iterator, and allow going from head to tail and tail to head
    * pick a function to hash into a 64 bit unsigned integers
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
