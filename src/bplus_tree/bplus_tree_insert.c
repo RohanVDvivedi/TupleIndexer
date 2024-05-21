@@ -11,7 +11,7 @@
 
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, record))
+	if(!check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(bpttd_p, record))
 		return 0;
 
 	// create a stack of capacity = levels

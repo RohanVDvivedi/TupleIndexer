@@ -126,7 +126,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	return 1;
 }
 
-int extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key)
+int extract_key_from_record_tuple_using_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key)
 {
 	// init the key tuple
 	init_tuple(bpttd_p->key_def, key);
@@ -139,7 +139,7 @@ int extract_key_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const vo
 	return res;
 }
 
-int extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key)
+int extract_key_from_index_entry_using_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key)
 {
 	// init the key tuple
 	init_tuple(bpttd_p->key_def, key);
@@ -152,7 +152,7 @@ int extract_key_from_index_entry(const bplus_tree_tuple_defs* bpttd_p, const voi
 	return res;
 }
 
-int build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, uint64_t child_page_id, void* index_entry)
+int build_index_entry_from_record_tuple_using_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, uint64_t child_page_id, void* index_entry)
 {
 	// init the index_entry
 	init_tuple(bpttd_p->index_def, index_entry);
@@ -169,7 +169,7 @@ int build_index_entry_from_record_tuple(const bplus_tree_tuple_defs* bpttd_p, co
 	return res;
 }
 
-int build_index_entry_from_key(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry)
+int build_index_entry_from_key_using_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry)
 {
 	// init the index_entry
 	init_tuple(bpttd_p->index_def, index_entry);
@@ -209,7 +209,7 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	bpttd_p->max_index_record_size = 0;
 }
 
-int check_if_record_can_be_inserted_into_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple)
+int check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple)
 {
 	uint32_t record_tuple_size = get_tuple_size(bpttd_p->record_def, record_tuple);
 

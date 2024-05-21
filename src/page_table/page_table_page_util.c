@@ -29,7 +29,7 @@ uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(
 	uint64_t bucket_range_size;
 
 	// if the bucket_range_size is greater than (entries_per_page^(level+1)), then all the bucket_ids point to first_bucket_id
-	if(0 == get_power_of_entries_per_page(pttd_p, level + 1, &bucket_range_size))
+	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(pttd_p, level + 1, &bucket_range_size))
 		return 0;
 
 	return (bucket_id / bucket_range_size) * bucket_range_size;
@@ -133,7 +133,7 @@ page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_pa
 	page_table_bucket_range result = {.first_bucket_id = hdr.first_bucket_id};
 
 	uint64_t bucket_range_size;
-	if(0 == get_power_of_entries_per_page(pttd_p, hdr.level + 1, &bucket_range_size))
+	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(pttd_p, hdr.level + 1, &bucket_range_size))
 		goto EXIT_OVERFLOW;
 
 	if(will_unsigned_sum_overflow(uint64_t, result.first_bucket_id, (bucket_range_size-1)))
@@ -160,7 +160,7 @@ page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table
 	page_table_bucket_range result;
 
 	uint64_t child_bucket_range_size;
-	if(0 == get_power_of_entries_per_page(pttd_p, hdr.level, &child_bucket_range_size))
+	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(pttd_p, hdr.level, &child_bucket_range_size))
 	{
 		if(child_index != 0)
 			goto EXIT_OUT_OF_BOUNDS_CHILD;
@@ -206,7 +206,7 @@ uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page*
 	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
 
 	uint64_t child_bucket_range_size;
-	if(0 == get_power_of_entries_per_page(pttd_p, hdr.level, &child_bucket_range_size)) // if child_bucket_range_size is too big then, you can only access the first child
+	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(pttd_p, hdr.level, &child_bucket_range_size)) // if child_bucket_range_size is too big then, you can only access the first child
 		return 0;
 
 	// effectively equal to (bucket_id - first_bucket_id) / (entries_per_page ^ level)

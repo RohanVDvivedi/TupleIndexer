@@ -45,7 +45,7 @@ void cancel_update_callback(void* cancel_update_callback_context_p, const void* 
 
 int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, const update_inspector* ui_p, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
+	if(!check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(bpttd_p, new_record))
 		return 0;
 
 	// create a stack of capacity = levels
@@ -124,7 +124,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 		char* new_record_key = malloc(bpttd_p->max_index_record_size); // key will never be bigger than the largest index_record
 		if(new_record_key == NULL)
 			exit(-1);
-		extract_key_from_record_tuple(bpttd_p, new_record, new_record_key);
+		extract_key_from_record_tuple_using_bplus_tree_tuple_definitions(bpttd_p, new_record, new_record_key);
 
 		cancel_update_callback_context cuc_cntxt = {.update_canceled = 0, .locked_pages_stack_p = locked_pages_stack_p, .pam_p = pam_p};
 		int ui_res = ui_p->update_inspect(ui_p->context, bpttd_p->record_def, old_record, &new_record, cancel_update_callback, &cuc_cntxt, transaction_id, abort_error);
@@ -150,7 +150,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			}
 
 			// check again if the new_record is small enough to be inserted on the page
-			if(!check_if_record_can_be_inserted_into_bplus_tree(bpttd_p, new_record))
+			if(!check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(bpttd_p, new_record))
 			{
 				result = 0;
 				goto RELEASE_LOCKS_DEINITIALIZE_STACK_AND_EXIT;

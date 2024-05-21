@@ -69,7 +69,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 		{
 			uint64_t m = l + ((h - l) / 2);
 			uint64_t exp_m;
-			if(!get_power_of_entries_per_page(pttd_p, m, &exp_m))
+			if(!get_power_of_entries_per_page_using_page_table_tuple_definitions(pttd_p, m, &exp_m))
 			{
 				pttd_p->max_page_table_height = m;
 				h = m - 1;
@@ -82,7 +82,7 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 	return 1;
 }
 
-int get_power_of_entries_per_page(const page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result)
+int get_power_of_entries_per_page_using_page_table_tuple_definitions(const page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result)
 {
 	*result = 1;
 
