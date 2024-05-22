@@ -1,9 +1,13 @@
 # TupleIndexer
-A c library that enables you to build data base index structures a b_plus_tree and a page_table.
+A c library that enables you to build data base index structures a b_plus_tree, a page_table and a linked_page_list.
 
 a bplus_tree (a b+ tree) for your data, over a data store accessible in fixed sized pages (either persistent or non-persistent store) using your own page_access_methods (a struct of functions). It also allows you to implement your own page_modification_methods (again a struct of functions) to intercept calls to page modifications in case if you would like to log the changes to pages, to make them redo-able and undo-able.
 
 Similarly a page_table structure that provides a dynamic mapping between a 64-bit bucket_id to a page_id. It will be further used to support a hash index on top of it.
+
+There is also an implementation of a linked_page_list, this data structure is a doubly-circular linked list of pages, containing tuples.
+
+Together (the page_table and linked_page_list), are also aimed to provide a hash table index *in future*.
 
 Sample implementationd of page_access_methods (unWALed_in_memory_data_store.c) and page_modification_methods (unWALed_page_modification_methods.c) have been provided for reference in src/interface directory.
 
