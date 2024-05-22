@@ -52,7 +52,7 @@ void initialize_tuple(tuple_def* def, char* tuple, int index, const char* name)
 
 int insert_counter = 0;
 
-void push_at_head(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+int push_at_head(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -63,7 +63,7 @@ void push_at_head(uint64_t head_page_id, char* name, const linked_page_list_tupl
 
 	char tuple[64] = {};
 	initialize_tuple(lpltd_p->record_def, tuple, insert_counter++, name);
-	insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
+	int res = insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -76,9 +76,11 @@ void push_at_head(uint64_t head_page_id, char* name, const linked_page_list_tupl
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	return res;
 }
 
-void push_at_tail(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+int push_at_tail(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -96,7 +98,7 @@ void push_at_tail(uint64_t head_page_id, char* name, const linked_page_list_tupl
 
 	char tuple[64] = {};
 	initialize_tuple(lpltd_p->record_def, tuple, insert_counter++, name);
-	insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
+	int res = insert_at_linked_page_list_iterator(lpli_p, tuple, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -109,6 +111,8 @@ void push_at_tail(uint64_t head_page_id, char* name, const linked_page_list_tupl
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	return res;
 }
 
 void print_all_forward(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
@@ -627,6 +631,35 @@ int main()
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
 	push_at_tail(head_page_id, "My Dear, Manan Jijaji", &lpltd,  pam_p, pmm_p);
+
+	// attempt to insert a NULL
+	int r = 0;
+	{
+		linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, &lpltd, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		r = insert_at_linked_page_list_iterator(lpli_p, NULL, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
+	printf("result of inserting NULL tuple = %d\n", r);
+
+	r = push_at_head(head_page_id, "qwertyuiopasdfghjklzxcvbnm/qwertyuiopasdfghjklzxcvbnm/", &lpltd,  pam_p, pmm_p);
+	printf("result of inserting too long tuple tuple = %d\n", r);
 
 	/* CLEANUP */
 
