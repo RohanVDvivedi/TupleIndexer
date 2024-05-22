@@ -68,6 +68,6 @@ int build_index_entry_from_key_using_bplus_tree_tuple_definitions(const bplus_tr
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
 
 // print bplus_tree_tuple_definitions
-void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
+void print_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p);
 
 #endif

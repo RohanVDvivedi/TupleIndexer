@@ -126,6 +126,41 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	return 1;
 }
 
+int check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple)
+{
+	// you must not insert a NULL resord in bplus_tree
+	if(record_tuple == NULL)
+		return 0;
+
+	uint32_t record_tuple_size = get_tuple_size(bpttd_p->record_def, record_tuple);
+
+	// if the size of the record tuple is greater than the max_record_size of the bpttd, then it can not be inserted into the bplus_tree with the given bpttd
+	if(record_tuple_size > bpttd_p->max_record_size)
+		return 0;
+
+	// calcuate the index_record_tuple_size, that this record entry might insert on any of the interior pages
+	uint32_t index_record_tuple_size = get_minimum_tuple_size(bpttd_p->index_def);
+
+	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
+	{
+		user_value value = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+		int can_set_in_index_tuple = can_set_uninitialized_element_in_tuple(bpttd_p->index_def, i, index_record_tuple_size, &value, &index_record_tuple_size);
+		if(!can_set_in_index_tuple)
+			return 0;
+	}
+
+	// check the size after inserting a child_page_id, 
+	int can_set_in_index_tuple = can_set_uninitialized_element_in_tuple(bpttd_p->index_def, bpttd_p->key_element_count, index_record_tuple_size, &((user_value){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}), &index_record_tuple_size);
+	if(!can_set_in_index_tuple)
+		return 0;
+
+	// if index_record_tuple_size exceeds the max_index_record_size, then this record_tuple can not be inserted in the bplus_tree
+	if(index_record_tuple_size > bpttd_p->max_index_record_size)
+		return 0;
+
+	return 1;
+}
+
 int extract_key_from_record_tuple_using_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple, void* key)
 {
 	// init the key tuple
@@ -209,44 +244,7 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 	bpttd_p->max_index_record_size = 0;
 }
 
-int check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple)
-{
-	// you must not insert a NULL resord in bplus_tree
-	if(record_tuple == NULL)
-		return 0;
-
-	uint32_t record_tuple_size = get_tuple_size(bpttd_p->record_def, record_tuple);
-
-	// if the size of the record tuple is greater than the max_record_size of the bpttd, then it can not be inserted into the bplus_tree with the given bpttd
-	if(record_tuple_size > bpttd_p->max_record_size)
-		return 0;
-
-	// calcuate the index_record_tuple_size, that this record entry might insert on any of the interior pages
-	uint32_t index_record_tuple_size = get_minimum_tuple_size(bpttd_p->index_def);
-
-	for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
-	{
-		user_value value = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
-		int can_set_in_index_tuple = can_set_uninitialized_element_in_tuple(bpttd_p->index_def, i, index_record_tuple_size, &value, &index_record_tuple_size);
-		if(!can_set_in_index_tuple)
-			return 0;
-	}
-
-	// check the size after inserting a child_page_id, 
-	int can_set_in_index_tuple = can_set_uninitialized_element_in_tuple(bpttd_p->index_def, bpttd_p->key_element_count, index_record_tuple_size, &((user_value){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}), &index_record_tuple_size);
-	if(!can_set_in_index_tuple)
-		return 0;
-
-	// if index_record_tuple_size exceeds the max_index_record_size, then this record_tuple can not be inserted in the bplus_tree
-	if(index_record_tuple_size > bpttd_p->max_index_record_size)
-		return 0;
-
-	return 1;
-}
-
-#include<stdio.h>
-
-void print_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
+void print_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p)
 {
 	printf("Bplus_tree tuple defs:\n");
 
