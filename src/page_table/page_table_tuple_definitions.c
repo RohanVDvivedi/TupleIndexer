@@ -118,7 +118,7 @@ void deinit_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
 	pttd_p->entries_per_page = 0;
 }
 
-void print_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
+void print_page_table_tuple_definitions(const page_table_tuple_defs* pttd_p)
 {
 	printf("Page_table tuple defs:\n");
 

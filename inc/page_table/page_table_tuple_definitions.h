@@ -51,6 +51,6 @@ int get_power_of_entries_per_page_using_page_table_tuple_definitions(const page_
 void deinit_page_table_tuple_definitions(page_table_tuple_defs* pttd_p);
 
 // print page_table_tree_tuple_defs
-void print_page_table_tuple_definitions(page_table_tuple_defs* pttd_p);
+void print_page_table_tuple_definitions(const page_table_tuple_defs* pttd_p);
 
 #endif
