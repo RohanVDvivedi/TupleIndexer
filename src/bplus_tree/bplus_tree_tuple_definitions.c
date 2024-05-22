@@ -211,6 +211,10 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 
 int check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* record_tuple)
 {
+	// you must not insert a NULL resord in bplus_tree
+	if(record_tuple == NULL)
+		return 0;
+
 	uint32_t record_tuple_size = get_tuple_size(bpttd_p->record_def, record_tuple);
 
 	// if the size of the record tuple is greater than the max_record_size of the bpttd, then it can not be inserted into the bplus_tree with the given bpttd
