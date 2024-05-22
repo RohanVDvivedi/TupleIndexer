@@ -276,9 +276,8 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	if(!is_writable_linked_page_list_iterator(lpli_p))
 		return 0;
 
-	// can not insert a tuple greater than the max_record_size on the page
-	// if tuple == NULL, then it can always be inserted
-	if(tuple != NULL && lpli_p->lpltd_p->max_record_size < get_tuple_size(lpli_p->lpltd_p->record_def, tuple))
+	// fail if the tuple can not be inserted to the linked_page_list
+	if(!check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(lpltd_p, tuple))
 		return 0;
 
 	// if the linked_page_list is empty, the directly perform an insert and quit
@@ -1026,9 +1025,8 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	if(is_empty_linked_page_list(lpli_p))
 		return 0;
 
-	// can not insert a tuple greater than the max_record_size on the page
-	// if tuple == NULL, then it can always be inserted
-	if(tuple != NULL && lpli_p->lpltd_p->max_record_size < get_tuple_size(lpli_p->lpltd_p->record_def, tuple))
+	// fail if the tuple can not be inserted to the linked_page_list
+	if(!check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(lpltd_p, tuple))
 		return 0;
 
 	// try update_resiliently, first
