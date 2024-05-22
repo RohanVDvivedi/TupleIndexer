@@ -39,6 +39,21 @@ int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p
 	return 1;
 }
 
+int check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(const linked_page_list_tuple_defs* lpltd_p, const void* record_tuple)
+{
+	// if the record tuple is NULL, it is always insertable in linked_page_list
+	if(record_tuple == NULL)
+		return 1;
+
+	uint32_t record_tuple_size = get_tuple_size(lpltd_p->record_def, record_tuple);
+
+	// if the size of the record tuple is greater than the max_record_size of the lpltd, then it can not be inserted into the linked_page_list with the given lpltd
+	if(record_tuple_size > lpltd_p->max_record_size)
+		return 0;
+
+	return 1;
+}
+
 void deinit_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p)
 {
 	// delete tuple_def if it exists
