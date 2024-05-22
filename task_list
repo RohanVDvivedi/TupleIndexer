@@ -1,5 +1,12 @@
 ** PICKED TASKS
 
+* implement check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions
+ * always success if the tuple is NULL
+ * else compare with the max_record_size
+ * refactor to use this function, in insert and update functions of linked_page_list_iterator
+
+* fail check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions, if tuple is NULL
+
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
    * Use linear hashing to dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
