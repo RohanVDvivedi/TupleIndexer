@@ -908,6 +908,9 @@ int main()
 	printf("reads using updates to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 
+	int NULL_insert_result = insert_in_bplus_tree(root_page_id, NULL, &bpttd, pam_p, pmm_p, transaction_id, &abort_error);
+	printf("result of attempting to insert a NULL = %d\n", NULL_insert_result);
+
 
 	/* DELETE USING UPDATE FUNCTIONALITY */
 #define TEST_DELETE_USING_UPDATE
