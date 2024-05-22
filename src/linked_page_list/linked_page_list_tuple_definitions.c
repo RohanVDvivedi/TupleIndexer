@@ -66,7 +66,7 @@ void deinit_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lplt
 	lpltd_p->max_record_size = 0;
 }
 
-void print_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p)
+void print_linked_page_list_tuple_definitions(const linked_page_list_tuple_defs* lpltd_p)
 {
 	printf("Linked_page_list tuple defs:\n");
 

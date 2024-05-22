@@ -36,6 +36,6 @@ int check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(const
 void deinit_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p);
 
 // print linked_page_list_tuple_defs
-void print_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p);
+void print_linked_page_list_tuple_definitions(const linked_page_list_tuple_defs* lpltd_p);
 
 #endif
