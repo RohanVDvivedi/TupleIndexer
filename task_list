@@ -72,6 +72,7 @@
    * check if you could do this algorithm with large_uint (* future)
  * get rid of memcpy and instead use memory_move functionality for cutlery
  * hide functions of *_tuple_definitions, that do not need ot be public. including the functionality like power_factor
+ * {} initialize, i.e. zero initialize all the tuple_defs at the beginning of the init_*_tuple_defs, to avoid garbage free, when deinit_*_tuple_defs functions is called on a failure of the corresponding init_*_tuple_defs functions
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
