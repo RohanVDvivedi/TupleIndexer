@@ -42,8 +42,8 @@ struct bplus_tree_tuple_defs
 
 // initializes the attributes in bplus_tree_tuple_defs struct as per the provided parameters
 // the parameter pas_p must point to the pas attribute of the data_access_method that you are using it with
-// it allocates memory only for index_def and the key_def
-// returns 1 for success, it fails with 0, if the record_def has element_count 0 OR key_element_count == 0 OR key_elements == NULL OR if any of the key_element_ids is out of bounds
+// it allocates memory only for key_element_ids, record_def, index_def and key_def
+// returns 1 for success, it fails with 0, if the record_def has element_count 0 OR key_element_count == 0 OR key_element_ids == NULL OR if any of the key_element_ids is out of bounds
 // it also fails if the pas_p does not pass is_valid_page_access_specs(pas_p)
 int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count);
 
@@ -63,7 +63,7 @@ int build_index_entry_from_record_tuple_using_bplus_tree_tuple_definitions(const
 // builds an index_entry from key and a child_page_id
 int build_index_entry_from_key_using_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* key, uint64_t child_page_id, void* index_entry);
 
-// it deallocates the index_def and
+// it deallocates the key_element_ids, record_def, index_def and key_def
 // then resets all the bplus_tree_tuple_defs struct attributes to NULL or 0
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
 
