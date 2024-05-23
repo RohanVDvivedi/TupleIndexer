@@ -264,7 +264,7 @@ void print_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p)
 	else
 		printf("NULL\n");
 
-	printf("key_element_ids = ");
+	printf("key_compare_direction = ");
 	if(bpttd_p->key_compare_direction)
 	{
 		printf("{ ");
