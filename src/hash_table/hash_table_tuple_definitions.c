@@ -44,7 +44,17 @@ int check_if_record_can_be_inserted_for_hash_table_tuple_definitions(hash_table_
 	return check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(&(httd_p->lpltd), record_tuple);
 }
 
-void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p);
+void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
+{
+	if(httd_p->key_element_ids)
+		free(httd_p->key_element_ids);
+	if(httd_p->key_def)
+		delete_tuple_def(httd_p->key_def);
+
+	deinit_linked_page_list_tuple_definitions(&(httd_p->lpltd));
+
+	deinit_page_table_tuple_definitions(&(httd_p->pttd));
+}
 
 void print_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
 {
