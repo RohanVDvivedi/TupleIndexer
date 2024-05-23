@@ -30,7 +30,7 @@ struct bplus_tree_tuple_defs
 	tuple_def* index_def;
 
 	// tuple definition of the key to be used with this bplus_tree
-	// for all of find, insert and delete functionalities
+	// for all of find, insert, update and delete functionalities
 	tuple_def* key_def;
 
 	// precomputed value of max_record_size (for the tuple that goes into leaf pages of the bplus_tree) that can be inserted into a bplus_tree defined using this bplus_tree_tuple_defs struct
