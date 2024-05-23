@@ -1,24 +1,26 @@
 ** PICKED TASKS
 
-* hash_table, a page_table where each entry points a linked_page_list
-   * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table
-   * Use linear hashing to dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
-   * define floor_log_base_2 = flb2(N) = floor( log(N) base 2 ) -> N must never equal 0
+* build hash_table_tuple_definitions
+  * make hash_table_tuple_definitions take uint64_t hash_func(const void* data, uint32_t data_size)
+  * refactor TupleStore accordingly to return a uint64_t instead if uint32_t
+  * implement split_index and flb2 functions in this source file
+  * define floor_log_base_2 = flb2(N) = floor( log(N) base 2 ) -> N must never equal 0
+     * implement floor_log_base_2 function using a binary search over a sample space of 0 to 63 - both inclusive
    * define split_index(N) = N % (2 ^ flb2(N)) = index that is to be split, if there are currently N buckets
    * for insert if the hash value is H
      * then bucket b that the corresponding tuple goes to is
      * b = H % (2 ^ flb2(N))
      * if b < split_index(N)
        * then b = H % (2 ^ (flb2(N)+1)) or H if(flb2(N)+1 == 64)
+   * build functions to get the hash for a key and hash for a record tuple
+   * build functions to get bucket_index for a key and record_tuple, considering the bucket_count is also given
+
+* hash_table, a page_table where each entry points a linked_page_list
+   * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table fo that bucket
+   * Use linear hashing for dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
    * for bucket spliting and there be N buckets, then
      * expand by splitting bucket split_index(N) into buckets split_index(N) and N, using b = H % (2 ^ (flb2(N) + 1)), then N++ (also N must not be equal to UINT64_MAX)
    * for merging then merge split_index(N - 1) and (N - 1), into split_index(N - 1), then N-- (also N must not be 1)
-   * build hash_table_tuple_definitions
-     composed of page_table_tuple_definitions and linked_page_list_tuple_definitions
-     and key_element_ids, and key_def
-     * implement split_index and flb2 functions in this source file
-     * implement check_if_record_can_be_inserted_for_hash_table_tuple_definitions, and fail id tuple is NULL
-       * else pass it to corresponding functions in linked_page_list_tuple_definitions
    * insert_in_hash_table, find_in_hash_table -> find returns an iterator for tuples that may compare equal
    * hash_table_iterator includes a linked_page_list_iterator over a bucket's linked_page_list and a page_table_range_locker over the bucket pointer
    * this iterator allows update (complete tuple (key elements remain the same), or update_element (for non key elements)) and remove
