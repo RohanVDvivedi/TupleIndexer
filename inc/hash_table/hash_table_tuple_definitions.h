@@ -1,6 +1,12 @@
 #ifndef HASH_TABLE_TUPLE_DEFINITIONS_H
 #define HASH_TABLE_TUPLE_DEFINITIONS_H
 
+#include<tuple.h>
+#include<inttypes.h>
+
+#include<linked_page_list_tuple_definitions.h>
+#include<page_table_tuple_definitions.h>
+
 typedef struct hash_table_tuple_definitions hash_table_tuple_definitions;
 struct hash_table_tuple_definitions
 {
@@ -15,10 +21,10 @@ struct hash_table_tuple_definitions
 	tuple_def* key_def;
 
 	// tuple_definiton for the buckets of the hash_table
-	linked_page_list_tuple_definitions lpltd;
+	linked_page_list_tuple_defs lpltd;
 
 	// tuple_definition for the bucket-pointers of the hash_table
-	page_table_tuple_definitions pttd;
+	page_table_tuple_defs pttd;
 };
 
 #endif
