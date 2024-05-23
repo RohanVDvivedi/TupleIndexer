@@ -22,14 +22,13 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 
 	if(!init_linked_page_list_tuple_definitions(&(httd_p->lpltd), pas_p, record_def))
 	{
-		free(httd_p->key_element_ids);
+		deinit_hash_table_tuple_definitions(httd_p);
 		return 0;
 	}
 
 	if(!init_page_table_tuple_definitions(&(httd_p->pttd), pas_p))
 	{
-		deinit_linked_page_list_tuple_definitions(&(httd_p->lpltd));
-		free(httd_p->key_element_ids);
+		deinit_hash_table_tuple_definitions(httd_p);
 		return 0;
 	}
 
