@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count)
+int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint64_t (*hash_func)(const void* data, uint32_t data_size))
 {
 	// basic parameter check
 	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || get_element_def_count_tuple_def(record_def) == 0)
@@ -12,6 +12,8 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 	// check id page_access_specs struct is valid
 	if(!is_valid_page_access_specs(pas_p))
 		return 0;
+
+	httd_p->hash_func = hash_func;
 
 	httd_p->key_element_count = key_element_count;
 
