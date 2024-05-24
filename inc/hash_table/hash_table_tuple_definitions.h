@@ -45,6 +45,15 @@ int check_if_record_can_be_inserted_for_hash_table_tuple_definitions(const hash_
 // copy all the key elements from the record_tuple to make the key
 int extract_key_from_record_tuple_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple, void* key);
 
+// returns floor(log(x)/log(2)) = floor(log(x) base 2)
+// uses binary searchover sample space of 0 to 63
+// any other number is an error from this function
+int64_t get_floor_log_base_2(uint64_t x);
+
+// returns = bucket_count % (2 ^ get_floor_log_base_2(bucket_count))
+// this is the bucket_index that needs to be split for inscreasing bucket_count while linear hashing
+uint64_t get_hash_table_split_index(uint64_t bucket_count);
+
 // it deallocates the key_element_ids and key_def
 // then resets all the hash_table_tuple_defs struct attributes to NULL or 0
 void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p);

@@ -58,6 +58,31 @@ int extract_key_from_record_tuple_using_hash_table_tuple_definitions(const hash_
 	return res;
 }
 
+int64_t get_floor_log_base_2(uint64_t x)
+{
+	int64_t l = 0;
+	int64_t h = 63;
+	int64_t res = 64; // an invalid value for 64 bit number's floor(log(x)/log(2))
+	while(l <= h)
+	{
+		int64_t m = l + (h - l) / 2;
+		uint64_t power = UINT64_C(1) << m;
+		if(x >= power)
+		{
+			res = m;
+			l = m + 1;
+		}
+		else
+			h = m - 1;
+	}
+	return res;
+}
+
+uint64_t get_hash_table_split_index(uint64_t bucket_count)
+{
+	return bucket_count % (UINT64_C(1) << get_floor_log_base_2(bucket_count));
+}
+
 void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
 {
 	if(httd_p->key_element_ids)
