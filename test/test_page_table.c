@@ -3,8 +3,7 @@
 #include<stdint.h>
 
 #include<page_table.h>
-#include<page_table_tuple_definitions.h>
-#include<page_access_methods.h>
+
 #include<unWALed_in_memory_data_store.h>
 #include<unWALed_page_modification_methods.h>
 
