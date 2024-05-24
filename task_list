@@ -6,7 +6,6 @@
      * b = H % (2 ^ flb2(N))
      * if b < split_index(N)
        * then b = H % (2 ^ (flb2(N)+1)) or H if(flb2(N)+1 == 64)
-   * build functions to get the hash for a key and hash for a record tuple
    * build functions to get bucket_index for a key and record_tuple, considering the bucket_count is also given
 
 * hash_table, a page_table where each entry points a linked_page_list
