@@ -37,12 +37,25 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 	return 1;
 }
 
-int check_if_record_can_be_inserted_for_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const void* record_tuple)
+int check_if_record_can_be_inserted_for_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple)
 {
 	if(record_tuple == NULL)
 		return 0;
 
 	return check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(&(httd_p->lpltd), record_tuple);
+}
+
+int extract_key_from_record_tuple_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple, void* key)
+{
+	// init the key tuple
+	init_tuple(httd_p->key_def, key);
+
+	// copy all the elements from record into the key tuple
+	int res = 1;
+	for(uint32_t i = 0; i < httd_p->key_element_count && res == 1; i++)
+		res = set_element_in_tuple_from_tuple(httd_p->key_def, i, key, httd_p->lpltd.record_def, httd_p->key_element_ids[i], record_tuple);
+
+	return res;
 }
 
 void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)

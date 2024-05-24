@@ -40,7 +40,10 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 
 // checks to see if a record_tuple can be inserted into a hash_table
 // note :: you can not insert a NULL record in hash_table
-int check_if_record_can_be_inserted_for_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const void* record_tuple);
+int check_if_record_can_be_inserted_for_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple);
+
+// copy all the key elements from the record_tuple to make the key
+int extract_key_from_record_tuple_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple, void* key);
 
 // it deallocates the key_element_ids and key_def
 // then resets all the hash_table_tuple_defs struct attributes to NULL or 0
