@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
 * build hash_table_tuple_definitions
-  * make hash_table_tuple_definitions take uint64_t hash_func(const void* data, uint32_t data_size)
   * implement split_index and flb2 functions in this source file
   * define floor_log_base_2 = flb2(N) = floor( log(N) base 2 ) -> N must never equal 0
      * implement floor_log_base_2 function using a binary search over a sample space of 0 to 63 - both inclusive
