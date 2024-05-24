@@ -52,13 +52,20 @@ int64_t get_floor_log_base_2(uint64_t x);
 
 // returns = bucket_count % (2 ^ get_floor_log_base_2(bucket_count))
 // this is the bucket_index that needs to be split for inscreasing bucket_count while linear hashing
-uint64_t get_hash_table_split_index(uint64_t bucket_count);
+// this function also returns the floor(log(bucket_count) bas 2), in the floor_log_2 variable
+uint64_t get_hash_table_split_index(uint64_t bucket_count, int64_t* floor_log_2);
 
 // get hash value for key, using the hash_table tuple defs
 uint64_t get_hash_value_for_key_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* key);
 
 // get hash value for record, using the hash_table tuple defs
 uint64_t get_hash_value_for_record_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple);
+
+// get bucket_index for key, using the hash_table tuple defs
+uint64_t get_bucket_index_for_key_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* key, uint64_t bucket_count);
+
+// get bucket_index for record, using the hash_table tuple defs
+uint64_t get_bucket_index_for_record_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple, uint64_t bucket_count);
 
 // it deallocates the key_element_ids and key_def
 // then resets all the hash_table_tuple_defs struct attributes to NULL or 0

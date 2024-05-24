@@ -78,9 +78,10 @@ int64_t get_floor_log_base_2(uint64_t x)
 	return res;
 }
 
-uint64_t get_hash_table_split_index(uint64_t bucket_count)
+uint64_t get_hash_table_split_index(uint64_t bucket_count, int64_t* floor_log_2)
 {
-	return bucket_count % (UINT64_C(1) << get_floor_log_base_2(bucket_count));
+	(*floor_log_2) = get_floor_log_base_2(bucket_count);
+	return bucket_count % (UINT64_C(1) << (*floor_log_2));
 }
 
 uint64_t get_hash_value_for_key_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* key)
@@ -91,6 +92,56 @@ uint64_t get_hash_value_for_key_using_hash_table_tuple_definitions(const hash_ta
 uint64_t get_hash_value_for_record_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple)
 {
 	return hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, httd_p->hash_func, httd_p->key_element_count);
+}
+
+uint64_t get_bucket_index_for_key_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* key, uint64_t bucket_count)
+{
+	// fetch the hash_value of the key first
+	uint64_t hash_value = get_hash_value_for_key_using_hash_table_tuple_definitions(httd_p, key);
+
+	// fetch and cache, the split_index and the floor_log_2 values of the bucket_count
+	int64_t fl2;
+	uint64_t split_index = get_hash_table_split_index(bucket_count, &fl2);
+
+	// use the below hash_value to bucket_index conversion by default
+	uint64_t bucket_index = hash_value % (UINT64_C(1) << fl2);
+
+	// if this bucket was aleady split, then use the new hash_value to bucket_index conversion value
+	if(bucket_index < split_index)
+	{
+		// below if condition is mathematically equivalent to hash_value % (2^(fl2+1))
+		if((fl2+1) != 64)
+			bucket_index = hash_value % (UINT64_C(1) << (fl2+1));
+		else
+			bucket_index = hash_value;
+	}
+
+	return bucket_index;
+}
+
+uint64_t get_bucket_index_for_record_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple, uint64_t bucket_count)
+{
+	// fetch the hash_value of the key first
+	uint64_t hash_value = get_hash_value_for_record_using_hash_table_tuple_definitions(httd_p, record_tuple);
+
+	// fetch and cache, the split_index and the floor_log_2 values of the bucket_count
+	int64_t fl2;
+	uint64_t split_index = get_hash_table_split_index(bucket_count, &fl2);
+
+	// use the below hash_value to bucket_index conversion by default
+	uint64_t bucket_index = hash_value % (UINT64_C(1) << fl2);
+
+	// if this bucket was aleady split, then use the new hash_value to bucket_index conversion value
+	if(bucket_index < split_index)
+	{
+		// below if condition is mathematically equivalent to hash_value % (2^(fl2+1))
+		if((fl2+1) != 64)
+			bucket_index = hash_value % (UINT64_C(1) << (fl2+1));
+		else
+			bucket_index = hash_value;
+	}
+
+	return bucket_index;
 }
 
 void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
