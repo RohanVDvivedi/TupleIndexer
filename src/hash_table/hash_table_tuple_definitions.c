@@ -83,6 +83,16 @@ uint64_t get_hash_table_split_index(uint64_t bucket_count)
 	return bucket_count % (UINT64_C(1) << get_floor_log_base_2(bucket_count));
 }
 
+uint64_t get_hash_value_for_key_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* key)
+{
+	return hash_tuple(key, httd_p->key_def, NULL, httd_p->hash_func, httd_p->key_element_count);
+}
+
+uint64_t get_hash_value_for_record_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple)
+{
+	return hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, httd_p->hash_func, httd_p->key_element_count);
+}
+
 void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
 {
 	if(httd_p->key_element_ids)
