@@ -4,17 +4,6 @@
   * uint64_t get_new_hash_table(uint64_t initial_bucket_count, ... all necessary params)
    * initilize a new hash_table with a initial_bucket_count,
    * create a new page_table, then set page_table[initial_bucket_count] = root_page_id
-  * insert will take a flag fail_on_duplicate_key, which if set, fails insertion, if a dupicate is found, else it will just insert at head
-   * insert procedure for high concurrency
-    * walk down the page_table using a whole range lock
-    * figure out the right bucket to insert into
-    * create a linked_page_list at the bucket if it does not already exists and start a write iterator on it
-    * release range_locker
-    * insert tuple at head OR (if fail_on_duplicate_key is set) iterate over it, ensure it does not have a duplicate and then insert
-    * delete linked_page_list_iterator and exit
-  * find procedure for high concurrency
-    * find the respective entry, if it is NULL, hold lock on the page_table_range_locker and exit
-    * else open a linked_page_list_iterator and release lock on the page_table_range_locker
   * shrink_hash_table
    * ensure that splitting a hash_table of bucket_count UINT64_MAX, always fails
    * for bucket spliting and there be N buckets, then
@@ -22,23 +11,29 @@
   * expand_hash_table
    * ensure that merging/shrinking a hash_table of bucket_count 1, always fails
    * for merging then merge split_index(N - 1) and (N - 1), into split_index(N - 1), then N-- (also N must not be 1)
+  * delete_hash_table
+   * lock the whole page_table in read mode, then visit each bucket, if not empty delete it, finally delete the page_table
+  * print_hash_table
 
 * hash_table_iterator
-  * it will have a key for the element that you called the find with
+  * it will have a key for the element that you initialized with
+  * and the bucket_index the key goes to
   * it also has a union of page_table_range_locker and a linked_page_list_iterator
-  * hash_table_iterator includes a linked_page_list_iterator over a bucket's linked_page_list and a page_table_range_locker over the bucket pointer
-  * if the bucket is empty, we will only lock the page_table_range_locker
-  * you are then allowed to get_tuple, update_tuple, delete_tuple and update_non_key_column, but not insert
+  * it also has state
+    * bucket is NULL -> we have page_table_range_locker
+    * else we have linked_page_list_iterator
+  * if the bucket is NULL, we will only lock the page_table_range_locker, any insert will make it point to linked_page_list_iterator
+  * you are then allowed to get_tuple, insert_tuple, update_tuple, delete_tuple and update_non_key_column
   * on deleting the hash_table_iterator
-      * if the pmm_p was supplied, and the linked_page_list of the bucket is empty, then
-      * release the linked_page_list_iterator of the empty bucket
-      * open range_locker for the concerned bucket (the key has to be stored on the hash_table_iterator), if the bucket is NULL, quit
-      * if the bucket is not empty, then open linked_page_list_itearator in write mode.
-      * ensure that it is empty
-      * if empty, close the iterator, delete this linked_page_list
-      * and set the page_table_range_locker entry to NULL, then quit
-  * support get_next, get_prev, using the key that we stored in the iterator, and allow going from head to tail and tail to head
-  * this iterator (if writable i.e. with pmm_p) allows update (complete tuple (key elements remain the same), or update_element (for non key elements)) and remove functions.
+    * if the pmm_p was supplied, and the linked_page_list of the bucket is empty, then
+    * release the linked_page_list_iterator of the empty bucket
+    * open range_locker for the concerned bucket (the key is in hash_table_iterator)
+    * if the bucket is not NULL, then open linked_page_list_itearator in read mode. if not NULL, we quit
+    * if the linked_page_list is empty, close the iterator, delete this linked_page_list. if not empty, we quit
+    * and set the page_table_range_locker entry to NULL, then quit
+  * support next_*, prev_*, using the key that we stored in the iterator, and allow going from head to tail and tail to head, i.e. next on a tail, fails, prev on head, fails
+  * next_* and prev_* only point to record tuples with given key of the hash_table_iterator only, else they only point to head or the tail tuple
+  * get_tuple_* returns NULL, if the record that the linked_page_list iterator points to is empty, the bucket is NULL or there are no tuples with that given key
 
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table fo that bucket
