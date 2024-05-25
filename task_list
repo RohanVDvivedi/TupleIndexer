@@ -59,6 +59,7 @@
      *   res = res * (((x >> b) & 1ULL) ? PowerTable[b] : 0)
    * through out the algorithm take care of overflows, and return 0, if result overflows
    * check if you could do this algorithm with large_uint (* future)
+ * (OPTIMIZATION) power_table in page_table at max needs only 6 entries, we can optimize this (minimum entries per page = 2) ^ (2^6) overflows a 64 bit integer
  * get rid of memcpy and instead use memory_move functionality for cutlery
  * hide functions of *_tuple_definitions, that do not need ot be public. including the functionality like power_factor
  * {} initialize, i.e. zero initialize all the tuple_defs at the beginning of the init_*_tuple_defs, to avoid garbage free, when deinit_*_tuple_defs functions is called on a failure of the corresponding init_*_tuple_defs functions
