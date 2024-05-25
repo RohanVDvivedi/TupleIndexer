@@ -56,9 +56,11 @@
    * to fing N ^ x
    * res = 1
      * for(b = 0; b < 64; b++)
-     *   res = res * (((x >> b) & 1ULL) ? PowerTable[b] : 0)
+     *   res = res * (((x >> b) & 1ULL) ? PowerTable[b] : 1)
    * through out the algorithm take care of overflows, and return 0, if result overflows
    * check if you could do this algorithm with large_uint (* future)
+   * implement get_max_exponent_for_power_to_overflow -> this is the exponent at which the entries_per_page ^ exponent overflows 64 bit integer -> store this in power_table as overflow_exponent i.e. is greater than equal to (2 ^ 64), use this function to calculate the max_page_table_height
+   * use the above function to weed out the powers that we know for sure will overflow, in the get_power function
  * (OPTIMIZATION) power_table in page_table at max needs only 6 entries, we can optimize this (minimum entries per page = 2) ^ (2^6) overflows a 64 bit integer
  * (OPTIMIZATION) max_page_table_height = log(2^64) base 2 -> will always fit a 32 bit number, and level of the page is also a 32 bit number, hence this variable must be a 32 bit number.
    * in calculation for calculating the max_page_table_height, you may only binary search from 0 to 64, as we already know that 2^64, will always over flow a 64 bit integer and 2 is the minimum entries per page
