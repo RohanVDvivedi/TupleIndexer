@@ -33,6 +33,15 @@
     * and set the page_table_range_locker entry to NULL, then quit
   * support next_*, prev_*, using the key that we stored in the iterator, and allow going from head to tail and tail to head, i.e. next on a tail, fails, prev on head, fails
   * next_* and prev_* only point to record tuples with given key of the hash_table_iterator only, else they only point to head or the tail tuple
+    * next_*()
+      * if bucket is NULL (bucket pointer in page_table is NULL) or EMPTY (linked_page_list is empty) then return 0
+      * if the current tuple is the tail tuple, then return 0
+      * perform next on the linked_page_list_iterator
+      * while(1)
+        * if the current tuple.key == key, then return 1
+        * if the current tuple is tha tail, then retirn 0
+        * perform next on the linked_page_list_iterator
+    * prev_*() implementation will be quite identical to the next_*() call
   * get_tuple_* returns NULL, if the record that the linked_page_list iterator points to is empty, the bucket is NULL or there are no tuples with that given key
 
 * hash_table, a page_table where each entry points a linked_page_list
