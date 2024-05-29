@@ -39,6 +39,7 @@ The tuple is laid out as per specifications of TupleStore library.
    * `#include<bplus_tree.h>`
    * `#include<page_table.h>`
    * `#include<linked_page_list.h>`
+   * `#include<hash_table.h>`
    * `#include<page_access_methods.h>`
    * `#include<page_modification_methods.h>`
  * for testing you may need :
