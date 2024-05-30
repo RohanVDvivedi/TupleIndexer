@@ -33,14 +33,14 @@ int main()
 	// construct unWALed page_modification_methods
 	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
 
-	// construct tuple definitions for bplus_tree
+	// construct tuple definitions for page_table
 	page_table_tuple_defs pttd;
 	init_page_table_tuple_definitions(&pttd, &(pam_p->pas));
 
-	// print the generated bplus tree tuple defs
+	// print the generated page_table tuple defs
 	print_page_table_tuple_definitions(&pttd);
 
-	// create a bplus tree and get its root
+	// create a page_table and get its root
 	uint64_t root_page_id = get_new_page_table(&pttd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
@@ -157,7 +157,7 @@ int main()
 
 	/* CLEANUP */
 
-	// destroy bplus tree
+	// destroy page_table
 	destroy_page_table(root_page_id, &pttd, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
