@@ -22,6 +22,30 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 		exit(-1);
 	memcpy(httd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * httd_p->key_element_count);
 
+	// initialize key def
+
+	// allocate memory for key_def and initialize it
+	httd_p->key_def = get_new_tuple_def("temp_key_def", key_element_count, pas_p->page_size);
+	if(httd_p->key_def == NULL) // memory allocation failed
+		exit(-1);
+
+	// result of inserting element_definitions to key_def
+	int res = 1;
+
+	// initialize element_defs of the key_def
+	for(uint32_t i = 0; i < key_element_count && res == 1; i++)
+		res = res && insert_copy_of_element_def(httd_p->key_def, NULL, record_def, httd_p->key_element_ids[i]);
+	
+	// if any of the index element_definitions could not be inserted
+	if(!res)
+	{
+		deinit_hash_table_tuple_definitions(httd_p);
+		return 0;
+	}
+
+	// end step
+	finalize_tuple_def(httd_p->key_def);
+
 	if(!init_linked_page_list_tuple_definitions(&(httd_p->lpltd), pas_p, record_def))
 	{
 		deinit_hash_table_tuple_definitions(httd_p);
