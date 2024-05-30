@@ -214,5 +214,8 @@ int main()
 	// destory page_modification_methods
 	delete_unWALed_page_modification_methods(pmm_p);
 
+	// delete the record definition
+	delete_tuple_def(record_def);
+
 	return 0;
 }
