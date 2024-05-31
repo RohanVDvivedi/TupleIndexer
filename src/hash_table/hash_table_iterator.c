@@ -10,7 +10,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 
 	// if key is absent, then the bucket_range should be valid
 	if(key == NULL && !is_valid_page_table_bucket_range(&bucket_range))
-		return 0;
+		return NULL;
 
 	hash_table_iterator* hti_p = malloc(sizeof(hash_table_iterator));
 	if(hti_p == NULL)
@@ -50,6 +50,8 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 		{
 			// open a linked_page_list_iterator at bucket_head_page_id
 			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto DELETE_EVERYTHING_AND_ABORT;
 
 			// close the hti_p->ptrl_p
 			delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
@@ -65,7 +67,10 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 			goto DELETE_EVERYTHING_AND_ABORT;
 		hti_p->bucket_range.last_bucket_id = max(hti_p->bucket_range.last_bucket_id, bucket_count - 1);
 
+		// make curr_bucket_id point to the first bucket in the range
 		hti_p->curr_bucket_id = hti_p->bucket_range.first_bucket_id;
+
+		// minimize the lock range to the preferred one
 		minimize_lock_range_for_page_table_range_locker(hti_p->ptrl_p, hti_p->bucket_range, transaction_id, abort_error);
 		if(*abort_error)
 			goto DELETE_EVERYTHING_AND_ABORT;
@@ -77,6 +82,8 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 		{
 			// open a linked_page_list_iterator at bucket_head_page_id
 			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto DELETE_EVERYTHING_AND_ABORT;
 		}
 	}
 
