@@ -134,7 +134,7 @@ uint64_t get_bucket_index_for_key_using_hash_table_tuple_definitions(const hash_
 	if(bucket_index < split_index)
 	{
 		// below if condition is mathematically equivalent to hash_value % (2^(fl2+1))
-		if((fl2+1) != 64)
+		if((fl2+1) < 64)
 			bucket_index = hash_value % (UINT64_C(1) << (fl2+1));
 		else
 			bucket_index = hash_value;
