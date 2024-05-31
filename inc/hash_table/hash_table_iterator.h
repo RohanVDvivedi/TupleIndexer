@@ -11,6 +11,8 @@
 typedef struct hash_table_iterator hash_table_iterator;
 struct hash_table_iterator
 {
+	uint64_t root_page_id;
+
 	// the key you should be looking for
 	const void* key;
 
