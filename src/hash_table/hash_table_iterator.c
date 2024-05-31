@@ -140,6 +140,23 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 
 void delete_hash_table_iterator(hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
 {
+	// if it is a keyed iterator, then it is our duty to NULL the empty bucket linked_page_list
+	if((hti_p->key != NULL) && (!(*abort_error)) && (hti_p->pmm_p != NULL) && (hti_p->lpli_p != NULL) && (hti_p->ptrl_p == NULL) && is_empty_linked_page_list(hti_p->lpli_p))
+	{
+		// release lock on hti_p->lpli_p
+		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+		hti_p->lpli_p = NULL;
+		if(*abort_error)
+			goto DELETE_EVERYTHING_AND_ABORT;
+
+		// TODO
+		// get range locker
+		// go to the bucket that key points to
+		// if the corresponding linked_page_list is empty, then delete it and set it's entry in page_table as NULL
+		// delete range locker
+	}
+
+	DELETE_EVERYTHING_AND_ABORT:;
 	if(hti_p->ptrl_p)
 		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
 	if(hti_p->lpli_p)
