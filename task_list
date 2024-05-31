@@ -1,9 +1,6 @@
 ** PICKED TASKS
 
 * hash_table api
-  * uint64_t get_new_hash_table(uint64_t initial_bucket_count, ... all necessary params)
-   * initilize a new hash_table with a initial_bucket_count,
-   * create a new page_table, then set page_table[initial_bucket_count] = root_page_id
   * shrink_hash_table
    * ensure that splitting a hash_table of bucket_count UINT64_MAX, always fails
    * for bucket spliting and there be N buckets, then
@@ -13,13 +10,8 @@
    * for merging then merge split_index(N - 1) and (N - 1), into split_index(N - 1), then N-- (also N must not be 1)
   * resize_hash_table
    * increase or decrease the bucket_count of the hash_table, to a specified value
-  * delete_hash_table
-   * lock the whole page_table in read mode, then visit each bucket, if not empty delete it, finally delete the page_table
-  * print_hash_table
 
 * hash_table_iterator
-  * it gets initialized with key-> then it points to a single bucket, and if that bucket exists then we only lock the lpli_p on that bucket and no page_table lock is held
-  * else if key provided is NULL, then we open a buket range lock, it allows all existing bucket_range [0,bucket_count-1] to be locked, and iterated over
   * you are then allowed to get_tuple, insert_tuple, update_tuple, delete_tuple and update_non_key_column
   * on deleting the hash_table_iterator
     * if the pmm_p was supplied, and the linked_page_list of the bucket is empty, then
@@ -44,7 +36,6 @@
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table fo that bucket
    * Use linear hashing for dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
-   * pick a function to hash into a 64 bit unsigned integers
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * sort
