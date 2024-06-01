@@ -13,13 +13,6 @@
 
 * hash_table_iterator
   * you are then allowed to get_tuple, insert_tuple, update_tuple, delete_tuple and update_non_key_column
-  * on deleting the hash_table_iterator
-    * if the pmm_p was supplied, and the linked_page_list of the bucket is empty, then
-    * release the linked_page_list_iterator of the empty bucket
-    * open range_locker for the concerned bucket (the key is in hash_table_iterator)
-    * if the bucket is not NULL, then open linked_page_list_itearator in read mode. if not NULL, we quit
-    * if the linked_page_list is empty, close the iterator, delete this linked_page_list. if not empty, we quit
-    * and set the page_table_range_locker entry to NULL, then quit
   * support next_*, prev_*, using the key that we stored in the iterator, and allow going from head to tail and tail to head, i.e. next on a tail, fails, prev on head, fails
   * next_* and prev_* only point to record tuples with given key of the hash_table_iterator only, else they only point to head or the tail tuple
     * next_*()
