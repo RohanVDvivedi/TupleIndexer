@@ -32,7 +32,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 	// take a range lock on the page table, to get the bucket_count
 	hti_p->ptrl_p = get_new_page_table_range_locker(hti_p->root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 	if(*abort_error)
-		return 0;
+		goto DELETE_EVERYTHING_AND_ABORT;
 
 	// get the current bucket_count of the hash_table
 	uint64_t bucket_count = UINT64_MAX;
