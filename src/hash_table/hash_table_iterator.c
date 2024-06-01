@@ -176,29 +176,23 @@ void delete_hash_table_iterator(hash_table_iterator* hti_p, const void* transact
 			if(*abort_error)
 				goto DELETE_EVERYTHING_AND_ABORT;
 
-			// if the corresponding linked_page_list exists and is empty, then delete it and set it's entry in page_table as NULL
-			if(is_empty_linked_page_list(hti_p->lpli_p))
-			{
-				// release lock on hti_p->lpli_p
-				delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
-				hti_p->lpli_p = NULL;
-				if(*abort_error)
-					goto DELETE_EVERYTHING_AND_ABORT;
+			int is_curr_bucket_empty = is_empty_linked_page_list(hti_p->lpli_p);
 
+			// release lock on hti_p->lpli_p
+			delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+			hti_p->lpli_p = NULL;
+			if(*abort_error)
+				goto DELETE_EVERYTHING_AND_ABORT;
+
+			// if the corresponding linked_page_list exists and is empty, then delete it and set it's entry in page_table as NULL
+			if(is_curr_bucket_empty)
+			{
 				// destroy the linked_page_list
 				destroy_linked_page_list(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto DELETE_EVERYTHING_AND_ABORT;
 
 				set_in_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
-				if(*abort_error)
-					goto DELETE_EVERYTHING_AND_ABORT;
-			}
-			else
-			{
-				// release lock on hti_p->lpli_p
-				delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
-				hti_p->lpli_p = NULL;
 				if(*abort_error)
 					goto DELETE_EVERYTHING_AND_ABORT;
 			}
