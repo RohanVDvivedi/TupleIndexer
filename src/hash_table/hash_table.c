@@ -112,6 +112,8 @@ void print_hash_table(uint64_t root_page_id, int only_buckets, const hash_table_
 	for(uint64_t bucket_id = 0; bucket_id < bucket_count; bucket_id++)
 	{
 		uint64_t bucket_head_page_id = get_from_page_table(ptrl_p, bucket_id, transaction_id, abort_error);
+		if(*abort_error)
+			goto DELETE_BUCKET_RANGE_LOCKER_AND_ABORT;
 
 		if(bucket_head_page_id != httd_p->pttd.pas_p->NULL_PAGE_ID)
 		{
