@@ -263,6 +263,8 @@ int level_up_page_table_page(persistent_page* ppage, const page_table_tuple_defs
 
 	// discard all tuples from the ppage
 	discard_all_tuples_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), abort_error);
+	if(*abort_error)
+		return 0;
 
 	// increment its level and update first_bucket_id
 	hdr.level = old_hdr.level + 1;
