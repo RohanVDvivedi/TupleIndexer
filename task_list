@@ -24,7 +24,6 @@
         * if the current tuple is tha tail, then retirn 0
         * perform next on the linked_page_list_iterator
     * prev_*() implementation will be quite identical to the next_*() call
-  * get_tuple_* returns NULL, if the record that the linked_page_list iterator points to is empty, the bucket is NULL or there are no tuples with that given key
 
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table fo that bucket
