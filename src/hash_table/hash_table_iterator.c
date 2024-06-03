@@ -107,7 +107,18 @@ int is_writable_hash_table_iterator(const hash_table_iterator* hti_p)
 
 const void* get_tuple_hash_table_iterator(const hash_table_iterator* hti_p)
 {
-	// TODO
+	// actual tuples exist in buckets stored as linked_page_list, if for some reason this iterator is not open then we can not return a valid tuple
+	if(hti_p->lpli_p == NULL)
+		return NULL;
+
+	// fetch the record
+	const void* record = get_tuple_linked_page_list_iterator(hti_p->lpli_p);
+
+	// if the key is provided, and the key does not match for this record then wew return NULL
+	if(hti_p->key != NULL && 0 != compare_tuples(record, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, hti_p->key, hti_p->httd_p->key_def, NULL, NULL, hti_p->httd_p->key_element_count))
+		return NULL;
+
+	return record;
 }
 
 int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error)
