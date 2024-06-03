@@ -15,14 +15,12 @@
   * you are then allowed to get_tuple, insert_tuple, update_tuple, delete_tuple and update_non_key_column
   * support next_*, prev_*, using the key that we stored in the iterator, and allow going from head to tail and tail to head, i.e. next on a tail, fails, prev on head, fails
   * next_* and prev_* only point to record tuples with given key of the hash_table_iterator only, else they only point to head or the tail tuple
-    * next_*()
-      * if bucket is NULL (bucket pointer in page_table is NULL) or EMPTY (linked_page_list is empty) then return 0
-      * if the current tuple is the tail tuple, then return 0
+    * next_*(can_jump_bucket)
+      * if bucket is NULL (bucket pointer in page_table is NULL) or EMPTY (linked_page_list is empty) OR if the current tuple is the tail tuple
+        * if can_jump_bucket, go to next bucket updating curr_bucket_id++ and openning an iterator to that linked_list if it is non NULL
+        * else return 0
       * perform next on the linked_page_list_iterator
-      * while(1)
-        * if the current tuple.key == key, then return 1
-        * if the current tuple is the tail, then return 0
-        * perform next on the linked_page_list_iterator
+      * return 1;
     * prev_*() implementation will be quite identical to the next_*() call
   * need utility functions like
     * get_curr_bucket_index -> hti_p->curr_bucket_id
