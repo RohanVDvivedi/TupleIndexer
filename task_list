@@ -21,9 +21,13 @@
       * perform next on the linked_page_list_iterator
       * while(1)
         * if the current tuple.key == key, then return 1
-        * if the current tuple is tha tail, then retirn 0
+        * if the current tuple is the tail, then return 0
         * perform next on the linked_page_list_iterator
     * prev_*() implementation will be quite identical to the next_*() call
+  * need utility functions like
+    * get_curr_bucket_index -> hti_p->curr_bucket_id
+    * is_curr_bucket_empty -> if hti_p->lpli_p == NULL OR is_linked_page_list_empty(hti_p->lpli_p);
+    * is_curr_bucket_full -> hti_p->lpli_p != NULL AND MANY_NODE_LINKED_PAGE_LIST == get_state_for_linked_page_list(hti_p->lpli_p)
 
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table fo that bucket
