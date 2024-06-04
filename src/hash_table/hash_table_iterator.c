@@ -105,6 +105,21 @@ int is_writable_hash_table_iterator(const hash_table_iterator* hti_p)
 	return hti_p->pmm_p != NULL;
 }
 
+uint64_t get_curr_bucket_index_for_hash_table_iterator(const hash_table_iterator* hti_p)
+{
+	return hti_p->curr_bucket_id;
+}
+
+int is_curr_bucket_empty_for_hash_table_iterator(const hash_table_iterator* hti_p)
+{
+	return (hti_p->lpli_p == NULL) || is_empty_linked_page_list(hti_p->lpli_p);
+}
+
+int is_curr_bucket_full_for_hash_table_iterator(const hash_table_iterator* hti_p)
+{
+	return (hti_p->lpli_p != NULL) && (MANY_NODE_LINKED_PAGE_LIST == get_state_for_linked_page_list(hti_p->lpli_p));
+}
+
 const void* get_tuple_hash_table_iterator(const hash_table_iterator* hti_p)
 {
 	// actual tuples exist in buckets stored as linked_page_list, if for some reason this iterator is not open then we can not return a valid tuple

@@ -14,6 +14,13 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 // returns 1, if the iterator is writable
 int is_writable_hash_table_iterator(const hash_table_iterator* hti_p);
 
+// get the bucket that the iterator is pointiung to
+uint64_t get_curr_bucket_index_for_hash_table_iterator(const hash_table_iterator* hti_p);
+
+// check if the current bucket is empty (or NULL) or full
+int is_curr_bucket_empty_for_hash_table_iterator(const hash_table_iterator* hti_p);
+int is_curr_bucket_full_for_hash_table_iterator(const hash_table_iterator* hti_p);
+
 // get the tuple that we are currenting pointing to
 // returns NULL, if the hti_p->key != NULL, and key(curr_tuple) != hti_p->key
 // the return value of this function is referred to as the curr_tuple of the iterator, for the remainder of the declarations in this file
