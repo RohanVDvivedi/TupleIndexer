@@ -180,6 +180,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 		return 1;
 	}
 
+	// goto next tuple in the same bucket
 	int result = next_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
@@ -195,7 +196,60 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 
 int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// check if there is no prev tuple, if so we would need to jump bucket
+	if(hti_p->lpli_p == NULL || is_empty_linked_page_list(hti_p->lpli_p) || is_at_head_tuple_linked_page_list_iterator(hti_p->lpli_p))
+	{
+		// if the key is not NULL, then fail this call
+		if(hti_p->key != NULL)
+			return 0;
+
+		// if you are not allowed to jump buckets, then fail this call
+		if(!can_jump_bucket)
+			return 0;
+
+		// if you are already at the first_bucket_id, then fail this call
+		if(hti_p->curr_bucket_id == hti_p->bucket_range.first_bucket_id)
+			return 0;
+
+		// free the existing iterator, over the linked_page_list bucket
+		if(hti_p->lpli_p != NULL)
+		{
+			delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+			hti_p->lpli_p = NULL;
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+
+		// decrement the curr_bucket_id to point to the next bucket_id
+		hti_p->curr_bucket_id--;
+
+		// fecth the head_page_id for the new curr_bucket, and open a bucket iterator over it
+		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+		if(curr_bucket_head_page_id != hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID)
+		{
+			// open a linked_page_list_iterator at bucket_head_page_id
+			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+
+		return 1;
+	}
+
+	// goto prev tuple in the same bucket
+	int result = prev_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+	return result;
+
+	ABORT_ERROR:;
+	if(hti_p->ptrl_p)
+		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+	if(hti_p->lpli_p)
+		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	return 0;
 }
 
 int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple, const void* transaction_id, int* abort_error)
