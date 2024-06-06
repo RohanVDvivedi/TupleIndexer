@@ -35,7 +35,7 @@
  * build a power_table structure,
    * to hold 64 64-bit integers, to quickly calculate power of a number N (>= 2).
    * where ith integer of the array, PowerTable is = N ^ (2 ^ i)
-   * to fing N ^ x
+   * to find N ^ x
    * res = 1
      * for(b = 0; b < 64; b++)
      *   res = res * (((x >> b) & 1ULL) ? PowerTable[b] : 1)
