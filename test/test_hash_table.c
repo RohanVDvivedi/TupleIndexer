@@ -276,6 +276,15 @@ int main()
 	printf("\n");
 
 	/* TESTS STARTED */
+
+	result res;
+
+	// insert all tuples
+	res = insert_from_file(root_page_id, TEST_DATA_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
+
+	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+
+
 	// print the constructed page table
 	print_hash_table(root_page_id, 1, &httd, pam_p, transaction_id, &abort_error);
 
