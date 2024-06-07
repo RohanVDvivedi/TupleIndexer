@@ -152,7 +152,7 @@ void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 
 uint64_t hash_func(const void* data, uint32_t data_size)
 {
-	uint64_t res = 0;
+	uint64_t res = 1;
 	for(uint32_t i = 0; i < data_size; i++)
 		res = res * (((const unsigned char*)(data))[i]);
 	return res;
