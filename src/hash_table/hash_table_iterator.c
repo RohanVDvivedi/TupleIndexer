@@ -254,21 +254,82 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 
 int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// iterator must be writable
+	if(!is_writable_hash_table_iterator(hti_p))
+		return 0;
+
+	// if it is not a keyed iterator, then fail
+	if(hti_p->key == NULL)
+		return 0;
+
+	// if the key doesn't match the tuple, then fail
+	if(0 != compare_tuples(tuple, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, hti_p->key, hti_p->httd_p->key_def, NULL, NULL, hti_p->httd_p->key_element_count))
+		return 0;
+
+	// if a linked_page_list at the curr_bucket_id does not exist then create one
+	// and make the iterator point from ptrl_p to lpli_p, for the given key
+	if(hti_p->lpli_p == NULL)
+	{
+		uint64_t curr_bucket_head_page_id = get_new_linked_page_list(&(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// set the new bucket head in the pre-calculated curr_bucket_id
+		set_in_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, curr_bucket_head_page_id, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// open a bucket iterator for the new linked_page_list bucket
+		hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// now you may release locks on the range_locker iterator ptrl_p
+		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		hti_p->ptrl_p = NULL;
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	// perform a simple insert to this open bucket
+	int result = insert_at_linked_page_list_iterator(hti_p->lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	return result;
+
+	ABORT_ERROR:;
+	if(hti_p->ptrl_p)
+		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+	if(hti_p->lpli_p)
+		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	return 0;
 }
 
 int update_at_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple, const void* transaction_id, int* abort_error)
 {
+	// iterator must be writable
+	if(!is_writable_hash_table_iterator(hti_p))
+		return 0;
+
 	// TODO
 }
 
 int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
 {
+	// iterator must be writable
+	if(!is_writable_hash_table_iterator(hti_p))
+		return 0;
+
 	// TODO
 }
 
 int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
+	// iterator must be writable
+	if(!is_writable_hash_table_iterator(hti_p))
+		return 0;
+
 	// TODO
 }
 
