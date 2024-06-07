@@ -158,6 +158,92 @@ uint64_t hash_func(const void* data, uint32_t data_size)
 	return res;
 }
 
+typedef struct result result;
+struct result
+{
+	uint32_t operations_succeeded;
+	uint32_t records_processed;
+};
+
+result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	// open test data file
+	FILE* f = fopen(file_name, "r");
+
+	result res = {};
+
+	uint32_t records_seen = 0;
+	while(!feof(f) && (tuples_to_process == 0 || res.records_processed < tuples_to_process))
+	{
+		// read a record from the file
+		record r = {};
+		read_record_from_file(&r, f);
+
+		if(records_seen < skip_first || (records_seen - skip_first) % (skip_every + 1) != 0)
+		{
+			records_seen++;
+			continue;
+		}
+		else
+			records_seen++;
+
+		// print the record we read
+		//print_record(&r);
+
+		// construct tuple from this record
+		char record_tuple[PAGE_SIZE] = {};
+		build_tuple_from_record_struct(httd_p->lpltd.record_def, record_tuple, &r);
+		char key_tuple[PAGE_SIZE] = {};
+		build_key_tuple_from_record_struct(httd_p, key_tuple, &r);
+
+		// printing built tuple
+		//char print_buffer[PAGE_SIZE];
+		//sprint_tuple(print_buffer, record_tuple, record_def);
+		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
+
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		// insert the record_tuple in the hash_table
+		res.operations_succeeded += insert_in_hash_table_iterator(hti_p, record_tuple, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		// increment the tuples_processed count
+		res.records_processed++;
+	}
+
+	// print bplus tree
+	if(print_on_completion)
+	{
+		print_hash_table(root_page_id, 1, httd_p, pam_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
+
+	// close the file
+	fclose(f);
+
+	return res;
+}
+
 int main()
 {
 	/* SETUP STARTED */
