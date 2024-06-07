@@ -154,7 +154,7 @@ uint64_t hash_func(const void* data, uint32_t data_size)
 {
 	uint64_t res = 1;
 	for(uint32_t i = 0; i < data_size; i++)
-		res = res * (((const unsigned char*)(data))[i]);
+		res = ((res * (((const unsigned char*)(data))[i])) ^ (((const unsigned char*)(data))[i])) + (((const unsigned char*)(data))[i]) + ((((const unsigned char*)(data))[i]) << 12);
 	return res;
 }
 
@@ -200,6 +200,8 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//char print_buffer[PAGE_SIZE];
 		//sprint_tuple(print_buffer, record_tuple, record_def);
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
+
+		//printf("hash = %"PRIu64"\n", hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, hash_func, httd_p->key_element_count));
 
 		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
