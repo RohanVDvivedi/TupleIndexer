@@ -588,7 +588,7 @@ int main()
 
 	printf("update to ABCDEF in hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_non_key_element_in_file(root_page_id, "ABC", TEST_DATA_FILE, 21, 0, 5, 0, &httd, pam_p, pmm_p);
+	res = update_non_key_element_in_file(root_page_id, "ABC", TEST_DATA_FILE, 19, 0, 5, 0, &httd, pam_p, pmm_p);
 
 	printf("update_non_key to ABC in hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
