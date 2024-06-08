@@ -312,13 +312,42 @@ int update_at_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 	if(!is_writable_hash_table_iterator(hti_p))
 		return 0;
 
-	// TODO
+	// fetch the tuple we would be updating
+	const void* curr_tuple = get_tuple_hash_table_iterator(hti_p);
+	// you can not update a non-existing tuple, so fail if curr_tuple is NULL
+	if(curr_tuple == NULL)
+		return 0;
+
+	// ensure that the key(curr_tuple) == key(tuple)
+	if(0 != compare_tuples(tuple, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, curr_tuple, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, NULL, hti_p->httd_p->key_element_count))
+		return 0;
+
+	// go ahead with the actual update
+	// you may not access curr_tuple beyond the below call
+	int result = update_at_linked_page_list_iterator(hti_p->lpli_p, tuple, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	return result;
+
+	ABORT_ERROR:;
+	if(hti_p->ptrl_p)
+		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+	if(hti_p->lpli_p)
+		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	return 0;
 }
 
 int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
 {
 	// iterator must be writable
 	if(!is_writable_hash_table_iterator(hti_p))
+		return 0;
+
+	// fetch the tuple we would be removing
+	const void* curr_tuple = get_tuple_hash_table_iterator(hti_p);
+	// you can not remove a non-existing tuple, so fail if curr_tuple is NULL
+	if(curr_tuple == NULL)
 		return 0;
 
 	// TODO
