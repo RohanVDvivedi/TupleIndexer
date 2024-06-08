@@ -483,13 +483,16 @@ int main()
 	// insert all tuples
 	res = insert_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 256, 0, &httd, pam_p, pmm_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("insertions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	// insert all tuples
 	res = insert_unique_from_file(root_page_id, TEST_DATA_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
 
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("insertions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
+	res = update_non_key_element_in_file(root_page_id, "ABC", TEST_DATA_FILE, 16, 0, 5, 0, &httd, pam_p, pmm_p);
+
+	printf("update_non_key to ABC in hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	// print the constructed page table
 	print_hash_table(root_page_id, 1, &httd, pam_p, transaction_id, &abort_error);
