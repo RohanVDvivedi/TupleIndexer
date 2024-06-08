@@ -12,7 +12,7 @@
    * increase or decrease the bucket_count of the hash_table, to a specified value
 
 * hash_table_iterator
-  * you are then allowed to update_tuple, delete_tuple and update_non_key_column
+  * implement remove_tuple for hash_table_iterator
 
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table fo that bucket
