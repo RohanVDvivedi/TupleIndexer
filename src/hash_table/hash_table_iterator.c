@@ -359,7 +359,32 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 	if(!is_writable_hash_table_iterator(hti_p))
 		return 0;
 
-	// TODO
+	// fetch the tuple we would be updating
+	const void* curr_tuple = get_tuple_hash_table_iterator(hti_p);
+	// you can not update a non-existing tuple, so fail if curr_tuple is NULL
+	if(curr_tuple == NULL)
+		return 0;
+
+	// make sure that the element that the user is trying to update in place is not a key for the hash_table
+	// if you allow so, it could be a disaster
+	for(uint32_t i = 0; i < hti_p->httd_p->key_element_count; i++)
+		if(hti_p->httd_p->key_element_ids[i] == element_index)
+			return 0;
+
+	// go ahead with the actual update
+	// you may not access curr_tuple beyond the below call
+	int result = update_element_in_place_at_linked_page_list_iterator(hti_p->lpli_p, element_index, element_value, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	return result;
+
+	ABORT_ERROR:;
+	if(hti_p->ptrl_p)
+		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+	if(hti_p->lpli_p)
+		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	return 0;
 }
 
 void delete_hash_table_iterator(hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
