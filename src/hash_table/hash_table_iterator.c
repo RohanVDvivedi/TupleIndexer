@@ -350,7 +350,55 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 	if(curr_tuple == NULL)
 		return 0;
 
-	// TODO
+	// figure out whether to go next or prev after the removal
+	linked_page_list_go_after_operation aft_op = GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION;
+	if(is_at_tail_tuple_linked_page_list_iterator(hti_p->lpli_p))
+		aft_op = GO_PREV_AFTER_LINKED_PAGE_ITERATOR_OPERATION;
+
+	// perform actual removal
+	int result = remove_from_linked_page_list_iterator(hti_p->lpli_p, aft_op, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// we are done if the current bucket is not empty
+	if(!is_empty_linked_page_list(hti_p->lpli_p))
+		return result;
+
+	// if the range for the bucket is not locked
+	if(hti_p->ptrl_p == NULL)
+		return result;
+
+	// here is where we destroy this empty bucket, and make its pointer in ptrl_p NULL
+	{
+		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// close the iterator on the bucket
+		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+		hti_p->lpli_p = NULL;
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// now we can destroy the linked_page_list bucket
+		destroy_linked_page_list(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// now we can set the bucket_head_page_id corresponding to curr_bucket_id to NULL_PAGE_ID
+		set_in_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	return result;
+
+	ABORT_ERROR:;
+	if(hti_p->ptrl_p)
+		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+	if(hti_p->lpli_p)
+		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	return 0;
 }
 
 int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
