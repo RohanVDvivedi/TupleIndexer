@@ -129,6 +129,10 @@ const void* get_tuple_hash_table_iterator(const hash_table_iterator* hti_p)
 	// fetch the record
 	const void* record = get_tuple_linked_page_list_iterator(hti_p->lpli_p);
 
+	// this happens if the bucket is empty
+	if(record == NULL)
+		return NULL;
+
 	// if the key is provided, and the key does not match for this record then wew return NULL
 	if(hti_p->key != NULL && 0 != compare_tuples(record, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, hti_p->key, hti_p->httd_p->key_def, NULL, NULL, hti_p->httd_p->key_element_count))
 		return NULL;
