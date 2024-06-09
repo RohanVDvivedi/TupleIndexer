@@ -677,6 +677,8 @@ int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, 
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	return removed_count;
 }
 
 int main()
@@ -739,7 +741,7 @@ int main()
 
 	printf("deletions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	#define DELETE_ALL_USING_FILE
+	//#define DELETE_ALL_USING_FILE
 
 #ifdef DELETE_ALL_USING_FILE
 	res = delete_from_file(root_page_id, TEST_DATA_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);

@@ -16,7 +16,7 @@ uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tupl
 		return httd_p->pttd.pas_p->NULL_PAGE_ID;
 
 	// set the initial_bucket_count
-	set_in_page_table(ptrl_p, initial_bucket_count, initial_bucket_count, transaction_id, abort_error);
+	set_in_page_table(ptrl_p, initial_bucket_count, root_page_id, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);

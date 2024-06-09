@@ -67,7 +67,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 		// limit bucket_range to subset [0, bucket_count-1], discarding the buckets that come after bucket_count buckets
 		if(hti_p->bucket_range.first_bucket_id >= bucket_count)
 			goto DELETE_EVERYTHING_AND_ABORT;
-		hti_p->bucket_range.last_bucket_id = max(hti_p->bucket_range.last_bucket_id, bucket_count - 1);
+		hti_p->bucket_range.last_bucket_id = min(hti_p->bucket_range.last_bucket_id, bucket_count - 1);
 
 		// make curr_bucket_id point to the first bucket in the range
 		hti_p->curr_bucket_id = hti_p->bucket_range.first_bucket_id;
