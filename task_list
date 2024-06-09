@@ -11,9 +11,6 @@
   * resize_hash_table
    * increase or decrease the bucket_count of the hash_table, to a specified value
 
-* hash_table_iterator
-  * implement remove_tuple for hash_table_iterator
-
 * hash_table, a page_table where each entry points a linked_page_list
    * when a linked_page_list becomes all empty, then linked_page_list is destroyed and NULL_PAGE_ID is written to page_table fo that bucket
    * Use linear hashing for dynamic bucket management, let there be N buckets, then set page_table[N] = root_page_id
