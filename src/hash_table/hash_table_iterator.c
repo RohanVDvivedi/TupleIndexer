@@ -369,6 +369,7 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 		return result;
 
 	// here is where we destroy this empty bucket, and make its pointer in ptrl_p NULL
+	// below logic works on the fact the ptrl_p has the lock range that includes curr_bucket_id, and that the page_id corresponding to curr_bucket_id in the ptrl_p is that of the currently open bucket iterator
 	{
 		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
 		if(*abort_error)
