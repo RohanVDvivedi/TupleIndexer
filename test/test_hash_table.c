@@ -11,7 +11,7 @@
 #include<unWALed_in_memory_data_store.h>
 #include<unWALed_page_modification_methods.h>
 
-#define INITIAL_BUCKET_COUNT 32
+#define INITIAL_BUCKET_COUNT 19
 
 // uncomment based on the keys that you want to test with
 #define KEY_NAME_EMAIL
@@ -152,7 +152,7 @@ void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 
 uint64_t hash_func(const void* data, uint32_t data_size)
 {
-	uint64_t res = 1;
+	uint64_t res = 53815381;
 	for(uint32_t i = 0; i < data_size; i++)
 		res = ((res * (((const unsigned char*)(data))[i])) ^ (((const unsigned char*)(data))[i])) + (((const unsigned char*)(data))[i]) + ((((const unsigned char*)(data))[i]) << 12);
 	return res;
