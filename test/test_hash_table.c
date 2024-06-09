@@ -635,6 +635,50 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
+int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, uint64_t last_bucket_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	int removed_count = 0;
+
+	hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){start_bucket_id, last_bucket_id}, NULL, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	// go next until you can
+	while(1)
+	{
+		int removed = remove_from_hash_table_iterator(hti_p, transaction_id, &abort_error);
+		removed_count += removed;
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		if(removed)
+			continue;
+
+		int next_res = next_hash_table_iterator(hti_p, 1, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		if(next_res == 0)
+			break;
+	}
+
+	delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -695,9 +739,17 @@ int main()
 
 	printf("deletions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
+	#define DELETE_ALL_USING_FILE
+
+#ifdef DELETE_ALL_USING_FILE
 	res = delete_from_file(root_page_id, TEST_DATA_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
 
 	printf("deletions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+#else
+	int rem_count = delete_all_from_hash_table(root_page_id, 0, 19, &httd, pam_p, pmm_p);
+
+	printf("delete all deleted %d tuples\n\n", rem_count);
+#endif
 
 	// print the constructed page table
 	print_hash_table(root_page_id, 1, &httd, pam_p, transaction_id, &abort_error);
