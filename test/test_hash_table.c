@@ -156,7 +156,7 @@ uint64_t hash_func(const void* data, uint32_t data_size)
 	for(uint32_t i = 0; i < data_size; i++)
 	{
 		uint64_t d = ((const unsigned char*)(data))[i];
-		res = (((res * d) << 5) + d) ^ (d);
+		res = (res * d) ^ (d);
 	}
 	return res;
 }
