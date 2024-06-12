@@ -18,7 +18,7 @@ void print_linked_page_list(uint64_t head_page_id, const linked_page_list_tuple_
 
 // merge two linked_page_lists, the final merged linked_page_list has root_page_id as lpl1_head_page_id
 // all tuples of the lpl2 will be logically appended at the end of the contents of lpl1
-// this functions fails if any of the linked_page_lists provided is empty
+// this functions fails if any of the linked_page_lists provided is empty, this is done to ensure that this function does not free any memory, only modified minimal page header information for the merge
 int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 #include<linked_page_list_iterator_public.h>
