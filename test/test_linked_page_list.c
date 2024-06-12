@@ -548,18 +548,18 @@ void test_merge(const linked_page_list_tuple_defs* lpltd_p, const page_access_me
 	{
 		printf("original is empty, another one is not\n");
 		uint64_t head_page_id2 = get_new_linked_page_list(lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
-		push_at_tail(head_page_id2, "Rohan Dvivedi1", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Rupa Dvivedi1", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Milan Dvivedi1", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Devashree Dvivedi1", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Devashree Dvivedi1-------", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "My dearest Manan Joshi1-------", lpltd_p,  pam_p, pmm_p);
-		/*push_at_tail(head_page_id2, "Rohan Dvivedi3", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Rupa Dvivedi3", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Milan Dvivedi3", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Devashree Dvivedi3", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Devashree Dvivedi3-------", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "My dearest Manan Joshi3-------", lpltd_p,  pam_p, pmm_p);*/
+		push_at_tail(head_page_id2, "1Rohan Dvivedi1", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "2Rupa Dvivedi1", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "3Milan Dvivedi1", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "4Devashree Dvivedi1", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "5Devashree Dvivedi1-------", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "6My dearest Manan Joshi1-------", lpltd_p,  pam_p, pmm_p);
+		/*push_at_tail(head_page_id2, "7Rohan Dvivedi3", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "8Rupa Dvivedi3", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "9Milan Dvivedi3", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "10Devashree Dvivedi3", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "11Devashree Dvivedi3-------", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "12My dearest Manan Joshi3-------", lpltd_p,  pam_p, pmm_p);*/
 		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
 		printf("\n\n");
@@ -576,18 +576,18 @@ void test_merge(const linked_page_list_tuple_defs* lpltd_p, const page_access_me
 	{
 		printf("both are not empty\n");
 		uint64_t head_page_id2 = get_new_linked_page_list(lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
-		push_at_tail(head_page_id2, "Rohan Dvivedi2", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Rupa Dvivedi2", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Milan Dvivedi2", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Devashree Dvivedi2", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Devashree Dvivedi2-------", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "My dearest Manan Joshi2-------", lpltd_p,  pam_p, pmm_p);
-		/*push_at_tail(head_page_id2, "Rohan Dvivedi4", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Rupa Dvivedi4", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Milan Dvivedi4", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Devashree Dvivedi4", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "Devashree Dvivedi4-------", lpltd_p,  pam_p, pmm_p);
-		push_at_tail(head_page_id2, "My dearest Manan Joshi4-------", lpltd_p,  pam_p, pmm_p);*/
+		push_at_tail(head_page_id2, "1Rohan Dvivedi2", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "2Rupa Dvivedi2", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "3Milan Dvivedi2", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "4Devashree Dvivedi2", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "5Devashree Dvivedi2-------", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "6My dearest Manan Joshi2-------", lpltd_p,  pam_p, pmm_p);
+		/*push_at_tail(head_page_id2, "7Rohan Dvivedi4", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "8Rupa Dvivedi4", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "9Milan Dvivedi4", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "10Devashree Dvivedi4", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "11Devashree Dvivedi4-------", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "12My dearest Manan Joshi4-------", lpltd_p,  pam_p, pmm_p);*/
 		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
 		printf("\n\n");
