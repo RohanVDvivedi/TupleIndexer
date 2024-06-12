@@ -127,15 +127,14 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 	{
 		// if lpl1 is empty, then fail the merge
 		if(0 == get_tuple_count_on_persistent_page(&lpl1_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)))
-		{
-			result = 0;
 			goto EXIT;
-		}
 		lpl1_tail_p = &lpl1_head;
 	}
 	else
 	{
-		lpl1_tail = lock_and_get_next_page_in_linked_page_list(&lpl1_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
+		lpl1_tail = lock_and_get_prev_page_in_linked_page_list(&lpl1_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
 		lpl1_tail_p = &lpl1_tail;
 	}
 
@@ -147,15 +146,14 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 	{
 		// if lpl2 is empty, then fail the merge
 		if(0 == get_tuple_count_on_persistent_page(&lpl2_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)))
-		{
-			result = 0;
 			goto EXIT;
-		}
 		lpl2_tail_p = &lpl2_head;
 	}
 	else
 	{
-		lpl2_tail = lock_and_get_next_page_in_linked_page_list(&lpl2_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
+		lpl2_tail = lock_and_get_prev_page_in_linked_page_list(&lpl2_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
 		lpl2_tail_p = &lpl2_tail;
 	}
 
