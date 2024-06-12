@@ -177,7 +177,7 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 			if(*abort_error)
 				goto ABORT_ERROR;
 		}
-		else if(is_many_node_linked_page_list(&lpl2_head, lpltd_p))
+		else if(!is_only_head_linked_page_list(&lpl2_head, lpltd_p)) // coming here means it is surely not dual node, if it is also not only_head then it must be many node linked_page_list
 		{
 			// grab lock on the next and prev of lpl2
 			// remove lpl2 from between of next and prev
