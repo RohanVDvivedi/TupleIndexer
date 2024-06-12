@@ -180,9 +180,46 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 		else if(!is_only_head_linked_page_list(&lpl2_head, lpltd_p)) // coming here means it is surely not dual node, if it is also not only_head then it must be many node linked_page_list
 		{
 			// grab lock on the next and prev of lpl2
+			persistent_page lpl2_head_next = lock_and_get_next_page_in_linked_page_list(&lpl2_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			persistent_page lpl2_head_prev = lock_and_get_prev_page_in_linked_page_list(&lpl2_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+				goto ABORT_ERROR;
+			}
+
 			// remove lpl2 from between of next and prev
+			remove_page_from_between_linked_page_list(&lpl2_head_next, &lpl2_head, &lpl2_head_prev, lpltd_p, pam_p, pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, FREE_PAGE, abort_error);
+				goto ABORT_ERROR;
+			}
+
 			// insert lpl1 in between next and prev
+			insert_page_in_between_linked_page_list(&lpl2_head_next, &lpl2_head_prev, &lpl1_head, lpltd_p, pam_p, pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, FREE_PAGE, abort_error);
+				goto ABORT_ERROR;
+			}
+
 			// release lock on next and prev
+			release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, FREE_PAGE, abort_error);
+				goto ABORT_ERROR;
+			}
+
+			release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, FREE_PAGE, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
 		}
 
 		// free lpl2_head
