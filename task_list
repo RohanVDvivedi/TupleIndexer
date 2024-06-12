@@ -1,12 +1,5 @@
 ** PICKED TASKS
 
-* linked_page_list
-  * add api to merge 2 linked_page_lists in to 1
-  * if second is empty, then destroy it
-  * if first is empty, then replace second's head to the first's head
-  * else get head and tail of both, (tail being a pointer to a actual tail or head if it is only head)
-    * perform pointer manipulation, and then release all locks
-
 * hash_table api
   * shrink_hash_table
    * ensure that splitting a hash_table of bucket_count UINT64_MAX, always fails
