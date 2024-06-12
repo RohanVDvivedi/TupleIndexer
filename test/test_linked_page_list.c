@@ -577,6 +577,9 @@ void test_merge(const linked_page_list_tuple_defs* lpltd_p, const page_access_me
 		printf("\n\n");
 	}
 
+	// destroy original linked_page_list
+	destroy_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
+
 	printf("-------------------------------TEST MERGE-complete--------------------------------\n");
 }
 
