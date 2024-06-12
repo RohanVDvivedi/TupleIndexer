@@ -160,7 +160,7 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 			remove_page_from_between_linked_page_list(&lpl2_head_next, &lpl2_head, &lpl2_head_next, lpltd_p, pam_p, pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 			{
-				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, NONE_OPTION, abort_error);
 				goto ABORT_ERROR;
 			}
 
@@ -168,12 +168,12 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 			insert_page_in_between_linked_page_list(&lpl2_head_next, &lpl2_head_next, &lpl1_head, lpltd_p, pam_p, pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 			{
-				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, NONE_OPTION, abort_error);
 				goto ABORT_ERROR;
 			}
 
 			// release lock on next
-			release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, NONE_OPTION, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 		}
@@ -187,7 +187,7 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 			persistent_page lpl2_head_prev = lock_and_get_prev_page_in_linked_page_list(&lpl2_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
 			if(*abort_error)
 			{
-				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, NONE_OPTION, abort_error);
 				goto ABORT_ERROR;
 			}
 
@@ -195,8 +195,8 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 			remove_page_from_between_linked_page_list(&lpl2_head_next, &lpl2_head, &lpl2_head_prev, lpltd_p, pam_p, pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 			{
-				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
-				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, FREE_PAGE, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, NONE_OPTION, abort_error);
 				goto ABORT_ERROR;
 			}
 
@@ -204,20 +204,20 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 			insert_page_in_between_linked_page_list(&lpl2_head_next, &lpl2_head_prev, &lpl1_head, lpltd_p, pam_p, pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 			{
-				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
-				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, FREE_PAGE, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, NONE_OPTION, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, NONE_OPTION, abort_error);
 				goto ABORT_ERROR;
 			}
 
 			// release lock on next and prev
-			release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, FREE_PAGE, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_next, NONE_OPTION, abort_error);
 			if(*abort_error)
 			{
-				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, FREE_PAGE, abort_error);
+				release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, NONE_OPTION, abort_error);
 				goto ABORT_ERROR;
 			}
 
-			release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, FREE_PAGE, abort_error);
+			release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head_prev, NONE_OPTION, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 		}
