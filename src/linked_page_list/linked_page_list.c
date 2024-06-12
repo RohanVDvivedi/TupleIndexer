@@ -123,13 +123,44 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 	if(*abort_error)
 		goto ABORT_ERROR;
 
-	if(is_only_head_linked_page_list(&lpl1_head, lpltd_p))
+	lpl2_head = acquire_persistent_page_with_lock(pam_p, transaction_id, lpl2_head_page_id, WRITE_LOCK, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// if lpl2 is empty, discard lpl2 completely
+	if(is_only_head_linked_page_list(&lpl2_head, lpltd_p) && 0 == get_tuple_count_on_persistent_page(&lpl2_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)))
 	{
-		// if lpl1 is empty, then fail the merge
-		if(0 == get_tuple_count_on_persistent_page(&lpl1_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)))
-			goto EXIT;
-		lpl1_tail_p = &lpl1_head;
+		release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head, FREE_PAGE, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+		result = 1;
+		goto EXIT;
 	}
+
+	// if lpl1 is empty - very complex case
+	if(is_only_head_linked_page_list(&lpl1_head, lpltd_p) && 0 == get_tuple_count_on_persistent_page(&lpl1_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)))
+	{
+		// clone lpl1_head with contents of lpl2_head
+
+		// make lpl1_head's next and prev point to itself
+
+		// if lpl2_head is DUAL_NODE
+			// grab lock on the next of lpl2
+			// remove lpl2 from between of next and next
+			// insert lpl1 in between next and next
+		// else if lpl2_head is MANY_NODE
+			// grab lock on the next and prev of lpl2
+			// remove lpl2 from between of next and prev
+			// insert lpl1 in between next and prev
+
+		// free lpl2_head
+
+		result = 1;
+		goto EXIT;
+	}
+
+	if(is_only_head_linked_page_list(&lpl1_head, lpltd_p))
+		lpl1_tail_p = &lpl1_head;
 	else
 	{
 		lpl1_tail = lock_and_get_prev_page_in_linked_page_list(&lpl1_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
@@ -138,17 +169,8 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 		lpl1_tail_p = &lpl1_tail;
 	}
 
-	lpl2_head = acquire_persistent_page_with_lock(pam_p, transaction_id, lpl2_head_page_id, WRITE_LOCK, abort_error);
-	if(*abort_error)
-		goto ABORT_ERROR;
-
 	if(is_only_head_linked_page_list(&lpl2_head, lpltd_p))
-	{
-		// if lpl2 is empty, then fail the merge
-		if(0 == get_tuple_count_on_persistent_page(&lpl2_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)))
-			goto EXIT;
 		lpl2_tail_p = &lpl2_head;
-	}
 	else
 	{
 		lpl2_tail = lock_and_get_prev_page_in_linked_page_list(&lpl2_head, WRITE_LOCK, lpltd_p, pam_p, transaction_id, abort_error);
