@@ -532,6 +532,52 @@ void test_concurrency(uint64_t head_page_id, const linked_page_list_tuple_defs* 
 	}
 }
 
+void test_merge(const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	printf("------------------------------TEST MERGE-------------------------------\n");
+	uint64_t head_page_id = get_new_linked_page_list(lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+
+	{
+		printf("both are empty\n");
+		uint64_t head_page_id2 = get_new_linked_page_list(lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
+		printf("\n\n");
+	}
+
+	{
+		printf("original is empty, another one is not\n");
+		uint64_t head_page_id2 = get_new_linked_page_list(lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		push_at_tail(head_page_id2, "Rohan Dvivedi1", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Rupa Dvivedi1", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Milan Dvivedi1", lpltd_p,  pam_p, pmm_p);
+		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
+		printf("\n\n");
+	}
+
+	{
+		printf("original is not empty, another is empty\n");
+		uint64_t head_page_id2 = get_new_linked_page_list(lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
+		printf("\n\n");
+	}
+
+	{
+		printf("both are not empty\n");
+		uint64_t head_page_id2 = get_new_linked_page_list(lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		push_at_tail(head_page_id2, "Rohan Dvivedi2", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Rupa Dvivedi2", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Milan Dvivedi2", lpltd_p,  pam_p, pmm_p);
+		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
+		printf("\n\n");
+	}
+
+	printf("-------------------------------TEST MERGE-complete--------------------------------\n");
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -661,6 +707,8 @@ int main()
 	printf("result of inserting too long tuple tuple = %d\n", r);
 
 	/* CLEANUP */
+
+	test_merge(&lpltd, pam_p, pmm_p);
 
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
 
