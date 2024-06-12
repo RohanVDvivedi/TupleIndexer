@@ -554,6 +554,12 @@ void test_merge(const linked_page_list_tuple_defs* lpltd_p, const page_access_me
 		push_at_tail(head_page_id2, "Devashree Dvivedi1", lpltd_p,  pam_p, pmm_p);
 		push_at_tail(head_page_id2, "Devashree Dvivedi1-------", lpltd_p,  pam_p, pmm_p);
 		push_at_tail(head_page_id2, "My dearest Manan Joshi1-------", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Rohan Dvivedi3", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Rupa Dvivedi3", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Milan Dvivedi3", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Devashree Dvivedi3", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Devashree Dvivedi3-------", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "My dearest Manan Joshi3-------", lpltd_p,  pam_p, pmm_p);
 		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
 		printf("\n\n");
@@ -576,6 +582,12 @@ void test_merge(const linked_page_list_tuple_defs* lpltd_p, const page_access_me
 		push_at_tail(head_page_id2, "Devashree Dvivedi2", lpltd_p,  pam_p, pmm_p);
 		push_at_tail(head_page_id2, "Devashree Dvivedi2-------", lpltd_p,  pam_p, pmm_p);
 		push_at_tail(head_page_id2, "My dearest Manan Joshi2-------", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Rohan Dvivedi4", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Rupa Dvivedi4", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Milan Dvivedi4", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Devashree Dvivedi4", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "Devashree Dvivedi4-------", lpltd_p,  pam_p, pmm_p);
+		push_at_tail(head_page_id2, "My dearest Manan Joshi4-------", lpltd_p,  pam_p, pmm_p);
 		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
 		printf("\n\n");
