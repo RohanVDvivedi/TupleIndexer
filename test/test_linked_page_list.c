@@ -555,17 +555,13 @@ void test_merge(const linked_page_list_tuple_defs* lpltd_p, const page_access_me
 		push_at_tail(head_page_id2, "Devashree Dvivedi1-------", lpltd_p,  pam_p, pmm_p);
 		push_at_tail(head_page_id2, "My dearest Manan Joshi1-------", lpltd_p,  pam_p, pmm_p);
 		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
-		printf("abort_error = %d\n", abort_error);
 		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
-		printf("abort_error = %d\n", abort_error);
 		printf("\n\n");
 	}
 
 	{
 		printf("original is not empty, another is empty\n");
-		printf("LOL\n");
 		uint64_t head_page_id2 = get_new_linked_page_list(lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
-		printf("LOL\n");
 		merge_linked_page_lists(head_page_id, head_page_id2, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		print_linked_page_list(head_page_id, lpltd_p, pam_p, transaction_id, &abort_error);
 		printf("\n\n");
