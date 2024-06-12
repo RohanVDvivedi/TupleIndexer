@@ -708,9 +708,9 @@ int main()
 
 	/* CLEANUP */
 
-	test_merge(&lpltd, pam_p, pmm_p);
-
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
+
+	test_merge(&lpltd, pam_p, pmm_p);
 
 	// destroy linked_page_list
 	destroy_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
