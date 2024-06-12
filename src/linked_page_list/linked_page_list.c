@@ -140,9 +140,14 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 	// if lpl1 is empty - very complex case
 	if(is_only_head_linked_page_list(&lpl1_head, lpltd_p) && 0 == get_tuple_count_on_persistent_page(&lpl1_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)))
 	{
-		// clone lpl1_head with contents of lpl2_head
-
-		// make lpl1_head's next and prev point to itself
+		// copy all lpl2_head tuples to lpl1_head
+		for(uint32_t i = 0; i < get_tuple_count_on_persistent_page(&lpl2_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)); i++)
+		{
+			const void* ith_tuple = get_nth_tuple_on_persistent_page(&lpl2_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def), i);
+			append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, &lpl1_head, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def), ith_tuple, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 
 		// if lpl2_head is DUAL_NODE
 			// grab lock on the next of lpl2
@@ -154,6 +159,9 @@ int merge_linked_page_lists(uint64_t lpl1_head_page_id, uint64_t lpl2_head_page_
 			// insert lpl1 in between next and prev
 
 		// free lpl2_head
+		release_lock_on_persistent_page(pam_p, transaction_id, &lpl2_head, FREE_PAGE, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
 
 		result = 1;
 		goto EXIT;
