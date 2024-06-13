@@ -733,6 +733,14 @@ int main()
 
 	printf("shrink result = %d\n\n", shrink_res);
 
+	shrink_res = shrink_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+
+	printf("shrink result = %d\n\n", shrink_res);
+
+	shrink_res = shrink_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+
+	printf("shrink result = %d\n\n", shrink_res);
+
 	res = update_in_file(root_page_id, "ABCDEF", TEST_DATA_FILE, 16, 0, 10, 0, &httd, pam_p, pmm_p);
 
 	printf("update to ABCDEF in hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
@@ -751,7 +759,7 @@ int main()
 #define DELETE_ALL_USING_FILE
 
 #ifdef DELETE_ALL_USING_FILE
-	res = delete_from_file(root_page_id, TEST_DATA_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
+	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
 
 	printf("deletions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 #else
