@@ -38,10 +38,9 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	int result = 0;
-	page_table_range_locker* ptrl_p = NULL;
 
 	// take a range lock on the page table
-	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
