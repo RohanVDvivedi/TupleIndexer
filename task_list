@@ -1,13 +1,10 @@
 ** PICKED TASKS
 
 * hash_table api
-  * shrink_hash_table
+  * expand_hash_table
    * ensure that splitting a hash_table of bucket_count UINT64_MAX, always fails
    * for bucket spliting and there be N buckets, then
      * expand by splitting bucket split_index(N) into buckets split_index(N) and N, using b = H % (2 ^ (flb2(N) + 1)), then N++ (also N must not be equal to UINT64_MAX)
-  * expand_hash_table
-   * ensure that merging/shrinking a hash_table of bucket_count 1, always fails
-   * for merging then merge split_index(N - 1) and (N - 1), into split_index(N - 1), then N-- (also N must not be 1)
   * resize_hash_table
    * increase or decrease the bucket_count of the hash_table, to a specified value
 
