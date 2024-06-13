@@ -37,7 +37,82 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 
 int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	int result = 0;
+	page_table_range_locker* ptrl_p = NULL;
+
+	// take a range lock on the page table
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+
+	// get the current bucket_count of the hash_table
+	uint64_t bucket_count = UINT64_MAX;
+	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// if bucket_count == 1, then fail
+	if(bucket_count == 1)
+	{
+		result = 0;
+		goto EXIT;
+	}
+
+	// page_table[bucket_count] = NULL
+	set_in_page_table(ptrl_p, bucket_count, httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// fetch the bucket_id -> head_bucket_id that needs to be merged
+	uint64_t merge_bucket_head_page_id = get_from_page_table(ptrl_p, bucket_count - 1, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// decrement the bucket_count
+	// page_table[--bucket_count] = NULL
+	set_in_page_table(ptrl_p, --bucket_count, root_page_id, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// if this merge_bucket_head_id is NULL, then we are done
+	if(merge_bucket_head_page_id == httd_p->pttd.pas_p->NULL_PAGE_ID)
+	{
+		result = 1;
+		goto EXIT;
+	}
+
+	// fetch the split_bucket_head_page_id
+	int64_t temp;
+	uint64_t split_index = get_hash_table_split_index(bucket_count, &temp);
+	uint64_t split_bucket_head_page_id = get_from_page_table(ptrl_p, split_index, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	if(split_bucket_head_page_id == httd_p->pttd.pas_p->NULL_PAGE_ID)
+	{
+		// bucket at split_index is NULL, so set it to merge_bucket_head_page_id
+		set_in_page_table(ptrl_p, split_index, merge_bucket_head_page_id, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+	else
+	{
+		// both of them are not NULL, so perform an actual merge
+		merge_linked_page_lists(split_bucket_head_page_id, merge_bucket_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	result = 1;
+	goto EXIT;
+
+	EXIT:;
+	ABORT_ERROR:;
+	if(ptrl_p != NULL)
+		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+	return result;
 }
 
 int resize_hash_table(uint64_t root_page_id, uint64_t new_bucket_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
