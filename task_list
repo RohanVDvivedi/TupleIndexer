@@ -44,8 +44,7 @@
  * {} initialize, i.e. zero initialize all the tuple_defs at the beginning of the init_*_tuple_defs, to avoid garbage free, when deinit_*_tuple_defs functions is called on a failure of the corresponding init_*_tuple_defs functions
  * Array_table
    * like page_table but stores fixed length tuples instead of just uint64_t-s
-   * maps uint512 -> fixed_length_tuples
-   * make power table for uint64_t and also for uint512
+   * maps uint64 -> fixed_length_tuples
    * make page_table a particular case of Array_table, keeping the same api, as it is used in hash_table
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
