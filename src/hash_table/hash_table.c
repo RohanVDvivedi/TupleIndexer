@@ -40,8 +40,11 @@ struct hash_table_bucket
 
 int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	// zero initialize all local variables of the function
 	int result = 0;
 	page_table_range_locker* ptrl_p = NULL;
+	linked_page_list_iterator* split_content = NULL; uint64_t split_content_head_page_id = 0;
+	hash_table_bucket split_hash_buckets[2] = {};
 
 	// take a range lock on the page table
 	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
@@ -61,12 +64,111 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		goto EXIT;
 	}
 
+	// page_table[bucket_count] = NULL
+	set_in_page_table(ptrl_p, bucket_count, httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// get both the bucket ids that we would be splitting into
+	int64_t temp;
+	split_hash_buckets[0].bucket_id = get_hash_table_split_index(bucket_count, &temp);
+	split_hash_buckets[1].bucket_id = bucket_count;
+
+	// page_table[++bucket_count] = root_page_id
+	set_in_page_table(ptrl_p, ++bucket_count, root_page_id, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// initialize split_content_head_page_id
+	uint64_t split_content_head_page_id = get_from_page_table(ptrl_p, split_hash_buckets[0].bucket_id, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// set both the page_table buckets to NULL
+
+	// page_table[split_hash_buckets[0].bucket_id] = httd_p->pttd.pas_p->NULL_PAGE_ID
+	set_in_page_table(ptrl_p, split_hash_buckets[0].bucket_id, httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// page_table[split_hash_buckets[1].bucket_id] = httd_p->pttd.pas_p->NULL_PAGE_ID
+	set_in_page_table(ptrl_p, split_hash_buckets[1].bucket_id, httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	if(split_content_head_page_id == httd_p->pttd.pas_p->NULL_PAGE_ID)
+	{
+		result = 1;
+		goto EXIT;
+	}
+
+	// open a linked_page_list iterator for the split_content_head_page_id
+	split_content = get_new_linked_page_list_iterator(split_content_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// iterate while split_content still has tuples
+	while(!is_empty_linked_page_list(split_content))
+	{
+		// fetch the next tuple to be processed
+		const void* record_tuple = get_tuple_linked_page_list_iterator(split_content);
+
+		if(record_tuple == NULL)
+		{
+			// discard the processed tuple from split_content
+			remove_from_linked_page_list_iterator(split_content, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			continue;
+		}
+
+		// calculate the bucket_id for the record_tuple
+		uint64_t bucket_id = get_bucket_index_for_record_using_hash_table_tuple_definitions(httd_p, record_tuple, bucket_count);
+
+		// loop over to find the right bucket to insert into
+		// we are here doing a linear search, and since there are only 2 elements to search from, it will never be a performance bottleneck
+		for(int i = 0; i < sizeof(split_hash_buckets)/sizeof(split_hash_buckets[0]); i++)
+		{
+			// if it is not the right bucket, then continue
+			if(split_hash_buckets[i].bucket_id != bucket_id)
+				continue;
+
+			// there is quite a bit of work that needs to be done, if the corresponding iterator is NULL
+			if(split_hash_buckets[i].bucket_iterator == NULL)
+			{
+				// TODO
+			}
+
+			// insert the tuple into the bucket_iterator and break out of this loop
+			insert_at_linked_page_list_iterator(split_hash_buckets[i].bucket_iterator, record_tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			break;
+		}
+
+		// discard the processed tuple from split_content
+		remove_from_linked_page_list_iterator(split_content, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	result = 1;
+	goto EXIT;
+
 	// TODO
 
 	EXIT:;
 	ABORT_ERROR:;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+	if(split_content != NULL)
+		delete_linked_page_list_iterator(split_content, transaction_id, abort_error);
+	if(split_hash_buckets[0].bucket_iterator != NULL)
+		delete_linked_page_list_iterator(split_hash_buckets[0].bucket_iterator, transaction_id, abort_error);
+	if(split_hash_buckets[1].bucket_iterator != NULL)
+		delete_linked_page_list_iterator(split_hash_buckets[1].bucket_iterator, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 	return result;
