@@ -729,6 +729,7 @@ int main()
 
 	printf("insertions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
+	// ---------------------------
 	int shrink_res = shrink_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("shrink result = %d\n\n", shrink_res);
@@ -740,6 +741,20 @@ int main()
 	shrink_res = shrink_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("shrink result = %d\n\n", shrink_res);
+	// ---------------------------
+
+	int expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+
+	printf("expand result = %d\n\n", expand_res);
+
+	expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+
+	printf("expand result = %d\n\n", expand_res);
+
+	expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+
+	printf("expand result = %d\n\n", expand_res);
+	// ---------------------------
 
 	res = update_in_file(root_page_id, "ABCDEF", TEST_DATA_FILE, 16, 0, 10, 0, &httd, pam_p, pmm_p);
 
