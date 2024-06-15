@@ -33,7 +33,7 @@ uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tupl
 typedef struct hash_table_bucket hash_table_bucket;
 struct hash_table_bucket
 {
-	uint64_t bucket_index;							// index of the bucket in the page_table of the hash_table
+	uint64_t bucket_id;								// index of the bucket in the page_table of the hash_table
 	uint64_t bucket_head_page_id;					// head_page_id of the bucket at bucket_index
 	linked_page_list_iterator* bucket_iterator;		// defaults to NULL, unless the iterator is not initialized
 };
