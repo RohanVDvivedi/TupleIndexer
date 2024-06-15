@@ -80,7 +80,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		goto ABORT_ERROR;
 
 	// initialize split_content_head_page_id
-	uint64_t split_content_head_page_id = get_from_page_table(ptrl_p, split_hash_buckets[0].bucket_id, transaction_id, abort_error);
+	split_content_head_page_id = get_from_page_table(ptrl_p, split_hash_buckets[0].bucket_id, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -158,7 +158,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 					goto ABORT_ERROR;
 
 				// now based on the currently open iterators of the split_hash_buckets, we shrink or completely destroy the ptrl iterator
-				page_table_range_locker new_range = {UINT64_MAX, 0};
+				page_table_bucket_range new_range = {UINT64_MAX, 0};
 				for(int j = 0; j < sizeof(split_hash_buckets)/sizeof(split_hash_buckets[0]); j++)
 				{
 					if(split_hash_buckets[j].bucket_iterator != NULL)
