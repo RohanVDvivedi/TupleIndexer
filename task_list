@@ -46,6 +46,9 @@
    * like page_table but stores fixed length tuples instead of just uint64_t-s
    * maps uint64 -> fixed_length_tuples
    * make page_table a particular case of Array_table, keeping the same api, as it is used in hash_table
+   * Array_table_tuple_defs has, both record_def and index_def, index_entries_per_page, and leaf_entries_per_page
+   * it has a function to calculate: get_leaf_entries_refrenceable_by_entry_at_given_level -> (l == 0) ? 1 : index_entries_per_page ^ (l-1) * leaf_entries_per_page,=
+     * that uses power table, and replaces get_power_of_entries_per_page function of page_table
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
