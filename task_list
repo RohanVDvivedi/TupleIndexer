@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
 * hash_table api
+  * function to get bucket_count of the hash_table and hash_table_iterator (instantaneous bucket_count)
   * resize_hash_table
    * increase or decrease the bucket_count of the hash_table, to a specified value
 
