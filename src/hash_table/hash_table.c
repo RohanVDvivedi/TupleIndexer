@@ -171,6 +171,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 				if(new_range.first_bucket_id > new_range.last_bucket_id)
 				{
 					delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+					ptrl_p = NULL;
 					if(*abort_error)
 						goto ABORT_ERROR;
 				}
