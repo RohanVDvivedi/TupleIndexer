@@ -96,6 +96,11 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	if(*abort_error)
 		goto ABORT_ERROR;
 
+	// now we only need to work with split_hash_buckets [0] and [1]
+	minimize_lock_range_for_page_table_range_locker(ptrl_p, (page_table_bucket_range){split_hash_buckets[0].bucket_id, split_hash_buckets[1].bucket_id}, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
 	if(split_content_head_page_id == httd_p->pttd.pas_p->NULL_PAGE_ID)
 	{
 		result = 1;
@@ -137,7 +142,44 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 			// there is quite a bit of work that needs to be done, if the corresponding iterator is NULL
 			if(split_hash_buckets[i].bucket_iterator == NULL)
 			{
-				// TODO
+				// create a new linked_page_list bucket
+				split_hash_buckets[i].bucket_head_page_id = get_new_linked_page_list(&(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				// page_table[split_hash_buckets[i].bucket_id] = split_hash_buckets[i].bucket_head_page_id
+				set_in_page_table(ptrl_p, split_hash_buckets[i].bucket_id, split_hash_buckets[i].bucket_head_page_id, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				// open a new bucket iterator for the ith split_hash_bucket
+				split_hash_buckets[i].bucket_iterator = get_new_linked_page_list_iterator(split_hash_buckets[i].bucket_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				// now based on the currently open iterators of the split_hash_buckets, we shrink or completely destroy the ptrl iterator
+				page_table_range_locker new_range = {UINT64_MAX, 0};
+				for(int j = 0; j < sizeof(split_hash_buckets)/sizeof(split_hash_buckets[0]); j++)
+				{
+					if(split_hash_buckets[j].bucket_iterator != NULL)
+						continue;
+
+					new_range.first_bucket_id = min(new_range.first_bucket_id, split_hash_buckets[j].bucket_id);
+					new_range.last_bucket_id = max(new_range.last_bucket_id, split_hash_buckets[j].bucket_id);
+				}
+
+				if(new_range.first_bucket_id > new_range.last_bucket_id)
+				{
+					delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+					if(*abort_error)
+						goto ABORT_ERROR;
+				}
+				else
+				{
+					minimize_lock_range_for_page_table_range_locker(ptrl_p, new_range, transaction_id, abort_error);
+					if(*abort_error)
+						goto ABORT_ERROR;
+				}
 			}
 
 			// insert the tuple into the bucket_iterator and break out of this loop
