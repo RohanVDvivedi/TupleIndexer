@@ -184,7 +184,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 			}
 
 			// insert the tuple into the bucket_iterator and break out of this loop
-			insert_at_linked_page_list_iterator(split_hash_buckets[i].bucket_iterator, record_tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
+			insert_at_linked_page_list_iterator(split_hash_buckets[i].bucket_iterator, record_tuple, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 
@@ -206,6 +206,9 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
 	if(split_content != NULL)
 		delete_linked_page_list_iterator(split_content, transaction_id, abort_error);
+	// if abort error has not occurred as of now, then we need to destroy the linked_list that was pointed to by split_content
+	if((!(*abort_error)) && (split_content_head_page_id != httd_p->pttd.pas_p->NULL_PAGE_ID))
+		destroy_linked_page_list(split_content_head_page_id, &(httd_p->lpltd), pam_p, transaction_id, abort_error);
 	if(split_hash_buckets[0].bucket_iterator != NULL)
 		delete_linked_page_list_iterator(split_hash_buckets[0].bucket_iterator, transaction_id, abort_error);
 	if(split_hash_buckets[1].bucket_iterator != NULL)
