@@ -30,9 +30,46 @@ uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tupl
 	return root_page_id;
 }
 
+typedef struct hash_table_bucket hash_table_bucket;
+struct hash_table_bucket
+{
+	uint64_t bucket_index;							// index of the bucket in the page_table of the hash_table
+	uint64_t bucket_head_page_id;					// head_page_id of the bucket at bucket_index
+	linked_page_list_iterator* bucket_iterator;		// defaults to NULL, unless the iterator is not initialized
+};
+
 int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	int result = 0;
+	page_table_range_locker* ptrl_p = NULL;
+
+	// take a range lock on the page table
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+
+	// get the current bucket_count of the hash_table
+	uint64_t bucket_count = UINT64_MAX;
+	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// if bucket_count == UINT64_MAX, then fail
+	if(bucket_count == UINT64_MAX)
+	{
+		result = 0;
+		goto EXIT;
+	}
+
 	// TODO
+
+	EXIT:;
+	ABORT_ERROR:;
+	if(ptrl_p != NULL)
+		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+	return result;
 }
 
 int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
