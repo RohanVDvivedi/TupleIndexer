@@ -157,8 +157,6 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	result = 1;
 	goto EXIT;
 
-	// TODO
-
 	EXIT:;
 	ABORT_ERROR:;
 	if(ptrl_p != NULL)
