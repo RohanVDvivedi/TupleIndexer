@@ -1,11 +1,5 @@
 ** PICKED TASKS
 
-* hash_table api
-  * function to get bucket_count of the hash_table and hash_table_iterator (instantaneous bucket_count)
-  * add test case to expand if the bucket get's full and shrink if the bucket get's empty in the test_hash_table
-  * resize_hash_table
-   * increase or decrease the bucket_count of the hash_table, to a specified value
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * sort
