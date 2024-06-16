@@ -43,7 +43,7 @@ uint64_t get_bucket_count_hash_table(uint64_t root_page_id, const hash_table_tup
 	if(*abort_error)
 		goto ABORT_ERROR;
 
-	EXIT:;
+	//EXIT:; // -> unused label, i.e. for the happy case
 	ABORT_ERROR:;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
