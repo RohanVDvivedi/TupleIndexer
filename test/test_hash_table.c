@@ -168,7 +168,8 @@ struct result
 	uint32_t records_processed;
 };
 
-#define THRESHOLD 10
+#define MIN_THRESHOLD -3
+#define MAX_THRESHOLD 10
 int fill_figure = 0;
 
 // after every insert, check and increment fill_figure if the bucket is full,
@@ -240,7 +241,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 			exit(-1);
 		}
 
-		if(fill_figure > THRESHOLD)
+		if(fill_figure > MAX_THRESHOLD)
 		{
 			fill_figure = 0;
 			int expanded = expand_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
@@ -368,7 +369,7 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 			exit(-1);
 		}
 
-		if(fill_figure > THRESHOLD)
+		if(fill_figure > MAX_THRESHOLD)
 		{
 			fill_figure = 0;
 			int expanded = expand_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
@@ -668,7 +669,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 			exit(-1);
 		}
 
-		if(fill_figure < -THRESHOLD)
+		if(fill_figure < MIN_THRESHOLD)
 		{
 			fill_figure = 0;
 			int shrunk = shrink_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
