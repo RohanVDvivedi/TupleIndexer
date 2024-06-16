@@ -219,6 +219,19 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 			goto ABORT_ERROR;
 	}
 
+	// now we can delete the iterator
+	delete_linked_page_list_iterator(split_content, transaction_id, abort_error);
+	split_content = NULL;
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// now we can destroy the linked_page_list corresponding to the split_content
+	destroy_linked_page_list(split_content_head_page_id, &(httd_p->lpltd), pam_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// now we can clean up any remaining ressources including the ptrl_p, and the split_hash_buckets[0 and 1].bucket_iterator-s
+
 	result = 1;
 	goto EXIT;
 
@@ -228,9 +241,6 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
 	if(split_content != NULL)
 		delete_linked_page_list_iterator(split_content, transaction_id, abort_error);
-	// if abort error has not occurred as of now, then we need to destroy the linked_list that was pointed to by split_content
-	if((!(*abort_error)) && (split_content_head_page_id != httd_p->pttd.pas_p->NULL_PAGE_ID))
-		destroy_linked_page_list(split_content_head_page_id, &(httd_p->lpltd), pam_p, transaction_id, abort_error);
 	if(split_hash_buckets[0].bucket_iterator != NULL)
 		delete_linked_page_list_iterator(split_hash_buckets[0].bucket_iterator, transaction_id, abort_error);
 	if(split_hash_buckets[1].bucket_iterator != NULL)
