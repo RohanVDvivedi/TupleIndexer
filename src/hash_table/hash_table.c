@@ -30,6 +30,28 @@ uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tupl
 	return root_page_id;
 }
 
+uint64_t get_bucket_count_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// take a range lock on the page table
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+
+	// get the current bucket_count of the hash_table
+	uint64_t bucket_count = UINT64_MAX;
+	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	EXIT:;
+	ABORT_ERROR:;
+	if(ptrl_p != NULL)
+		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+	return bucket_count;
+}
+
 typedef struct hash_table_bucket hash_table_bucket;
 struct hash_table_bucket
 {
@@ -295,11 +317,6 @@ int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	if(*abort_error)
 		return 0;
 	return result;
-}
-
-int resize_hash_table(uint64_t root_page_id, uint64_t new_bucket_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
-{
-	// TODO
 }
 
 int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)

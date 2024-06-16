@@ -18,6 +18,14 @@
 // returns pointer to the root page of the newly created hash_table
 uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
+// below three functions access/modify the bucket_cout of the hash_table, and must be called exclusively
+// i.e. concurrent shrink and expand calls are allowed but the result is not deterministic, the result will depend on who gets the lock first
+// hence I will suggest have one lock type for accessing modifying the bucket_count for the hash_table
+
+// returns the current bucket count of the hash_table
+// note: this is the instantaneous bucket_count of the hash_table
+uint64_t get_bucket_count_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+
 // increments the bucket_count of the hash_table by 1
 // it fails on an abort error OR if the bucket_count == UINT64_MAX
 int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
@@ -25,10 +33,6 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 // decrements the bucket_count of the hash_table by 1
 // it fails on an abort error OR if the bucket_count == UINT64_MAX
 int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
-
-// resize the bucket_count of the hash_table to new_bucket_count
-// it fails only on an abort error
-int resize_hash_table(uint64_t root_page_id, uint64_t new_bucket_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // frees all the pages occupied by the hash_table
 // it may fail on an abort_error, ALSO you must ensure that you are the only one who has lock on the given hash_table
