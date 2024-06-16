@@ -168,6 +168,14 @@ struct result
 	uint32_t records_processed;
 };
 
+#define THRESHOLD 10
+int fill_figure = 0;
+
+// after every insert, check and increment fill_figure if the bucket is full,
+// and decrement after every delete, that makes the bucket empty
+// if the fill_figure > THRESHOLD, then expand and reset fill_figure
+// if the fill_figure < -THRESHOLD, then shrink and reset fill_figure
+
 result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
@@ -214,18 +222,37 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		}
 
 		// insert the record_tuple in the hash_table
-		res.operations_succeeded += insert_in_hash_table_iterator(hti_p, record_tuple, transaction_id, &abort_error);
+		int rest = insert_in_hash_table_iterator(hti_p, record_tuple, transaction_id, &abort_error);
+		res.operations_succeeded += rest;
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
 		}
 
+		if(rest && is_curr_bucket_full_for_hash_table_iterator(hti_p))
+			fill_figure++;
+
 		delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
+		}
+
+		if(fill_figure > THRESHOLD)
+		{
+			fill_figure = 0;
+			int expanded = expand_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			if(expanded)
+				printf("EXPANDED\n");
+			else
+				printf("EXPAND FAILED");
 		}
 
 		// increment the tuples_processed count
@@ -317,10 +344,13 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 				break;
 		}
 
+		int rest = 0;
+
 		if(!found)
 		{
 			// insert the record_tuple in the hash_table
-			res.operations_succeeded += insert_in_hash_table_iterator(hti_p, record_tuple, transaction_id, &abort_error);
+			rest = insert_in_hash_table_iterator(hti_p, record_tuple, transaction_id, &abort_error);
+			res.operations_succeeded += rest;
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -328,11 +358,29 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 			}
 		}
 
+		if(rest && is_curr_bucket_full_for_hash_table_iterator(hti_p))
+			fill_figure++;
+
 		delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
+		}
+
+		if(fill_figure > THRESHOLD)
+		{
+			fill_figure = 0;
+			int expanded = expand_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			if(expanded)
+				printf("EXPANDED\n");
+			else
+				printf("EXPAND FAILED");
 		}
 
 		// increment the tuples_processed count
@@ -596,6 +644,9 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 				exit(-1);
 			}
 
+			if(removed && is_curr_bucket_empty_for_hash_table_iterator(hti_p))
+				fill_figure--;
+
 			if(removed)
 				continue;
 
@@ -615,6 +666,21 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		{
 			printf("ABORTED\n");
 			exit(-1);
+		}
+
+		if(fill_figure < -THRESHOLD)
+		{
+			fill_figure = 0;
+			int shrunk = shrink_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			if(shrunk)
+				printf("SHRUNK\n");
+			else
+				printf("SHRINK FAILED\n");
 		}
 
 		// increment the tuples_processed count
