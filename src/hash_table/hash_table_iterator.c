@@ -35,15 +35,15 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 		goto DELETE_EVERYTHING_AND_ABORT;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count = UINT64_MAX;
-	find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	hti_p->bucket_count = UINT64_MAX;
+	find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &(hti_p->bucket_count), LESSER_THAN_EQUALS, transaction_id, abort_error);
 	if(*abort_error)
 		goto DELETE_EVERYTHING_AND_ABORT;
 
 	if(hti_p->key != NULL)
 	{
 		// get the bucket for the key
-		hti_p->curr_bucket_id = get_bucket_index_for_key_using_hash_table_tuple_definitions(hti_p->httd_p, hti_p->key, bucket_count);
+		hti_p->curr_bucket_id = get_bucket_index_for_key_using_hash_table_tuple_definitions(hti_p->httd_p, hti_p->key, hti_p->bucket_count);
 
 		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
 		if(*abort_error)
@@ -65,9 +65,9 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 	else
 	{
 		// limit bucket_range to subset [0, bucket_count-1], discarding the buckets that come after bucket_count buckets
-		if(hti_p->bucket_range.first_bucket_id >= bucket_count)
+		if(hti_p->bucket_range.first_bucket_id >= hti_p->bucket_count)
 			goto DELETE_EVERYTHING_AND_ABORT;
-		hti_p->bucket_range.last_bucket_id = min(hti_p->bucket_range.last_bucket_id, bucket_count - 1);
+		hti_p->bucket_range.last_bucket_id = min(hti_p->bucket_range.last_bucket_id, hti_p->bucket_count - 1);
 
 		// make curr_bucket_id point to the first bucket in the range
 		hti_p->curr_bucket_id = hti_p->bucket_range.first_bucket_id;
@@ -98,6 +98,11 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	free(hti_p);
 	return NULL;
+}
+
+uint64_t get_bucket_count_hash_table_iterator(const hash_table_iterator* hti_p)
+{
+	return hti_p->bucket_count;
 }
 
 int is_writable_hash_table_iterator(const hash_table_iterator* hti_p)

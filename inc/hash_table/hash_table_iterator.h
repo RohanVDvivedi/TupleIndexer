@@ -37,6 +37,9 @@ struct hash_table_iterator
 
 	const page_modification_methods* pmm_p;
 	// for a read-only hash_table_iterator, pmm_p = NULL
+
+	// bucket_count of the hash_table when this iterator was created
+	uint64_t bucket_count;
 };
 
 // all functions on hash_table_iterator are declared here, in this header file
