@@ -10,6 +10,9 @@
 
 int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_access_specs* pas_p)
 {
+	// zero initialize pttd_p
+	(*pttd_p) = (page_table_tuple_defs){};
+
 	// check id page_access_specs struct is valid
 	if(!is_valid_page_access_specs(pas_p))
 		return 0;

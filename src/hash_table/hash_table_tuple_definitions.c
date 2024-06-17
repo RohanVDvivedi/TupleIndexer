@@ -4,6 +4,9 @@
 
 int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint64_t (*hash_func)(const void* data, uint32_t data_size))
 {
+	// zero initialize httd_p
+	(*httd_p) = (hash_table_tuple_defs){};
+
 	// basic parameter check
 	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || get_element_def_count_tuple_def(record_def) == 0)
 		return 0;

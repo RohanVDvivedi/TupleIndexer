@@ -9,6 +9,9 @@
 
 int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count)
 {
+	// zero initialize bpttd_p
+	(*bpttd_p) = (bplus_tree_tuple_defs){};
+
 	// basic parameter check
 	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || get_element_def_count_tuple_def(record_def) == 0)
 		return 0;

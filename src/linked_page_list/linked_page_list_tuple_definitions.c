@@ -8,6 +8,9 @@
 
 int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p, const page_access_specs* pas_p, const tuple_def* record_def)
 {
+	// zero initialize lpltd_p
+	(*lpltd_p) = (linked_page_list_tuple_defs){};
+
 	// basic parameter check
 	if(get_element_def_count_tuple_def(record_def) == 0)
 		return 0;
