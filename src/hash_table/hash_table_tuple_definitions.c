@@ -1,7 +1,6 @@
 #include<hash_table_tuple_definitions.h>
 
 #include<stdlib.h>
-#include<string.h>
 
 int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint64_t (*hash_func)(const void* data, uint32_t data_size))
 {
@@ -20,7 +19,7 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 	httd_p->key_element_ids = malloc(sizeof(uint32_t) * httd_p->key_element_count);
 	if(httd_p->key_element_ids == NULL) // memory allocation failed
 		exit(-1);
-	memcpy(httd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * httd_p->key_element_count);
+	memory_move(httd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * httd_p->key_element_count);
 
 	// initialize key def
 
