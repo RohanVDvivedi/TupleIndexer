@@ -2,7 +2,6 @@
 
 Tuple defs fixes and revamp
  * hide functions of *_tuple_definitions, that do not need to be public. including the functionality like power_factor
- * {} initialize, i.e. zero initialize all the tuple_defs at the beginning of the init_*_tuple_defs, to avoid garbage free, when deinit_*_tuple_defs functions is called on a failure of the corresponding init_*_tuple_defs 
 
 Power table
  * build a power_table structure,
