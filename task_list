@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
-Tuple defs fixes and revamp
- * hide functions of *_tuple_definitions, that do not need to be public. including the functionality like power_factor
-
 Power table
  * build a power_table structure,
    * to hold 64 64-bit integers, to quickly calculate power of a number N (>= 2).
