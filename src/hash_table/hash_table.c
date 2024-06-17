@@ -1,5 +1,7 @@
 #include<hash_table.h>
 
+#include<hash_table_tuple_definitions.h>
+
 #include<page_table.h>
 #include<linked_page_list.h>
 
