@@ -1,7 +1,8 @@
 #ifndef LINKED_PAGE_LIST_H
 #define LINKED_PAGE_LIST_H
 
-#include<linked_page_list_tuple_definitions.h>
+#include<linked_page_list_tuple_definitions_public.h>
+
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 

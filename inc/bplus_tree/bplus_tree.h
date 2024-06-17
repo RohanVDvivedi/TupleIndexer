@@ -2,8 +2,8 @@
 #define BPLUS_TREE_H
 
 #include<bplus_tree_iterator_public.h>
+#include<bplus_tree_tuple_definitions_public.h>
 
-#include<bplus_tree_tuple_definitions.h>
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 #include<find_position.h>

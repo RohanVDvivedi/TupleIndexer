@@ -1,7 +1,8 @@
 #ifndef HASH_TABLE_H
 #define HASH_TABLE_H
 
-#include<hash_table_tuple_definitions.h>
+#include<hash_table_tuple_definitions_public.h>
+
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 

@@ -1,7 +1,8 @@
 #ifndef PAGE_TABLE_H
 #define PAGE_TABLE_H
 
-#include<page_table_tuple_definitions.h>
+#include<page_table_tuple_definitions_public.h>
+
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 
