@@ -4,8 +4,8 @@
 #include<tuple.h>
 #include<inttypes.h>
 
-#include<linked_page_list_tuple_definitions.h>
-#include<page_table_tuple_definitions.h>
+#include<linked_page_list_tuple_definitions_public.h>
+#include<page_table_tuple_definitions_public.h>
 
 typedef struct hash_table_tuple_defs hash_table_tuple_defs;
 struct hash_table_tuple_defs
