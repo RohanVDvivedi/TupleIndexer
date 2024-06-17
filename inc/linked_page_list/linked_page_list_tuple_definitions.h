@@ -1,5 +1,5 @@
-#ifndef LINKED_PAGE_LIST_TUPLE_DEFINITIONS
-#define LINKED_PAGE_LIST_TUPLE_DEFINITIONS
+#ifndef LINKED_PAGE_LIST_TUPLE_DEFINITIONS_H
+#define LINKED_PAGE_LIST_TUPLE_DEFINITIONS_H
 
 #include<linked_page_list_tuple_definitions_public.h>
 
