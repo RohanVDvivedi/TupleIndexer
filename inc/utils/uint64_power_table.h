@@ -26,14 +26,14 @@ struct power_table_uint64
 		This is the actual index at which the power_table will overflow
 		i.e. for 2 it is 6
 	*/
-}
+};
 
 // initialize power_table for base = N, i.e. power_table[0] = N
 // here N must not equal 0 or 1
-int initialize_power_table(power_table_uint64* ptu_p, uint64_t N);
+int initialize_power_table_uint64(power_table_uint64* ptu_p, uint64_t N);
 
 // returns 1 on success, else will return 0 for an overflow
 // on success (return value = 1), then result will be set to ptu_p->power_table[0] ^ exponent
-int get_powered_to(power_table_uint64* ptu_p, uint64_t exponent, uint64_t* result);
+int get_power_using_power_table_uint64(power_table_uint64* ptu_p, uint64_t exponent, uint64_t* result);
 
 #endif
