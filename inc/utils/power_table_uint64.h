@@ -1,5 +1,5 @@
-#ifndef UINT64_POWER_TABLE_H
-#define UINT64_POWER_TABLE_H
+#ifndef POWER_TABLE_UINT64_H
+#define POWER_TABLE_UINT64_H
 
 #include<stdint.h>
 
@@ -34,6 +34,6 @@ int initialize_power_table_uint64(power_table_uint64* ptu_p, uint64_t N);
 
 // returns 1 on success, else will return 0 for an overflow
 // on success (return value = 1), then result will be set to ptu_p->power_table[0] ^ exponent
-int get_power_using_power_table_uint64(power_table_uint64* ptu_p, uint64_t exponent, uint64_t* result);
+int get_power_using_power_table_uint64(const power_table_uint64* ptu_p, uint64_t exponent, uint64_t* result);
 
 #endif

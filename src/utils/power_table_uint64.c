@@ -1,4 +1,4 @@
-#include<uint64_power_table.h>
+#include<power_table_uint64.h>
 
 #include<cutlery_math.h>
 
@@ -23,7 +23,7 @@ int initialize_power_table_uint64(power_table_uint64* ptu_p, uint64_t N)
 	return 1;
 }
 
-int get_power_using_power_table_uint64(power_table_uint64* ptu_p, uint64_t exponent, uint64_t* result)
+int get_power_using_power_table_uint64(const power_table_uint64* ptu_p, uint64_t exponent, uint64_t* result)
 {
 	(*result) = 1;
 

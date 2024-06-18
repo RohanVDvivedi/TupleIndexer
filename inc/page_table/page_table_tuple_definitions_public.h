@@ -4,6 +4,8 @@
 #include<tuple.h>
 #include<inttypes.h>
 
+#include<power_table_uint64.h>
+
 #include<page_access_specification.h>
 
 // The function (find_non_NULL_PAGE_ID_in_page_table) makes use of the fact that entries_per_page != INVALID_INDEX (UINT32_MAX)
@@ -24,12 +26,7 @@ struct page_table_tuple_defs
 	uint64_t entries_per_page;
 
 	// power table for entries_per_page
-	// ith value in this row = entries_per_page ^ (2 ^ i)
-	// if the i-1 th value is n, then the ith value is n^2
-	uint64_t power_table[64];
-
-	// for all indices greater than this value, the power_table is useless, because it has overflowed
-	uint8_t power_table_overflows_at;
+	power_table_uint64 power_table_for_entries_per_page;
 
 	// the maximum height of the page table will never be more than this value
 	uint64_t max_page_table_height;
