@@ -1,12 +1,14 @@
 ** PICKED TASKS
 
- * sort
-   * it accepts record by record,
-   * puts tuples in a page compatible with linked_page_list,
+ * sorter
+   * it accepts tuples record by record, using a function called insert_in_sorter
+   * puts tuples in a page compatible with linked_page_list
+     * prior to this check that the tuple can be fit on the page
+     * need utility function to check if the tuple fits on current page
    * when the page is full it sorts the page and inserts this page into the page_table
-   * after a process() call, it will then merge adjacent runs until the page_table contains only 1 entry
-   * it can merge N-way, merging N runs at a time
-   * in the end it will hand over the final sorted linked_page_list to the user 
+   * after a get_all_sorted_from_sorter call, it will then merge adjacent runs until the page_table contains only 1 entry
+     * it can merge N-way, merging N runs at a time
+     * and then, in the end it will hand over the final sorted linked_page_list to the user 
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
