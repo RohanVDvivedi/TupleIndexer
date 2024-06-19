@@ -2,7 +2,8 @@
 
  * sorter
    * move sorted_packed_page_util to utils
-   * it accepts tuples record by record, using a function called insert_in_sorter
+   * create tuple def for sorter similar to that of bplus_tree, with key_element_ids, key_compare_direction and key_element_count
+   * it accepts tuples record by record, using a function called insert_in_sorter, ignore ing NULLs
    * puts tuples in a page compatible with linked_page_list
      * prior to this check that the tuple can be fit on the page
      * need utility function to check if the tuple fits on current page
