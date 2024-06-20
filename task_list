@@ -3,10 +3,15 @@
  * in expand_hash_table
    * insert always at the head
    * i.e. after inserting at the head with insert_before, then do a go previous operation so that iterator always stays at the head
-   * this will reduce the page requirement for the expand functionality
+   * this will reduce the locked page count requirement for the expand functionality
+
+ * move sorted_packed_page_util to utils
+
+ * linked_page_list
+   * check if the curr_page on the linked_page_list can fit tuple without a split
+   * a function to allow merging all tuples on curr page
 
  * sorter
-   * move sorted_packed_page_util to utils
    * create tuple def for sorter similar to that of bplus_tree, with key_element_ids, key_compare_direction and key_element_count
    * it accepts tuples record by record, using a function called insert_in_sorter, ignore ing NULLs
    * puts tuples in a page compatible with linked_page_list
