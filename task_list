@@ -1,10 +1,5 @@
 ** PICKED TASKS
 
- * in expand_hash_table
-   * insert always at the head
-   * i.e. after inserting at the head with insert_before, then do a go previous operation so that iterator always stays at the head
-   * this will reduce the locked page count requirement for the expand functionality
-
  * linked_page_list
    * check if the curr_page on the linked_page_list can fit tuple without a split
    * a function to allow merging all tuples on curr page
