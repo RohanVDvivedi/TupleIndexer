@@ -2,6 +2,10 @@
 
 int can_append_tuple_on_persistent_page_if_done_resiliently(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple)
 {
+	// if can append without compaction, then succeed
+	if(can_append_tuple_on_persistent_page(ppage, page_size, tpl_sz_d, external_tuple))
+		return 1;
+
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
 	uint32_t space_required_by_external_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(page_size, tpl_sz_d, external_tuple);
 
@@ -14,6 +18,10 @@ int can_append_tuple_on_persistent_page_if_done_resiliently(const persistent_pag
 
 int can_insert_tuple_on_persistent_page_if_done_resiliently(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple)
 {
+	// if can insert without compaction, then succeed
+	if(can_insert_tuple_on_persistent_page(ppage, page_size, tpl_sz_d, index, external_tuple))
+		return 1;
+
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
 	uint32_t space_required_by_external_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(page_size, tpl_sz_d, external_tuple);
 
@@ -26,6 +34,10 @@ int can_insert_tuple_on_persistent_page_if_done_resiliently(const persistent_pag
 
 int can_update_tuple_on_persistent_page_if_done_resiliently(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple)
 {
+	// if can update without compaction, then succeed
+	if(can_update_tuple_on_persistent_page(ppage, page_size, tpl_sz_d, index, external_tuple))
+		return 1;
+
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
 
 	// get space occupied by existing tuple (tuple at index = index)
