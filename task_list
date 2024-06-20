@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
  * implement utility function to check if a resilient insert/append/update on a page will pass successfully, and use this utility instead for all must_split functions and insert in sort_packed_page functions
- * add a comment for what resilient insert/update/append means
+ * add a comment for what resilient insert/update/append means in the both of its read and write resiliently functions
 
  * in expand_hash_table
    * insert always at the head
