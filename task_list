@@ -1,5 +1,10 @@
 ** PICKED TASKS
 
+ * in expand_hash_table
+   * insert always at the head
+   * i.e. after inserting at the head with insert_before, then do a go previous operation so that iterator always stays at the head
+   * this will reduce the page requirement for the expand functionality
+
  * sorter
    * move sorted_packed_page_util to utils
    * create tuple def for sorter similar to that of bplus_tree, with key_element_ids, key_compare_direction and key_element_count
