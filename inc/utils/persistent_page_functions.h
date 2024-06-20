@@ -23,6 +23,8 @@ int was_persistent_page_modified(const persistent_page* ppage);
 
 #include<persistent_page_unaltered.h>
 
+#include<persistent_page_unaltered_util.h>
+
 #include<persistent_page_altered.h>
 
 #include<persistent_page_altered_util.h>
