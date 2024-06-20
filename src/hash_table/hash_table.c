@@ -208,9 +208,19 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 			}
 
 			// insert the tuple into the bucket_iterator and break out of this loop
-			insert_at_linked_page_list_iterator(split_hash_buckets[i].bucket_iterator, record_tuple, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
+			int inserted = insert_at_linked_page_list_iterator(split_hash_buckets[i].bucket_iterator, record_tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
+
+			// it would almost always succeed
+			if(inserted)
+			{
+				// once insert to before of a head has succeeded, we go prevous by 1 tuple to again point to head, this way we are always at head
+				// it is assumed that if you always point the linked_page_list_iterator to head, then there are lesser pages you need an active lock on hence this optimization
+				prev_linked_page_list_iterator(split_hash_buckets[i].bucket_iterator, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
 
 			break;
 		}
