@@ -4,7 +4,7 @@
 #include<persistent_page_functions.h>
 
 // resiliently here implies forcefully
-// before functions will ensure that if the operation could succeed after a compaction, then they will return true
+// below functions will ensure that if the operation could succeed after a compaction, then they will return true
 
 int can_append_tuple_on_persistent_page_if_done_resiliently(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple);
 
