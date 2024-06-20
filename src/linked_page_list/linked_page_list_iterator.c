@@ -264,7 +264,7 @@ int insert_OR_split_insert_on_page_of_linked_page_list(linked_page_list_iterator
 	return 1;
 
 	// on an abort error, relase lock on curr_page and exit
-	ABORT_ERROR:
+	ABORT_ERROR:;
 	release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
 	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
 	return 0;
