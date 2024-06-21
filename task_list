@@ -1,9 +1,6 @@
 ** PICKED TASKS
 
  * linked_page_list
-   * int can_insert_to_curr_page_without_split(const linked_page_list_iterator* lpli_p, const void* tuple)
-     * fails if the iterator is not writable
-     * or if the curr_page may have to split for insertion
    * int sort_all_tuples_on_curr_page(linked_page_list_iterator* lpli_p, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count);
 
  * sorter
