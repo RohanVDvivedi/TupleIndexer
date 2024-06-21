@@ -90,4 +90,7 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 // on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
 int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
 
+// sort all tuple on only the curr_page in linked_page_list_iterator
+void sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error);
+
 #endif

@@ -1093,3 +1093,16 @@ int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterat
 	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
 	return 0;
 }
+
+#include<sorted_packed_page_util.h>
+
+void sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error)
+{
+	sort_and_convert_to_sorted_packed_page(
+									get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, 
+									lpli_p->lpltd_p->record_def, key_element_ids, key_compare_direction, key_element_count,
+									lpli_p->pmm_p,
+									transaction_id,
+									abort_error
+								);
+}
