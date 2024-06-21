@@ -311,6 +311,21 @@ int insert_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	return 0;
 }
 
+int can_insert_without_split_at_linked_page_list_iterator(const linked_page_list_iterator* lpli_p, const void* tuple)
+{
+	// fail if this is not a writable iterator
+	if(!is_writable_linked_page_list_iterator(lpli_p))
+		return 0;
+
+	// fail if the tuple can not be inserted to the linked_page_list
+	if(!check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(lpli_p->lpltd_p, tuple))
+		return 0;
+
+	// perform actual check, to see if inserting the tuple will require split
+	// i.e. We can_insert_on_curr_page_without_split if and only if NOT must_split_for_insert_linked_page_list_page
+	return !must_split_for_insert_linked_page_list_page(get_from_ref(&(lpli_p->curr_page)), tuple, lpli_p->lpltd_p);
+}
+
 // merges DUAL_NODE_LINKED_PAGE_LIST's pages in to a HEAD_ONLY_LINKED_PAGE_LIST
 // it will also make curr_page point to the only head, and curr_tuple_index point to the same tuple it was pointing to (if it was valid prior to this call)
 // on an abort error, it releases all locks including the lock on the curr_page of the iterator, making the iterator unusable
