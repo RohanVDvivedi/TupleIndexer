@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
- * linked_page_list
-   * int sort_all_tuples_on_curr_page(linked_page_list_iterator* lpli_p, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count);
-
  * sorter
    * create tuple def for sorter similar to that of bplus_tree, with key_element_ids, key_compare_direction and key_element_count
    * it accepts tuples record by record, using a function called insert_in_sorter, ignore ing NULLs
