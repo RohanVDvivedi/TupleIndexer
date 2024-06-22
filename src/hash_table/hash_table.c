@@ -7,6 +7,10 @@
 
 uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	// initial_bucket_count can not be 0
+	// it has to be 1 at minimum
+	initial_bucket_count = max(1, initial_bucket_count);
+
 	// create a new page_table for the hash_table
 	uint64_t root_page_id = get_new_page_table(&(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
