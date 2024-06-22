@@ -29,6 +29,8 @@
    * Array_table_tuple_defs has, both record_def and index_def, index_entries_per_page, and leaf_entries_per_page
    * it has a function to calculate: get_leaf_entries_refrenceable_by_entry_at_given_level -> (l == 0) ? 1 : index_entries_per_page ^ (l-1) * leaf_entries_per_page
      * that uses power table, and replaces get_power_of_entries_per_page function of page_table
+   * make power_table_uint64 to power_table
+   * and page_table_bucket_range to bucket_range
  * allow cloning, read-only bplus_tree_iterator, page_table_range_locker and linked_page_list_iterator
    * clone all read locks inside them, and make a new object
  * bplus_tree bulk loading
