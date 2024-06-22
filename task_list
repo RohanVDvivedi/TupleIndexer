@@ -20,6 +20,7 @@
  * Array_table
    * like page_table but stores fixed length tuples instead of just uint64_t-s
    * we will not replace page_table, page_table will become a special type of array_table
+   * page_table will remain as is until array_table is fully tested, after that page_table will become a specific use case of array_table
    * maps uint64 -> fixed_length_tuples
    * has two entries_per_page index_entries_per_page an leaf_entries_per_page
    * also stores record_def, you must ensure that atleast 1 record def must fit on a array_table page
