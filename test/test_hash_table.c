@@ -782,6 +782,9 @@ int main()
 	/* SETUP COMPLETED */
 	printf("\n");
 
+	// print the constructed page table
+	print_hash_table(root_page_id, 1, &httd, pam_p, transaction_id, &abort_error);
+
 	/* TESTS STARTED */
 
 	result res;
