@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
- * hash_table
-   * if you initialize hash_table with 0 bucket_count, then it initializes with 1 bucket_count
-
  * sorter
    * test that calls to sort_all_tuples_on_curr_page_in_linked_page_list_iterator and can_insert_without_split_at_linked_page_list_iterator succeed inside the sorter
    * create tuple def for sorter similar to that of bplus_tree, with key_element_ids, key_compare_direction and key_element_count
