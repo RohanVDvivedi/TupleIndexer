@@ -19,9 +19,10 @@
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * Array_table
    * like page_table but stores fixed length tuples instead of just uint64_t-s
+   * we will not replace page_table, page_table will become a special type of array_table
    * maps uint64 -> fixed_length_tuples
    * has two entries_per_page index_entries_per_page an leaf_entries_per_page
-   * also stores record_def
+   * also stores record_def, you must ensure that atleast 1 record def must fit on a array_table page
    * you will also need function to get entries_per_page, to get_entries_per_page for a page of specific type based on whether it is index page or leaf page
    * make page_table a particular case of Array_table, keeping the same api, as it is used in hash_table
    * Array_table_tuple_defs has, both record_def and index_def, index_entries_per_page, and leaf_entries_per_page
