@@ -1,16 +1,40 @@
 ** PICKED TASKS
 
- * sorter
-   * test that calls to sort_all_tuples_on_curr_page_in_linked_page_list_iterator and can_insert_without_split_at_linked_page_list_iterator succeed inside the sorter
-   * create tuple def for sorter similar to that of bplus_tree, with key_element_ids, key_compare_direction and key_element_count
-   * it accepts tuples record by record, using a function called insert_in_sorter, ignore ing NULLs
-   * puts tuples in a page compatible with linked_page_list
-     * prior to this check that the tuple can be fit on the page
-     * need utility function to check if the tuple fits on current page
-   * when the page is full it sorts the page and inserts this page into the page_table
-   * after a get_all_sorted_from_sorter call, it will then merge adjacent runs until the page_table contains only 1 entry
-     * it can merge N-way, merging N runs at a time
-     * and then, in the end it will hand over the final sorted linked_page_list to the user 
+* sorter
+ * define sorter_handle
+   struct sorter_handle {
+      // number of elements considered as keys
+      uint32_t key_element_count;
+
+      // element ids of the keys (as per their element_ids in record_def) in the order as you want them to be ordered
+      uint32_t* key_element_ids;
+
+      // compare direction for the keys, array of ASC/DESC
+      compare_direction* key_compare_direction;
+
+      // page_table storing all runs at the leaves
+      uint64_t runs_page_table_root_page_id;
+
+      // number of total runs in the page_table at root_page_id
+      uint64_t sorted_runs_count;
+
+      // iterator to the last partial run
+      // this run does not exist in the runs_page_table_root_page_id
+      / it is to be inserted after sorting, only after sorting
+      uint64_t last_unsorted_partial_run_head_page_id;
+      linked_page_list_iterator* last_unsorted_partial_run;
+   }
+ * insert_in_sorter
+  * it accepts tuples record by record, ignore ing NULLs, and failing if the tuple can not be inserted in a linked_page_list
+  * it sorts the current last_unsorted_partial_run and stores it back in runs_page_table_root_page_id, if it can not accomodate a new tuple without a split
+  * test and use the calls to sort_all_tuples_on_curr_page_in_linked_page_list_iterator and can_insert_without_split_at_linked_page_list_iterator inside this function
+ * merge_sort_all_runs - N-way
+  * back inserts the last partial run, after sorting it, if it is not empty
+  * calls merge_all_runs, until, there are more than 1 runs
+  * return the head to the only existing run
+ * merge_all_runs - N-way
+  * picks N runs and merges them into 1
+  * also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
