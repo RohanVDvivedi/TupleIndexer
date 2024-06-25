@@ -41,6 +41,7 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const sorter_tuple
 // it attempts to merge N runs at a time into 1 run
 // it will do this until there is more than 1 runs in the sorted_runs_root_page_id
 // here N_way must be >= 2, else the default value is set to 2
+// this function also has the optimization to inject new runs into the sorter, if the last tuple inserted is lesser than or equal to the first tuple of the new run
 int external_sort_merge_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error);
 
 // destroys the sorter, destroying every run except for the first run, if the sorted_data is not NULL
