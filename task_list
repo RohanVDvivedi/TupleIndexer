@@ -2,14 +2,17 @@
 
 * sorter
  * implement all functions of sorter_tuple_defs
+   * copy revelant code from bplus_tree_tuple_defs and hash_table_tuple_defs
  * implement all functions of sorter
-   * get_sorter
-   * destroy_sorter
-   * insert_in_sorter
-   * external_sort_merge_sorter - N-way
-    * picks N runs and merges them into 1
-    * also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
-
+   * easy
+     * get_sorter
+     * destroy_sorter
+   * tough
+    * insert_in_sorter
+    * external_sort_merge_sorter - N-way
+     * picks N runs and merges them into 1
+     * also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
+ * finally, make sorter.h and sorter_tuple_definitions_public.h, as public header files
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
