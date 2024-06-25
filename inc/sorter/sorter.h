@@ -32,10 +32,10 @@ struct sorter_handle
 	const page_modification_methods* pmm_p;
 };
 
-sorter_handle get_new_sorter();
+sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // inserts 1 record into the sorter
-int insert_in_sorter(sorter_handle* sh_p, const void* record, const sorter_tuple_defs* std_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transaction_id, int* abort_error);
 
 // performs external_sort_merge on the runs present in the sorter
 // it attempts to merge N runs at a time into 1 run
