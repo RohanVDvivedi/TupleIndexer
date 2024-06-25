@@ -57,7 +57,7 @@ uint64_t get_bucket_index_for_key_using_hash_table_tuple_definitions(const hash_
 // get bucket_index for record, using the hash_table tuple defs
 uint64_t get_bucket_index_for_record_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple, uint64_t bucket_count);
 
-// it deallocates the key_element_ids and key_def
+// it deallocates the key_element_ids, key_def, lpltd and pttd
 // then resets all the hash_table_tuple_defs struct attributes to NULL or 0
 void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p);
 
