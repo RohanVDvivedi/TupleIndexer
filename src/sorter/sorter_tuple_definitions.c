@@ -49,7 +49,8 @@ int init_sorter_tuple_definitions(sorter_tuple_defs* std_p, const page_access_sp
 
 int check_if_record_can_be_inserted_for_sorter_tuple_definitions(const sorter_tuple_defs* std_p, const void* record_tuple)
 {
-
+	// if the record can be inserted into a run of the sorter, i.e. in a linked_page_list, then it can be inserted into a sorter
+	return check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(&(std_p->lpltd), record_tuple);
 }
 
 void deinit_sorter_tuple_definitions(sorter_tuple_defs* std_p)
