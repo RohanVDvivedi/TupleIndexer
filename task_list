@@ -1,8 +1,7 @@
 ** PICKED TASKS
 
 * sorter
- * implement all functions of sorter_tuple_defs
-   * copy revelant code from bplus_tree_tuple_defs and hash_table_tuple_defs
+ * test all functionality of sorter_tuple_defs
  * implement all functions of sorter
    * easy
      * get_sorter
