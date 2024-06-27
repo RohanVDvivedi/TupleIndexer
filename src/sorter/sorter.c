@@ -90,7 +90,7 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 			goto ABORT_ERROR;
 	}
 
-	// destroy the runs page_table
+	// destroy the runs page_table, and the contained runs must also be destroyed
 	{
 		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, NULL, transaction_id, abort_error);
 		if(*abort_error)
