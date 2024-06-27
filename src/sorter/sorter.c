@@ -42,12 +42,8 @@ int external_sort_merge_sorter(sorter_handle* sh_p, uint64_t N_way, const void* 
 
 int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* transaction_id, int* abort_error)
 {
-	// handle that will be maintained while accessign the runs page_table
+	// handle that will be maintained while accessing the runs page_table
 	page_table_range_locker* ptrl_p = NULL;
-
-	// you might come in with an abort_error set
-	if(*abort_error)
-		goto ABORT_ERROR;
 
 	// if partial unsorted run is open destroy it
 	if(sh_p->unsorted_partial_run != NULL)
