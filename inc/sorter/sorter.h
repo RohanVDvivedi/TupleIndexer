@@ -32,6 +32,7 @@ struct sorter_handle
 	const page_modification_methods* pmm_p;
 };
 
+// this function fails silently if any of std_p, pam_p OR pmm_p are NULL
 sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // inserts 1 record into the sorter
