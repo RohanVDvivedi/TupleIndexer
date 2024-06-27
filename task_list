@@ -2,10 +2,8 @@
 
 * sorter
  * test all functionality of sorter_tuple_defs
+ * test get_new_sorter and destroy_sorter
  * implement all functions of sorter
-   * easy
-     * get_sorter
-     * destroy_sorter
    * tough
     * insert_in_sorter
     * external_sort_merge_sorter - N-way
