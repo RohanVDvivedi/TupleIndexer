@@ -47,6 +47,7 @@ int external_sort_merge_sorter(sorter_handle* sh_p, uint64_t N_way, const void* 
 
 // destroys the sorter, destroying every run except for the first run, if the sorted_data is not NULL
 // it will also destroy the unsorted_partial_run
+// upon abort_error from any of the above 2 functions, you must also destroy_sorter to perfrom cleanup
 int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* transaction_id, int* abort_error);
 
 #endif
