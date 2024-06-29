@@ -24,10 +24,10 @@ sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_m
 	return sh;
 }
 
-// if there exists a partial unsorted run, then it is sorter and put at the end of the sorted runs
+// if there exists a unsorted partial run, then it is sorter and put at the end of the sorted runs
 // ensure that the unsorted_partial_run exists, and it is not empty and as a HEAD_ONLY_LINKED_PAGE_LIST
 // on an ABORT_ERROR, all iterators including the ones in the sorter_handle are closed
-static int consume_partial_unsorted_run_from_sorter(sorter_handle* sh_p, const void* transaction_id, int* abort_error)
+static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const void* transaction_id, int* abort_error)
 {
 	// handle that will be maintained while accessing the runs page_table
 	page_table_range_locker* ptrl_p = NULL;
@@ -84,7 +84,50 @@ static int consume_partial_unsorted_run_from_sorter(sorter_handle* sh_p, const v
 
 int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// check that the record could be inserted to the runs (linked_page_list)
+	if(!check_if_record_can_be_inserted_for_sorter_tuple_definitions(sh_p->std_p, record))
+		return 0;
+
+	// if the unsorted_partial_run is full, then consume all the tuples of the unsorted_partial_run
+	// sh_p->unsorted_partial_run may be equal to NULL, if the sorter_handle has just been initialized or sorted using external_sort_merge_sorter
+	if(sh_p->unsorted_partial_run != NULL && !can_insert_without_split_at_linked_page_list_iterator(sh_p->unsorted_partial_run, record))
+	{
+		consume_unsorted_partial_run_from_sorter(sh_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+	}
+
+	// if now the iterator is NULL, then create a new unsorted_partial_run
+	if(sh_p->unsorted_partial_run == NULL)
+	{
+		sh_p->unsorted_partial_run_head_page_id = get_new_linked_page_list(&(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		sh_p->unsorted_partial_run = get_new_linked_page_list_iterator(sh_p->unsorted_partial_run_head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	// perform the actual insert, at this point the unsorted_partial_run is neither NULL, nor FULL
+	// we always insert after the tail and then go to the new tail
+	{
+		insert_at_linked_page_list_iterator(sh_p->unsorted_partial_run, record, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		next_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	return 1;
+
+	// all you need to do here is clean up all the open iterators
+	ABORT_ERROR:;
+	if(sh_p->unsorted_partial_run != NULL)
+		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	return 0;
 }
 
 int external_sort_merge_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error)
