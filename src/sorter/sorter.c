@@ -15,7 +15,7 @@ sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_m
 	sh.pmm_p = pmm_p;
 	sh.sorted_runs_count = 0;
 	sh.unsorted_partial_run_head_page_id = std_p->pttd.pas_p->NULL_PAGE_ID;
-	sh.unsorted_partial_run = NULL;;
+	sh.unsorted_partial_run = NULL;
 
 	// create a page_table for holding the sorted runs
 	// failure here is reported by the abort_error if any, else it is a success
@@ -25,9 +25,61 @@ sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_m
 }
 
 // if there exists a partial unsorted run, then it is sorter and put at the end of the sorted runs
-static void consume_partial_unsorted_run_from_sorter(sorter_handle* sh_p, const void* transaction_id, int* abort_error)
+// ensure that the unsorted_partial_run exists, and it is not empty and as a HEAD_ONLY_LINKED_PAGE_LIST
+// on an ABORT_ERROR, all iterators including the ones in the sorter_handle are closed
+static int consume_partial_unsorted_run_from_sorter(sorter_handle* sh_p, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// handle that will be maintained while accessing the runs page_table
+	page_table_range_locker* ptrl_p = NULL;
+
+	// fail if there is no unsorted_partial_run
+	if(sh_p->unsorted_partial_run == NULL)
+		return 0;
+
+	// ensure that the unsorted_partial is an ONLY_HEAD_LINKED_PAGE_LIST and is not empty
+	if(is_empty_linked_page_list(sh_p->unsorted_partial_run) || HEAD_ONLY_LINKED_PAGE_LIST != get_state_for_linked_page_list(sh_p->unsorted_partial_run))
+		return 0;
+
+	// sort the unsorted_partial_run
+	sort_all_tuples_on_curr_page_in_linked_page_list_iterator(sh_p->unsorted_partial_run, sh_p->std_p->key_element_ids, sh_p->std_p->key_compare_direction, sh_p->std_p->key_element_count, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// close the iterator on unsorted_partial_run
+	delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	sh_p->unsorted_partial_run = NULL;
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// copy the unsorted_partial_run_head_page_id into a local variable, and then reset it
+	uint64_t new_sorted_run = sh_p->unsorted_partial_run_head_page_id;
+	sh_p->unsorted_partial_run_head_page_id = sh_p->std_p->lpltd.pas_p->NULL_PAGE_ID;
+
+	// ptrl[sorted_runs_count++] = unsorted_partial_run_head_page_id
+	{
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		set_in_page_table(ptrl_p, sh_p->sorted_runs_count++, new_sorted_run, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		ptrl_p = NULL;
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	return 1;
+
+	// all you need to do here is clean up all the open iterators
+	ABORT_ERROR:;
+	if(sh_p->unsorted_partial_run != NULL)
+		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	if(ptrl_p != NULL)
+		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+	return 0;
 }
 
 int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transaction_id, int* abort_error)
