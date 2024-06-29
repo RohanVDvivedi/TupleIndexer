@@ -130,6 +130,14 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 	return 0;
 }
 
+// perform singular pass over the sorted runs in the sh_p->sorted_runs_root_page_id, sorting N active runs (N or more runs in a special case) into 1
+// external_sort_merge_sorter uses this function until the sorter only consists of lesser than or equal to 1 run
+// on an ABORT_ERROR, all iterators including the ones in the sorter_handle are closed
+static int merge_sorted_runs(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error)
+{
+
+}
+
 int external_sort_merge_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error)
 {
 	// TODO
