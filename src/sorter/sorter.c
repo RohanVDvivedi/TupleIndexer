@@ -135,6 +135,11 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 // on an ABORT_ERROR, all iterators including the ones in the sorter_handle are closed
 static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error)
 {
+	// need to merge always 2 or more sorted runs onto 1
+	if(N_way < 2)
+		return 0;
+
+	// can not merge 1 or lesser number of sorted runs
 	if(sh_p->sorted_runs_count <= 1)
 		return 0;
 
@@ -143,6 +148,10 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 
 int external_sort_merge_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error)
 {
+	// need to merge always 2 or more sorted runs onto 1
+	if(N_way < 2)
+		return 0;
+
 	// consume unsorted runs if any
 	if(sh_p->unsorted_partial_run != NULL)
 	{
