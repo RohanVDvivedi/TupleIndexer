@@ -135,12 +135,39 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 // on an ABORT_ERROR, all iterators including the ones in the sorter_handle are closed
 static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error)
 {
+	if(sh_p->sorted_runs_count <= 1)
+		return 0;
 
+	// TODO
 }
 
 int external_sort_merge_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// consume unsorted runs if any
+	if(sh_p->unsorted_partial_run != NULL)
+	{
+		consume_unsorted_partial_run_from_sorter(sh_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+	}
+
+	while(sh_p->sorted_runs_count > 1)
+	{
+		merge_sorted_runs_in_sorter(sh_p, N_way, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+	}
+
+	return 1;
+
+	// since all internal functions handle abort internally, we do not need ABORT_ERROR label here, if we ever needed it, it would look like the commented code below
+	/*
+	// all you need to do here is clean up all the open iterators
+	ABORT_ERROR:;
+	if(sh_p->unsorted_partial_run != NULL)
+		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	return 0;
+	*/
 }
 
 int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* transaction_id, int* abort_error)
