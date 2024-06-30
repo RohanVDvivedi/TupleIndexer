@@ -1,9 +1,7 @@
 ** PICKED TASKS
 
 * sorter
- * test all functionality of sorter_tuple_defs
- * test get_new_sorter, destroy_sorter and insert_in_sorter
- * external_sort_merge_sorter - N-way
+ * test functions of sorter_tuple_defs and test get_new_sorter, destroy_sorter, insert_in_sorter and external_sort_merge_sorter
  * merge_sorted_runs - N-way
    * picks N runs and merges them into 1
    * also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
