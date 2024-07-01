@@ -240,6 +240,50 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 		// iterate while there are still tuples in the runs waiting to be merged into output_run
 		while(!is_empty_active_sorted_run_heap(&input_runs_heap))
 		{
+			// pick a run to consume from
+			active_sorted_run e = *get_front_of_active_sorted_run_heap(&input_runs_heap);
+			pop_from_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE);
+
+			// move the record from the fron of e to tha tail of output_run
+			{
+				// record to be consumed
+				const void* record = get_tuple_linked_page_list_iterator(e.run_iterator);
+
+				insert_at_linked_page_list_iterator(output_run.run_iterator, record, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				next_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+
+				remove_from_linked_page_list_iterator(e.run_iterator, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+					goto ABORT_ERROR;
+				}
+			}
+
+			// if e is not empty, then we need to put it at the back into the heap
+			if(!is_empty_linked_page_list(e.run_iterator))
+			{
+				push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &e);
+				continue;
+			}
+
+			// else we need to destroy e
+			delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+			e = (active_sorted_run){};
+			if(*abort_error)
+				goto ABORT_ERROR;
+
 			// TODO
 		}
 
