@@ -131,6 +131,35 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 	return 0;
 }
 
+// below is the utility required to work with merge_sorted_runs_in_sorter
+
+typedef struct active_sorted_run active_sorted_run;
+struct active_sorted_run
+{
+	uint64_t head_page_id;
+	linked_page_list_iterator* run_iterator;
+};
+
+#include<value_arraylist.h>
+
+data_definitions_value_arraylist(active_sorted_run_heap, active_sorted_run)
+declarations_value_arraylist(active_sorted_run_heap, active_sorted_run)
+#define EXPANSION_FACTOR 1.5
+function_definitions_value_arraylist(active_sorted_run_heap, active_sorted_run)
+
+static int compare(const void* sh_vp, const void* asr_vp1, const void* asr_vp2)
+{
+	const sorter_handle* sh_p = sh_vp;
+	const active_sorted_run* asr_p1 = asr_vp1;
+	const active_sorted_run* asr_p2 = asr_vp2;
+	return compare_tuples(	get_tuple_linked_page_list_iterator(asr_p1->run_iterator), sh_p->std_p->record_def, sh_p->std_p->key_element_ids,
+							get_tuple_linked_page_list_iterator(asr_p2->run_iterator), sh_p->std_p->record_def, sh_p->std_p->key_element_ids,
+							sh_p->std_p->key_compare_direction,
+							sh_p->std_p->key_element_count);
+}
+
+// ------------------------------------------------------------------------
+
 // perform singular pass over the sorted runs in the sh_p->sorted_runs_root_page_id, sorting N active runs (N or more runs in a special case) into 1
 // external_sort_merge_sorter uses this function until the sorter only consists of lesser than or equal to 1 run
 // on an ABORT_ERROR, all iterators including the ones in the sorter_handle are closed
