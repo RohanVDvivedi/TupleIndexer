@@ -3,6 +3,8 @@
 #include<page_table.h>
 #include<linked_page_list.h>
 
+#include<stdlib.h>
+
 sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	sorter_handle sh = {};
@@ -128,6 +130,8 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 	ABORT_ERROR:;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	if(sh_p->unsorted_partial_run != NULL)
+		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
 	return 0;
 }
 
@@ -173,7 +177,31 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	if(sh_p->sorted_runs_count <= 1)
 		return 0;
 
+	// handle that will be maintained while accessing the runs page_table
+	page_table_range_locker* ptrl_p = NULL;
+	active_sorted_run_heap input_runs_heap;
+	if(0 == initialize_active_sorted_run_heap(&input_runs_heap, N_way))
+		exit(-1);
+	active_sorted_run output_run = {};
+
 	// TODO
+
+	return 1;
+
+	ABORT_ERROR:;
+	if(sh_p->unsorted_partial_run != NULL)
+		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	if(ptrl_p != NULL)
+		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+	while(!is_empty_active_sorted_run_heap(&input_runs_heap))
+	{
+		active_sorted_run e = *get_front_of_active_sorted_run_heap(&input_runs_heap);
+		pop_front_from_active_sorted_run_heap(&input_runs_heap);
+		delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+	}
+	if(output_run.run_iterator != NULL)
+		delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
+	return 0;
 }
 
 int external_sort_merge_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error)
