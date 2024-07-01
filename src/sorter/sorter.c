@@ -184,7 +184,17 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 		exit(-1);
 	active_sorted_run output_run = {};
 
-	// TODO
+	uint64_t runs_consumed = 0;		// input runs that have been consumed
+	uint64_t runs_created = 0;		// output runs that have been created
+
+	// iterate while all runs have not been consumed
+	while(runs_consumed < sh_p->sorted_runs_count)
+	{
+		// TODO
+	}
+
+	// update the sorted_runs_count
+	sh_p->sorted_runs_count = runs_created;
 
 	return 1;
 
