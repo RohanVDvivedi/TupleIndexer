@@ -2,7 +2,6 @@
 
 * sorter
  * merge_sorted_runs - OPTIMIZATION - also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
- * finally, make sorter.h and sorter_tuple_definitions_public.h, as public header files
  * test functions of sorter_tuple_defs and test get_new_sorter, destroy_sorter, insert_in_sorter and external_sort_merge_sorter
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
