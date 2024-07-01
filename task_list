@@ -2,6 +2,7 @@
 
 * sorter
  * implement test file to sort the test_data.csv, and get statistics on how many calls to merge_sorted_runs_in_sorter are required
+ * review code for the first implementation fo the sorter
  * merge_sorted_runs - OPTIMIZATION - also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
  * test again and gather statistics, sorting on different keys
 
