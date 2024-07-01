@@ -151,7 +151,7 @@ declarations_value_arraylist(active_sorted_run_heap, active_sorted_run)
 #define EXPANSION_FACTOR 1.5
 function_definitions_value_arraylist(active_sorted_run_heap, active_sorted_run)
 
-static int compare(const void* sh_vp, const void* asr_vp1, const void* asr_vp2)
+static int compare_sorted_runs(const void* sh_vp, const void* asr_vp1, const void* asr_vp2)
 {
 	const sorter_handle* sh_p = sh_vp;
 	const active_sorted_run* asr_p1 = asr_vp1;
@@ -182,6 +182,8 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	active_sorted_run_heap input_runs_heap;
 	if(0 == initialize_active_sorted_run_heap(&input_runs_heap, N_way))
 		exit(-1);
+	#define HEAP_DEGREE 2
+	#define HEAP_INFO &((heap_info){.type = MIN_HEAP, .comparator = contexted_comparator(sh_p, compare_sorted_runs)})
 	active_sorted_run output_run = {};
 
 	uint64_t runs_consumed = 0;		// input runs that have been consumed
@@ -190,6 +192,51 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	// iterate while all runs have not been consumed
 	while(runs_consumed < sh_p->sorted_runs_count)
 	{
+		// create the input runs, and initialize them into the input_runs_heap, then also initialize the output_run
+		// and also update the respective runs_head_page_is in page_table of the sorter accordingly
+		{
+			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			uint64_t limit = runs_consumed + N_way;
+			for(; runs_consumed < limit && runs_consumed < sh_p->sorted_runs_count; runs_consumed++)
+			{
+				active_sorted_run e = {};
+
+				e.head_page_id = get_from_page_table(ptrl_p, runs_consumed, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				e.run_iterator = get_new_linked_page_list_iterator(e.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &e);
+
+				set_in_page_table(ptrl_p, runs_consumed, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
+
+			output_run.head_page_id = get_new_linked_page_list(&(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			output_run.run_iterator = get_new_linked_page_list_iterator(output_run.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			set_in_page_table(ptrl_p, runs_created++, output_run.head_page_id, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+			ptrl_p = NULL;
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+
 		// TODO
 	}
 
