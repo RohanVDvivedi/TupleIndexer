@@ -284,14 +284,46 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 			if(*abort_error)
 				goto ABORT_ERROR;
 
-			// TODO
+			// you may not use e beyond this point
+
+			if(get_element_count_active_sorted_run_heap(&input_runs_heap) == (N_way - 1))
+			{
+				// Optimization to pick new input run
+				// TODO
+			}
+
+			// merge the only remaining run and break out
+			if(get_element_count_active_sorted_run_heap(&input_runs_heap) == 1)
+			{
+				active_sorted_run run_to_merge = *get_front_of_active_sorted_run_heap(&input_runs_heap);
+				pop_from_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE);
+
+				delete_linked_page_list_iterator(run_to_merge.run_iterator, transaction_id, abort_error);
+				run_to_merge.run_iterator = NULL;
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
+				output_run.run_iterator = NULL;
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				merge_linked_page_lists(output_run.head_page_id, e.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				break;
+			}
 		}
 
-		// now we may destroy the iterator over the ouput_run
-		delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
-		output_run = (active_sorted_run){};
-		if(*abort_error)
-			goto ABORT_ERROR;
+		// now we may destroy the iterator over the ouput_run, if it exists
+		if(output_run.run_iterator != NULL)
+		{
+			delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
+			output_run = (active_sorted_run){};
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 	}
 
 	// update the sorted_runs_count
