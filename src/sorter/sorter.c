@@ -240,58 +240,63 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 		// iterate while there are still tuples in the runs waiting to be merged into output_run
 		while(!is_empty_active_sorted_run_heap(&input_runs_heap))
 		{
-			// pick a run to consume from
-			active_sorted_run e = *get_front_of_active_sorted_run_heap(&input_runs_heap);
-			pop_from_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE);
-
-			// move the record from the fron of e to tha tail of output_run
+			// main logic
 			{
-				// record to be consumed
-				const void* record = get_tuple_linked_page_list_iterator(e.run_iterator);
+				// pick a run to consume from
+				active_sorted_run e = *get_front_of_active_sorted_run_heap(&input_runs_heap);
+				pop_from_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE);
 
-				insert_at_linked_page_list_iterator(output_run.run_iterator, record, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
-				if(*abort_error)
+				// move the record from the fron of e to tha tail of output_run
 				{
-					delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
-					goto ABORT_ERROR;
+					// record to be consumed
+					const void* record = get_tuple_linked_page_list_iterator(e.run_iterator);
+
+					insert_at_linked_page_list_iterator(output_run.run_iterator, record, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
+					if(*abort_error)
+					{
+						delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+						goto ABORT_ERROR;
+					}
+
+					next_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
+					if(*abort_error)
+					{
+						delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+						goto ABORT_ERROR;
+					}
+
+					remove_from_linked_page_list_iterator(e.run_iterator, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
+					if(*abort_error)
+					{
+						delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+						goto ABORT_ERROR;
+					}
 				}
 
-				next_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
-				if(*abort_error)
+				// if e is not empty, then we need to put it at the back into the heap
+				if(!is_empty_linked_page_list(e.run_iterator))
 				{
-					delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
-					goto ABORT_ERROR;
+					push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &e);
+					continue;
 				}
 
-				remove_from_linked_page_list_iterator(e.run_iterator, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
+				// else we need to destroy e
+				delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+				e = (active_sorted_run){};
 				if(*abort_error)
-				{
-					delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 					goto ABORT_ERROR;
-				}
 			}
-
-			// if e is not empty, then we need to put it at the back into the heap
-			if(!is_empty_linked_page_list(e.run_iterator))
-			{
-				push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &e);
-				continue;
-			}
-
-			// else we need to destroy e
-			delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
-			e = (active_sorted_run){};
-			if(*abort_error)
-				goto ABORT_ERROR;
 
 			// you may not use e beyond this point
 
+			// OPTIMIZATION 2, optimization 1 is under this piece of code
 			if(get_element_count_active_sorted_run_heap(&input_runs_heap) == (N_way - 1))
 			{
 				// Optimization to pick new input run
 				// TODO
 			}
 
+			// OPTIMIZATION 1
 			// merge the only remaining run and break out
 			if(get_element_count_active_sorted_run_heap(&input_runs_heap) == 1)
 			{
@@ -308,7 +313,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 				if(*abort_error)
 					goto ABORT_ERROR;
 
-				merge_linked_page_lists(output_run.head_page_id, e.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+				merge_linked_page_lists(output_run.head_page_id, run_to_merge.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
