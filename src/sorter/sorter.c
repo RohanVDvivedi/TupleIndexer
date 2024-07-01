@@ -237,7 +237,17 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 				goto ABORT_ERROR;
 		}
 
-		// TODO
+		// iterate while there are still tuples in the runs waiting to be merged into output_run
+		while(!is_empty_active_sorted_run_heap(&input_runs_heap))
+		{
+			// TODO
+		}
+
+		// now we may destroy the iterator over the ouput_run
+		delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
+		output_run = (active_sorted_run){};
+		if(*abort_error)
+			goto ABORT_ERROR;
 	}
 
 	// update the sorted_runs_count
