@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
 * sorter
- * review code for the first implementation fo the sorter
+ * review code for the first implementation of the sorter and then review hash_table and its iterator code
  * merge_sorted_runs - OPTIMIZATION 2 - also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
  * test again and gather statistics, especially with the OPTIMIZATION 2
 
