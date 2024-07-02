@@ -247,6 +247,13 @@ int main()
 	res = insert_from_file(&sh, TEST_DATA_RANDOM_FILE, 0, 0, 256);
 	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
+	external_sort_merge_sorter(&sh, 3, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
 	/* CLEANUP */
 
 	// destroy bplus tree
