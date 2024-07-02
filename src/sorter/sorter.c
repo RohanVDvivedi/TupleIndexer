@@ -282,7 +282,11 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 
 				// else we need to destroy e
 				delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
-				e = (active_sorted_run){};
+				e.run_iterator = NULL;
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				destroy_linked_page_list(e.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, transaction_id, abort_error );
 				if(*abort_error)
 					goto ABORT_ERROR;
 			}
