@@ -190,7 +190,7 @@ result insert_from_file(sorter_handle* sh_p, char* file_name, uint32_t skip_firs
 		//sprint_tuple(print_buffer, record_tuple, record_def);
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
-		// insert the record_tuple in the bplus_tree rooted at root_page_id
+		// insert the record_tuple in the sorter rooted at root_page_id
 		res.operations_succeeded += insert_in_sorter(sh_p, record_tuple, transaction_id, &abort_error);
 		if(abort_error)
 		{
@@ -221,14 +221,14 @@ int main()
 	// allocate record tuple definition and initialize it
 	tuple_def* record_def = get_tuple_definition();
 
-	// construct tuple definitions for bplus_tree
+	// construct tuple definitions for sorter
 	sorter_tuple_defs std;
 	init_sorter_tuple_definitions(&std, &(pam_p->pas), record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT);
 
-	// print the generated bplus tree tuple defs
+	// print the generated sorter tuple defs
 	print_sorter_tuple_definitions(&std);
 
-	// create a bplus tree and get its root
+	// create a sorter and get its root
 	sorter_handle sh = get_new_sorter(&std, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
@@ -241,11 +241,10 @@ int main()
 
 	/* SETUP COMPLETED */
 
-	// again try insert all tuples now 64/256 tuples must fail from TEST_DATA_RANDOM_FILE
 	/* INSERTIONS STARTED */
 
 	res = insert_from_file(&sh, TEST_DATA_RANDOM_FILE, 0, 0, 256);
-	printf("insertions to bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
+	printf("insertions to sorter completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	external_sort_merge_sorter(&sh, 3, transaction_id, &abort_error);
 	if(abort_error)
@@ -256,7 +255,7 @@ int main()
 
 	/* CLEANUP */
 
-	// destroy bplus tree
+	// destroy sorter, and fetch sorter
 	uint64_t result_head_page_id;
 	destroy_sorter(&sh, &result_head_page_id, transaction_id, &abort_error);
 	if(abort_error)
