@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
 * sorter
- * review code merge_sorted_runs_in_sorter
  * merge_sorted_runs - OPTIMIZATION 2 - also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
  * test again and gather statistics, especially with the OPTIMIZATION 2
 

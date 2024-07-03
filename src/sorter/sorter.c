@@ -191,7 +191,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	while(runs_consumed < sh_p->sorted_runs_count)
 	{
 		// create the input runs, and initialize them into the input_runs_heap, then also initialize the output_run
-		// and also update the respective runs_head_page_is in page_table of the sorter accordingly
+		// and also update the respective runs_head_page_id in page_table of the sorter accordingly
 		{
 			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
