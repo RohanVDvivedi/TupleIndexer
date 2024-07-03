@@ -130,8 +130,6 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 	ABORT_ERROR:;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
-	if(sh_p->unsorted_partial_run != NULL)
-		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
 	return 0;
 }
 
