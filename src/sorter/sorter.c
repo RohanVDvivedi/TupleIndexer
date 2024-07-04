@@ -103,6 +103,11 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 	// if now the iterator is NULL, then create a new unsorted_partial_run
 	if(sh_p->unsorted_partial_run == NULL)
 	{
+		// if the page_table is FULL, which will never ever happen, but check implemented, then fail
+		// this check ensures that there will never be more than UINT64_MAX sorted runs
+		if(sh_p->sorted_runs_count == UINT64_MAX)
+			return 0;
+
 		sh_p->unsorted_partial_run_head_page_id = get_new_linked_page_list(&(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
@@ -197,8 +202,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 			if(*abort_error)
 				goto ABORT_ERROR;
 
-			uint64_t limit = runs_consumed + N_way;
-			for(; runs_consumed < limit && runs_consumed < sh_p->sorted_runs_count; runs_consumed++)
+			for(uint64_t runs_selected = 0; runs_selected < N_way && runs_consumed < sh_p->sorted_runs_count; runs_selected++, runs_consumed++)
 			{
 				active_sorted_run e = {};
 
