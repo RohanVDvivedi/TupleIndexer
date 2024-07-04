@@ -59,6 +59,8 @@
 #define PAGE_SIZE          256
 #define SYSTEM_HEADER_SIZE   3
 
+#define N_WAY_SORT 3
+
 // initialize transaction_id and abort_error
 const void* transaction_id = NULL;
 int abort_error = 0;
@@ -249,7 +251,7 @@ int main()
 	res = insert_from_file(&sh, TEST_DATA_RANDOM_FILE, 0, 4, 256);
 	printf("insertions to sorter completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	external_sort_merge_sorter(&sh, 3, transaction_id, &abort_error);
+	external_sort_merge_sorter(&sh, N_WAY_SORT, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
