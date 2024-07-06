@@ -20,8 +20,9 @@
      * that uses power table, and replaces get_power_of_entries_per_page function of page_table
    * make power_table_uint64 to power_table
    * and page_table_bucket_range to bucket_range
- * allow cloning, read-only bplus_tree_iterator, page_table_range_locker and linked_page_list_iterator
+ * allow cloning, read-only bplus_tree_iterator, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
    * clone all read locks inside them, and make a new object
+ * make functions to get the maximum pages that will be locked at once for any of the TupleIndexer data structures and iterators
  * bplus_tree bulk loading
    * api to accept accept records, tuple by tuple
    * on process() call, generate interior pages (and returns root page id)
