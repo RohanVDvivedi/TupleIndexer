@@ -195,6 +195,40 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	// iterate while all runs have not been consumed
 	while(runs_consumed < sh_p->sorted_runs_count)
 	{
+		// OPTIMIZATION 0
+		// if there is only 1 run remaining to be consumed, then directly move it to the newly created run, without iterating over it's tuples
+		if((sh_p->sorted_runs_count - runs_consumed) == 1)
+		{
+			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			// below code is equivalent to
+			// only_run_left_head_page_id = ptrl[runs_consumed]
+			// ptrl[runs_consumed++] = NULL
+			// ptrl[runs_created++] = only_run_left_head_page_id
+
+			uint64_t only_run_left_head_page_id = get_from_page_table(ptrl_p, runs_consumed, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			set_in_page_table(ptrl_p, runs_consumed++, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			set_in_page_table(ptrl_p, runs_created++, only_run_left_head_page_id, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+			ptrl_p = NULL;
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			// no runs now must be left, you may break, or continue to be safe
+			continue;
+		}
+
 		// create the input runs, and initialize them into the input_runs_heap, then also initialize the output_run
 		// and also update the respective runs_head_page_id in page_table of the sorter accordingly
 		{
