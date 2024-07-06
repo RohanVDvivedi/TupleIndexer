@@ -335,7 +335,48 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 			// this happens if the last consumed tuple is NULL or is strictly lesser than or equal to the first tuple of the next incomming run
 			if((runs_consumed < sh_p->sorted_runs_count) && (get_element_count_active_sorted_run_heap(&input_runs_heap) == (N_way - 1)))
 			{
-				// TODO
+				ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				// open new active sorted run to be consumed
+				{
+					active_sorted_run run_to_consume = {};
+
+					run_to_consume.head_page_id = get_from_page_table(ptrl_p, runs_consumed, transaction_id, abort_error);
+					if(*abort_error)
+						goto ABORT_ERROR;
+
+					run_to_consume.run_iterator = get_new_linked_page_list_iterator(run_to_consume.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+					if(*abort_error)
+						goto ABORT_ERROR;
+
+					// now run_to_consume has been initialized
+
+					// last produced run in the output_run must either be NULL OR must be lesser than the first tuple of run_to_consume
+					if(get_tuple_linked_page_list_iterator(output_run.run_iterator) == NULL || compare_sorted_runs(sh_p, &output_run, &run_to_consume) <= 0)
+					{
+						// push this new run to the input_runs_heap
+						push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &run_to_consume);
+
+						// mark the run_to_consume as consumed
+						set_in_page_table(ptrl_p, runs_consumed++, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+						if(*abort_error)
+							goto ABORT_ERROR;
+					}
+					else
+					{
+						delete_linked_page_list_iterator(run_to_consume.run_iterator, transaction_id, abort_error);
+						run_to_consume.run_iterator = NULL;
+						if(*abort_error)
+							goto ABORT_ERROR;
+					}
+				}
+
+				delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+				ptrl_p = NULL;
+				if(*abort_error)
+					goto ABORT_ERROR;
 			}
 
 			// OPTIMIZATION 1
