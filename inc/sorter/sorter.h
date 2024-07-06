@@ -8,6 +8,11 @@
 
 #include<linked_page_list_iterator_public.h>
 
+/*
+	Note: The sorter is a single threaded structure, i.e. is thread unsafe by design and only 1 thread must be accessing it at a time
+	To gain performance on sorting you may tweak to a higher value of N_way, but this will happen at the cost of more pages being locked at once. (in the active runs of the iterators)
+*/
+
 typedef struct sorter_handle sorter_handle;
 struct sorter_handle
 {
