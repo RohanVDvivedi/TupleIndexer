@@ -330,9 +330,10 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 			// you may not use e beyond this point
 
 			// OPTIMIZATION 2, optimization 1 is under this piece of code
+			// Optimization to pick new input run, immediately after the first run of the N-way sort is consumed
+			// this happens if the last consumed tuple is NULL or is strictly lesser than or equal to the first tuple of the next incomming run
 			if(get_element_count_active_sorted_run_heap(&input_runs_heap) == (N_way - 1))
 			{
-				// Optimization to pick new input run
 				// TODO
 			}
 
