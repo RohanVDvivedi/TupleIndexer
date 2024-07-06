@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
 * sorter
- * merge sorted_runs - OPTIMIZATION 0 - if there is only 1 run left (sorted_runs_count - consumed_runs == 1), then directly promote the last unmerged run to the next level
  * merge_sorted_runs - OPTIMIZATION 2 - also picks new runs immediately, if there are lesser than N active runs, if the last picked tuple is lesser than or equal to the first tuple on the new run
  * test again and gather statistics, especially with the OPTIMIZATION 2
 
