@@ -4,7 +4,7 @@
 #include<tuple.h>
 #include<inttypes.h>
 
-#include<power_table_uint64.h>
+#include<power_table.h>
 
 #include<page_access_specification.h>
 
@@ -26,7 +26,7 @@ struct page_table_tuple_defs
 	uint64_t entries_per_page;
 
 	// power table for entries_per_page
-	power_table_uint64 power_table_for_entries_per_page;
+	power_table power_table_for_entries_per_page;
 
 	// the maximum height of the page table will never be more than this value
 	uint64_t max_page_table_height;
