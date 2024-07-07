@@ -4,7 +4,7 @@
 
 #include<stdlib.h>
 
-hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_table_bucket_range bucket_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_range bucket_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(httd_p == NULL || pam_p == NULL)
@@ -30,7 +30,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_tab
 
 	// fetch the bucket_count of the hash_table
 	// take a range lock on the page table, to get the bucket_count
-	hti_p->ptrl_p = get_new_page_table_range_locker(hti_p->root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+	hti_p->ptrl_p = get_new_page_table_range_locker(hti_p->root_page_id, WHOLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto DELETE_EVERYTHING_AND_ABORT;
 
@@ -457,7 +457,7 @@ void delete_hash_table_iterator(hash_table_iterator* hti_p, const void* transact
 			goto DELETE_EVERYTHING_AND_ABORT;
 
 		// take a range lock on the page table, to get the bucket_count
-		hti_p->ptrl_p = get_new_page_table_range_locker(hti_p->root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+		hti_p->ptrl_p = get_new_page_table_range_locker(hti_p->root_page_id, WHOLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto DELETE_EVERYTHING_AND_ABORT;
 
