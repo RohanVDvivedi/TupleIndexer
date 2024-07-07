@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
-** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * Array_table
    * like page_table but stores fixed length tuples instead of just uint64_t-s
    * we will not replace page_table, page_table will become a special type of array_table
@@ -14,14 +12,12 @@
    * Array_table_tuple_defs has, both record_def and index_def, index_entries_per_page, and leaf_entries_per_page
    * it has a function to calculate: get_leaf_entries_refrenceable_by_entry_at_given_level -> (l == 0) ? 1 : index_entries_per_page ^ (l-1) * leaf_entries_per_page
      * that uses power table, and replaces get_power_of_entries_per_page function of page_table
+
+** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * allow cloning, read-only bplus_tree_iterator, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
    * clone all read locks inside them, and make a new object
  * make functions to get the maximum pages that will be locked at once for any of the TupleIndexer data structures and iterators
- * bplus_tree bulk loading
-   * api to accept accept records, tuple by tuple
-   * on process() call, generate interior pages (and returns root page id)
-   * for building ith level of interior page, from the i-1th level, we copy the 1st row from the page with page id of the page, we will use the least_keys_page_id to link the level of the interior pages. for building tuple for iterior page level 1, we will use the suffix compression also to build the index tuple, while for other levels we will only use the same index tuple as in the first row of the interior page.
-   * in the last pass, we will revisit all the interior pages using dfs and move the first row's page_id to least_keys_page_id and discard the first row.
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
@@ -89,6 +85,11 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
     }
     return stack.reverse();
  * OPTIMIZATION in suffix truncation :: handle cases if INT, UINT, LARGE_UINT, BIT_FIELD, in loop 1, if unequal on ASC-> then set element to last_tuple_page1 element + 1 (to min element if NULL), if unequal on DESC-> then set element to last_tuple_page1 element - 1, if the last_tuple_page1_element is not the min value, else set it to NULL
+  * bplus_tree bulk loading
+   * api to accept accept records, tuple by tuple
+   * on process() call, generate interior pages (and returns root page id)
+   * for building ith level of interior page, from the i-1th level, we copy the 1st row from the page with page id of the page, we will use the least_keys_page_id to link the level of the interior pages. for building tuple for iterior page level 1, we will use the suffix compression also to build the index tuple, while for other levels we will only use the same index tuple as in the first row of the interior page.
+   * in the last pass, we will revisit all the interior pages using dfs and move the first row's page_id to least_keys_page_id and discard the first row.
 
 * think about future project (THIS WILL BE PROJECTS THAT WILL DEPEND ON THIS PROJECT)
  * think about how to do undo and redo logging
