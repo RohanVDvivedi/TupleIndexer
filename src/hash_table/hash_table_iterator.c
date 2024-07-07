@@ -4,14 +4,14 @@
 
 #include<stdlib.h>
 
-hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_range bucket_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_range lock_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(httd_p == NULL || pam_p == NULL)
 		return NULL;
 
-	// if key is absent, then the bucket_range should be valid
-	if(key == NULL && !is_valid_bucket_range(&bucket_range))
+	// if key is absent, then the lock_range should be valid
+	if(key == NULL && !is_valid_bucket_range(&lock_range))
 		return NULL;
 
 	hash_table_iterator* hti_p = malloc(sizeof(hash_table_iterator));
@@ -20,7 +20,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 
 	hti_p->root_page_id = root_page_id;
 	hti_p->key = key;
-	hti_p->bucket_range = bucket_range;
+	hti_p->lock_range = lock_range;
 	hti_p->httd_p = httd_p;
 	hti_p->pam_p = pam_p;
 	hti_p->pmm_p = pmm_p;
@@ -64,16 +64,16 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 	}
 	else
 	{
-		// limit bucket_range to subset [0, bucket_count-1], discarding the buckets that come after bucket_count buckets
-		if(hti_p->bucket_range.first_bucket_id >= hti_p->bucket_count)
+		// limit lock_range to subset [0, bucket_count-1], discarding the buckets that come after bucket_count buckets
+		if(hti_p->lock_range.first_bucket_id >= hti_p->bucket_count)
 			goto DELETE_EVERYTHING_AND_ABORT;
-		hti_p->bucket_range.last_bucket_id = min(hti_p->bucket_range.last_bucket_id, hti_p->bucket_count - 1);
+		hti_p->lock_range.last_bucket_id = min(hti_p->lock_range.last_bucket_id, hti_p->bucket_count - 1);
 
 		// make curr_bucket_id point to the first bucket in the range
-		hti_p->curr_bucket_id = hti_p->bucket_range.first_bucket_id;
+		hti_p->curr_bucket_id = hti_p->lock_range.first_bucket_id;
 
 		// minimize the lock range to the preferred one
-		minimize_lock_range_for_page_table_range_locker(hti_p->ptrl_p, hti_p->bucket_range, transaction_id, abort_error);
+		minimize_lock_range_for_page_table_range_locker(hti_p->ptrl_p, hti_p->lock_range, transaction_id, abort_error);
 		if(*abort_error)
 			goto DELETE_EVERYTHING_AND_ABORT;
 
@@ -159,7 +159,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 			return 0;
 
 		// if you are already at the last_bucket_id, then fail this call
-		if(hti_p->curr_bucket_id == hti_p->bucket_range.last_bucket_id)
+		if(hti_p->curr_bucket_id == hti_p->lock_range.last_bucket_id)
 			return 0;
 
 		// free the existing iterator, over the linked_page_list bucket
@@ -217,7 +217,7 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 			return 0;
 
 		// if you are already at the first_bucket_id, then fail this call
-		if(hti_p->curr_bucket_id == hti_p->bucket_range.first_bucket_id)
+		if(hti_p->curr_bucket_id == hti_p->lock_range.first_bucket_id)
 			return 0;
 
 		// free the existing iterator, over the linked_page_list bucket
