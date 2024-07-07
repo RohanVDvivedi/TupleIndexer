@@ -11,7 +11,7 @@
 page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, bucket_range lock_range, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// fail if the lock range is invalid
-	if(!is_valid_page_table_bucket_range(&lock_range))
+	if(!is_valid_bucket_range(&lock_range))
 		return NULL;
 
 	// the following 2 must be present
@@ -23,7 +23,7 @@ page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, 
 		exit(-1);
 
 	// start initializing the ptrl, making it point to and lock the actual root of the page_table
-	ptrl_p->delegated_local_root_range = WHOLE_PAGE_TABLE_BUCKET_RANGE;
+	ptrl_p->delegated_local_root_range = WHOLE_BUCKET_RANGE;
 	ptrl_p->max_local_root_level = pttd_p->max_page_table_height - 1;
 	ptrl_p->local_root = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, ((pmm_p == NULL) ? READ_LOCK : WRITE_LOCK), abort_error);
 	if(*abort_error)
@@ -47,10 +47,10 @@ page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, 
 	return ptrl_p;
 }
 
-int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptrl_p, page_table_bucket_range lock_range, const void* transaction_id, int* abort_error)
+int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptrl_p, bucket_range lock_range, const void* transaction_id, int* abort_error)
 {
 	// fail, if lock_range is invalid OR if the lock_range is not contained within the delegated range of the local_root
-	if(!is_valid_page_table_bucket_range(&lock_range) || !is_contained_page_table_bucket_range(&(ptrl_p->delegated_local_root_range), &lock_range))
+	if(!is_valid_bucket_range(&lock_range) || !is_contained_bucket_range(&(ptrl_p->delegated_local_root_range), &lock_range))
 		return 0;
 
 	while(1)
@@ -62,7 +62,7 @@ int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptr
 		bucket_range actual_range = get_bucket_range_for_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p);
 
 		// if the actual_range is not contained within the lock_range provided then quit
-		if(!is_contained_page_table_bucket_range(&actual_range, &lock_range))
+		if(!is_contained_bucket_range(&actual_range, &lock_range))
 			break;
 
 		uint32_t first_bucket_child_index = get_child_index_for_bucket_id_on_page_table_page(&(ptrl_p->local_root), lock_range.first_bucket_id, ptrl_p->pttd_p);
@@ -108,7 +108,7 @@ int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptr
 	return 1;
 }
 
-page_table_bucket_range get_lock_range_for_page_table_range_locker(const page_table_range_locker* ptrl_p)
+bucket_range get_lock_range_for_page_table_range_locker(const page_table_range_locker* ptrl_p)
 {
 	return ptrl_p->delegated_local_root_range;
 }
@@ -136,7 +136,7 @@ static void release_lock_on_persistent_page_while_preventing_local_root_unlockin
 uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, const void* transaction_id, int* abort_error)
 {
 	// fail if the bucket_id is not contained within the delegated range of the local_root
-	if(!is_bucket_contained_page_table_bucket_range(&(ptrl_p->delegated_local_root_range), bucket_id))
+	if(!is_bucket_contained_bucket_range(&(ptrl_p->delegated_local_root_range), bucket_id))
 		return ptrl_p->pttd_p->pas_p->NULL_PAGE_ID;
 
 	persistent_page curr_page = ptrl_p->local_root;
@@ -145,10 +145,10 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 		// if the curr_page has been locked, then its delegated range will and must contain the bucket_id
 
 		// actual range of curr_page
-		page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&curr_page, ptrl_p->pttd_p);
+		bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&curr_page, ptrl_p->pttd_p);
 
 		// if bucket_id is not contained in the actual_range of the curr_page, then return NULL_PAGE_ID
-		if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, bucket_id))
+		if(!is_bucket_contained_bucket_range(&curr_page_actual_range, bucket_id))
 		{
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, ptrl_p, transaction_id, abort_error);
 			if(*abort_error)
@@ -209,7 +209,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 		return 0;
 
 	// fail if the bucket_id is not contained within the delegated range of the local_root
-	if(!is_bucket_contained_page_table_bucket_range(&(ptrl_p->delegated_local_root_range), bucket_id))
+	if(!is_bucket_contained_bucket_range(&(ptrl_p->delegated_local_root_range), bucket_id))
 		return 0;
 
 	if(page_id != ptrl_p->pttd_p->pas_p->NULL_PAGE_ID)
@@ -248,10 +248,10 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 			}
 
 			// actual range of curr_page
-			page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&curr_page, ptrl_p->pttd_p);
+			bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&curr_page, ptrl_p->pttd_p);
 
 			// if bucket_id is not contained in the actual_range of the curr_page, then level_up the page
-			if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, bucket_id))
+			if(!is_bucket_contained_bucket_range(&curr_page_actual_range, bucket_id))
 			{
 				level_up_page_table_page(&curr_page, ptrl_p->pttd_p, ptrl_p->pam_p, ptrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -366,10 +366,10 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 			locked_page_info* curr_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 			// actual range of curr_page
-			page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p);
+			bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p);
 
 			// if bucket_id is not contained in the actual_range of the curr_page, then it is already NULL_PAGE_ID
-			if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, bucket_id))
+			if(!is_bucket_contained_bucket_range(&curr_page_actual_range, bucket_id))
 			{
 				result = 1;
 				break;
@@ -585,7 +585,7 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 		}
 
 		// actual range of curr_page
-		page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p);
+		bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), ptrl_p->pttd_p);
 
 		if(find_pos == LESSER_THAN_EQUALS)
 		{
@@ -777,10 +777,10 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 		locked_page_info* curr_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// actual range of curr_page
-		page_table_bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), pttd_p);
+		bucket_range curr_page_actual_range = get_bucket_range_for_page_table_page(&(curr_page->ppage), pttd_p);
 
 		// if discard_target is not contained in the actual_range of the curr_page, then break ans start reverse pass
-		if(!is_bucket_contained_page_table_bucket_range(&curr_page_actual_range, discard_target))
+		if(!is_bucket_contained_bucket_range(&curr_page_actual_range, discard_target))
 			break;
 
 		// now the page must have its actual_range contain the bucket_id,

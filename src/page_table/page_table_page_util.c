@@ -200,7 +200,7 @@ uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page*
 {
 	bucket_range bucket_range_for_page = get_bucket_range_for_page_table_page(ppage, pttd_p);
 
-	if(!is_bucket_contained_page_table_bucket_range(&bucket_range_for_page, bucket_id))
+	if(!is_bucket_contained_bucket_range(&bucket_range_for_page, bucket_id))
 		return NO_TUPLE_FOUND;
 
 	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
