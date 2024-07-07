@@ -126,11 +126,11 @@ uint32_t get_non_NULL_PAGE_ID_count_in_page_table_page(const persistent_page* pp
 	return get_tuple_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def)) - get_tomb_stone_count_on_persistent_page(ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
 }
 
-page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p)
+bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p)
 {
 	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
 
-	page_table_bucket_range result = {.first_bucket_id = hdr.first_bucket_id};
+	bucket_range result = {.first_bucket_id = hdr.first_bucket_id};
 
 	uint64_t bucket_range_size;
 	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(pttd_p, hdr.level + 1, &bucket_range_size))
@@ -149,7 +149,7 @@ page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_pa
 	return result;
 }
 
-page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p)
+bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p)
 {
 	// child_index must be within bounds of entries_per_page
 	if(child_index >= pttd_p->entries_per_page)
@@ -157,7 +157,7 @@ page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table
 
 	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
 
-	page_table_bucket_range result;
+	bucket_range result;
 
 	uint64_t child_bucket_range_size;
 	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(pttd_p, hdr.level, &child_bucket_range_size))
@@ -167,7 +167,7 @@ page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table
 		else
 		{
 			// if the child_index is 0, then the first_bucket_id will not overflow but the last_bucket_id will
-			result = (page_table_bucket_range){.first_bucket_id = hdr.first_bucket_id};
+			result = (bucket_range){.first_bucket_id = hdr.first_bucket_id};
 			goto EXIT_OVERFLOW;
 		}
 	}
@@ -177,7 +177,7 @@ page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table
 	if(will_unsigned_sum_overflow(uint64_t, hdr.first_bucket_id, child_bucket_range_size * child_index))
 		goto EXIT_OUT_OF_BOUNDS_CHILD;
 
-	result = (page_table_bucket_range){.first_bucket_id = (hdr.first_bucket_id + child_bucket_range_size * child_index)};
+	result = (bucket_range){.first_bucket_id = (hdr.first_bucket_id + child_bucket_range_size * child_index)};
 
 	if(will_unsigned_sum_overflow(uint64_t, result.first_bucket_id, (child_bucket_range_size-1)))
 		goto EXIT_OVERFLOW;
@@ -193,12 +193,12 @@ page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table
 
 	// this is what happens when even the first_bucket_id of the child's delegated range is out of 64 bit number
 	EXIT_OUT_OF_BOUNDS_CHILD:
-	return (page_table_bucket_range){.first_bucket_id = UINT64_MAX, .last_bucket_id = 0};
+	return (bucket_range){.first_bucket_id = UINT64_MAX, .last_bucket_id = 0};
 }
 
 uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page* ppage, uint64_t bucket_id, const page_table_tuple_defs* pttd_p)
 {
-	page_table_bucket_range bucket_range_for_page = get_bucket_range_for_page_table_page(ppage, pttd_p);
+	bucket_range bucket_range_for_page = get_bucket_range_for_page_table_page(ppage, pttd_p);
 
 	if(!is_bucket_contained_page_table_bucket_range(&bucket_range_for_page, bucket_id))
 		return NO_TUPLE_FOUND;

@@ -11,7 +11,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 		return NULL;
 
 	// if key is absent, then the bucket_range should be valid
-	if(key == NULL && !is_valid_page_table_bucket_range(&bucket_range))
+	if(key == NULL && !is_valid_bucket_range(&bucket_range))
 		return NULL;
 
 	hash_table_iterator* hti_p = malloc(sizeof(hash_table_iterator));

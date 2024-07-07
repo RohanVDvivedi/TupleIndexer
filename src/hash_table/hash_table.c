@@ -17,7 +17,7 @@ uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tupl
 		return httd_p->pttd.pas_p->NULL_PAGE_ID;
 
 	// take a range lock on the page table, to set the bucket_count
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, (page_table_bucket_range){initial_bucket_count, initial_bucket_count}, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, (bucket_range){initial_bucket_count, initial_bucket_count}, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		return httd_p->pttd.pas_p->NULL_PAGE_ID;
 
@@ -125,7 +125,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		goto ABORT_ERROR;
 
 	// now we only need to work with split_hash_buckets [0] and [1]
-	minimize_lock_range_for_page_table_range_locker(ptrl_p, (page_table_bucket_range){split_hash_buckets[0].bucket_id, split_hash_buckets[1].bucket_id}, transaction_id, abort_error);
+	minimize_lock_range_for_page_table_range_locker(ptrl_p, (bucket_range){split_hash_buckets[0].bucket_id, split_hash_buckets[1].bucket_id}, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -186,7 +186,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 					goto ABORT_ERROR;
 
 				// now based on the currently open iterators of the split_hash_buckets, we shrink or completely destroy the ptrl iterator
-				page_table_bucket_range new_range = {UINT64_MAX, 0};
+				bucket_range new_range = {UINT64_MAX, 0};
 				for(int j = 0; j < sizeof(split_hash_buckets)/sizeof(split_hash_buckets[0]); j++)
 				{
 					if(split_hash_buckets[j].bucket_iterator != NULL)

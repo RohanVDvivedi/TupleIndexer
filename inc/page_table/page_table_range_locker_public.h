@@ -10,14 +10,14 @@ typedef struct page_table_range_locker page_table_range_locker;
 // creates a new page_table_range_locker for the given range
 // you want to call set then the lock_type must be WRITE_LOCK
 // on abort_error, NULL is returned
-page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, page_table_bucket_range lock_range, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, bucket_range lock_range, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // minimizes the lock range of the range_locker
 // on an abort error, lock on the local root is released, then you only need to call delete_page_table_range_locker
-int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptrl_p, page_table_bucket_range lock_range, const void* transaction_id, int* abort_error);
+int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptrl_p, bucket_range lock_range, const void* transaction_id, int* abort_error);
 
 // get lock range for the page_table_range_locker
-page_table_bucket_range get_lock_range_for_page_table_range_locker(const page_table_range_locker* ptrl_p);
+bucket_range get_lock_range_for_page_table_range_locker(const page_table_range_locker* ptrl_p);
 
 // check if the page_table_range_locker is locked for writing
 // you may set only if this returns 1

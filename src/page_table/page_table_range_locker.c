@@ -8,7 +8,7 @@
 
 #include<stdlib.h>
 
-page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, page_table_bucket_range lock_range, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, bucket_range lock_range, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// fail if the lock range is invalid
 	if(!is_valid_page_table_bucket_range(&lock_range))
@@ -59,7 +59,7 @@ int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptr
 		if(is_page_table_leaf_page(&(ptrl_p->local_root), ptrl_p->pttd_p))
 			break;
 
-		page_table_bucket_range actual_range = get_bucket_range_for_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p);
+		bucket_range actual_range = get_bucket_range_for_page_table_page(&(ptrl_p->local_root), ptrl_p->pttd_p);
 
 		// if the actual_range is not contained within the lock_range provided then quit
 		if(!is_contained_page_table_bucket_range(&actual_range, &lock_range))

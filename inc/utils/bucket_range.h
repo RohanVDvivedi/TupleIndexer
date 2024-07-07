@@ -21,7 +21,7 @@ struct bucket_range
 #define BUCKET_RANGE_FOR_BUCKET(bucket_id_val) ((bucket_range){.first_bucket_id = bucket_id_val, .last_bucket_id = bucket_id_val})
 
 // 64 bit range of all buckets in the page table
-#define WHOLE_BUCKET_RANGE ((bucket_range){.first_bucket_id = 0, .last_bucket_id = UINT64_MAX})
+#define WHOLE_BUCKET_RANGE() ((bucket_range){.first_bucket_id = 0, .last_bucket_id = UINT64_MAX})
 
 // returns 1 if br_p->first_bucket_id <= br_p->last_bucket_id, else 0
 int is_valid_bucket_range(const bucket_range* br_p);
