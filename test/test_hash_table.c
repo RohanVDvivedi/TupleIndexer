@@ -215,7 +215,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 
 		//printf("hash = %"PRIu64"\n", hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, hash_func, httd_p->key_element_count));
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -315,7 +315,7 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 
 		//printf("hash = %"PRIu64"\n", hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, hash_func, httd_p->key_element_count));
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -441,7 +441,7 @@ result update_non_key_element_in_file(uint64_t root_page_id, char* element, char
 		//sprint_tuple(print_buffer, record_tuple, record_def);
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -535,7 +535,7 @@ result update_in_file(uint64_t root_page_id, char* element, char* file_name, uin
 		//sprint_tuple(print_buffer, record_tuple, record_def);
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -627,7 +627,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//sprint_tuple(print_buffer, key_tuple, bpttd.key_def);
 		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -709,7 +709,7 @@ int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, 
 {
 	int removed_count = 0;
 
-	hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (page_table_bucket_range){start_bucket_id, last_bucket_id}, NULL, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){start_bucket_id, last_bucket_id}, NULL, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
