@@ -1,5 +1,10 @@
 ** PICKED TASKS
 
+UTILS
+ * make power_table_uint64 to power_table
+ * and page_table_bucket_range to bucket_range, and move it to util
+ * refactor page_table, hash_table and sorter and their test cases
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * Array_table
@@ -14,8 +19,6 @@
    * Array_table_tuple_defs has, both record_def and index_def, index_entries_per_page, and leaf_entries_per_page
    * it has a function to calculate: get_leaf_entries_refrenceable_by_entry_at_given_level -> (l == 0) ? 1 : index_entries_per_page ^ (l-1) * leaf_entries_per_page
      * that uses power table, and replaces get_power_of_entries_per_page function of page_table
-   * make power_table_uint64 to power_table
-   * and page_table_bucket_range to bucket_range
  * allow cloning, read-only bplus_tree_iterator, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
    * clone all read locks inside them, and make a new object
  * make functions to get the maximum pages that will be locked at once for any of the TupleIndexer data structures and iterators
