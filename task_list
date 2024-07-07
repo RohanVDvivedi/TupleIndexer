@@ -1,10 +1,5 @@
 ** PICKED TASKS
 
-UTILS
- * make power_table_uint64 to power_table
- * and page_table_bucket_range to bucket_range, and move it to util
- * refactor page_table, hash_table and sorter and their test cases
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * Array_table
