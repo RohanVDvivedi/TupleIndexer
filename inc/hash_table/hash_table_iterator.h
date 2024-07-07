@@ -18,7 +18,7 @@ struct hash_table_iterator
 
 	// range for locking the ptrl_p
 	// if this range has only 1 bucket, then ptrl_p may be NULL
-	page_table_bucket_range bucket_range;
+	bucket_range bucket_range;
 
 	// curr_bucket_id that lpli_p is pointing at
 	uint64_t curr_bucket_id;

@@ -1,7 +1,7 @@
 #ifndef PAGE_TABLE_RANGE_LOCKER_PUBLIC_H
 #define PAGE_TABLE_RANGE_LOCKER_PUBLIC_H
 
-#include<page_table_bucket_range.h>
+#include<bucket_range.h>
 #include<persistent_page.h>
 #include<find_position.h>
 

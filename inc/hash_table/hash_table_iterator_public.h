@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_ITERATOR_PUBLIC_H
 #define HASH_TABLE_ITERATOR_PUBLIC_H
 
-#include<page_table_bucket_range.h>
+#include<bucket_range.h>
 
 typedef struct hash_table_iterator hash_table_iterator;
 
@@ -9,7 +9,7 @@ typedef struct hash_table_iterator hash_table_iterator;
 // either provide key
 // of if you do not provide key, then a subset of the lock_range (that actually exists, depending on the bucket_count) becomes iterable
 // on abort_error, NULL is returned
-hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, page_table_bucket_range bucket_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_range bucket_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // return the bucket_count of the hash_table, at the instant when this iterator was created
 // note: this may not be the actual bucket_count, if a expand_hash_table/shrink_hash_table was called post the initialization of this hash_table_iterator

@@ -1,7 +1,7 @@
 #ifndef PAGE_TABLE_RANGE_LOCKER_H
 #define PAGE_TABLE_RANGE_LOCKER_H
 
-#include<page_table_bucket_range.h>
+#include<page_table.h>
 #include<persistent_page.h>
 #include<page_table_tuple_definitions.h>
 #include<opaque_page_access_methods.h>
@@ -12,8 +12,8 @@ struct page_table_range_locker
 {
 	// the range that this range_locker locks
 	// this is the delegated range of local_root, delegated to it by its parent
-	// for the root of tha page_table this value equals [0, UINT64_MAX], both inclusive
-	page_table_bucket_range delegated_local_root_range;
+	// for the root of tha page_table this value equals [0, UINT64_MAX] (i.e. WHOLE_BUCKET_RANGE), both inclusive
+	bucket_range delegated_local_root_range;
 
 	// maximum level that this local root may reach
 	// this is equivalent to (local_root.parent.level - 1)

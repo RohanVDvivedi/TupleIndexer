@@ -5,7 +5,7 @@
 #include<opaque_page_modification_methods.h>
 #include<opaque_page_access_methods.h>
 #include<persistent_page.h>
-#include<page_table_bucket_range.h>
+#include<bucket_range.h>
 
 // initialize page table page
 int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_bucket_id, const page_table_tuple_defs* pttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
@@ -38,12 +38,12 @@ uint32_t get_non_NULL_PAGE_ID_count_in_page_table_page(const persistent_page* pp
 
 // returns bucket ranges that this page contains
 // it returns [first_bucket_id, first_bucket_id + entries_per_page ^ (level + 1) - 1] (both inclusive range)
-page_table_bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
+bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, const page_table_tuple_defs* pttd_p);
 
 // returns the bucket range that this page entrusts its child at child_index to contain
 // the delegated range of the root page is [0, UINT64_MAX]
 // this function does not care about the overflow of the first_bucket_id of the delegated range, it is expected that you will always provide a child_index that has atleast 1 bucket
-page_table_bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p);
+bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const page_table_tuple_defs* pttd_p);
 
 // find the child_index to go to for accessing bucket at bucket_id index
 // returns NO_TUPLE_FOUND, if the bucket_id is not in the range of this page
