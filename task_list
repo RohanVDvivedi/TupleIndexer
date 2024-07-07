@@ -1,17 +1,25 @@
 ** PICKED TASKS
 
+ * array_table
+   * array_table_tuple_definitions
+     * with record_def and index_def, make sure record_def is filed_length tuple
+     * compute index_entries_per_page (must be >= 2) and leaf_entries_per_page (must be >= 1)
+     * implement get_leaf_entries_refrenceable_by_entry_at_given_level -> (l == 0) ? 1 : index_entries_per_page ^ (l-1) * leaf_entries_per_page
+       * that uses power table, and replaces get_power_of_entries_per_page function of page_table
+   * array_table_page_header
+     * copy paste
+   * array_table_page_util
+     * add function to compute entries_per_page, check level and returns appropriately
+     * getter and setter for leaf pages
+   * array_table
+   * array_table_range_locker
+
  * Array_table
    * like page_table but stores fixed length tuples instead of just uint64_t-s
    * we will not replace page_table, page_table will become a special type of array_table
    * page_table will remain as is until array_table is fully tested, after that page_table will become a specific use case of array_table
    * maps uint64 -> fixed_length_tuples
-   * has two entries_per_page index_entries_per_page an leaf_entries_per_page
-   * also stores record_def, you must ensure that atleast 1 record def must fit on a array_table page
-   * you will also need function to get entries_per_page, to get_entries_per_page for a page of specific type based on whether it is index page or leaf page
-   * make page_table a particular case of Array_table, keeping the same api, as it is used in hash_table
-   * Array_table_tuple_defs has, both record_def and index_def, index_entries_per_page, and leaf_entries_per_page
-   * it has a function to calculate: get_leaf_entries_refrenceable_by_entry_at_given_level -> (l == 0) ? 1 : index_entries_per_page ^ (l-1) * leaf_entries_per_page
-     * that uses power table, and replaces get_power_of_entries_per_page function of page_table
+   * make page_table a particular case of array_table, keeping the same api, as it is used in hash_table and sorter     
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
