@@ -59,7 +59,7 @@ static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const v
 
 	// ptrl[sorted_runs_count++] = unsorted_partial_run_head_page_id
 	{
-		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -199,7 +199,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 		// if there is only 1 run remaining to be consumed, then directly move it to the newly created run, without iterating over it's tuples
 		if((sh_p->sorted_runs_count - runs_consumed) == 1)
 		{
-			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 
@@ -232,7 +232,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 		// create the input runs, and initialize them into the input_runs_heap, then also initialize the output_run
 		// and also update the respective runs_head_page_id in page_table of the sorter accordingly
 		{
-			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 
@@ -335,7 +335,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 			// this happens if the last consumed tuple is NULL or is strictly lesser than or equal to the first tuple of the next incomming run
 			if((runs_consumed < sh_p->sorted_runs_count) && (get_element_count_active_sorted_run_heap(&input_runs_heap) == (N_way - 1)))
 			{
-				ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+				ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
@@ -494,7 +494,7 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 
 	if(sorted_data != NULL)
 	{
-		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -516,7 +516,7 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 
 	// destroy the runs page_table, and the contained runs must also be destroyed
 	{
-		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_PAGE_TABLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, NULL, transaction_id, abort_error);
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, NULL, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
