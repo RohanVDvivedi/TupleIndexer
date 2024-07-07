@@ -1,5 +1,5 @@
-#ifndef POWER_TABLE_UINT64_H
-#define POWER_TABLE_UINT64_H
+#ifndef POWER_TABLE_H
+#define POWER_TABLE_H
 
 #include<stdint.h>
 
@@ -8,8 +8,8 @@
 	This number must not be 0 or 1
 */
 
-typedef struct power_table_uint64 power_table_uint64;
-struct power_table_uint64
+typedef struct power_table power_table;
+struct power_table
 {
 	uint64_t power_table[6];
 
@@ -30,10 +30,10 @@ struct power_table_uint64
 
 // initialize power_table for base = N, i.e. power_table[0] = N
 // here N must not equal 0 or 1
-int initialize_power_table_uint64(power_table_uint64* ptu_p, uint64_t N);
+int initialize_power_table(power_table* pt_p, uint64_t N);
 
 // returns 1 on success, else will return 0 for an overflow
-// on success (return value = 1), then result will be set to ptu_p->power_table[0] ^ exponent
-int get_power_using_power_table_uint64(const power_table_uint64* ptu_p, uint64_t exponent, uint64_t* result);
+// on success (return value = 1), then result will be set to pt_p->power_table[0] ^ exponent
+int get_power_using_power_table(const power_table* pt_p, uint64_t exponent, uint64_t* result);
 
 #endif
