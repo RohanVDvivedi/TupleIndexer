@@ -25,6 +25,7 @@
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * allow cloning, read-only bplus_tree_iterator, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
    * clone all read locks inside them, and make a new object
+ * build a function for finding a NULL bucket in array_table, this will help in building heap_table
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
    * this will be supported only for fixed_length index entries
    * function will move only 1 leaf/index entry from left to right or right to left at a time, everything will be dome in place
