@@ -11,6 +11,8 @@
    * array_table_page_util
      * add function to compute entries_per_page, check level and returns appropriately
      * getter and setter for leaf pages
+     * is_child_entry_NULL_in_page_table_page -> works on both leaf and index pages
+     * is_leaf_page_table_page -> to check if the current page is leaf page (level == 0)
      * getter functions for leaf page takes value_buffer to return the corresponsing tuple in return value OR returns NULL
    * array_table
    * array_table_range_locker
