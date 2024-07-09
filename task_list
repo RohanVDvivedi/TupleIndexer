@@ -11,15 +11,17 @@
    * array_table_page_util
      * add function to compute entries_per_page, check level and returns appropriately
      * getter and setter for leaf pages
+     * getter functions for leaf page takes value_buffer to return the corresponsing tuple in return value OR returns NULL
    * array_table
    * array_table_range_locker
+     * getter functions for leaf page takes value_buffer to return the corresponsing tuple in return value OR returns NULL
 
  * Array_table
    * like page_table but stores fixed length tuples instead of just uint64_t-s
    * we will not replace page_table, page_table will become a special type of array_table
    * page_table will remain as is until array_table is fully tested, after that page_table will become a specific use case of array_table
    * maps uint64 -> fixed_length_tuples
-   * make page_table a particular case of array_table, keeping the same api, as it is used in hash_table and sorter     
+   * make page_table a particular case of array_table, keeping the same api, as it is used in hash_table and sorter
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
