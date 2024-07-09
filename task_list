@@ -25,6 +25,13 @@
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * allow cloning, read-only bplus_tree_iterator, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
    * clone all read locks inside them, and make a new object
+ * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
+   * this will be supported only for fixed_length index entries
+   * function will move only 1 leaf/index entry from left to right or right to left at a time, everything will be dome in place
+   * fails if the receiving page is out of space, easy peasy with unaltered and altered util functions
+   * parent page will also be required and will be updated immediately in the call, all 3 pages, parent and 2 children will be provided as is
+   * will fail, also if index entries are not fixed sized
+   * separate function to be worked out for leaf and index pages
  * make functions to get the maximum pages that will be locked at once for any of the TupleIndexer data structures and iterators
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
@@ -51,7 +58,6 @@ DAM FEATURES (CONTIGUOUS ALOCATION and DEALLOCATION of pages) (Still think if yo
   * free_contiguous_pages will not be supported, since we need to be aware that the page must not be locked or waiting to be locked, while doing this, and so we would need a lot to do to undo in case if a page can not be freed, hence only allocate_contiguous_pages will be the only thing close to what we will support in dam api.
 
 ** OPTIMIZATION (THIS MAY NEVER MAKE IT TO THE PROJECT)
- * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
  * prefix key compression -> store prefix compression for var_strings (for internal nodes only), working in the following ways
     0  ->  "ABCD"            "ABCD"
     1  ->  "ABDEF"           "2DEF"
