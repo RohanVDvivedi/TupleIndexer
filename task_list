@@ -32,7 +32,7 @@
    * parent page will also be required and will be updated immediately in the call, all 3 pages, parent and 2 children will be provided as is
    * will fail, also if index entries are not fixed sized
    * separate function to be worked out for leaf and index pages
-   * also we will call this rotation and we need functions to check if we can left and right rotate
+   * also we will call this, as rotation and we need functions to check if we can left and right rotate
  * make functions to get the maximum pages that will be locked at once for any of the TupleIndexer data structures and iterators
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
