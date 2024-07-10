@@ -32,7 +32,7 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 	int res = 1;
 
 	// initialize index_def
-	attd_p->index_def = get_new_tuple_def("temp_entry_def", 1, attd_p->pas_p->page_size);
+	attd_p->index_def = get_new_tuple_def("temp_index_def", 1, attd_p->pas_p->page_size);
 	if(attd_p->index_def == NULL) // memory allocation failed
 		exit(-1);
 	res = insert_element_def(attd_p->index_def, "child_page_id", UINT, attd_p->pas_p->page_id_width, 1, &((user_value){.uint_value = attd_p->pas_p->NULL_PAGE_ID}));
