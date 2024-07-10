@@ -24,8 +24,8 @@ struct array_table_tuple_defs
 
 	// this decides the number of entries that can fit on any of the page_table page (leaf or interior pages)
 	// this values are fixed since the record_def and index_def are both fixed sized
-	uint64_t leaf_entries_per_page;
-	uint64_t index_entries_per_page;
+	uint64_t leaf_entries_per_page;		// can be any value between [1, UINT32_MAX)
+	uint64_t index_entries_per_page;	// can be any value between [2, UINT32_MAX)
 
 	// power table for index_entries_per_page
 	power_table power_table_for_index_entries_per_page;
