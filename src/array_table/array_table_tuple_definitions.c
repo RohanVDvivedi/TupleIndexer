@@ -85,30 +85,40 @@ int get_power_of_entries_per_page_using_page_table_tuple_definitions(const page_
 	return get_power_using_power_table(&(pttd_p->power_table_for_entries_per_page), exp, result);
 }
 
-void deinit_page_table_tuple_definitions(page_table_tuple_defs* pttd_p)
+void deinit_array_table_tuple_definitions(array_table_tuple_defs* attd_p)
 {
-	if(pttd_p->entry_def)
-		delete_tuple_def(pttd_p->entry_def);
+	if(pttd_p->record_def)
+		delete_tuple_def(pttd_p->record_def);
+	if(pttd_p->index_def)
+		delete_tuple_def(pttd_p->index_def);
 
 	pttd_p->pas_p = NULL;
 	pttd_p->entry_def = NULL;
-	pttd_p->entries_per_page = 0;
+	pttd_p->leaf_entries_per_page = 0;
+	pttd_p->index_entries_per_page = 0;
 }
 
-void print_page_table_tuple_definitions(const page_table_tuple_defs* pttd_p)
+void print_array_table_tuple_definitions(const array_table_tuple_defs* attd_p)
 {
-	printf("Page_table tuple defs:\n");
+	printf("Array_table tuple defs:\n");
 
 	if(pttd_p->pas_p)
 		print_page_access_specs(pttd_p->pas_p);
 
-	printf("entry_def = ");
-	if(pttd_p->entry_def)
-		print_tuple_def(pttd_p->entry_def);
+	printf("record_def = ");
+	if(pttd_p->record_def)
+		print_tuple_def(pttd_p->record_def);
 	else
 		printf("NULL\n");
 
-	printf("entries_per_page = %"PRIu64"\n", pttd_p->entries_per_page);
+	printf("index_def = ");
+	if(pttd_p->index_def)
+		print_tuple_def(pttd_p->index_def);
+	else
+		printf("NULL\n");
+
+	printf("leaf_entries_per_page = %"PRIu64"\n", pttd_p->leaf_entries_per_page);
+	printf("index_entries_per_page = %"PRIu64"\n", pttd_p->index_entries_per_page);
 
 	printf("max_page_table_height = %"PRIu64"\n", pttd_p->max_page_table_height);
 }
