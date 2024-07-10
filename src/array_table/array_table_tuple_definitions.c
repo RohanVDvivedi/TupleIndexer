@@ -56,10 +56,17 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 	// number of entries that can fit on the leaf page
 	attd_p->leaf_entries_per_page = get_maximum_tuple_count_on_persistent_page(sizeof_ARRAY_TABLE_PAGE_HEADER(attd_p), attd_p->pas_p->page_size, &(attd_p->record_def->size_def));
 
+	// there has to be atleast 1 entries per page for leaf pages
+	if(attd_p->leaf_entries_per_page < 1)
+	{
+		deinit_array_table_tuple_definitions(attd_p);
+		return 0;
+	}
+
 	// number of entries that can fit on the index (interior) page
 	attd_p->index_entries_per_page = get_maximum_tuple_count_on_persistent_page(sizeof_ARRAY_TABLE_PAGE_HEADER(attd_p), attd_p->pas_p->page_size, &(attd_p->index_def->size_def));
 
-	// there has to be atleast 2 entries per page for it to be a tree
+	// there has to be atleast 2 entries per page for index_pages, for it to be a tree
 	if(attd_p->index_entries_per_page < 2)
 	{
 		deinit_array_table_tuple_definitions(attd_p);
