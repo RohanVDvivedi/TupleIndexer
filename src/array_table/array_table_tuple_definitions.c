@@ -80,9 +80,26 @@ int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_
 	return 1;
 }
 
-int get_power_of_entries_per_page_using_page_table_tuple_definitions(const page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result)
+int get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions(const array_table_tuple_defs* attd_p, uint64_t level, uint64_t* result)
 {
-	return get_power_using_power_table(&(pttd_p->power_table_for_entries_per_page), exp, result);
+	// every leaf page entry references only 1 leaf entry, which is itself
+	if(level == 0)
+	{
+		(*result) = 1;
+		return 1;
+	}
+
+	// result = index_entries_per_page ^ (level - 1)
+	// fail if power table fails, i.e. overflows
+	if(!get_power_using_power_table(&(attd_p->power_table_for_index_entries_per_page), level - 1, result))
+		return 0;
+
+	// check if result * leaf_entries_per_page, will overflow, and then multiply it
+	if(will_unsigned_mul_overflow(uint64_t, (*result), attd_p->leaf_entries_per_page))
+		return 0;
+	(*result) *= attd_p->leaf_entries_per_page;
+
+	return 1;
 }
 
 void deinit_array_table_tuple_definitions(array_table_tuple_defs* attd_p)
