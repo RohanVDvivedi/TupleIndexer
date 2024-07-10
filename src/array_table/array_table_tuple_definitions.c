@@ -1,6 +1,6 @@
-#include<page_table_tuple_definitions.h>
+#include<array_table_tuple_definitions.h>
 
-#include<page_table_page_header.h>
+#include<array_table_page_header.h>
 
 #include<persistent_page_functions.h>
 

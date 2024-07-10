@@ -1,5 +1,5 @@
-#ifndef PAGE_TABLE_TUPLE_DEFINITIONS_H
-#define PAGE_TABLE_TUPLE_DEFINITIONS_H
+#ifndef ARRAY_TABLE_TUPLE_DEFINITIONS_H
+#define ARRAY_TABLE_TUPLE_DEFINITIONS_H
 
 #include<page_table_tuple_definitions_public.h>
 
