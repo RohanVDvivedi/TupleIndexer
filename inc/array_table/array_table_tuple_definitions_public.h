@@ -14,15 +14,15 @@
 typedef struct array_table_tuple_defs array_table_tuple_defs;
 struct array_table_tuple_defs
 {
-	// specification of all the pages in the page_table
+	// specification of all the pages in the array_table
 	const page_access_specs* pas_p;
 
-	// tuple definition of all the pages in the page_table
+	// tuple definition of all the pages in the array_table
 	tuple_def* record_def; // tuple definition of the leaf pages
 	tuple_def* index_def;  // tuple definition of interior pages
 	// additionally each index_entry is just a UINT value of page_id_width in the entry_def
 
-	// this decides the number of entries that can fit on any of the page_table page (leaf or interior pages)
+	// this decides the number of entries that can fit on any of the array_table page (leaf or interior pages)
 	// this values are fixed since the record_def and index_def are both fixed sized
 	uint64_t leaf_entries_per_page;		// can be any value between [1, UINT32_MAX)
 	uint64_t index_entries_per_page;	// can be any value between [2, UINT32_MAX)
@@ -30,8 +30,8 @@ struct array_table_tuple_defs
 	// power table for index_entries_per_page
 	power_table power_table_for_index_entries_per_page;
 
-	// the maximum height of the page table, it will never be more than this value
-	uint64_t max_page_table_height;
+	// the maximum height of the array_table, it will never be more than this value
+	uint64_t max_array_table_height;
 };
 
 // initializes the attributes in array_table_tuple_defs struct as per the provided parameters
@@ -43,7 +43,7 @@ struct array_table_tuple_defs
 int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const page_access_specs* pas_p, const tuple_def* record_def);
 
 // it deallocates both the record_def and index_def and
-// then resets all the page_table_tuple_defs struct attributes to NULL or 0
+// then resets all the array_table_tuple_defs struct attributes to NULL or 0
 void deinit_array_table_tuple_definitions(array_table_tuple_defs* attd_p);
 
 // print array_table_tree_tuple_defs

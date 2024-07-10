@@ -21,7 +21,7 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 	attd_p->pas_p = pas_p;
 
 	// this can only be done after setting the pas_p attribute of attd
-	// there must be room for atleast some bytes after the page_table_page_header
+	// there must be room for atleast some bytes after the array_table_page_header
 	if(!can_page_header_fit_on_persistent_page(sizeof_ARRAY_TABLE_PAGE_HEADER(attd_p), attd_p->pas_p->page_size))
 		return 0;
 
@@ -76,7 +76,7 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 	// build power_table
 	initialize_power_table(&(attd_p->power_table_for_index_entries_per_page), attd_p->index_entries_per_page);
 
-	// calculations for max_page_table_height
+	// calculations for max_array_table_height
 	// above attributes must be set successfully for this block of code to run properly
 	{
 		uint64_t l = 0;
@@ -87,7 +87,7 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 			uint64_t power_result;
 			if(!get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions(attd_p, m, &power_result))
 			{
-				attd_p->max_page_table_height = m;
+				attd_p->max_array_table_height = m;
 				h = m - 1;
 			}
 			else
@@ -156,5 +156,5 @@ void print_array_table_tuple_definitions(const array_table_tuple_defs* attd_p)
 	printf("leaf_entries_per_page = %"PRIu64"\n", attd_p->leaf_entries_per_page);
 	printf("index_entries_per_page = %"PRIu64"\n", attd_p->index_entries_per_page);
 
-	printf("max_page_table_height = %"PRIu64"\n", attd_p->max_page_table_height);
+	printf("max_array_table_height = %"PRIu64"\n", attd_p->max_array_table_height);
 }
