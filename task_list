@@ -1,13 +1,6 @@
 ** PICKED TASKS
 
  * array_table
-   * array_table_tuple_definitions
-     * with record_def and index_def, make sure record_def is filed_length tuple
-     * compute index_entries_per_page (must be >= 2) and leaf_entries_per_page (must be >= 1)
-     * implement get_leaf_entries_refrenceable_by_entry_at_given_level -> (l == 0) ? 1 : index_entries_per_page ^ (l-1) * leaf_entries_per_page
-       * that uses power table, and replaces get_power_of_entries_per_page function of page_table
-   * array_table_page_header
-     * copy paste
    * array_table_page_util
      * add function to compute entries_per_page, check level and returns appropriately
      * getter and setter for leaf pages
