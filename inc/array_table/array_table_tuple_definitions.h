@@ -1,10 +1,10 @@
 #ifndef ARRAY_TABLE_TUPLE_DEFINITIONS_H
 #define ARRAY_TABLE_TUPLE_DEFINITIONS_H
 
-#include<page_table_tuple_definitions_public.h>
+#include<array_table_tuple_definitions_public.h>
 
-// if return == 1, after the call to this function, result will be set to entries_per_page ^ exp
+// if return == 1, after the call to this function, result will be set to (leaf_entries_per_page) * (index_entries_per_page ^ (level - 1)) OR 1 if level == 0
 // on an overflow return == 0
-int get_power_of_entries_per_page_using_page_table_tuple_definitions(const page_table_tuple_defs* pttd_p, uint64_t exp, uint64_t* result);
+int get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions(const array_table_tuple_defs* attd_p, uint64_t level, uint64_t* result);
 
 #endif
