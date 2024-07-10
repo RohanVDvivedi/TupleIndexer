@@ -8,42 +8,45 @@
 
 #include<page_access_specification.h>
 
-// The function (find_non_NULL_PAGE_ID_in_page_table) makes use of the fact that entries_per_page != INVALID_INDEX (UINT32_MAX)
+// The function (find_non_NULL_PAGE_ID_in_array_table) makes use of the fact that (leaf_ or index_)entries_per_page != INVALID_INDEX (UINT32_MAX)
 // i.e. entries_per_page < INVALID_INDEX (UINT32_MAX)
 
-typedef struct page_table_tuple_defs page_table_tuple_defs;
-struct page_table_tuple_defs
+typedef struct array_table_tuple_defs array_table_tuple_defs;
+struct array_table_tuple_defs
 {
 	// specification of all the pages in the page_table
 	const page_access_specs* pas_p;
 
 	// tuple definition of all the pages in the page_table
-	tuple_def* entry_def;
-	// additionally each entry is just a UINT value of page_id_width in the entry_def
+	tuple_def* record_def; // tuple definition of the leaf pages
+	tuple_def* index_def;  // tuple definition of interior pages
+	// additionally each index_entry is just a UINT value of page_id_width in the entry_def
 
-	// this decides the number of entries that can fit on any of the page_table page
-	// this is fixed since the entry_def is fixed sized
-	uint64_t entries_per_page;
+	// this decides the number of entries that can fit on any of the page_table page (leaf or interior pages)
+	// this values are fixed since the record_def and index_def are both fixed sized
+	uint64_t leaf_entries_per_page;
+	uint64_t index_entries_per_page;
 
-	// power table for entries_per_page
-	power_table power_table_for_entries_per_page;
+	// power table for index_entries_per_page
+	power_table power_table_for_index_entries_per_page;
 
-	// the maximum height of the page table will never be more than this value
+	// the maximum height of the page table, it will never be more than this value
 	uint64_t max_page_table_height;
 };
 
-// initializes the attributes in page_table_tuple_defs struct as per the provided parameters
+// initializes the attributes in array_table_tuple_defs struct as per the provided parameters
 // the parameter pas_p must point to the pas attribute of the data_access_method that you are using it with
-// it allocates memory only for entry_def
+// it allocates memory only for record_def and index_def
 // returns 1 for success, it fails with 0
 // it also fails if the pas_p does not pass is_valid_page_access_specs(pas_p)
-int init_page_table_tuple_definitions(page_table_tuple_defs* pttd_p, const page_access_specs* pas_p);
+// it also fails if record_def provided is not fixed sized
+int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const page_access_specs* pas_p, const tuple_def* record_def);
 
-// it deallocates the entry_def and
+// it deallocates both the record_def and index_def and
 // then resets all the page_table_tuple_defs struct attributes to NULL or 0
-void deinit_page_table_tuple_definitions(page_table_tuple_defs* pttd_p);
+void deinit_array_table_tuple_definitions(array_table_tuple_defs* attd_p);
 
-// print page_table_tree_tuple_defs
-void print_page_table_tuple_definitions(const page_table_tuple_defs* pttd_p);
+// print array_table_tree_tuple_defs
+void print_array_table_tuple_definitions(const array_table_tuple_defs* attd_p);
 
 #endif
