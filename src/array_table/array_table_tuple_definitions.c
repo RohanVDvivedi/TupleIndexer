@@ -8,7 +8,7 @@
 
 #include<stdlib.h>
 
-int init_page_table_tuple_definitions(page_table_tuple_defs* attd_p, const page_access_specs* pas_p)
+int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const page_access_specs* pas_p)
 {
 	// zero initialize attd_p
 	(*attd_p) = (page_table_tuple_defs){};
