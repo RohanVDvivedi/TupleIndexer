@@ -44,6 +44,14 @@ uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_array_table_page
 	return (bucket_id / bucket_range_size) * bucket_range_size;
 }
 
+uint32_t get_entries_per_page_for_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
+{
+	if(is_array_table_leaf_page(ppage, attd_p))
+		return attd_p->leaf_entries_per_page;
+	else
+		return attd_p->index_entries_per_page;
+}
+
 void print_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
 {
 	print_array_table_page_header(ppage, attd_p);
