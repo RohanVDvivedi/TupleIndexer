@@ -363,17 +363,12 @@ int level_up_array_table_page(persistent_page* ppage, const array_table_tuple_de
 	hdr.level = old_hdr.level + 1;
 	hdr.first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_array_table_page(old_hdr.level + 1, old_hdr.first_bucket_id, attd_p);
 
-	// write new header hdr onto the ppage
-	set_array_table_page_header(ppage, &hdr, attd_p, pmm_p, transaction_id, abort_error);
+	// initialize this page as a new empty page, with the header contents same as hdr
+	init_array_table_page(ppage, hdr.level, hdr.first_bucket_id, attd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
 	// from this point on, level of ppage is > 0 (because we incremented it), hence we can operate on it with index_def and index access functions
-
-	// discard all tuples from the ppage, this page has a level > 0, hence it must always be an index page
-	discard_all_tuples_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), abort_error);
-	if(*abort_error)
-		return 0;
 
 	// if we needed to copy contents of the ppage onto its child, then make an entry for it on this promoted ppage
 	if(only_child_page_id != attd_p->pas_p->NULL_PAGE_ID)
