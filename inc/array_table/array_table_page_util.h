@@ -24,16 +24,20 @@ void print_array_table_page(const persistent_page* ppage, const array_table_tupl
 // returns 1, if the child_index is not within the entries_per_page for the respective page types OR if the entry is really NULL
 int is_NULL_at_child_index_in_array_table_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p);
 
+// -- below 2 functions are for only the leaf pages of array_table
+
 // returns the record in the leaf page at child_index
 // return value is NULL if the child_entry is NULL, else it returns the record copied into the preallocated_memory
 const void* get_record_entry_at_child_index_in_array_table_leaf_page(const persistent_page* ppage, uint32_t child_index, void* preallocated_memory, const array_table_tuple_defs* attd_p);
 
-// get child_page_id in the page at child_index from index_page
-uint64_t get_child_page_id_at_child_index_in_array_table_index_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p);
-
 // set record in the page at child_index
 // fails if child_index > attd_p->entries_per_page
 int set_record_entry_at_child_index_in_array_table_leaf_page(persistent_page* ppage, uint32_t child_index, const void* record, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+
+// -- below 2 functions are for only the index pages of array_table
+
+// get child_page_id in the page at child_index from index_page
+uint64_t get_child_page_id_at_child_index_in_array_table_index_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p);
 
 // set child_page_id in the page at child_index
 // fails if child_index > attd_p->entries_per_page
