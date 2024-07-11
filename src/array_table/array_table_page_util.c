@@ -53,31 +53,31 @@ void print_array_table_page(const persistent_page* ppage, const array_table_tupl
 		print_persistent_page(ppage, attd_p->pas_p->page_size, attd_p->index_def);
 }
 
-uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
+uint64_t get_child_page_id_at_child_index_in_array_table_index_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
 {
 	// child_index out of range
-	if(child_index >= attd_p->entries_per_page)
+	if(child_index >= attd_p->index_entries_per_page)
 		return attd_p->pas_p->NULL_PAGE_ID;
 
-	const void* child_tuple = get_nth_tuple_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def), child_index);
+	const void* child_tuple = get_nth_tuple_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), child_index);
 
 	// if the child_tuple is NULL, then it is NULL_PAGE_ID
 	if(child_tuple == NULL)
 		return attd_p->pas_p->NULL_PAGE_ID;
 
 	// the tuple has only 1 non-NULLable UINT value, hence we can directly access it
-	return get_value_from_element_from_tuple(attd_p->entry_def, 0, child_tuple).uint_value;
+	return get_value_from_element_from_tuple(attd_p->index_def, 0, child_tuple).uint_value;
 }
 
-int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, uint32_t child_index, uint64_t child_page_id, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int set_child_page_id_at_child_index_in_array_table_index_page(persistent_page* ppage, uint32_t child_index, uint64_t child_page_id, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// child_index out of range
-	if(child_index >= attd_p->entries_per_page)
+	if(child_index >= attd_p->index_entries_per_page)
 		return 0;
 
 	// the child_page_id at child_index is already the desired value, then return 1 (success)
 	// this allows us to not insert redundant write-ahead_log records
-	if(child_page_id == get_child_page_id_at_child_index_in_page_table_page(ppage, child_index, attd_p))
+	if(child_page_id == get_child_page_id_at_child_index_in_array_table_index_page(ppage, child_index, attd_p))
 		return 1;
 
 	if(child_page_id == attd_p->pas_p->NULL_PAGE_ID)
@@ -85,14 +85,14 @@ int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, 
 		// we need to set NULL at child_index
 		// we do not need to use the update_resiliently, because entry_def is fixed width tuple with only 1 element
 		// if the child_index is greater than or equal to the tuple_count on the page, then this function fails and we do not need to take care of it, since the tuple still get read as NULL by the getter function above
-		int updated_to_null = update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def), child_index, NULL, abort_error);
+		int updated_to_null = update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), child_index, NULL, abort_error);
 		if(*abort_error)
 			return 0;
 
 		// if the entry was update to null and the child_index happens to be at the last tuple then we discard trailing tomb stones
-		if(updated_to_null && child_index == (get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def)) - 1))
+		if(updated_to_null && child_index == (get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def)) - 1))
 		{
-			discard_trailing_tomb_stones_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def), abort_error);
+			discard_trailing_tomb_stones_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), abort_error);
 			if(*abort_error)
 				return 0;
 		}
@@ -100,9 +100,9 @@ int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, 
 	else
 	{
 		// keep on appending NULLs, until child_index is not in bounds of the tuple_count on the page
-		while(child_index >= get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def)))
+		while(child_index >= get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def)))
 		{
-			append_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def), NULL, abort_error);
+			append_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), NULL, abort_error);
 			if(*abort_error)
 				return 0;
 		}
@@ -110,14 +110,14 @@ int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, 
 		// now since the child_index is within bounds of tuple_count, we can directly update
 
 		// construct a tuple in temporary memory and make it point to child_page_id
-		void* new_child_tuple = malloc(get_minimum_tuple_size(attd_p->entry_def)); // minimum size of fixed width tuple is same as its size
+		void* new_child_tuple = malloc(get_minimum_tuple_size(attd_p->index_def)); // minimum size of fixed width tuple is same as its size
 		if(new_child_tuple == NULL)  // memory allocation failed
 			exit(-1);
-		init_tuple(attd_p->entry_def, new_child_tuple);
-		set_element_in_tuple(attd_p->entry_def, 0, new_child_tuple, &((user_value){.uint_value = child_page_id}));
+		init_tuple(attd_p->index_def, new_child_tuple);
+		set_element_in_tuple(attd_p->index_def, 0, new_child_tuple, &((user_value){.uint_value = child_page_id}));
 
 		// perform update
-		update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def), child_index, new_child_tuple, abort_error);
+		update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), child_index, new_child_tuple, abort_error);
 		free(new_child_tuple);
 		if(*abort_error)
 			return 0;
