@@ -33,7 +33,7 @@ int init_array_table_page(persistent_page* ppage, uint32_t level, uint64_t first
 	return 1;
 }
 
-uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(uint32_t level, uint64_t bucket_id, const array_table_tuple_defs* attd_p)
+uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_array_table_page(uint32_t level, uint64_t bucket_id, const array_table_tuple_defs* attd_p)
 {
 	uint64_t bucket_range_size;
 
@@ -44,10 +44,13 @@ uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(
 	return (bucket_id / bucket_range_size) * bucket_range_size;
 }
 
-void print_page_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
+void print_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
 {
-	print_page_table_page_header(ppage, attd_p);
-	print_persistent_page(ppage, attd_p->pas_p->page_size, attd_p->entry_def);
+	print_array_table_page_header(ppage, attd_p);
+	if(is_array_table_leaf_page(ppage, attd_p))
+		print_persistent_page(ppage, attd_p->pas_p->page_size, attd_p->record_def);
+	else
+		print_persistent_page(ppage, attd_p->pas_p->page_size, attd_p->index_def);
 }
 
 uint64_t get_child_page_id_at_child_index_in_page_table_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
