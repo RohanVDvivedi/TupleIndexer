@@ -126,16 +126,22 @@ int set_child_page_id_at_child_index_in_array_table_index_page(persistent_page* 
 	return 1;
 }
 
-int has_all_NULL_PAGE_ID_in_page_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
+int has_all_NULL_PAGE_ID_in_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
 {
 	// if tomb_stone_count == tuple_count, then this means all child_page_id's are NULL_PAGE_ID
-	return get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def)) == get_tomb_stone_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def));
+	if(is_page_table_leaf_page(ppage, attd_p))
+		return get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def)) == get_tomb_stone_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def));
+	else
+		return get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def)) == get_tomb_stone_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def));
 }
 
-uint32_t get_non_NULL_PAGE_ID_count_in_page_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
+uint32_t get_non_NULL_PAGE_ID_count_in_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
 {
 	// this is simply equal to tuple_count - tomb_stone_count
-	return get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def)) - get_tomb_stone_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def));
+	if(is_page_table_leaf_page(ppage, attd_p))
+		return get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def)) - get_tomb_stone_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def));
+	else
+		return get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def)) - get_tomb_stone_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def));
 }
 
 bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
