@@ -78,7 +78,47 @@ const void* get_record_entry_at_child_index_in_array_table_leaf_page(const persi
 	return preallocated_memory;
 }
 
-int set_record_entry_at_child_index_in_array_table_leaf_page(persistent_page* ppage, uint32_t child_index, const void* record, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int set_record_entry_at_child_index_in_array_table_leaf_page(persistent_page* ppage, uint32_t child_index, const void* record, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// child_index out of range
+	if(child_index >= attd_p->leaf_entries_per_page)
+		return 0;
+
+	if(record == NULL)
+	{
+		// we need to set NULL at child_index
+		// we do not need to use the update_resiliently, because record_def is fixed width tuple
+		// if the child_index is greater than or equal to the tuple_count on the page, then this function fails and we do not need to take care of it, since the tuple still get read as NULL by the getter function above
+		int updated_to_null = update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), child_index, NULL, abort_error);
+		if(*abort_error)
+			return 0;
+
+		// if the entry was update to null and the child_index happens to be at the last tuple then we discard trailing tomb stones
+		if(updated_to_null && child_index == (get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def)) - 1))
+		{
+			discard_trailing_tomb_stones_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), abort_error);
+			if(*abort_error)
+				return 0;
+		}
+	}
+	else
+	{
+		// keep on appending NULLs, until child_index is not in bounds of the tuple_count on the page
+		while(child_index >= get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def)))
+		{
+			append_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), NULL, abort_error);
+			if(*abort_error)
+				return 0;
+		}
+
+		// now since the child_index is within bounds of tuple_count, we can directly update	
+		update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), child_index, record, abort_error);
+		if(*abort_error)
+			return 0;
+	}
+
+	return 1;
+}
 
 uint64_t get_child_page_id_at_child_index_in_array_table_index_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
 {
@@ -110,7 +150,7 @@ int set_child_page_id_at_child_index_in_array_table_index_page(persistent_page* 
 	if(child_page_id == attd_p->pas_p->NULL_PAGE_ID)
 	{
 		// we need to set NULL at child_index
-		// we do not need to use the update_resiliently, because entry_def is fixed width tuple with only 1 element
+		// we do not need to use the update_resiliently, because index_def is fixed width tuple with only 1 element
 		// if the child_index is greater than or equal to the tuple_count on the page, then this function fails and we do not need to take care of it, since the tuple still get read as NULL by the getter function above
 		int updated_to_null = update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), child_index, NULL, abort_error);
 		if(*abort_error)
