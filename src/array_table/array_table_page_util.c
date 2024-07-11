@@ -144,14 +144,14 @@ uint32_t get_non_NULL_PAGE_ID_count_in_array_table_page(const persistent_page* p
 		return get_tuple_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def)) - get_tomb_stone_count_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def));
 }
 
-bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
+bucket_range get_bucket_range_for_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
 {
-	page_table_page_header hdr = get_page_table_page_header(ppage, attd_p);
+	array_table_page_header hdr = get_array_table_page_header(ppage, attd_p);
 
 	bucket_range result = {.first_bucket_id = hdr.first_bucket_id};
 
 	uint64_t bucket_range_size;
-	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(attd_p, hdr.level + 1, &bucket_range_size))
+	if(0 == get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions(attd_p, hdr.level + 1, &bucket_range_size))
 		goto EXIT_OVERFLOW;
 
 	if(will_unsigned_sum_overflow(uint64_t, result.first_bucket_id, (bucket_range_size-1)))
@@ -159,7 +159,7 @@ bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, 
 
 	result.last_bucket_id = result.first_bucket_id + (bucket_range_size-1);
 
-	// effectively equal to [first_bucket_id, first_bucket_id + (entries_per_page ^ (level + 1)) - 1]
+	// effectively equal to [first_bucket_id, first_bucket_id + get_leaf_entries_refrenceable(level + 1) - 1]
 	return result;
 
 	EXIT_OVERFLOW:;
@@ -167,18 +167,18 @@ bucket_range get_bucket_range_for_page_table_page(const persistent_page* ppage, 
 	return result;
 }
 
-bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
+bucket_range get_delegated_bucket_range_for_child_index_on_array_table_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
 {
 	// child_index must be within bounds of entries_per_page
 	if(child_index >= attd_p->entries_per_page)
 		goto EXIT_OUT_OF_BOUNDS_CHILD;
 
-	page_table_page_header hdr = get_page_table_page_header(ppage, attd_p);
+	array_table_page_header hdr = get_array_table_page_header(ppage, attd_p);
 
 	bucket_range result;
 
 	uint64_t child_bucket_range_size;
-	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(attd_p, hdr.level, &child_bucket_range_size))
+	if(0 == get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions(attd_p, hdr.level, &child_bucket_range_size))
 	{
 		if(child_index != 0)
 			goto EXIT_OUT_OF_BOUNDS_CHILD;
@@ -202,7 +202,7 @@ bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const
 
 	result.last_bucket_id = result.first_bucket_id + (child_bucket_range_size-1);
 
-	// effectively equal to [first_bucket_id + child_index * (entries_per_page ^ level), first_bucket_id + (child_index) * (entries_per_page ^ level) + (entries_per_page ^ level) - 1]
+	// effectively equal to [first_bucket_id + (child_index * get_leaf_entries_refrenceable(level)), first_bucket_id + (child_index * get_leaf_entries_refrenceable(level)) + get_leaf_entries_refrenceable(level) - 1]
 	return result;
 
 	EXIT_OVERFLOW:;
@@ -214,20 +214,20 @@ bucket_range get_delegated_bucket_range_for_child_index_on_page_table_page(const
 	return (bucket_range){.first_bucket_id = UINT64_MAX, .last_bucket_id = 0};
 }
 
-uint32_t get_child_index_for_bucket_id_on_page_table_page(const persistent_page* ppage, uint64_t bucket_id, const array_table_tuple_defs* attd_p)
+uint32_t get_child_index_for_bucket_id_on_array_table_page(const persistent_page* ppage, uint64_t bucket_id, const array_table_tuple_defs* attd_p)
 {
-	bucket_range bucket_range_for_page = get_bucket_range_for_page_table_page(ppage, attd_p);
+	bucket_range bucket_range_for_page = get_bucket_range_for_array_table_page(ppage, attd_p);
 
 	if(!is_bucket_contained_bucket_range(&bucket_range_for_page, bucket_id))
 		return NO_TUPLE_FOUND;
 
-	page_table_page_header hdr = get_page_table_page_header(ppage, attd_p);
+	array_table_page_header hdr = get_array_table_page_header(ppage, attd_p);
 
 	uint64_t child_bucket_range_size;
 	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(attd_p, hdr.level, &child_bucket_range_size)) // if child_bucket_range_size is too big then, you can only access the first child
 		return 0;
 
-	// effectively equal to (bucket_id - first_bucket_id) / (entries_per_page ^ level)
+	// effectively equal to (bucket_id - first_bucket_id) / get_leaf_entries_refrenceable(level)
 	return (bucket_id - bucket_range_for_page.first_bucket_id) / child_bucket_range_size;
 }
 
