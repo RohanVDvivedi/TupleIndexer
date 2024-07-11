@@ -170,7 +170,8 @@ bucket_range get_bucket_range_for_array_table_page(const persistent_page* ppage,
 bucket_range get_delegated_bucket_range_for_child_index_on_array_table_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
 {
 	// child_index must be within bounds of entries_per_page
-	if(child_index >= attd_p->entries_per_page)
+	if( ( is_array_table_leaf_page(ppage, attd_p) && child_index >= attd_p->leaf_entries_per_page) ||
+		(!is_array_table_leaf_page(ppage, attd_p) && child_index >= attd_p->index_entries_per_page))
 		goto EXIT_OUT_OF_BOUNDS_CHILD;
 
 	array_table_page_header hdr = get_array_table_page_header(ppage, attd_p);
@@ -224,7 +225,7 @@ uint32_t get_child_index_for_bucket_id_on_array_table_page(const persistent_page
 	array_table_page_header hdr = get_array_table_page_header(ppage, attd_p);
 
 	uint64_t child_bucket_range_size;
-	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(attd_p, hdr.level, &child_bucket_range_size)) // if child_bucket_range_size is too big then, you can only access the first child
+	if(0 == get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions(attd_p, hdr.level, &child_bucket_range_size)) // if child_bucket_range_size is too big then, you can only access the first child
 		return 0;
 
 	// effectively equal to (bucket_id - first_bucket_id) / get_leaf_entries_refrenceable(level)
