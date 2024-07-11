@@ -37,8 +37,8 @@ uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(
 {
 	uint64_t bucket_range_size;
 
-	// if the bucket_range_size is greater than (entries_per_page^(level+1)), then all the bucket_ids point to first_bucket_id
-	if(0 == get_power_of_entries_per_page_using_page_table_tuple_definitions(attd_p, level + 1, &bucket_range_size))
+	// if the bucket_range_size is greater than get_leaf_entries_refrenceable(level+1), then all the bucket_ids point to first_bucket_id
+	if(0 == get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions(attd_p, level + 1, &bucket_range_size))
 		return 0;
 
 	return (bucket_id / bucket_range_size) * bucket_range_size;
