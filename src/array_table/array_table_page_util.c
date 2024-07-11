@@ -53,6 +53,18 @@ void print_array_table_page(const persistent_page* ppage, const array_table_tupl
 		print_persistent_page(ppage, attd_p->pas_p->page_size, attd_p->index_def);
 }
 
+int is_NULL_at_child_index_in_array_table_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
+{
+	if(is_array_table_leaf_page(ppage, attd_p))
+		return NULL == get_nth_tuple_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), child_index);
+	else
+		return NULL == get_nth_tuple_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), child_index);
+}
+
+const void* get_record_entry_at_child_index_in_array_table_leaf_page(const persistent_page* ppage, uint32_t child_index, void* preallocated_memory, const array_table_tuple_defs* attd_p);
+
+int set_record_entry_at_child_index_in_array_table_leaf_page(persistent_page* ppage, uint32_t child_index, const void* record, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+
 uint64_t get_child_page_id_at_child_index_in_array_table_index_page(const persistent_page* ppage, uint32_t child_index, const array_table_tuple_defs* attd_p)
 {
 	// child_index out of range
