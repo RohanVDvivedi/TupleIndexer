@@ -299,27 +299,27 @@ uint32_t get_child_index_for_bucket_id_on_array_table_page(const persistent_page
 	return (bucket_id - bucket_range_for_page.first_bucket_id) / child_bucket_range_size;
 }
 
-int level_up_page_table_page(persistent_page* ppage, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int level_up_array_table_page(persistent_page* ppage, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// grab the header of the page
-	page_table_page_header hdr = get_page_table_page_header(ppage, attd_p);
+	array_table_page_header hdr = get_array_table_page_header(ppage, attd_p);
 
 	// cache the old header value
-	const page_table_page_header old_hdr = hdr;
+	const array_table_page_header old_hdr = hdr;
 	uint64_t only_child_page_id = attd_p->pas_p->NULL_PAGE_ID;
 
-	// if the ppage has atleast 1 non-NULL_PAGE_ID, then its contents have to preserved in its child
-	if(!has_all_NULL_PAGE_ID_in_page_table_page(ppage, attd_p))
+	// if the ppage has atleast 1 non-NULL_PAGE_ID, then its contents have to preserved in its only child
+	if(!has_all_NULL_PAGE_ID_in_array_table_page(ppage, attd_p))
 	{
 		// we do not need to create a new child page, if the ppage has only 1 child and ppage is not a leaf
-		if(get_non_NULL_PAGE_ID_count_in_page_table_page(ppage, attd_p) == 1 && !is_page_table_leaf_page(ppage, attd_p))
+		if(get_non_NULL_PAGE_ID_count_in_array_table_page(ppage, attd_p) == 1 && !is_array_table_leaf_page(ppage, attd_p))
 		{
 			// find the only child (only_child_page_id) of this ppage
-			for(uint32_t i = 0; i < attd_p->entries_per_page; i++)
+			for(uint32_t i = 0; i < attd_p->index_entries_per_page; i++) // here we are using index_entries_per_page, as we already checked that it is not a leaf page
 			{
-				if(get_child_page_id_at_child_index_in_page_table_page(ppage, i, attd_p) != attd_p->pas_p->NULL_PAGE_ID)
+				if(get_child_page_id_at_child_index_in_array_table_index_page(ppage, i, attd_p) != attd_p->pas_p->NULL_PAGE_ID)
 				{
-					only_child_page_id = get_child_page_id_at_child_index_in_page_table_page(ppage, i, attd_p);
+					only_child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(ppage, i, attd_p);
 					break;
 				}
 			}
@@ -332,11 +332,23 @@ int level_up_page_table_page(persistent_page* ppage, const array_table_tuple_def
 				return 0;
 
 			// clone contents of the ppage onto the only_child_page
-			clone_persistent_page(pmm_p, transaction_id, &only_child_page, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def), ppage, abort_error);
-			if(*abort_error)
+			if(is_array_table_leaf_page(ppage, attd_p)) // at this point ppage can be a leaf page or an index page, hence take care of both the cases
 			{
-				release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-				return 0;
+				clone_persistent_page(pmm_p, transaction_id, &only_child_page, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), ppage, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+					return 0;
+				}
+			}
+			else
+			{
+				clone_persistent_page(pmm_p, transaction_id, &only_child_page, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), ppage, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+					return 0;
+				}
 			}
 
 			// now we are done with only_child_page, release lock on it
@@ -347,17 +359,19 @@ int level_up_page_table_page(persistent_page* ppage, const array_table_tuple_def
 		}
 	}
 
-	// discard all tuples from the ppage
-	discard_all_tuples_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->entry_def->size_def), abort_error);
+	// increment its level and update first_bucket_id
+	hdr.level = old_hdr.level + 1;
+	hdr.first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_array_table_page(old_hdr.level + 1, old_hdr.first_bucket_id, attd_p);
+
+	// write new header hdr onto the ppage
+	set_array_table_page_header(ppage, &hdr, attd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
-	// increment its level and update first_bucket_id
-	hdr.level = old_hdr.level + 1;
-	hdr.first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_page_table_page(old_hdr.level + 1, old_hdr.first_bucket_id, attd_p);
+	// from this point on, level of ppage is > 0 (because we incremented it), hence we can operate on it with index_def and index access functions
 
-	// write new header hdr onto the ppage
-	set_page_table_page_header(ppage, &hdr, attd_p, pmm_p, transaction_id, abort_error);
+	// discard all tuples from the ppage, this page has a level > 0, hence it must always be an index page
+	discard_all_tuples_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -365,8 +379,8 @@ int level_up_page_table_page(persistent_page* ppage, const array_table_tuple_def
 	if(only_child_page_id != attd_p->pas_p->NULL_PAGE_ID)
 	{
 		// the entry goes for only_child_page.first_bucket_id -> only_child_page_id
-		uint32_t child_index_for_only_child_page = get_child_index_for_bucket_id_on_page_table_page(ppage, old_hdr.first_bucket_id, attd_p);
-		set_child_page_id_at_child_index_in_page_table_page(ppage, child_index_for_only_child_page, only_child_page_id, attd_p, pmm_p, transaction_id, abort_error);
+		uint32_t child_index_for_only_child_page = get_child_index_for_bucket_id_on_array_table_page(ppage, old_hdr.first_bucket_id, attd_p);
+		set_child_page_id_at_child_index_in_array_table_index_page(ppage, child_index_for_only_child_page, only_child_page_id, attd_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
 	}
