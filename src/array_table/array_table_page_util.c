@@ -359,7 +359,7 @@ int level_up_array_table_page(persistent_page* ppage, const array_table_tuple_de
 		}
 	}
 
-	// increment its level and update first_bucket_id
+	// increment its level and update first_bucket_id, rememeber we want to create this page as the immediate parent of this page
 	hdr.level = old_hdr.level + 1;
 	hdr.first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_array_table_page(old_hdr.level + 1, old_hdr.first_bucket_id, attd_p);
 
