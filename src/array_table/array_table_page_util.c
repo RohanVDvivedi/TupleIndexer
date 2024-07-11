@@ -61,7 +61,22 @@ int is_NULL_at_child_index_in_array_table_page(const persistent_page* ppage, uin
 		return NULL == get_nth_tuple_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), child_index);
 }
 
-const void* get_record_entry_at_child_index_in_array_table_leaf_page(const persistent_page* ppage, uint32_t child_index, void* preallocated_memory, const array_table_tuple_defs* attd_p);
+const void* get_record_entry_at_child_index_in_array_table_leaf_page(const persistent_page* ppage, uint32_t child_index, void* preallocated_memory, const array_table_tuple_defs* attd_p)
+{
+	const void* on_page_record = get_nth_tuple_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), child_index);
+
+	// if NULL
+	if(on_page_record == NULL)
+		return NULL;
+
+	// pre allocated memory not provided, then return the on page reference
+	if(preallocated_memory == NULL)
+		return on_page_record;
+
+	// otherwise copy the on_page_recod to preallocated_memory and return the copy
+	memory_move(preallocated_memory, on_page_record, get_tuple_size(attd_p->record_def, on_page_record));
+	return preallocated_memory;
+}
 
 int set_record_entry_at_child_index_in_array_table_leaf_page(persistent_page* ppage, uint32_t child_index, const void* record, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
