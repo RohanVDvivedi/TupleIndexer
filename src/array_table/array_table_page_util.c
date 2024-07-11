@@ -368,7 +368,7 @@ int level_up_array_table_page(persistent_page* ppage, const array_table_tuple_de
 	if(*abort_error)
 		return 0;
 
-	// from this point on, level of ppage is > 0 (because we incremented it), hence we can operate on it with index_def and index access functions
+	// from this point on, level of ppage is > 0 (because we incremented it), hence we can operate on it with index_def and index page access functions
 
 	// if we needed to copy contents of the ppage onto its child, then make an entry for it on this promoted ppage
 	if(only_child_page_id != attd_p->pas_p->NULL_PAGE_ID)
@@ -383,19 +383,21 @@ int level_up_array_table_page(persistent_page* ppage, const array_table_tuple_de
 	return 1;
 }
 
-int level_down_page_table_page(persistent_page* ppage, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int level_down_array_table_page(persistent_page* ppage, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// if the page is leaf OR if the count of non-NULL_PAGE_ID entry is not 1, then it can can not be levelled down
-	if(is_page_table_leaf_page(ppage, attd_p) || get_non_NULL_PAGE_ID_count_in_page_table_page(ppage, attd_p) != 1)
+	if(is_array_table_leaf_page(ppage, attd_p) || get_non_NULL_PAGE_ID_count_in_array_table_page(ppage, attd_p) != 1)
 		return 0;
+
+	// here on we know that ppage is not leaf page, hence we can access it using index_def and index page access functions
 
 	// find the only child (only_child_page_id) of this ppage
 	uint64_t only_child_page_id = attd_p->pas_p->NULL_PAGE_ID;
-	for(uint32_t i = 0; i < attd_p->entries_per_page; i++)
+	for(uint32_t i = 0; i < attd_p->index_entries_per_page; i++)
 	{
-		if(get_child_page_id_at_child_index_in_page_table_page(ppage, i, attd_p) != attd_p->pas_p->NULL_PAGE_ID)
+		if(get_child_page_id_at_child_index_in_array_table_index_page(ppage, i, attd_p) != attd_p->pas_p->NULL_PAGE_ID)
 		{
-			only_child_page_id = get_child_page_id_at_child_index_in_page_table_page(ppage, i, attd_p);
+			only_child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(ppage, i, attd_p);
 			break;
 		}
 	}
@@ -406,11 +408,23 @@ int level_down_page_table_page(persistent_page* ppage, const array_table_tuple_d
 		return 0;
 
 	// clone the only_child_page onto the ppage
-	clone_persistent_page(pmm_p, transaction_id, ppage,  attd_p->pas_p->page_size, &(attd_p->entry_def->size_def), &only_child_page, abort_error);
-	if(*abort_error)
+	if(is_array_table_leaf_page(&only_child_page, attd_p))
 	{
-		release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-		return 0;
+		clone_persistent_page(pmm_p, transaction_id, ppage,  attd_p->pas_p->page_size, &(attd_p->record_def->size_def), &only_child_page, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+			return 0;
+		}
+	}
+	else
+	{
+		clone_persistent_page(pmm_p, transaction_id, ppage,  attd_p->pas_p->page_size, &(attd_p->index_def->size_def), &only_child_page, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+			return 0;
+		}
 	}
 
 	// free the only_child_page
