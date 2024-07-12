@@ -330,7 +330,7 @@ int level_up_array_table_page(persistent_page* ppage, const array_table_tuple_de
 			// find the only child (only_child_page_id) of this ppage
 			for(uint32_t i = 0; i < attd_p->index_entries_per_page; i++) // here we are using index_entries_per_page, as we already checked that it is not a leaf page
 			{
-				if(get_child_page_id_at_child_index_in_array_table_index_page(ppage, i, attd_p) != attd_p->pas_p->NULL_PAGE_ID)
+				if(!is_NULL_at_child_index_in_array_table_page(ppage, i, attd_p))
 				{
 					only_child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(ppage, i, attd_p);
 					break;
@@ -346,22 +346,13 @@ int level_up_array_table_page(persistent_page* ppage, const array_table_tuple_de
 
 			// clone contents of the ppage onto the only_child_page
 			if(is_array_table_leaf_page(ppage, attd_p)) // at this point ppage can be a leaf page or an index page, hence take care of both the cases
-			{
 				clone_persistent_page(pmm_p, transaction_id, &only_child_page, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), ppage, abort_error);
-				if(*abort_error)
-				{
-					release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-					return 0;
-				}
-			}
 			else
-			{
 				clone_persistent_page(pmm_p, transaction_id, &only_child_page, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), ppage, abort_error);
-				if(*abort_error)
-				{
-					release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-					return 0;
-				}
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+				return 0;
 			}
 
 			// now we are done with only_child_page, release lock on it
@@ -409,7 +400,7 @@ int level_down_array_table_page(persistent_page* ppage, const array_table_tuple_
 	uint64_t only_child_page_id = attd_p->pas_p->NULL_PAGE_ID;
 	for(uint32_t i = 0; i < attd_p->index_entries_per_page; i++)
 	{
-		if(get_child_page_id_at_child_index_in_array_table_index_page(ppage, i, attd_p) != attd_p->pas_p->NULL_PAGE_ID)
+		if(!is_NULL_at_child_index_in_array_table_page(ppage, i, attd_p))
 		{
 			only_child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(ppage, i, attd_p);
 			break;
@@ -423,22 +414,13 @@ int level_down_array_table_page(persistent_page* ppage, const array_table_tuple_
 
 	// clone the only_child_page onto the ppage
 	if(is_array_table_leaf_page(&only_child_page, attd_p))
-	{
 		clone_persistent_page(pmm_p, transaction_id, ppage,  attd_p->pas_p->page_size, &(attd_p->record_def->size_def), &only_child_page, abort_error);
-		if(*abort_error)
-		{
-			release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-			return 0;
-		}
-	}
 	else
-	{
 		clone_persistent_page(pmm_p, transaction_id, ppage,  attd_p->pas_p->page_size, &(attd_p->index_def->size_def), &only_child_page, abort_error);
-		if(*abort_error)
-		{
-			release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
-			return 0;
-		}
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(pam_p, transaction_id, &only_child_page, NONE_OPTION, abort_error);
+		return 0;
 	}
 
 	// free the only_child_page
