@@ -43,7 +43,7 @@ int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* att
 			return 0;
 
 		// pre cache level of the root_page
-		uint32_t root_page_level = get_level_of_page_table_page(&root_page, attd_p);
+		uint32_t root_page_level = get_level_of_array_table_page(&root_page, attd_p);
 
 		// create a stack of capacity = levels
 		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
@@ -58,7 +58,7 @@ int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* att
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// on leaf just free the leaf
-		if(is_page_table_leaf_page(&(curr_locked_page->ppage), attd_p))
+		if(is_array_table_leaf_page(&(curr_locked_page->ppage), attd_p))
 		{
 			// free it and pop it from the stack
 			release_lock_on_persistent_page(pam_p, transaction_id, &(curr_locked_page->ppage), FREE_PAGE, abort_error);
@@ -66,11 +66,11 @@ int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* att
 				goto ABORT_ERROR;
 			pop_from_locked_pages_stack(locked_pages_stack_p);
 		}
-		// handle free-ing for interior pages
+		// handle free-ing for index pages
 		else
 		{
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), attd_p->pas_p->page_size, &(attd_p->entry_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), attd_p->pas_p->page_size, &(attd_p->index_def->size_def));
 
 			int pushed_child = 0;
 
@@ -78,7 +78,7 @@ int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* att
 			while(curr_locked_page->child_index < tuple_count && pushed_child == 0)
 			{
 				// then push it's child at child_index onto the stack (with child_index = 0), while incrementing its child index
-				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, attd_p);
+				uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, attd_p);
 
 				// if it is a NULL_PAGE_ID, then continue
 				if(child_page_id == attd_p->pas_p->NULL_PAGE_ID)
