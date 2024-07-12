@@ -10,7 +10,7 @@
 // initialize array table page
 int init_array_table_page(persistent_page* ppage, uint32_t level, uint64_t first_bucket_id, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
-// the first_bucket_id of the page is always a multipl of (entries_per_page ^ (level + 1))
+// the first_bucket_id of the page is always a multiple of get_leaf_entries_refrenceable(level + 1)
 uint64_t get_first_bucket_id_for_level_containing_bucket_id_for_array_table_page(uint32_t level, uint64_t bucket_id, const array_table_tuple_defs* attd_p);
 
 // returns attd_p->leaf_entries_per_page for leaf pages (level = 0), else it returns attd_p->index_entries_per_page
