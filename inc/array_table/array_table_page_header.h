@@ -1,5 +1,5 @@
-#ifndef PAGE_TABLE_PAGE_HEADER_H
-#define PAGE_TABLE_PAGE_HEADER_H
+#ifndef ARRAY_TABLE_PAGE_HEADER_H
+#define ARRAY_TABLE_PAGE_HEADER_H
 
 #include<common_page_header.h>
 #include<array_table_tuple_definitions.h>
