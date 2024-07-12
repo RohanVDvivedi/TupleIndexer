@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
  * array_table
-   * array_table
+   * array_table & review array_table_page_util
    * array_table_range_locker
      * getter functions for leaf page takes value_buffer to return the corresponsing tuple in return value OR returns NULL
 
