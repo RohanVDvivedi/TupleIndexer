@@ -275,7 +275,7 @@ bucket_range get_delegated_bucket_range_for_child_index_on_array_table_page(cons
 	if(will_unsigned_sum_overflow(uint64_t, hdr.first_bucket_id, child_bucket_range_size * child_index))
 		goto EXIT_OUT_OF_BOUNDS_CHILD;
 
-	result = (bucket_range){.first_bucket_id = (hdr.first_bucket_id + child_bucket_range_size * child_index)};
+	result = (bucket_range){.first_bucket_id = (hdr.first_bucket_id + (child_bucket_range_size * child_index))};
 
 	if(will_unsigned_sum_overflow(uint64_t, result.first_bucket_id, (child_bucket_range_size-1)))
 		goto EXIT_OVERFLOW;
