@@ -71,6 +71,10 @@ int is_NULL_at_child_index_in_array_table_page(const persistent_page* ppage, uin
 
 const void* get_record_entry_at_child_index_in_array_table_leaf_page(const persistent_page* ppage, uint32_t child_index, void* preallocated_memory, const array_table_tuple_defs* attd_p)
 {
+	// child_index out of range
+	if(child_index >= attd_p->leaf_entries_per_page)
+		return NULL;
+
 	const void* on_page_record = get_nth_tuple_on_persistent_page(ppage, attd_p->pas_p->page_size, &(attd_p->record_def->size_def), child_index);
 
 	// if NULL
@@ -246,7 +250,7 @@ bucket_range get_delegated_bucket_range_for_child_index_on_array_table_page(cons
 {
 	// child_index must be within bounds of entries_per_page
 	if( ( is_array_table_leaf_page(ppage, attd_p) && child_index >= attd_p->leaf_entries_per_page) ||
-		(!is_array_table_leaf_page(ppage, attd_p) && child_index >= attd_p->index_entries_per_page))
+		( (!is_array_table_leaf_page(ppage, attd_p)) && child_index >= attd_p->index_entries_per_page) )
 		goto EXIT_OUT_OF_BOUNDS_CHILD;
 
 	array_table_page_header hdr = get_array_table_page_header(ppage, attd_p);
@@ -285,7 +289,8 @@ bucket_range get_delegated_bucket_range_for_child_index_on_array_table_page(cons
 	result.last_bucket_id = UINT64_MAX;
 	return result;
 
-	// this is what happens when even the first_bucket_id of the child's delegated range is out of 64 bit number
+	// this is what happens when even the first_bucket_id of the child's delegated range is out of 64 bit number OR if the child_index is itself out of bounds, i.e. non existent child
+	// the result in this case is an invalid bucket_range
 	EXIT_OUT_OF_BOUNDS_CHILD:
 	return (bucket_range){.first_bucket_id = UINT64_MAX, .last_bucket_id = 0};
 }
