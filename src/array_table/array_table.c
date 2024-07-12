@@ -1,32 +1,32 @@
-#include<page_table.h>
+#include<array_table.h>
 
-#include<page_table_page_util.h>
-#include<page_table_page_header.h>
+#include<array_table_page_util.h>
+#include<array_table_page_header.h>
 #include<persistent_page_functions.h>
 #include<locked_pages_stack.h>
 
 #include<stdlib.h>
 
-uint64_t get_new_page_table(const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+uint64_t get_new_array_table(const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	persistent_page root_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
 
 	// failure to acquire a new page
 	if(*abort_error)
-		return pttd_p->pas_p->NULL_PAGE_ID;
+		return attd_p->pas_p->NULL_PAGE_ID;
 
 	// init root page as if it was the first leaf page
-	init_page_table_page(&root_page, 0, 0, pttd_p, pmm_p, transaction_id, abort_error);
+	init_array_table_page(&root_page, 0, 0, attd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		release_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
-		return pttd_p->pas_p->NULL_PAGE_ID;
+		return attd_p->pas_p->NULL_PAGE_ID;
 	}
 
 	uint64_t res = root_page.page_id;
 	release_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
 	if(*abort_error)
-		return pttd_p->pas_p->NULL_PAGE_ID;
+		return attd_p->pas_p->NULL_PAGE_ID;
 
 	return res;
 }
