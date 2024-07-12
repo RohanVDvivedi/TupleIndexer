@@ -31,7 +31,7 @@ uint64_t get_new_array_table(const array_table_tuple_defs* attd_p, const page_ac
 	return res;
 }
 
-int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// create a stack
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
@@ -43,7 +43,7 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 			return 0;
 
 		// pre cache level of the root_page
-		uint32_t root_page_level = get_level_of_page_table_page(&root_page, pttd_p);
+		uint32_t root_page_level = get_level_of_page_table_page(&root_page, attd_p);
 
 		// create a stack of capacity = levels
 		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
@@ -58,7 +58,7 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// on leaf just free the leaf
-		if(is_page_table_leaf_page(&(curr_locked_page->ppage), pttd_p))
+		if(is_page_table_leaf_page(&(curr_locked_page->ppage), attd_p))
 		{
 			// free it and pop it from the stack
 			release_lock_on_persistent_page(pam_p, transaction_id, &(curr_locked_page->ppage), FREE_PAGE, abort_error);
@@ -70,7 +70,7 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 		else
 		{
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), attd_p->pas_p->page_size, &(attd_p->entry_def->size_def));
 
 			int pushed_child = 0;
 
@@ -78,10 +78,10 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 			while(curr_locked_page->child_index < tuple_count && pushed_child == 0)
 			{
 				// then push it's child at child_index onto the stack (with child_index = 0), while incrementing its child index
-				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, pttd_p);
+				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, attd_p);
 
 				// if it is a NULL_PAGE_ID, then continue
-				if(child_page_id == pttd_p->pas_p->NULL_PAGE_ID)
+				if(child_page_id == attd_p->pas_p->NULL_PAGE_ID)
 					continue;
 
 				persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
@@ -119,7 +119,7 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 	return 1;
 }
 
-void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+void print_array_table(uint64_t root_page_id, int only_leaf_pages, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// print the root page id of the page_table
 	printf("\n\nPage_table @ root_page_id = %"PRIu64"\n\n", root_page_id);
@@ -134,7 +134,7 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 			return;
 
 		// pre cache level of the root_page
-		uint32_t root_page_level = get_level_of_page_table_page(&root_page, pttd_p);
+		uint32_t root_page_level = get_level_of_page_table_page(&root_page, attd_p);
 
 		// create a stack of capacity = levels
 		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
@@ -149,11 +149,11 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
 		// print current page as a leaf page
-		if(is_page_table_leaf_page(&(curr_locked_page->ppage), pttd_p))
+		if(is_page_table_leaf_page(&(curr_locked_page->ppage), attd_p))
 		{
 			// print this page and its page_id
 			printf("page_id : %"PRIu64"\n\n", curr_locked_page->ppage.page_id);
-			print_page_table_page(&(curr_locked_page->ppage), pttd_p);
+			print_page_table_page(&(curr_locked_page->ppage), attd_p);
 			printf("xxxxxxxxxxxxx\n\n");
 
 			// unlock it and pop it from the stack
@@ -166,7 +166,7 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 		else
 		{
 			// get tuple_count of the page
-			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def));
+			uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), attd_p->pas_p->page_size, &(attd_p->entry_def->size_def));
 
 			int pushed_child = 0;
 
@@ -174,10 +174,10 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 			while(curr_locked_page->child_index < tuple_count && pushed_child == 0)
 			{
 				// then push it's child at child_index onto the stack (with child_index = 0), while incrementing its child index
-				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, pttd_p);
+				uint64_t child_page_id = get_child_page_id_at_child_index_in_page_table_page(&(curr_locked_page->ppage), curr_locked_page->child_index++, attd_p);
 
 				// if it is a NULL_PAGE_ID, then continue
-				if(child_page_id == pttd_p->pas_p->NULL_PAGE_ID)
+				if(child_page_id == attd_p->pas_p->NULL_PAGE_ID)
 					continue;
 
 				persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
@@ -196,7 +196,7 @@ void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_tab
 				{
 					// print this page and its page_id
 					printf("page_id : %"PRIu64"\n\n", curr_locked_page->ppage.page_id);
-					print_page_table_page(&(curr_locked_page->ppage), pttd_p);
+					print_page_table_page(&(curr_locked_page->ppage), attd_p);
 					printf("xxxxxxxxxxxxx\n");
 				}
 
