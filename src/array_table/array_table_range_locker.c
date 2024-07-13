@@ -227,7 +227,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 			// if the curr_page has been locked, then its delegated range will and must contain the bucket_id
 
 			// if the page we are looking at is empty, then re-purpose the page as a new leaf page that contains the bucket_id
-			if(has_all_NULL_PAGE_ID_in_array_table_page(&curr_page, atrl_p->attd_p))
+			if(has_all_NULL_entries_in_array_table_page(&curr_page, atrl_p->attd_p))
 			{
 				array_table_page_header hdr = get_array_table_page_header(&curr_page, atrl_p->attd_p);
 				hdr.level = 0;
@@ -536,21 +536,21 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 
 const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p, uint64_t* bucket_id, void* preallocated_memory, find_position find_pos, const void* transaction_id, int* abort_error)
 {
-	// This function makes use of the fact that entries_per_page != INVALID_INDEX (UINT32_MAX)
-	// i.e. entries_per_page < INVALID_INDEX (UINT32_MAX)
+	// This function makes use of the fact that (leaf or index)_entries_per_page != INVALID_INDEX (UINT32_MAX)
+	// i.e. (leaf or index)_entries_per_page < INVALID_INDEX (UINT32_MAX)
 
 	// convert find_pos from LESSER_THAN to LESSER_THAN_EQUALS and GREATER_THAN to GREATER_THAN_EQUALS
 	if(find_pos == LESSER_THAN)
 	{
 		if((*bucket_id) == 0)
-			return atrl_p->attd_p->pas_p->NULL_PAGE_ID;
+			return NULL;
 		find_pos = LESSER_THAN_EQUALS;
 		(*bucket_id) -= 1;
 	}
 	else if(find_pos == GREATER_THAN)
 	{
 		if((*bucket_id) == UINT64_MAX)
-			return atrl_p->attd_p->pas_p->NULL_PAGE_ID;
+			return NULL;
 		find_pos = GREATER_THAN_EQUALS;
 		(*bucket_id) += 1;
 	}
@@ -558,15 +558,16 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 	if(find_pos == LESSER_THAN_EQUALS)
 	{
 		if((*bucket_id) < atrl_p->delegated_local_root_range.first_bucket_id)
-			return atrl_p->attd_p->pas_p->NULL_PAGE_ID;
+			return NULL;
 	}
 	else if(find_pos == GREATER_THAN_EQUALS)
 	{
 		if((*bucket_id) > atrl_p->delegated_local_root_range.last_bucket_id)
-			return atrl_p->attd_p->pas_p->NULL_PAGE_ID;
+			return NULL;
 	}
 
-	uint64_t result_page_id = atrl_p->attd_p->pas_p->NULL_PAGE_ID;
+	// result to be returned
+	const void* result = NULL;
 
 	// create a stack of capacity = levels
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
@@ -579,7 +580,7 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
 		locked_page_info* curr_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-		uint32_t child_entry_count_curr_page = get_non_NULL_PAGE_ID_count_in_array_table_page(&(curr_page->ppage), atrl_p->attd_p);
+		uint32_t child_entry_count_curr_page = get_non_NULL_entry_count_in_array_table_page(&(curr_page->ppage), atrl_p->attd_p);
 
 		if(child_entry_count_curr_page == 0)
 		{
@@ -597,7 +598,7 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 		{
 			// inside this if clause
 			// curr_page->child_index == INVALID_TUPLE_INDEX -> the page iteration has not been initialized
-			// curr_page->child_index == attd_p->entries_per_page -> the page iteration has been completed
+			// curr_page->child_index == entries_per_page -> the page iteration has been completed
 			// else we need to visit the curr_page->child_index child on the curr_page
 			if(curr_page->child_index == INVALID_TUPLE_INDEX)
 			{
@@ -610,13 +611,13 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 					continue;
 				}
 				else if((*bucket_id) > curr_page_actual_range.last_bucket_id)
-					curr_page->child_index = atrl_p->attd_p->entries_per_page - 1;
+					curr_page->child_index = get_entries_per_page_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p) - 1;
 				else
 					curr_page->child_index = get_child_index_for_bucket_id_on_array_table_page(&(curr_page->ppage), (*bucket_id), atrl_p->attd_p);
 			}
 
 			int pushed = 0;
-			while(pushed == 0 && curr_page->child_index != atrl_p->attd_p->entries_per_page)
+			while(pushed == 0 && curr_page->child_index != get_entries_per_page_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p))
 			{
 				uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p);
 				if(child_page_id != atrl_p->attd_p->pas_p->NULL_PAGE_ID)
@@ -644,14 +645,14 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 					curr_page->child_index = atrl_p->attd_p->entries_per_page;
 			}
 
-			if(result_page_id != atrl_p->attd_p->pas_p->NULL_PAGE_ID)
+			if(result != NULL)
 				break;
 
 			if(pushed)
 				continue;
 
 			// if nothing is pushed and all children of the page have been seen, then pop the curr_page
-			if(curr_page->child_index == atrl_p->attd_p->entries_per_page)
+			if(curr_page->child_index == get_entries_per_page_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p))
 			{
 				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), atrl_p, transaction_id, abort_error);
 				pop_from_locked_pages_stack(locked_pages_stack_p);
@@ -683,7 +684,7 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 			}
 
 			int pushed = 0;
-			while(pushed == 0 && curr_page->child_index != atrl_p->attd_p->entries_per_page)
+			while(pushed == 0 && curr_page->child_index != get_entries_per_page_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p))
 			{
 				uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p);
 				if(child_page_id != atrl_p->attd_p->pas_p->NULL_PAGE_ID)
@@ -708,14 +709,14 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 				curr_page->child_index++;
 			}
 
-			if(result_page_id != atrl_p->attd_p->pas_p->NULL_PAGE_ID)
+			if(result != NULL)
 				break;
 
 			if(pushed)
 				continue;
 
 			// if nothing is pushed and all children of the page have been seen, then pop the curr_page
-			if(curr_page->child_index == atrl_p->attd_p->entries_per_page)
+			if(curr_page->child_index == get_entries_per_page_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p))
 			{
 				release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(curr_page->ppage), atrl_p, transaction_id, abort_error);
 				pop_from_locked_pages_stack(locked_pages_stack_p);
@@ -738,7 +739,7 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 	}
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
 
-	return result_page_id;
+	return result;
 
 	ABORT_ERROR:
 	// release all locks from stack bottom first
@@ -751,7 +752,7 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
 	// release lock on local root
 	release_lock_on_persistent_page(atrl_p->pam_p, transaction_id, &(atrl_p->local_root), NONE_OPTION, abort_error);
-	return atrl_p->attd_p->pas_p->NULL_PAGE_ID;
+	return NULL;
 }
 
 // we do not need to preserve local root in this function, since we are not working with range locker
