@@ -375,7 +375,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 			// actual range of curr_page
 			bucket_range curr_page_actual_range = get_bucket_range_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p);
 
-			// if bucket_id is not contained in the actual_range of the curr_page, then it is already NULL_PAGE_ID
+			// if bucket_id is not contained in the actual_range of the curr_page, then the record at bucket_id is already NULL
 			if(!is_bucket_contained_bucket_range(&curr_page_actual_range, bucket_id))
 			{
 				result = 1;
@@ -385,51 +385,50 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 			// now the page must have its actual_range contain the bucket_id,
 			// hence a child_index must exist
 			curr_page->child_index = get_child_index_for_bucket_id_on_array_table_page(&(curr_page->ppage), bucket_id, atrl_p->attd_p);
-			uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p);
 
-			// if this child_page_id is NULL_PAGE_ID, then nothing needs to be done
-			if(child_page_id == atrl_p->attd_p->pas_p->NULL_PAGE_ID)
+			// if the entry at the child_index in the curr_page is already NULL, then nothing needs to be done
+			if(is_NULL_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p))
 			{
 				result = 1;
 				break;
 			}
 
+			// if we are at the leaf page, then set the entry to NULL, and break out
 			if(is_array_table_leaf_page(&(curr_page->ppage), atrl_p->attd_p))
 			{
-				set_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p->pas_p->NULL_PAGE_ID, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
+				set_record_entry_at_child_index_in_array_table_leaf_page(&(curr_page->ppage), curr_page->child_index, NULL, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
 				reverse_pass_required = 1;
 				result = 1;
 				break;
 			}
-			else
+
+			// else this i the child we need to go to
+			uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p);
+
+			// OPTIMIZATION
+			// below piece of code releases locks on all parents of curr_page, if the curr_page will never become empty, even after NULL-ing the child_index on that page
+			// this is an optimization to release early locks, you can remove this part and the functionality will still be identical 
+			if(get_non_NULL_entry_count_in_array_table_page(&(curr_page->ppage), atrl_p->attd_p) > 1) // this page will exist even if one of its child is NULLed, so we can release lock on its parents
 			{
-				// OPTIMIZATION
-				// below piece of code releases locks on all parents of curr_page, if the curr_page will never become empty, even after NULL-ing the child_index on that page
-				// this is an optimization to release early locks, you can remove this part and the functionality will still be identical 
-				if(get_non_NULL_PAGE_ID_count_in_array_table_page(&(curr_page->ppage), atrl_p->attd_p) > 1) // this page will exist even if one of its child is NULLed, so we can release lock on its parents
+				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_page)
 				{
-					while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_page)
-					{
-						locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-						release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(bottom->ppage), atrl_p, transaction_id, abort_error);
-						pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&(bottom->ppage), atrl_p, transaction_id, abort_error);
+					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
-						if(*abort_error)
-							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
-					}
+					if(*abort_error)
+						goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
 				}
-				// OPTIMIZATION ---x---
-
-				// grab write lock on child page, push it onto the stack and then continue
-				persistent_page child_page = acquire_persistent_page_with_lock(atrl_p->pam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
-				if(*abort_error)
-					goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
-				push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
-
-				continue;
 			}
+			// OPTIMIZATION ---x---
+
+			// grab write lock on child page, push it onto the stack and then continue
+			persistent_page child_page = acquire_persistent_page_with_lock(atrl_p->pam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+			if(*abort_error)
+				goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
+			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
 		}
 
 		// if reverse pass is required then do it
@@ -440,7 +439,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 				locked_page_info curr_page = *get_top_of_locked_pages_stack(locked_pages_stack_p);
 				pop_from_locked_pages_stack(locked_pages_stack_p);
 
-				uint32_t child_entry_count_curr_page = get_non_NULL_PAGE_ID_count_in_array_table_page(&(curr_page.ppage), atrl_p->attd_p);
+				uint32_t child_entry_count_curr_page = get_non_NULL_entry_count_in_array_table_page(&(curr_page.ppage), atrl_p->attd_p);
 
 				if(child_entry_count_curr_page == 0)
 				{
@@ -456,7 +455,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 
 						// set NULL_PAGE_ID to its parent page entry
 						locked_page_info* parent_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-						set_child_page_id_at_child_index_in_array_table_page(&(parent_page->ppage), parent_page->child_index, atrl_p->attd_p->pas_p->NULL_PAGE_ID, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
+						set_child_page_id_at_child_index_in_array_table_index_page(&(parent_page->ppage), parent_page->child_index, atrl_p->attd_p->pas_p->NULL_PAGE_ID, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
 						if(*abort_error)
 							goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
 					}
