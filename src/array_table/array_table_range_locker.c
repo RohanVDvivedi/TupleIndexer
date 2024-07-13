@@ -619,17 +619,17 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 			int pushed = 0;
 			while(pushed == 0 && curr_page->child_index != get_entries_per_page_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p))
 			{
-				uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p);
-				if(child_page_id != atrl_p->attd_p->pas_p->NULL_PAGE_ID)
+				if(!is_NULL_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p))
 				{
 					if(is_array_table_leaf_page(&(curr_page->ppage), atrl_p->attd_p))
 					{
 						(*bucket_id) = get_first_bucket_id_of_array_table_page(&(curr_page->ppage), atrl_p->attd_p) + curr_page->child_index;
-						result_page_id = child_page_id;
+						result = get_record_entry_at_child_index_in_array_table_leaf_page(&(curr_page->ppage), curr_page->child_index, preallocated_memory, atrl_p->attd_p);
 						break;
 					}
 					else
 					{
+						uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p);
 						// grab read lock on child page, push it onto the stack and then continue
 						persistent_page child_page = acquire_persistent_page_with_lock(atrl_p->pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
 						if(*abort_error)
@@ -642,7 +642,7 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 				if(curr_page->child_index != 0)
 					curr_page->child_index--;
 				else
-					curr_page->child_index = atrl_p->attd_p->entries_per_page;
+					curr_page->child_index = get_entries_per_page_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p);
 			}
 
 			if(result != NULL)
@@ -686,17 +686,17 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 			int pushed = 0;
 			while(pushed == 0 && curr_page->child_index != get_entries_per_page_for_array_table_page(&(curr_page->ppage), atrl_p->attd_p))
 			{
-				uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p);
-				if(child_page_id != atrl_p->attd_p->pas_p->NULL_PAGE_ID)
+				if(!is_NULL_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p))
 				{
 					if(is_array_table_leaf_page(&(curr_page->ppage), atrl_p->attd_p))
 					{
 						(*bucket_id) = get_first_bucket_id_of_array_table_page(&(curr_page->ppage), atrl_p->attd_p) + curr_page->child_index;
-						result_page_id = child_page_id;
+						result = get_record_entry_at_child_index_in_array_table_leaf_page(&(curr_page->ppage), curr_page->child_index, preallocated_memory, atrl_p->attd_p);
 						break;
 					}
 					else
 					{
+						uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p);
 						// grab read lock on child page, push it onto the stack and then continue
 						persistent_page child_page = acquire_persistent_page_with_lock(atrl_p->pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
 						if(*abort_error)
@@ -802,7 +802,7 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 		if(is_array_table_leaf_page(&(curr_page->ppage), attd_p))
 			break;
 
-		uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, attd_p);
+		uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(&(curr_page->ppage), curr_page->child_index, attd_p);
 
 		// OPTIMIZATION
 		// below piece of code releases locks on all parents of curr_page, if the curr_page will never become empty, even after NULL-ing the child_index on that page
