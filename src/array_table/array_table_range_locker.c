@@ -792,41 +792,39 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 		// now the page must have its actual_range contain the bucket_id,
 		// hence a child_index must exist
 		curr_page->child_index = get_child_index_for_bucket_id_on_array_table_page(&(curr_page->ppage), discard_target, attd_p);
-		uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, attd_p);
 
-		// if this child_page_id is NULL_PAGE_ID, then nothing needs to be done
-		if(child_page_id == attd_p->pas_p->NULL_PAGE_ID)
+		// if this child_index is NULL, then break
+		if(is_NULL_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, attd_p))
 			break;
 
+		// there is no going forward than a leaf
 		if(is_array_table_leaf_page(&(curr_page->ppage), attd_p))
 			break;
-		else
+
+		uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, attd_p);
+
+		// OPTIMIZATION
+		// below piece of code releases locks on all parents of curr_page, if the curr_page will never become empty, even after NULL-ing the child_index on that page
+		// this is an optimization to release early locks, you can remove this part and the functionality will still be identical 
+		if(get_non_NULL_entry_count_in_array_table_page(&(curr_page->ppage), attd_p) > 1) // this page will exist even if one of its child is NULLed, so we can release lock on its parents
 		{
-			// OPTIMIZATION
-			// below piece of code releases locks on all parents of curr_page, if the curr_page will never become empty, even after NULL-ing the child_index on that page
-			// this is an optimization to release early locks, you can remove this part and the functionality will still be identical 
-			if(get_non_NULL_PAGE_ID_count_in_array_table_page(&(curr_page->ppage), attd_p) > 1) // this page will exist even if one of its child is NULLed, so we can release lock on its parents
+			while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_page)
 			{
-				while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 1) // (do not release lock on the curr_page)
-				{
-					locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-					release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
-					pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+				locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+				release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+				pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 
-					if(*abort_error)
-						goto ABORT_ERROR;
-				}
+				if(*abort_error)
+					goto ABORT_ERROR;
 			}
-			// OPTIMIZATION ---x---
-
-			// grab write lock on child page, push it onto the stack and then continue
-			persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-			push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
-
-			continue;
 		}
+		// OPTIMIZATION ---x---
+
+		// grab write lock on child page, push it onto the stack and then continue
+		persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, WRITE_LOCK, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
 	}
 
 	// reverse pass
@@ -835,7 +833,7 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 		locked_page_info curr_page = *get_top_of_locked_pages_stack(locked_pages_stack_p);
 		pop_from_locked_pages_stack(locked_pages_stack_p);
 
-		uint32_t child_entry_count_curr_page = get_non_NULL_PAGE_ID_count_in_array_table_page(&(curr_page.ppage), attd_p);
+		uint32_t child_entry_count_curr_page = get_non_NULL_entry_count_in_array_table_page(&(curr_page.ppage), attd_p);
 
 		if(child_entry_count_curr_page == 0)
 		{
@@ -851,7 +849,7 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 
 				// set NULL_PAGE_ID to its parent page entry
 				locked_page_info* parent_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
-				set_child_page_id_at_child_index_in_array_table_page(&(parent_page->ppage), parent_page->child_index, attd_p->pas_p->NULL_PAGE_ID, attd_p, pmm_p, transaction_id, abort_error);
+				set_child_page_id_at_child_index_in_array_table_index_page(&(parent_page->ppage), parent_page->child_index, attd_p->pas_p->NULL_PAGE_ID, attd_p, pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 			}
@@ -908,6 +906,7 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 			goto ABORT_ERROR;
 	}
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
+	return;
 
 	ABORT_ERROR:;
 	// release all locks from stack bottom first
@@ -918,6 +917,7 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
+	return;
 }
 
 void delete_array_table_range_locker(array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error)
