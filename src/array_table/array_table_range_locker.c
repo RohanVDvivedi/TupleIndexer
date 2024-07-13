@@ -219,20 +219,20 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 	if(!is_bucket_contained_bucket_range(&(atrl_p->delegated_local_root_range), bucket_id))
 		return 0;
 
-	if(page_id != atrl_p->attd_p->pas_p->NULL_PAGE_ID)
+	if(record != NULL) // there is difference in how we set, based on whether record is NULL or non-NULL
 	{
 		persistent_page curr_page = atrl_p->local_root;
 		while(1)
 		{
 			// if the curr_page has been locked, then its delegated range will and must contain the bucket_id
 
-			// if the page we are looking at is empty, the re-purpose the page as a new leaf page that contains the bucket_id
+			// if the page we are looking at is empty, then re-purpose the page as a new leaf page that contains the bucket_id
 			if(has_all_NULL_PAGE_ID_in_array_table_page(&curr_page, atrl_p->attd_p))
 			{
 				array_table_page_header hdr = get_array_table_page_header(&curr_page, atrl_p->attd_p);
 				hdr.level = 0;
 				hdr.first_bucket_id = get_first_bucket_id_for_level_containing_bucket_id_for_array_table_page(0, bucket_id, atrl_p->attd_p);
-				set_array_table_page_header(&curr_page, &hdr, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
+				init_array_table_page(&curr_page, hdr.level, hdr.first_bucket_id, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, atrl_p, transaction_id, abort_error);
@@ -240,7 +240,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 				}
 
 				uint32_t child_index = get_child_index_for_bucket_id_on_array_table_page(&curr_page, bucket_id, atrl_p->attd_p);
-				set_child_page_id_at_child_index_in_array_table_page(&curr_page, child_index, page_id, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
+				set_record_entry_at_child_index_in_array_table_leaf_page(&curr_page, child_index, record, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, atrl_p, transaction_id, abort_error);
@@ -276,7 +276,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 			// if it is leaf page, then all we need to do is insert the new_entry, bucket_id->page_id, and we are done
 			if(is_array_table_leaf_page(&curr_page, atrl_p->attd_p))
 			{
-				set_child_page_id_at_child_index_in_array_table_page(&curr_page, child_index, page_id, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
+				set_record_entry_at_child_index_in_array_table_leaf_page(&curr_page, child_index, record, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, atrl_p, transaction_id, abort_error);
@@ -290,7 +290,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 			}
 
 			// for an interior page, fetch the child_page_id that we must follow next
-			uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&curr_page, child_index, atrl_p->attd_p);
+			uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(&curr_page, child_index, atrl_p->attd_p);
 
 			// if that child_page_id is NULL, then insert a new leaf in the curr_page
 			if(child_page_id == atrl_p->attd_p->pas_p->NULL_PAGE_ID)
@@ -302,7 +302,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 					goto ABORT_ERROR;
 				}
 
-				set_child_page_id_at_child_index_in_array_table_page(&curr_page, child_index, child_page.page_id, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
+				set_child_page_id_at_child_index_in_array_table_index_page(&curr_page, child_index, child_page.page_id, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
 					release_lock_on_persistent_page_while_preventing_local_root_unlocking(&child_page, atrl_p, transaction_id, abort_error);
@@ -319,8 +319,8 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 
 				curr_page = child_page;
 
-				// initialize this new child page as if it is an empty page
-				// it will be repurposed in the next iteration
+				// initialize this new child page as if it is an empty random page
+				// it will be repurposed in the next iteration (here it is wrong to set its level and first_bucket_id both as zero, but it is anyway going to be repurposed in the next iteration)
 				init_array_table_page(&curr_page, 0, 0, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 				{
@@ -351,7 +351,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 			}
 		}
 	}
-	else // else we have to set bucket_id -> NULL_PAGE_ID
+	else // else we have to set bucket_id -> NULL
 	{
 		// create a stack of capacity = levels
 		locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
