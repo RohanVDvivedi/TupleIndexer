@@ -25,17 +25,17 @@ int is_writable_array_table_range_locker(const array_table_range_locker* atrl_p)
 
 // you may only get, if the bucket_id is within get_lock_range_for_array_table_range_locker()
 // on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker
-uint64_t get_from_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, const void* transaction_id, int* abort_error);
+const void* get_from_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, const void* preallocated_memory, const void* transaction_id, int* abort_error);
 
 // you may only set, if the bucket_id is within get_lock_range_for_array_table_range_locker() and if the atrl is writable, returns 0 other wise
 // on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker
 int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error);
 
 // finds bucket_id in array_table that is find_pos compared to the given bucket_id
-// it will return the bucket_id (being an in-out parameter) and page_id
-// if page_id == NULL_PAGE_ID, then no such bucket_id found
+// it will return the bucket_id (being an in-out parameter) and the record at that bucket_id
+// if return value == NULL, then no such bucket_id, (with non NULL record) was found
 // on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker
-uint64_t find_non_NULL_PAGE_ID_in_array_table(array_table_range_locker* atrl_p, uint64_t* bucket_id, find_position find_pos, const void* transaction_id, int* abort_error);
+const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p, uint64_t* bucket_id, const void* preallocated_memory, find_position find_pos, const void* transaction_id, int* abort_error);
 
 // deletes the array_table_range_locker, and releases lock on the local_root (if it is not NULL_persistent_page)
 // we may need to unlock the local_root and descend down from the actual root, if the local_root becomes empty

@@ -133,7 +133,7 @@ static void release_lock_on_persistent_page_while_preventing_local_root_unlockin
 	release_lock_on_persistent_page(atrl_p->pam_p, transaction_id, ppage, NONE_OPTION, abort_error);
 }
 
-uint64_t get_from_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, const void* transaction_id, int* abort_error)
+const void* get_from_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, const void* preallocated_memory, const void* transaction_id, int* abort_error);
 {
 	// fail if the bucket_id is not contained within the delegated range of the local_root
 	if(!is_bucket_contained_bucket_range(&(atrl_p->delegated_local_root_range), bucket_id))
@@ -528,7 +528,7 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, uin
 	return 0;
 }
 
-uint64_t find_non_NULL_PAGE_ID_in_array_table(array_table_range_locker* atrl_p, uint64_t* bucket_id, find_position find_pos, const void* transaction_id, int* abort_error)
+const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p, uint64_t* bucket_id, const void* preallocated_memory, find_position find_pos, const void* transaction_id, int* abort_error);
 {
 	// This function makes use of the fact that entries_per_page != INVALID_INDEX (UINT32_MAX)
 	// i.e. entries_per_page < INVALID_INDEX (UINT32_MAX)
