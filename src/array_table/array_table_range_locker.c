@@ -154,30 +154,33 @@ const void* get_from_array_table(array_table_range_locker* atrl_p, uint64_t buck
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, atrl_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
-			return atrl_p->attd_p->pas_p->NULL_PAGE_ID;
+			return NULL;
 		}
 
 		// get child_page_id to goto next
 		uint32_t child_index = get_child_index_for_bucket_id_on_array_table_page(&curr_page, bucket_id, atrl_p->attd_p);
-		uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&curr_page, child_index, atrl_p->attd_p);
 
-		// if it is a leaf page, then we return the child_page_id
+		// if this concerned child is NULL, then return NULL
+		if(is_NULL_at_child_index_in_array_table_page(&curr_page, child_index, atrl_p->attd_p))
+		{
+			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, atrl_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+			return NULL;
+		}
+
+		// if it is a leaf page, then we return the record_entry at the child_index
 		if(is_array_table_leaf_page(&curr_page, atrl_p->attd_p))
 		{
+			const void* record_found = get_record_entry_at_child_index_in_array_table_leaf_page(&curr_page, child_index, preallocated_memory, atrl_p->attd_p);
 			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, atrl_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
-			return child_page_id;
+			return record_found;
 		}
 
-		// if not leaf and the child_page_id == NULL_PAGE_ID, then there can be no leaf that contains this bucket_id
-		if(child_page_id == atrl_p->attd_p->pas_p->NULL_PAGE_ID)
-		{
-			release_lock_on_persistent_page_while_preventing_local_root_unlocking(&curr_page, atrl_p, transaction_id, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-			return atrl_p->attd_p->pas_p->NULL_PAGE_ID;
-		}
+		// now this next child is surely not NULL, it is the one we will go to
+		uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(&curr_page, child_index, atrl_p->attd_p);
 
 		// we need to READ_LOCK the child_page, then release lock on the curr_page
 		persistent_page child_page = acquire_persistent_page_with_lock(atrl_p->pam_p, transaction_id, child_page_id, READ_LOCK, abort_error);
