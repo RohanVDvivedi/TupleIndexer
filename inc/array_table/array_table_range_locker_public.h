@@ -10,7 +10,7 @@ typedef struct array_table_range_locker array_table_range_locker;
 // creates a new array_table_range_locker for the given range
 // you want to call set then the pmm_p must not be NULL
 // on abort_error, NULL is returned
-array_table_range_locker* get_new_array_table_range_locker(uint64_t root_page_id, bucket_range lock_range, const array_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+array_table_range_locker* get_new_array_table_range_locker(uint64_t root_page_id, bucket_range lock_range, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // minimizes the lock range of the range_locker
 // on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker
