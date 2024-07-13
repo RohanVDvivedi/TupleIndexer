@@ -17,6 +17,6 @@ int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* att
 // it may return an abort_error, unable to print all of the array_table pages
 void print_array_table(uint64_t root_page_id, int only_leaf_pages, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-#include<page_table_range_locker_public.h>
+#include<array_table_range_locker_public.h>
 
 #endif
