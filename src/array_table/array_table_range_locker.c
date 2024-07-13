@@ -209,7 +209,7 @@ const void* get_from_array_table(array_table_range_locker* atrl_p, uint64_t buck
 	return NULL;
 }
 
-int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error)
+int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, const void* record, const void* transaction_id, int* abort_error)
 {
 	// we cannot set if the atrl is not locked for reading
 	if(!is_writable_array_table_range_locker(atrl_p))

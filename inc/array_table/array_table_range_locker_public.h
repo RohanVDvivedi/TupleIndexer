@@ -27,9 +27,9 @@ int is_writable_array_table_range_locker(const array_table_range_locker* atrl_p)
 // on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker
 const void* get_from_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, void* preallocated_memory, const void* transaction_id, int* abort_error);
 
-// you may only set, if the bucket_id is within get_lock_range_for_array_table_range_locker() and if the atrl is writable, returns 0 other wise
+// you may call set, if the bucket_id is within get_lock_range_for_array_table_range_locker() and if the atrl is writable, returns 0 other wise
 // on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker
-int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error);
+int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, const void* record, const void* transaction_id, int* abort_error);
 
 // finds bucket_id in array_table that is find_pos compared to the given bucket_id
 // it will return the bucket_id (being an in-out parameter) and the record at that bucket_id
