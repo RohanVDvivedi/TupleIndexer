@@ -62,13 +62,14 @@ int minimize_lock_range_for_array_table_range_locker(array_table_range_locker* a
 		bucket_range actual_range = get_bucket_range_for_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
 
 		// if the actual_range is not contained within the lock_range provided then quit
+		// no child to go down further into
 		if(!is_contained_bucket_range(&actual_range, &lock_range))
 			break;
 
 		uint32_t first_bucket_child_index = get_child_index_for_bucket_id_on_array_table_page(&(atrl_p->local_root), lock_range.first_bucket_id, atrl_p->attd_p);
 		uint32_t last_bucket_child_index = get_child_index_for_bucket_id_on_array_table_page(&(atrl_p->local_root), lock_range.last_bucket_id, atrl_p->attd_p);
 
-		// the lock_range must point to a single child on the local_root
+		// the lock_range may point to a single child on the local_root, if so we can go down further narrowing the lock range
 		if(first_bucket_child_index != last_bucket_child_index)
 			break;
 
@@ -77,7 +78,7 @@ int minimize_lock_range_for_array_table_range_locker(array_table_range_locker* a
 		uint32_t child_index = first_bucket_child_index;
 
 		// get child_page_id to go to
-		uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_page(&(atrl_p->local_root), child_index, atrl_p->attd_p);
+		uint64_t child_page_id = get_child_page_id_at_child_index_in_array_table_index_page(&(atrl_p->local_root), child_index, atrl_p->attd_p);
 
 		// if this entry does not point to an existing child, then we can not make it the local root
 		if(child_page_id == atrl_p->attd_p->pas_p->NULL_PAGE_ID)
