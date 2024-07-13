@@ -200,10 +200,13 @@ const void* get_from_array_table(array_table_range_locker* atrl_p, uint64_t buck
 		curr_page = child_page;
 	}
 
+	// you will never come here
+	return NULL;
+
 	ABORT_ERROR:;
 	// release lock on local root
 	release_lock_on_persistent_page(atrl_p->pam_p, transaction_id, &(atrl_p->local_root), NONE_OPTION, abort_error);
-	return atrl_p->attd_p->pas_p->NULL_PAGE_ID;
+	return NULL;
 }
 
 int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error)
