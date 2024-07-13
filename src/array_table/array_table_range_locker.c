@@ -929,7 +929,7 @@ void delete_array_table_range_locker(array_table_range_locker* atrl_p, const voi
 	int will_need_to_discard_if_empty = (atrl_p->pmm_p != NULL) && ((*abort_error) == 0) &&
 										(!is_persistent_page_NULL(&(atrl_p->local_root), atrl_p->pam_p)) &&
 										(atrl_p->local_root.page_id != atrl_p->root_page_id) &&
-										has_all_NULL_PAGE_ID_in_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
+										has_all_NULL_entries_in_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
 
 	// you need to re enter using the root_page_id and go to this bucket_id to discard the local root
 	uint64_t discard_target = atrl_p->attd_p->pas_p->NULL_PAGE_ID;

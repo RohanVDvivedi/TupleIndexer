@@ -45,7 +45,7 @@ int set_child_page_id_at_child_index_in_array_table_index_page(persistent_page* 
 
 // returns true if all the child pointers in the array_table_page are NULL_PAGE_ID
 // i.e. tombstones_count == tuples_count
-int has_all_NULL_PAGE_ID_in_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p);
+int has_all_NULL_entries_in_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p);
 
 // returns the number of children of the page that are not to NULL
 // you may level down this index page, only if this value is 1, yet you may also call this function on leaf pages

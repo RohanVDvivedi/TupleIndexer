@@ -205,7 +205,7 @@ int set_child_page_id_at_child_index_in_array_table_index_page(persistent_page* 
 	return 1;
 }
 
-int has_all_NULL_PAGE_ID_in_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
+int has_all_NULL_entries_in_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
 {
 	// if tomb_stone_count == tuple_count, then this means all child_page_id's are NULL_PAGE_ID
 	if(is_array_table_leaf_page(ppage, attd_p))
@@ -322,7 +322,7 @@ int level_up_array_table_page(persistent_page* ppage, const array_table_tuple_de
 	uint64_t only_child_page_id = attd_p->pas_p->NULL_PAGE_ID;
 
 	// if the ppage has atleast 1 non-NULL_PAGE_ID, then its contents have to preserved in its only child
-	if(!has_all_NULL_PAGE_ID_in_array_table_page(ppage, attd_p))
+	if(!has_all_NULL_entries_in_array_table_page(ppage, attd_p))
 	{
 		// we do not need to create a new child page, if the ppage has only 1 child and ppage is not a leaf
 		if(get_non_NULL_entry_count_in_array_table_page(ppage, attd_p) == 1 && !is_array_table_leaf_page(ppage, attd_p))
