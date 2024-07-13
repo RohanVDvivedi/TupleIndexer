@@ -5,6 +5,7 @@
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
+ * make page_table use array_table underneath
  * allow cloning, read-only bplus_tree_iterator, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
    * clone all read locks inside them, and make a new object
  * build a function for finding a NULL bucket in array_table, this will help in building heap_table
