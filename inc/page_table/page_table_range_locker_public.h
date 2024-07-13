@@ -8,7 +8,7 @@
 typedef struct page_table_range_locker page_table_range_locker;
 
 // creates a new page_table_range_locker for the given range
-// you want to call set then the lock_type must be WRITE_LOCK
+// you want to call set then the pmm_p must not be NULL
 // on abort_error, NULL is returned
 page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, bucket_range lock_range, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 

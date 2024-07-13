@@ -1,11 +1,6 @@
 #ifndef LINKED_PAGE_LIST_ITERATOR_PUBLIC_H
 #define LINKED_PAGE_LIST_ITERATOR_PUBLIC_H
 
-/*
-** You need to ensure that there are no concurrent writes using the linked_page_list_iterator, as this may result in deadlocks.
-** It is assumed that this datastructure should be used when you only tend to insert at the head or tail, OR concurrently read the whole linked_page_list to find the correct one.
-*/
-
 typedef struct linked_page_list_iterator linked_page_list_iterator;
 
 typedef enum linked_page_list_state linked_page_list_state;
@@ -16,6 +11,7 @@ enum linked_page_list_state
 	MANY_NODE_LINKED_PAGE_LIST = 3  // linked_page_list has 3 or more nodes
 };
 
+// a read iterator is openned if the pmm_p == NULL
 linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // this returns 1, if the curr_page is locked with a WRITE_LOCK
