@@ -14,7 +14,7 @@ int init_page_table_page(persistent_page* ppage, uint32_t level, uint64_t first_
 
 	// get the header, initialize it and set it back on to the page
 	page_table_page_header hdr = get_page_table_page_header(ppage, pttd_p);
-	hdr.parent.type = PAGE_TABLE_PAGE;
+	hdr.parent.type = ARRAY_TABLE_PAGE;
 	hdr.level = level;
 	hdr.first_bucket_id = first_bucket_id;
 	set_page_table_page_header(ppage, &hdr, pttd_p, pmm_p, transaction_id, abort_error);
