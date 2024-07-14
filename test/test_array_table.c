@@ -138,7 +138,7 @@ int main()
 	print_array_table(root_page_id, 0, &attd, pam_p, transaction_id, &abort_error);
 
 	// perform updates
-	int updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 4, ((uint64_t []){0, 2, 3, UINT64_MAX - 5}), ((char* []){"zero", "two", "three", "UINT64_MAX - 1"}), &attd, pam_p, pmm_p);
+	int updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 4, ((uint64_t []){0, 2, 3, UINT64_MAX - 5}), ((char* []){"zero", "two", "three", "UINT64_MAX - 5"}), &attd, pam_p, pmm_p);
 	printf("updates = %d\n\n", updates);
 
 	// print the constructed page table
