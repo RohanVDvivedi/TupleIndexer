@@ -15,6 +15,8 @@ Finally, there is a sorter, that implements an external merge sort to sort all t
 
 All the above data structures for your data, work over a data store accessible in fixed sized pages (either persistent or non-persistent store) using your own page_access_methods (a struct of functions). It also allows you to implement your own page_modification_methods (again a struct of functions) to intercept calls to page modifications in case if you would like to log the changes to pages, to make them redo-able and undo-able.
 
+Additionally all the above data structures re implemented with complete concurrency in mind, and are multi threaded (except the the sorter, Only the destroy datastructure calls are not thread safe and needs external locking). They are also designed in a way to always store the root page of the data structure at a fixed pre initilized page_id (defined at the creation time of the datastructure).
+
 Sample implementationd of page_access_methods (unWALed_in_memory_data_store.c) and page_modification_methods (unWALed_page_modification_methods.c) have been provided for reference in src/interface directory.
 
 The Indexes provided (only a b+tree and a page_table (using page_table_range_locker), as of now) are thread safe (using standard latch coupling mechanism), provided correct and api conforming implementation of your own page_access_methods. Yes, page_access_methods struct will be used by TupleIndexer to request access for a page with a READ_LOCK or a WRITE_LOCK, explicitly.
