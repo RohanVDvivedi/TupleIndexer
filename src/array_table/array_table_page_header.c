@@ -13,7 +13,7 @@
 
 uint32_t get_offset_to_end_of_array_table_page_header(const array_table_tuple_defs* attd_p)
 {
-	return get_offset_to_end_of_common_page_header(attd_p->pas_p) + BYTES_FOR_PAGE_LEVEL + attd_p->pas_p->page_id_width;
+	return get_offset_to_end_of_common_page_header(attd_p->pas_p) + BYTES_FOR_PAGE_LEVEL + sizeof(uint64_t);
 }
 
 uint32_t get_level_of_array_table_page(const persistent_page* ppage, const array_table_tuple_defs* attd_p)
@@ -42,7 +42,7 @@ array_table_page_header get_array_table_page_header(const persistent_page* ppage
 	return (array_table_page_header){
 		.parent = get_common_page_header(ppage, attd_p->pas_p),
 		.level = deserialize_uint32(array_table_page_header_serial, BYTES_FOR_PAGE_LEVEL),
-		.first_bucket_id = deserialize_uint64(array_table_page_header_serial + BYTES_FOR_PAGE_LEVEL, attd_p->pas_p->page_id_width),
+		.first_bucket_id = deserialize_uint64(array_table_page_header_serial + BYTES_FOR_PAGE_LEVEL, sizeof(uint64_t)),
 	};
 }
 
@@ -52,7 +52,7 @@ void serialize_array_table_page_header(void* hdr_serial, const array_table_page_
 
 	void* array_table_page_header_serial = hdr_serial + get_offset_to_array_table_page_header_locals(attd_p);
 	serialize_uint32(array_table_page_header_serial, BYTES_FOR_PAGE_LEVEL, atph_p->level);
-	serialize_uint64(array_table_page_header_serial + BYTES_FOR_PAGE_LEVEL, attd_p->pas_p->page_id_width, atph_p->first_bucket_id);
+	serialize_uint64(array_table_page_header_serial + BYTES_FOR_PAGE_LEVEL, sizeof(uint64_t), atph_p->first_bucket_id);
 }
 
 void set_array_table_page_header(persistent_page* ppage, const array_table_page_header* atph_p, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
