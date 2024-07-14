@@ -45,6 +45,7 @@ The tuple is laid out as per specifications of TupleStore library.
  * add `-ltupleindexer -ltuplestore -lrwlock -lserint -lcutlery -lpthread` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `#include<bplus_tree.h>`
+   * `#include<array_table.h>`
    * `#include<page_table.h>`
    * `#include<linked_page_list.h>`
    * `#include<hash_table.h>`
