@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
- * write tests for array_table
-   uint64_t -> string containing uint64_t in words
-
  * make page_table use array_table underneath
  * test page_table, hash_table and sorter thoroughly
 
