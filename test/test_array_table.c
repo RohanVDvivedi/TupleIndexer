@@ -168,25 +168,37 @@ int main()
 	// print the constructed page table
 	print_array_table(root_page_id, 0, &attd, pam_p, transaction_id, &abort_error);
 
+	int updates;
+
 	// perform updates
-	int updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 4, ((uint64_t []){0, 2, 3, UINT64_MAX - 5}), ((char* []){"zero", "two", "three", "UINT64_MAX - 5"}), &attd, pam_p, pmm_p);
+	updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 4, ((uint64_t []){0, 2, 3, UINT64_MAX - 5}), ((char* []){"zero", "two", "three", "UINT64_MAX - 5"}), &attd, pam_p, pmm_p);
 	printf("updates = %d\n\n", updates);
 
 	// print the constructed page table
 	print_array_table(root_page_id, 0, &attd, pam_p, transaction_id, &abort_error);
 
 	// print inserted tuples
-	print_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 6, ((uint64_t []){0, 1, 2, 3, UINT64_MAX / 2, UINT64_MAX - 5}), &attd, pam_p);
+	print_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 8, ((uint64_t []){0, 1, 2, 3, 194, UINT64_MAX / 2, UINT64_MAX - 5, UINT64_MAX}), &attd, pam_p);
 
 	// perform updates
-	updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 4, ((uint64_t []){0, 2, 3, UINT64_MAX - 5}), ((char* []){NULL, NULL, NULL, NULL}), &attd, pam_p, pmm_p);
+	updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 4, ((uint64_t []){194, 2, 3, UINT64_MAX}), ((char* []){"one hundred ninety four", NULL, "threes", "UINT64_MAX"}), &attd, pam_p, pmm_p);
 	printf("updates = %d\n\n", updates);
 
 	// print the constructed page table
 	print_array_table(root_page_id, 0, &attd, pam_p, transaction_id, &abort_error);
 
 	// print inserted tuples
-	print_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 6, ((uint64_t []){0, 1, 2, 3, UINT64_MAX / 2, UINT64_MAX - 5}), &attd, pam_p);
+	print_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 8, ((uint64_t []){0, 1, 2, 3, 194, UINT64_MAX / 2, UINT64_MAX - 5, UINT64_MAX}), &attd, pam_p);
+
+	// perform updates
+	updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 7, ((uint64_t []){0, 2, 3, 194, 260, UINT64_MAX - 5, UINT64_MAX}), ((char* []){NULL, NULL, NULL, NULL, NULL, NULL, NULL}), &attd, pam_p, pmm_p);
+	printf("updates = %d\n\n", updates);
+
+	// print the constructed page table
+	print_array_table(root_page_id, 0, &attd, pam_p, transaction_id, &abort_error);
+
+	// print inserted tuples
+	print_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 8, ((uint64_t []){0, 1, 2, 3, 194, UINT64_MAX / 2, UINT64_MAX - 5, UINT64_MAX}), &attd, pam_p);
 
 	/* TESTS ENDED */
 
