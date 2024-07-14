@@ -1,13 +1,19 @@
 # TupleIndexer
-A c library that enables you to build data base index structures a b_plus_tree, a page_table and a linked_page_list.
+A c library that enables you to build data base index structures a b_plus_tree, an array_table, a page_table and a linked_page_list.
 
-a bplus_tree (a b+ tree) for your data, over a data store accessible in fixed sized pages (either persistent or non-persistent store) using your own page_access_methods (a struct of functions). It also allows you to implement your own page_modification_methods (again a struct of functions) to intercept calls to page modifications in case if you would like to log the changes to pages, to make them redo-able and undo-able.
+A standard bplus_tree (a b+ tree) for your data.
 
-Similarly a page_table structure that provides a dynamic mapping between a 64-bit bucket_id to a page_id. It will be further used to support a hash index on top of it.
+I have come up with another data structure that works like an array, it is very similar to Operating System page tables, but it is optimized to have a compact height and width, by using some clever modifications. It essentially is a loop up table from uint64_t (referred to as bucket_id) to fixed sized tuples.
+
+Similarly a page_table (derived uaing the above mentioned array_table) structure that provides a dynamic mapping between a 64-bit bucket_id to a page_id. It will be further used to support a hash index on top of it.
 
 There is also an implementation of a linked_page_list, this data structure is a doubly-circular linked list of pages, containing tuples.
 
-Together (the page_table and linked_page_list), are also aimed to provide a hash table index *in future*.
+Together (the page_table and linked_page_list), provides a persistent hash_table data structure.
+
+Finally, there is a sorter, that implements an external merge sort to sort all the tuples, it has optimizations to merge with atmost N runs at a time. It returns a linked page page list of the sorted tuples.
+
+All the above data structures for your data, work over a data store accessible in fixed sized pages (either persistent or non-persistent store) using your own page_access_methods (a struct of functions). It also allows you to implement your own page_modification_methods (again a struct of functions) to intercept calls to page modifications in case if you would like to log the changes to pages, to make them redo-able and undo-able.
 
 Sample implementationd of page_access_methods (unWALed_in_memory_data_store.c) and page_modification_methods (unWALed_page_modification_methods.c) have been provided for reference in src/interface directory.
 
