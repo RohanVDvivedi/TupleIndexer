@@ -229,6 +229,8 @@ int main()
 
 	int updates;
 
+	// INSERTS
+
 	// perform updates
 	updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 4, ((uint64_t []){0, 2, 3, UINT64_MAX - 5}), ((char* []){"zero", "two", "three", "UINT64_MAX - 5"}), &attd, pam_p, pmm_p);
 	printf("updates = %d\n\n", updates);
@@ -238,6 +240,14 @@ int main()
 
 	// print inserted tuples
 	print_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 8, ((uint64_t []){0, 1, 2, 3, 194, UINT64_MAX / 2, UINT64_MAX - 5, UINT64_MAX}), &attd, pam_p);
+
+	print_all_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 0, &attd, pam_p);
+	print_all_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 1, &attd, pam_p);
+
+
+
+
+	// UPDATES
 
 	// perform updates
 	updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 4, ((uint64_t []){194, 2, 3, UINT64_MAX}), ((char* []){"one hundred ninety four", NULL, "threes", "UINT64_MAX"}), &attd, pam_p, pmm_p);
@@ -249,6 +259,14 @@ int main()
 	// print inserted tuples
 	print_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 8, ((uint64_t []){0, 1, 2, 3, 194, UINT64_MAX / 2, UINT64_MAX - 5, UINT64_MAX}), &attd, pam_p);
 
+	print_all_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 0, &attd, pam_p);
+	print_all_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 1, &attd, pam_p);
+
+
+
+
+	// DELETES
+
 	// perform updates
 	updates = update_in_array_table(root_page_id, WHOLE_BUCKET_RANGE, 7, ((uint64_t []){0, 2, 3, 194, 260, UINT64_MAX - 5, UINT64_MAX}), ((char* []){NULL, NULL, NULL, NULL, NULL, NULL, NULL}), &attd, pam_p, pmm_p);
 	printf("updates = %d\n\n", updates);
@@ -258,6 +276,12 @@ int main()
 
 	// print inserted tuples
 	print_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 8, ((uint64_t []){0, 1, 2, 3, 194, UINT64_MAX / 2, UINT64_MAX - 5, UINT64_MAX}), &attd, pam_p);
+
+	print_all_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 0, &attd, pam_p);
+	print_all_from_array_table(root_page_id, WHOLE_BUCKET_RANGE, 1, &attd, pam_p);
+
+
+
 
 	/* TESTS ENDED */
 
