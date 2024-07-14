@@ -100,22 +100,22 @@ void print_from_array_table(uint64_t root_page_id, bucket_range lock_range, uint
 		exit(-1);
 	}
 
-	for(uint32_t i = 0; i < ops; i++, access_counter++)
+	for(uint32_t i = 0; i < ops; i++)
 	{
-		char record[64];
-		const void* result = get_from_array_table(atrl_p, bucket_ids[i], record, transaction_id, &abort_error);
+		char memory[64];
+		const void* record = get_from_array_table(atrl_p, bucket_ids[i], memory, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
 		}
 
-		if(result == NULL)
+		if(record == NULL)
 			printf("%"PRIu64" -> NULL\n", bucket_ids[i]);
 		else
 		{
 			printf("%"PRIu64" -> ", bucket_ids[i]);
-			print_tuple(result, attd_p->record_def);
+			print_tuple(record, attd_p->record_def);
 		}
 	}
 
@@ -127,9 +127,68 @@ void print_from_array_table(uint64_t root_page_id, bucket_range lock_range, uint
 	}
 }
 
-void print_all_from_array_table(uint64_t root_page_id, bucket_range lock_range, uint64_t ops, int backward, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p)
+void print_all_from_array_table(uint64_t root_page_id, bucket_range lock_range, int backward, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p)
 {
+	array_table_range_locker* atrl_p = get_new_array_table_range_locker(root_page_id, lock_range, attd_p, pam_p, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 
+	if(!backward)
+	{
+		char memory[64];
+		uint64_t bucket_id = 0;
+		const void* record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, GREATER_THAN_EQUALS, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		while(record)
+		{
+			printf("%"PRIu64" -> ", bucket_id);
+			print_tuple(record, attd_p->record_def);
+
+			record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, GREATER_THAN, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+		}
+	}
+	else
+	{
+		char memory[64];
+		uint64_t bucket_id = UINT64_MAX;
+		const void* record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, LESSER_THAN_EQUALS, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		while(record)
+		{
+			printf("%"PRIu64" -> ", bucket_id);
+			print_tuple(record, attd_p->record_def);
+
+			record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, LESSER_THAN, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+		}
+	}
+
+	delete_array_table_range_locker(atrl_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 }
 
 int main()
