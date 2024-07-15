@@ -98,9 +98,7 @@ int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, 
 		// now since the child_index is within bounds of tuple_count, we can directly update
 
 		// construct a tuple in temporary memory and make it point to child_page_id
-		void* new_child_tuple = malloc(get_minimum_tuple_size(pttd_p->entry_def)); // minimum size of fixed width tuple is same as its size
-		if(new_child_tuple == NULL)  // memory allocation failed
-			exit(-1);
+		char new_child_tuple[MAX_TUPLE_SIZE_FOR_ONLY_NON_NULLABLE_FIXED_WIDTH_UNSIGNED_PAGE_ID];
 		init_tuple(pttd_p->entry_def, new_child_tuple);
 		set_element_in_tuple(pttd_p->entry_def, 0, new_child_tuple, &((user_value){.uint_value = child_page_id}));
 
