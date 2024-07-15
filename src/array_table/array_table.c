@@ -116,6 +116,9 @@ int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* att
 
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
 
+	if(*abort_error)
+		return 0;
+
 	return 1;
 }
 

@@ -145,6 +145,9 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
 
+	if(*abort_error)
+		return 0;
+
 	return 1;
 }
 
