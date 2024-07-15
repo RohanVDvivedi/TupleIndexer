@@ -1,5 +1,6 @@
 ** PICKED TASKS
 
+ * ensure that there is a return before every ABORT_ERROR tag
  * set function in array_table_page_util for index page uses a malloc calls, change it to stack allocation using char new_child_tuple[8]
   * and write a comment that this tuple containing a non-NULLable single element (page_id_width) of fixed size (1-8 bytes) will never exceed 8 bytes (64 bits)
  * make page_table use array_table underneath
