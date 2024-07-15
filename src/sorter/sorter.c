@@ -417,6 +417,9 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	// update the sorted_runs_count
 	sh_p->sorted_runs_count = runs_created;
 
+	// destroy the heap
+	deinitialize_active_sorted_run_heap(&input_runs_heap);
+
 	return 1;
 
 	ABORT_ERROR:;
@@ -430,6 +433,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 		pop_front_from_active_sorted_run_heap(&input_runs_heap);
 		delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 	}
+	deinitialize_active_sorted_run_heap(&input_runs_heap);
 	if(output_run.run_iterator != NULL)
 		delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
 	return 0;
