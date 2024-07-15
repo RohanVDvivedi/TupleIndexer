@@ -3,6 +3,7 @@
 #include<page_table_page_header.h>
 #include<persistent_page_functions.h>
 #include<invalid_tuple_indices.h>
+#include<tuple_for_page_id.h>
 
 #include<stdlib.h>
 
@@ -104,7 +105,6 @@ int set_child_page_id_at_child_index_in_page_table_page(persistent_page* ppage, 
 
 		// perform update
 		update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, pttd_p->pas_p->page_size, &(pttd_p->entry_def->size_def), child_index, new_child_tuple, abort_error);
-		free(new_child_tuple);
 		if(*abort_error)
 			return 0;
 	}
