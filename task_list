@@ -1,6 +1,6 @@
 ** PICKED TASKS
 
- * add to utils, page_id_width_tuple_util.h #define MAX_SIZE_OF_TUPLE_WITH_ONLY_NON_NULLABLE_FIXED_SIZED_PAGE_ID_WIDTH 8 -> and use this in array_table and page_table
+ * add to utils, page_id_width_tuple_util.h #define MAX_SIZE_OF_TUPLE_WITH_ONLY_NON_NULLABLE_FIXED_SIZED_PAGE_ID_WIDTH_ELEMENT 8 -> and use this in array_table and page_table
    * write comment for this, that the maximum size that a tuple with only fixed sized non-NULLable page_id_width can take is 8 bytes (64 bits), because we use page_id_width as a 64 bit integer in this library
  * set function in array_table_page_util for index page uses a malloc calls, change it to stack allocation using char new_child_tuple[8]
   * and write a comment that this tuple containing a non-NULLable single element (page_id_width) of fixed size (1-8 bytes) will never exceed 8 bytes (64 bits)
