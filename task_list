@@ -6,6 +6,8 @@
  * make page_table use array_table underneath
  * test page_table, hash_table and sorter thoroughly
 
+ * destroy functions for page_table, array_table and bplus_tree return 0, on abort error
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
