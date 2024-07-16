@@ -18,5 +18,5 @@ int destroy_page_table(uint64_t root_page_id, const page_table_tuple_defs* pttd_
 
 void print_page_table(uint64_t root_page_id, int only_leaf_pages, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
-	return print_page_table(root_page_id, only_leaf_pages, &(pttd_p->attd), pam_p, transaction_id, abort_error);
+	return print_array_table(root_page_id, only_leaf_pages, &(pttd_p->attd), pam_p, transaction_id, abort_error);
 }
