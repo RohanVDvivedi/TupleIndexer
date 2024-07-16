@@ -12,6 +12,10 @@
 typedef struct page_table_tuple_defs page_table_tuple_defs;
 struct page_table_tuple_defs
 {
+	// specification of all the pages in the page_table
+	// this is redundant parameter, as it is duplicated in attd
+	const page_access_specs* pas_p;
+
 	// page table is internally a array_table with entries being page_ids
 	array_table_tuple_defs attd;
 };

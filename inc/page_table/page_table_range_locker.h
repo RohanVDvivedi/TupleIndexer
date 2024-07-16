@@ -2,7 +2,7 @@
 #define PAGE_TABLE_RANGE_LOCKER_H
 
 #include<page_table.h>
-#include<array_table_range_locker_public.h>
+#include<array_table_range_locker.h>
 #include<persistent_page.h>
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>

@@ -3,6 +3,7 @@
 #include<persistent_page_functions.h>
 #include<locked_pages_stack.h>
 #include<invalid_tuple_indices.h>
+#include<tuple_for_page_id.h>
 
 #include<stdlib.h>
 
@@ -28,17 +29,33 @@ int is_writable_page_table_range_locker(const page_table_range_locker* ptrl_p)
 
 uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	char page_id_entry_memory[MAX_TUPLE_SIZE_FOR_ONLY_NON_NULLABLE_FIXED_WIDTH_UNSIGNED_PAGE_ID];
+
+	const void* res = get_from_array_table(&(ptrl_p->atrl), bucket_id, page_id_entry_memory, transaction_id, abort_error);
+	if(*abort_error)
+		return ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID;
+
+	if(res == NULL)
+		return ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID;
+	return get_value_from_element_from_tuple(ptrl_p->atrl.attd_p->record_def, 0, res).uint_value;
 }
 
 int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	char page_id_entry[MAX_TUPLE_SIZE_FOR_ONLY_NON_NULLABLE_FIXED_WIDTH_UNSIGNED_PAGE_ID];
 }
 
 uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	char page_id_entry_memory[MAX_TUPLE_SIZE_FOR_ONLY_NON_NULLABLE_FIXED_WIDTH_UNSIGNED_PAGE_ID];
+
+	const void* res = find_non_NULL_entry_in_array_table(&(ptrl_p->atrl), bucket_id, page_id_entry_memory, find_pos, transaction_id, abort_error);
+	if(*abort_error)
+		return ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID;
+
+	if(res == NULL)
+		return ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID;
+	return get_value_from_element_from_tuple(ptrl_p->atrl.attd_p->record_def, 0, res).uint_value;
 }
 
 void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
