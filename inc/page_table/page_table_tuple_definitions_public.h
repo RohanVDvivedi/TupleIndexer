@@ -4,9 +4,7 @@
 #include<tuple.h>
 #include<inttypes.h>
 
-#include<power_table.h>
-
-#include<page_access_specification.h>
+#include<array_table_tuple_definitions_public.h>
 
 // The function (find_non_NULL_PAGE_ID_in_page_table) makes use of the fact that entries_per_page != INVALID_INDEX (UINT32_MAX)
 // i.e. entries_per_page < INVALID_INDEX (UINT32_MAX)
