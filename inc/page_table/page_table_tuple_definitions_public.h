@@ -14,22 +14,8 @@
 typedef struct page_table_tuple_defs page_table_tuple_defs;
 struct page_table_tuple_defs
 {
-	// specification of all the pages in the page_table
-	const page_access_specs* pas_p;
-
-	// tuple definition of all the pages in the page_table
-	tuple_def* entry_def;
-	// additionally each entry is just a UINT value of page_id_width in the entry_def
-
-	// this decides the number of entries that can fit on any of the page_table page
-	// this is fixed since the entry_def is fixed sized
-	uint64_t entries_per_page;
-
-	// power table for entries_per_page
-	power_table power_table_for_entries_per_page;
-
-	// the maximum height of the page table will never be more than this value
-	uint64_t max_page_table_height;
+	// page table is internally a array_table with entries being page_ids
+	array_table_tuple_defs attd;
 };
 
 // initializes the attributes in page_table_tuple_defs struct as per the provided parameters

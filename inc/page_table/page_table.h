@@ -6,6 +6,8 @@
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 
+// page table is internally a array_table with entries being page_ids
+
 // returns pointer to the root page of the newly created page_table
 uint64_t get_new_page_table(const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 

@@ -6,6 +6,10 @@
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 
+/*
+	Array table is nothing but a look-up-table from uint64_t to record_def ofyour choosing
+*/
+
 // returns pointer to the root page of the newly created array_table
 uint64_t get_new_array_table(const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
