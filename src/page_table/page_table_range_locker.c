@@ -42,7 +42,17 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 
 int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error)
 {
-	char page_id_entry[MAX_TUPLE_SIZE_FOR_ONLY_NON_NULLABLE_FIXED_WIDTH_UNSIGNED_PAGE_ID];
+	char page_id_entry_memory[MAX_TUPLE_SIZE_FOR_ONLY_NON_NULLABLE_FIXED_WIDTH_UNSIGNED_PAGE_ID];
+
+	void* page_id_entry = NULL;
+	if(page_id != ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID)
+	{
+		page_id_entry = page_id_entry_memory;
+		init_tuple(ptrl_p->atrl.attd_p->record_def, page_id_entry);
+		set_element_in_tuple(ptrl_p->atrl.attd_p->record_def, 0, page_id_entry, &((user_value){.uint_value = page_id}));
+	}
+
+	return set_in_array_table(&(ptrl_p->atrl), bucket_id, page_id_entry, transaction_id, abort_error);
 }
 
 uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, uint64_t* bucket_id, find_position find_pos, const void* transaction_id, int* abort_error)
