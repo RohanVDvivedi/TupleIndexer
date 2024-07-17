@@ -5,6 +5,10 @@
   * get_from_bottom_of_locked_pages_stack(const locked_pages_stack* lps, uint32_t index);
 
 * cloning read iterators, read-only bplus_tree_iterator, array_table_range_locker, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
+  * use get_capacity and get_from_bottom_of to read lock all pages in the stack and return it, for bplus_tree_iterator
+  * for array_table_range_locker only local_root needs to be locked, derieve code for page_table_range_locker
+  * for linked_page_list_iterator, copy lock of head_page and curr_page (if it does not point to head)
+  * for hash_table_iterator, clone ptrl and lpli iterators
   * clone all read locks inside them, and make a new object
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
