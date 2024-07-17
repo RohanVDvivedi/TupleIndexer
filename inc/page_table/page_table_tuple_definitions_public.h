@@ -14,6 +14,7 @@ struct page_table_tuple_defs
 {
 	// specification of all the pages in the page_table
 	// this is redundant parameter, as it is duplicated in attd
+	// yet it has be placed here, because, page_table sets and gets page_id-s corresponding to bucket_ids, it just becomes quick to access NULL_PAGE_ID in the pas_p
 	const page_access_specs* pas_p;
 
 	// page table is internally a array_table with entries being page_ids
