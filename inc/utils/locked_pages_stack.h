@@ -29,6 +29,9 @@ void deinitialize_locked_pages_stack(locked_pages_stack* lps);
 // returns number of locked_page_info s inside the stack
 cy_uint get_element_count_locked_pages_stack(const locked_pages_stack* lps);
 
+// returns capacity of the locked_pages_stack to hold locked_page_info s
+cy_uint get_capacity_locked_pages_stack(const locked_pages_stack* lps);
+
 // pushes the locked_page_info to the locked_pages_stack
 int push_to_locked_pages_stack(locked_pages_stack* lps, const locked_page_info* lpi_p);
 
@@ -40,6 +43,9 @@ locked_page_info* get_top_of_locked_pages_stack(const locked_pages_stack* lps);
 
 // returns pointer to the bottom locked_page_info of the locked_pages_stack
 locked_page_info* get_bottom_of_locked_pages_stack(const locked_pages_stack* lps);
+
+// returns pointer to the nth element in locked_pages_stack (counting from bottom)
+locked_page_info* get_from_bottom_of_locked_pages_stack(const locked_pages_stack* lps, cy_uint index);
 
 int pop_bottom_from_locked_pages_stack(locked_pages_stack* lps);
 

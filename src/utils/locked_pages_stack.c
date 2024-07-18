@@ -24,6 +24,11 @@ locked_page_info* get_bottom_of_locked_pages_stack(const locked_pages_stack* lps
 	return (locked_page_info*)(get_front_of_locked_pages_stack(lps));
 }
 
+locked_page_info* get_from_bottom_of_locked_pages_stack(const locked_pages_stack* lps, cy_uint index)
+{
+	return (locked_page_info*)(get_from_front_of_locked_pages_stack(lps, index));
+}
+
 int pop_bottom_from_locked_pages_stack(locked_pages_stack* lps)
 {
 	return pop_front_from_locked_pages_stack(lps);
