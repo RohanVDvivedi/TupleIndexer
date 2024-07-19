@@ -488,6 +488,86 @@ int update_all_to_identical_from_head(uint64_t head_page_id, char* name, const l
 	return updated;
 }
 
+void multiple_active_iterators_to_print(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p)
+{
+	linked_page_list_iterator* lpli1_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	if(is_empty_linked_page_list(lpli1_p))
+	{
+		delete_linked_page_list_iterator(lpli1_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		return;
+	}
+
+	prev_linked_page_list_iterator(lpli1_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	linked_page_list_iterator* lpli2_p = clone_linked_page_list_iterator(lpli1_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	next_linked_page_list_iterator(lpli2_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	do
+	{
+		printf("I1 -> ");
+		print_tuple(get_tuple_linked_page_list_iterator(lpli1_p), lpltd_p->record_def);
+
+		printf("I2 -> ");
+		print_tuple(get_tuple_linked_page_list_iterator(lpli2_p), lpltd_p->record_def);
+
+		next_linked_page_list_iterator(lpli1_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		next_linked_page_list_iterator(lpli2_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
+	while(!is_at_head_tuple_linked_page_list_iterator(lpli2_p));
+
+	delete_linked_page_list_iterator(lpli1_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	delete_linked_page_list_iterator(lpli2_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 // this function will block you forever (just or test)
 void test_concurrency(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
@@ -530,6 +610,8 @@ void test_concurrency(uint64_t head_page_id, const linked_page_list_tuple_defs* 
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	printf("\n\n");
 }
 
 void test_merge(const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
@@ -661,6 +743,7 @@ int main()
 	//test_concurrency(head_page_id, &lpltd, pam_p, NULL);
 
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
+	multiple_active_iterators_to_print(head_page_id, &lpltd, pam_p);
 
 	pop_from_head(head_page_id, 2, &lpltd, pam_p, pmm_p);
 	print_linked_page_list(head_page_id, &lpltd, pam_p, transaction_id, &abort_error);
