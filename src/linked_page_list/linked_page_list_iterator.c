@@ -80,6 +80,47 @@ linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_
 	return lpli_p;
 }
 
+linked_page_list_iterator* clone_linked_page_list_iterator(const linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error)
+{
+	if(is_writable_linked_page_list_iterator(lpli_p))
+		return NULL;
+
+	linked_page_list_iterator* clone_p = malloc(sizeof(linked_page_list_iterator));
+	if(clone_p == NULL)
+		exit(-1);
+
+	clone_p->curr_tuple_index = lpli_p->curr_tuple_index;
+	clone_p->lpltd_p = lpli_p->lpltd_p;
+	clone_p->pam_p = lpli_p->pam_p;
+	clone_p->pmm_p = lpli_p->pmm_p;
+
+	clone_p->head_page = acquire_persistent_page_with_lock(clone_p->pam_p, transaction_id, lpli_p->head_page.page_id, READ_LOCK, abort_error);
+	if(*abort_error)
+	{
+		free(clone_p);
+		return NULL;
+	}
+
+	if(lpli_p->curr_page.points_to_iterator_head) // make it point to the clone_p's head
+	{
+		clone_p->curr_page.points_to_iterator_head = 1;
+		clone_p->curr_page.non_head_page = get_NULL_persistent_page(clone_p->pam_p);
+	}
+	else // lock a new page
+	{
+		clone_p->curr_page.points_to_iterator_head = 0;
+		clone_p->curr_page.non_head_page = acquire_persistent_page_with_lock(clone_p->pam_p, transaction_id, lpli_p->curr_page.non_head_page.page_id, READ_LOCK, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(clone_p->pam_p, transaction_id, &(clone_p->head_page), NONE_OPTION, abort_error);
+			free(clone_p);
+			return NULL;
+		}
+	}
+
+	return clone_p;
+}
+
 int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
 {
 	return lpli_p->pmm_p != NULL;
