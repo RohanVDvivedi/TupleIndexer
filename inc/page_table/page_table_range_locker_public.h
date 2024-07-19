@@ -14,7 +14,7 @@ page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, 
 
 // returns NULL if ptrl_p is writable OR on an abort error
 // on an abort_error, ptrl_p will still hold its locks
-page_table_range_locker* clone_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error);
+page_table_range_locker* clone_page_table_range_locker(const page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error);
 
 // minimizes the lock range of the range_locker
 // on an abort error, lock on the local root is released, then you only need to call delete_page_table_range_locker

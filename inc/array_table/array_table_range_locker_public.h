@@ -14,7 +14,7 @@ array_table_range_locker* get_new_array_table_range_locker(uint64_t root_page_id
 
 // returns NULL if atrl_p is writable OR on an abort error
 // on an abort_error, atrl_p will still hold its locks
-array_table_range_locker* clone_array_table_range_locker(array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error);
+array_table_range_locker* clone_array_table_range_locker(const array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error);
 
 // minimizes the lock range of the range_locker
 // on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker

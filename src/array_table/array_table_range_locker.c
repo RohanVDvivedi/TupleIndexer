@@ -109,7 +109,7 @@ int minimize_lock_range_for_array_table_range_locker(array_table_range_locker* a
 	return 1;
 }
 
-array_table_range_locker* clone_array_table_range_locker(array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error)
+array_table_range_locker* clone_array_table_range_locker(const array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error)
 {
 	if(is_writable_array_table_range_locker(atrl_p))
 		return NULL;
