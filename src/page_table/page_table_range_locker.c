@@ -12,6 +12,11 @@ page_table_range_locker* get_new_page_table_range_locker(uint64_t root_page_id, 
 	return (page_table_range_locker*)get_new_array_table_range_locker(root_page_id, lock_range, &(pttd_p->attd), pam_p, pmm_p, transaction_id, abort_error);
 }
 
+page_table_range_locker* clone_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
+{
+	return (page_table_range_locker*)clone_array_table_range_locker(&(ptrl_p->atrl), transaction_id, abort_error);
+}
+
 int minimize_lock_range_for_page_table_range_locker(page_table_range_locker* ptrl_p, bucket_range lock_range, const void* transaction_id, int* abort_error)
 {
 	return minimize_lock_range_for_array_table_range_locker(&(ptrl_p->atrl), lock_range, transaction_id, abort_error);
