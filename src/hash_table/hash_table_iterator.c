@@ -100,6 +100,51 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 	return NULL;
 }
 
+hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
+{
+	if(is_writable_hash_table_iterator(hti_p))
+		return NULL;
+
+	hash_table_iterator* clone_p = malloc(sizeof(hash_table_iterator));
+	if(clone_p == NULL)
+		exit(-1);
+
+	clone_p->root_page_id = hti_p->root_page_id;
+	clone_p->key = hti_p->key;
+	clone_p->lock_range = hti_p->lock_range;
+	clone_p->curr_bucket_id = hti_p->curr_bucket_id;
+	clone_p->ptrl_p = NULL;
+	clone_p->lpli_p = NULL;
+	clone_p->httd_p = hti_p->httd_p;
+	clone_p->pam_p = hti_p->pam_p;
+	clone_p->pmm_p = hti_p->pmm_p;
+	clone_p->bucket_count = hti_p->bucket_count;
+
+	if(hti_p->ptrl_p != NULL)
+	{
+		clone_p->ptrl_p = clone_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto DELETE_EVERYTHING_AND_ABORT;
+	}
+
+	if(hti_p->lpli_p != NULL)
+	{
+		clone_p->lpli_p = clone_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto DELETE_EVERYTHING_AND_ABORT;
+	}
+
+	return clone_p;
+
+	DELETE_EVERYTHING_AND_ABORT:;
+	if(clone_p->ptrl_p)
+		delete_page_table_range_locker(clone_p->ptrl_p, transaction_id, abort_error);
+	if(clone_p->lpli_p)
+		delete_linked_page_list_iterator(clone_p->lpli_p, transaction_id, abort_error);
+	free(clone_p);
+	return NULL;
+}
+
 uint64_t get_bucket_count_hash_table_iterator(const hash_table_iterator* hti_p)
 {
 	return hti_p->bucket_count;
