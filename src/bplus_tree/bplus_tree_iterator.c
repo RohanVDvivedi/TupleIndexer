@@ -274,6 +274,40 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 	return bpi_p;
 }
 
+bplus_tree_iterator* clone_bplus_tree_iterator(const bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
+{
+	if(is_writable_bplus_tree_iterator(bpi_p))
+		return NULL;
+
+	bplus_tree_iterator* clone_p = malloc(sizeof(bplus_tree_iterator));
+	if(bpi_p == NULL)
+		exit(-1);
+
+	if(!initialize_locked_pages_stack(&(clone_p->lps), get_capacity_locked_pages_stack(&(bpi_p->lps))))
+		exit(-1);
+
+	clone_p->curr_tuple_index = bpi_p->curr_tuple_index;
+	clone_p->is_stacked = bpi_p->is_stacked;
+	clone_p->bpttd_p = bpi_p->bpttd_p;
+	clone_p->pam_p = bpi_p->pam_p;
+	clone_p->pmm_p = bpi_p->pmm_p;
+
+	// clone all the locks of bpi_p->lps in bottom first order and insert them to clone_p->lps
+	// TODO
+
+	return clone_p;
+
+	ABORT_ERROR:
+	while(get_element_count_locked_pages_stack(&(clone_p->lps)) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(clone_p->lps));
+		release_lock_on_persistent_page(clone_p->pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(&(clone_p->lps));
+	}
+	free(clone_p);
+	return NULL;
+}
+
 int is_writable_bplus_tree_iterator(const bplus_tree_iterator* bpi_p)
 {
 	return bpi_p->pmm_p != NULL;
