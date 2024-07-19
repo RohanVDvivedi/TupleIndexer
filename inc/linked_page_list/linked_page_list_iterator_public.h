@@ -14,6 +14,10 @@ enum linked_page_list_state
 // a read iterator is openned if the pmm_p == NULL
 linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
+// returns NULL if lpli_p is writable OR on an abort error
+// on an abort_error, lpli_p will still hold its locks
+linked_page_list_iterator* clone_linked_page_list_iterator(const linked_page_list_iterator* lpli_p, const void* transaction_id, int* abort_error);
+
 // this returns 1, if the curr_page is locked with a WRITE_LOCK
 int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
 
