@@ -5,6 +5,10 @@
 
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 
+// returns NULL if bpi_p is writable OR on an abort error
+// on an abort_error, bpi_p will still hold its locks
+bplus_tree_iterator* clone_bplus_tree_iterator(const bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
+
 // returns true, if the leaf page of the bplus_tree_iterator is/will be write locked
 int is_writable_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
 
