@@ -1,8 +1,7 @@
 ** PICKED TASKS
 
-* cloning read iterators, read-only bplus_tree_iterator, array_table_range_locker, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
+* cloning read iterators
   * for hash_table_iterator, clone ptrl and lpli iterators
-  * clone all read locks inside them, and make a new object
   * test cloning for find on linked_page_list_iterator and hash_table_iterator
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
