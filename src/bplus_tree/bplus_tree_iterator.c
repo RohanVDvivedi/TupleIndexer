@@ -280,7 +280,7 @@ bplus_tree_iterator* clone_bplus_tree_iterator(const bplus_tree_iterator* bpi_p,
 		return NULL;
 
 	bplus_tree_iterator* clone_p = malloc(sizeof(bplus_tree_iterator));
-	if(bpi_p == NULL)
+	if(clone_p == NULL)
 		exit(-1);
 
 	if(!initialize_locked_pages_stack(&(clone_p->lps), get_capacity_locked_pages_stack(&(bpi_p->lps))))
@@ -311,6 +311,7 @@ bplus_tree_iterator* clone_bplus_tree_iterator(const bplus_tree_iterator* bpi_p,
 		release_lock_on_persistent_page(clone_p->pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 		pop_bottom_from_locked_pages_stack(&(clone_p->lps));
 	}
+	deinitialize_locked_pages_stack(&(clone_p->lps));
 	free(clone_p);
 	return NULL;
 }
