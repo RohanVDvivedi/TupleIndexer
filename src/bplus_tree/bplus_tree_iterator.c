@@ -293,7 +293,14 @@ bplus_tree_iterator* clone_bplus_tree_iterator(const bplus_tree_iterator* bpi_p,
 	clone_p->pmm_p = bpi_p->pmm_p;
 
 	// clone all the locks of bpi_p->lps in bottom first order and insert them to clone_p->lps
-	// TODO
+	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(&(bpi_p->lps)); i++)
+	{
+		locked_page_info* locked_page_info_to_clone = get_from_bottom_of_locked_pages_stack(&(bpi_p->lps), i);
+		persistent_page cloned_page = acquire_persistent_page_with_lock(clone_p->pam_p, transaction_id, locked_page_info_to_clone->ppage.page_id, READ_LOCK, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+		push_to_locked_pages_stack(&(clone_p->lps), &INIT_LOCKED_PAGE_INFO(cloned_page, locked_page_info_to_clone->child_index));
+	}
 
 	return clone_p;
 
