@@ -109,6 +109,33 @@ int minimize_lock_range_for_array_table_range_locker(array_table_range_locker* a
 	return 1;
 }
 
+array_table_range_locker* clone_array_table_range_locker(array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error)
+{
+	if(is_writable_array_table_range_locker(atrl_p))
+		return NULL;
+
+	array_table_range_locker* clone_p = malloc(sizeof(array_table_range_locker));
+	if(clone_p == NULL)
+		exit(-1);
+
+	clone_p->delegated_local_root_range = atrl_p->delegated_local_root_range;
+	clone_p->max_local_root_level = atrl_p->max_local_root_level;
+	clone_p->root_page_id = atrl_p->root_page_id;
+	clone_p->attd_p = atrl_p->attd_p;
+	clone_p->pam_p = atrl_p->pam_p;
+	clone_p->pmm_p = atrl_p->pmm_p;
+
+	// clone the only page lock that atrl holds
+	clone_p->local_root = acquire_persistent_page_with_lock(clone_p->pam_p, transaction_id, atrl_p->local_root.page_id, READ_LOCK, abort_error);
+	if(*abort_error)
+	{
+		free(clone_p);
+		return NULL;
+	}
+
+	return clone_p;
+}
+
 bucket_range get_lock_range_for_array_table_range_locker(const array_table_range_locker* atrl_p)
 {
 	return atrl_p->delegated_local_root_range;
