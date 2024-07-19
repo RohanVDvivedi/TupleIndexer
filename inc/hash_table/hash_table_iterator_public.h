@@ -11,6 +11,10 @@ typedef struct hash_table_iterator hash_table_iterator;
 // on abort_error, NULL is returned
 hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_range bucket_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
+// returns NULL if hti_p is writable OR on an abort error
+// on an abort_error, hti_p will still hold its locks
+hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p, const void* transaction_id, int* abort_error);
+
 // return the bucket_count of the hash_table, at the instant when this iterator was created
 // note: this may not be the actual bucket_count, if a expand_hash_table/shrink_hash_table was called post the initialization of this hash_table_iterator
 uint64_t get_bucket_count_hash_table_iterator(const hash_table_iterator* hti_p);
