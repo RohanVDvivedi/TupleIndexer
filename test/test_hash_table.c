@@ -751,6 +751,90 @@ int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, 
 	return removed_count;
 }
 
+void print_2_buckets(uint64_t root_page_id, uint64_t start_bucket_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p)
+{
+	hash_table_iterator* hti1_p = get_new_hash_table_iterator(root_page_id, (bucket_range){start_bucket_id, start_bucket_id + 1}, NULL, httd_p, pam_p, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	hash_table_iterator* hti2_p = clone_hash_table_iterator(hti1_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	while(start_bucket_id == get_curr_bucket_index_for_hash_table_iterator(hti2_p))
+	{
+		int next_res = next_hash_table_iterator(hti2_p, 1, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		if(next_res == 0)
+			break;
+	}
+
+	printf("bucket = %"PRIu64"\n", get_curr_bucket_index_for_hash_table_iterator(hti1_p));
+	while(1)
+	{
+		const void* tuple = get_tuple_hash_table_iterator(hti1_p);
+		if(tuple == NULL)
+			printf("NULL");
+		else
+			print_tuple(tuple, httd_p->lpltd.record_def);
+
+		int next_res = next_hash_table_iterator(hti1_p, 0, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		if(next_res == 0)
+			break;
+	}
+	printf("\n");
+
+	printf("bucket = %"PRIu64"\n", get_curr_bucket_index_for_hash_table_iterator(hti2_p));
+	while(1)
+	{
+		const void* tuple = get_tuple_hash_table_iterator(hti2_p);
+		if(tuple == NULL)
+			printf("NULL");
+		else
+			print_tuple(tuple, httd_p->lpltd.record_def);
+
+		int next_res = next_hash_table_iterator(hti2_p, 0, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		if(next_res == 0)
+			break;
+	}
+
+	delete_hash_table_iterator(hti1_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	delete_hash_table_iterator(hti2_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	printf("\n\n");
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -848,6 +932,8 @@ int main()
 
 	// print the constructed page table
 	print_hash_table(root_page_id, 1, &httd, pam_p, transaction_id, &abort_error);
+
+	print_2_buckets(root_page_id, 10, &httd, pam_p);
 
 	res = delete_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 256, 0, &httd, pam_p, pmm_p);
 
