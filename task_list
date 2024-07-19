@@ -1,8 +1,6 @@
 ** PICKED TASKS
 
-* cloning read iterators
-  * for hash_table_iterator, clone ptrl and lpli iterators
-  * test cloning for find on linked_page_list_iterator and hash_table_iterator
+ * test cloning for find on hash_table_iterator
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
