@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
 * cloning read iterators, read-only bplus_tree_iterator, array_table_range_locker, page_table_range_locker, linked_page_list_iterator and hash_table_iterator
-  * for array_table_range_locker only local_root needs to be locked, derieve code for page_table_range_locker
   * for linked_page_list_iterator, copy lock of head_page and curr_page (if it does not point to head)
   * for hash_table_iterator, clone ptrl and lpli iterators
   * clone all read locks inside them, and make a new object
