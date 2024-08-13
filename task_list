@@ -3,6 +3,10 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
+ * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
+   * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
+   * this tuple_def will be precomputed and put inside the tuple_definitions
+   * implement compare function on them, and a read only byte stream to iterate over it character by character
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
    * this will be supported only for fixed_length index entries
    * function will move only 1 leaf/index entry from left to right or right to left at a time, everything will be dome in place
