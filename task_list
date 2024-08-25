@@ -7,6 +7,28 @@
    * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
    * this tuple_def will be precomputed and put inside the tuple_definitions
    * implement compare function on them, and a read only byte stream to iterate over it character by character
+   * check if you could allow this complex type to be part of hash_table and bplus_tree (My answer would be no, as keys must fit on the page to be searchable)
+ * implement heap_table (needs to be refined)
+   * using array_table as a lookup, bucket_id->(page_id, free_space)
+   * free_space will be a hint and may not represent the actual free space on the page
+   * access methods
+     * insert a tuple and get a (bucket_id, slot_id), you may provide a (bucket_id, slot_id) as hint
+       * get read lock on the array_table and check if hint has enough space, by fetching a write lock on the page_id
+       * then search for a entry with a read lock on the whole range, that has enough free space for this tuple, if found insert there
+       * then take a write lock on the first unallotted bucket_id and insert a new (page_id, free_space), with the new tuple contained in there
+         * with this write lock also update free space of all pages in that bucket range, also delete any entries that point to empty pages
+     * delete a tuple for the given (bucket_id, slot_id)
+       * returns 0, for failure, 1 for success, 2 if the page became empty
+     * open a read/write iterator on the bucket_id or range of bucket_ids, do as we did with the hash_table, only keep the reader lock on the 
+       * only get a reader lock on the array_table
+       * if it is a single bucket, then array_table_range_locked is not even needed
+       * you can do anything with the page that the iterator points to (if it is a write iterator), but not update insert, delete or update any entries
+       * API
+         * next_heap_table_iterator -> goes to next page
+         * prev_heap_table_iterator -> goes to prev page
+         * get_curr_bucket_id -> returns the current bucket_id that the iterator points to
+         * get_curr_page -> returns persistent page to work with
+     * vaccum a range of bucket_ids, take a flag that instructs if the bucket_range is strict (if flexible vaccum any super set of the buckets containing the provided bucket range), fix the free_space and discard entries pointing to empty pages, use this after a bulk insert/delete operations
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
    * this will be supported only for fixed_length index entries
    * function will move only 1 leaf/index entry from left to right or right to left at a time, everything will be dome in place
