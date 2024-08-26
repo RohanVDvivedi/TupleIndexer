@@ -3,12 +3,10 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
- * implement a bitmap page
-   * used for storing only 0s and 1s on the pages
-   * figure out how to implement this safely, with the support of TupleStore
-     * possible solution, make tuple_store allow tupledefs with array_defs and other tuple_defs inside, make a single tuple_def contain a non-nullable array_def of non nullable bytes.
-   * support operations like, and, or, xor, not, shift_left, shift_right, rotate_left, rotate_right -> returning a new page in return
-   * support operations like, and_assign, or_assign, xor_assign, not_assign, shift_left_assign, shift_right_assign, rotate_left_assign, rotate_right_assign -> to store result on the 1st parameter
+ * implement an contiguous_packed_array_page type, which can be used to store a single tuple containing only a non-nullable fixed element_count array of a fixed sized non-nullable element type.
+   * it will have a tuple_defs struct allowing to be accessed, element at a time
+   * use this to build interior pages of array_table -> this will help us discard space used by the null bitmap of the page
+   * use this to build and provide a bitmap index, use page_table for this.
  * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
    * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
    * this tuple_def will be precomputed and put inside the tuple_definitions
