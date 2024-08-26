@@ -6,6 +6,7 @@
  * implement a bitmap page
    * used for storing only 0s and 1s on the pages
    * figure out how to implement this safely, with the support of TupleStore
+     * possible solution, make tuple_store allow tupledefs with array_defs and other tuple_defs inside
    * support operations like, and, or, xor, not, shift_left, shift_right, rotate_left, rotate_right -> returning a new page in return
    * support operations like, and_assign, or_assign, xor_assign, not_assign, shift_left_assign, shift_right_assign, rotate_left_assign, rotate_right_assign -> to store result on the 1st parameter
  * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
