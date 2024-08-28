@@ -3,6 +3,14 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
+ * DEADLOCK condition identified, and needs to be fixed
+   * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
+     * delete_array_table_range_locker() and delete_page_table_range_locker(), which may descend down the tree again to free up the empty local root page, and its respective
+     * delete_hash_table_iterator(), when locking a single bucket, and then this bucket becomes empty
+     * segregate these into separate functions to avoid deadlocks, the above mentioned operations do not alter or break the functionality, they would just be NO-OP in case they are not executed.
+     * Here we assume that only write page locks persists between calls, which is still upto the user's usage of this library.
+     * As a general case, one mini-transaction should only consist of 1 iterator open/close OR 1 non-iterator operation.
+       * I am stating these here because if you persist write page locks inside a minitransacton, then 2 operations may deadlock, if these include multiple tree downward traversals, over same or different datastructures.
  * implement an contiguous_packed_array_page type, which can be used to store a single tuple containing only a non-nullable fixed element_count array of a fixed sized non-nullable element type.
    * it will have a tuple_defs struct allowing to be accessed, element at a time
    * use this to build interior pages of array_table -> this will help us discard space used by the null bitmap of the page
