@@ -416,6 +416,8 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 			// if the entry at the child_index in the curr_page is already NULL, then nothing needs to be done
 			if(is_NULL_at_child_index_in_array_table_page(&(curr_page->ppage), curr_page->child_index, atrl_p->attd_p))
 			{
+				// a reverse pass becomes necessary, if the curr_page contains only NULLs, this may happen if any previous range_locker has locked this page as local root page, which subsequently deleted all its entries
+				reverse_pass_required = has_all_NULL_entries_in_array_table_page(&(curr_page->ppage), atrl_p->attd_p);
 				result = 1;
 				break;
 			}
@@ -426,7 +428,8 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 				set_record_entry_at_child_index_in_array_table_leaf_page(&(curr_page->ppage), curr_page->child_index, NULL, atrl_p->attd_p, atrl_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto RELEASE_LOCKS_FROM_STACK_ON_ABORT_ERROR;
-				reverse_pass_required = 1;
+				// a reverse pass becomes necessary, if the curr_page becomes to contain only NULLs
+				reverse_pass_required = has_all_NULL_entries_in_array_table_page(&(curr_page->ppage), atrl_p->attd_p);
 				result = 1;
 				break;
 			}
