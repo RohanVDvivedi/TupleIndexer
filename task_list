@@ -15,6 +15,9 @@
    * it will have a tuple_defs struct allowing to be accessed, element at a time
    * use this to build interior pages of array_table -> this will help us discard space used by the null bitmap of the page
    * use this to build and provide a bitmap index, use page_table for this.
+ * once the tuplestore has developments and has provisions to make a fixed length tuple non-nullable and that such a tuple has a new page layout for it
+   * then ensure that all record_defs of the hash_table, bplus_tree, linked_page_list and array_table are nullable tuple defs
+   * only interior pages of array_table and bitmap pages are allowed to be ""non-nullable fixed length tuple_defs"", all other tuple defs must be nullable
  * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
    * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
    * this tuple_def will be precomputed and put inside the tuple_definitions
