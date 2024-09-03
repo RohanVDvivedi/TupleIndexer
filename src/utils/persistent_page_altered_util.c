@@ -64,6 +64,7 @@ int update_tuple_on_persistent_page_resiliently(const page_modification_methods*
 	// else go ahead with compaction without the index-th tuple, then updating
 
 	// place tomb_stone for the old tuple at the index
+	// a NULL or a tombstone for a tuple will allow the page to recapture the space taken up by this tuple, can hence give us back more space for the actual update
 	update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, page_size, tpl_sz_d, index, NULL, abort_error);
 	if((*abort_error))
 		return 0;
