@@ -16,7 +16,9 @@
    * only bitmap pages are allowed to be ""non-nullable fixed length tuple_defs"", all other tuple defs must be nullable
  * think about keeping system_header out of the page that the TupleIndexer receives from page_access_methods, allowing tupleindexer and other upper levels be agnostic of the system_header contents
    * TupleIndexer will be agnostic about any external header used by the underlying system for pageLSN, write_locked_by_tx_id and checksum
-   * now the TupleIndexer can use stack memory for manipulating the headers inside set header functions and need not worry about modifying the system_header contents
+   * now the TupleIndexer can use stack memory (instead of malloc call), as the header size used by the TupleIndexer will be known to it at run time; for manipulating the headers inside set_header functions
+   * TupleIndexer's set_header_* fucntions now need not worry about modifying the system_header contents by mistake
+   * refactor TupleIndexer's header manipulating sources and header files, to not leave space for the system_header
  * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
    * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
    * this tuple_def will be precomputed and put inside the tuple_definitions
