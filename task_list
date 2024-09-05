@@ -11,12 +11,12 @@
      * Here we assume that only write page locks persists between calls, which is still upto the user's usage of this library.
      * As a general case, one mini-transaction should only consist of 1 iterator open/close OR 1 non-iterator operation.
        * I am stating these here because if you persist write page locks inside a minitransacton, then 2 operations may deadlock, if these include multiple tree downward traversals, over same or different datastructures.
- * implement an contiguous_packed_array_page type, which can be used to store a single tuple containing only a non-nullable fixed element_count array of a fixed sized non-nullable element type.
-   * it will have a tuple_defs struct allowing to be accessed, element at a time
-   * use this to build and provide a bitmap index, use page_table for this.
  * once the tuplestore has developments and has provisions to make a fixed length tuple non-nullable and that such a tuple has a new page layout for it
    * then ensure that all record_defs and index_defs of the hash_table, bplus_tree, linked_page_list and array_table are nullable tuple defs
    * only bitmap pages are allowed to be ""non-nullable fixed length tuple_defs"", all other tuple defs must be nullable
+ * think about keeping system_header out of the page that the TupleIndexer receives from page_access_methods, allowing tupleindexer and other upper levels be agnostic of the system_header contents
+   * TupleIndexer will be agnostic about any external header used by the underlying system for pageLSN, write_locked_by_tx_id and checksum
+   * now the TupleIndexer can use stack memory for manipulating the headers inside set header functions and need not worry about modifying the system_header contents
  * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
    * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
    * this tuple_def will be precomputed and put inside the tuple_definitions
