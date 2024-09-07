@@ -19,6 +19,10 @@
    * now the TupleIndexer can use stack memory (instead of malloc call), as the header size used by the TupleIndexer will be known to it at run time; for manipulating the headers inside set_header functions
    * TupleIndexer's set_header_* fucntions now need not worry about modifying the system_header contents by mistake
    * refactor TupleIndexer's header manipulating sources and header files, to not leave space for the system_header
+ * after a bplus_tree_iterator is created
+   * if the is_stacked option was selected, the allow releasing some of the parent page locks by providing the key range, [lower_bound and upper_bound]
+   * do ensure that the curr_tuple must fall between the range
+   * release all parent page read locks, that only have 1 interior page entry pointing to the complete range of the [lower_bound, upper_bound]
  * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
    * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
    * this tuple_def will be precomputed and put inside the tuple_definitions
