@@ -3,6 +3,8 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
+ * hash_table_iterator minor optimization
+   * if a hash_table_iterator is initialized with a key, then we do not need to provide the pmm_p to the page_table_iterator for identifying its bucket
  * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
      * delete_array_table_range_locker() and delete_page_table_range_locker(), which may descend down the tree again to free up the empty local root page, and its respective
