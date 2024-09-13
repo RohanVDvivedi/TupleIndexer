@@ -5,6 +5,31 @@
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
  * hash_table_iterator minor optimization
    * if a hash_table_iterator is initialized with a key, then we do not need to provide the pmm_p to the page_table_iterator for identifying its bucket
+ * better return values throughout the project 0 or 1 doesnt fit requirements
+   * all errors will be < 0, and success will be 0
+   * OPERATION_NOT_PERMITTED_FOR_THE_LOCKS_HELD
+   * RECORD_DOES_NOT_FIT_SIZE
+   * RECORD_DOES_NOT_MATCH_KEY
+   * RECORD_DUPLICATE_FOUND
+   * INVALID_ITERATOR_POSITION
+   * INVALID_ITERATOR
+   * ABORTED
+   * SUCCESS = 0
+ * bplus_tree (allowing duplicates)
+   * remove failures to insert if a record with same key found,
+     * instead pass a flag suggesting if duplicates are allowed, a new duplicate will always be inserted after the last existing duplicate
+     * in return value specify why insert failed
+   * segregate out the current bplus_tree_iterator logic into bplus_tree_stacked_iterator (only 1 leaf locked page, and 1 curr_tuple_index and access functions), and bplus_tree_leaf_only_iterator (a stack of locked pages, curr_tuple_index and access_functions)
+   * fiund function comes with locking modes locking modes like ACQUIRE_FOR_UPDATE_AND_DELETE (all write locks), ACQUIRE_FOR_IN_PLACE_UPDATE (interior pages are read locked, lead pages are write locks), ACQUIRE_FOR_READ (all read locks) and a flag that suggests if is_stacked or not.
+   * and make them into a union in bplus_tree_iterator
+     * get_next, get_prev, get_curr // allowed for all
+     * update_element_in_place // for first 2 lock types
+     * update_curr_and_delete_bplus_tree_stacked_iterator, delete_curr_and_delete_bplus_tree_stacked_iterator // for first lock type, is_stacked = 1
+       * fail without an abort, if update or delete conditions don't match
+       * else perform the operation and delete the iterator, on abort release all locks
+     * delete_bplus_tree_stacked_iterator
+     * clone_bplus_tree_stacked_iterator
+   * add comment to not use, delete and inspected_update, if using bplus_tree with duplicates
  * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
      * delete_array_table_range_locker() and delete_page_table_range_locker(), which may descend down the tree again to free up the empty local root page, and its respective
