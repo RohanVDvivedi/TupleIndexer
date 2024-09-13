@@ -61,7 +61,7 @@
      * vaccum a range of bucket_ids, take a flag that instructs if the bucket_range is strict (if flexible vaccum any super set of the buckets containing the provided bucket range), fix the free_space and discard entries pointing to empty pages, use this after a bulk insert/delete operations
  * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
    * this will be supported only for fixed_length index entries
-   * function will move only 1 leaf/index entry from left to right or right to left at a time, everything will be dome in place
+   * function will move only 1 leaf/index entry from left to right or right to left at a time, everything will be done in place
    * fails if the receiving page is out of space, easy peasy with unaltered and altered util functions
    * parent page will also be required and will be updated immediately in the call, all 3 pages, parent and 2 children will be provided as is
    * will fail, also if index entries are not fixed sized
