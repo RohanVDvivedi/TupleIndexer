@@ -30,6 +30,14 @@
    * this tuple_def will be precomputed and put inside the tuple_definitions
    * implement compare function on them, and a read only byte stream to iterate over it character by character
    * check if you could allow this complex type to be part of hash_table and bplus_tree (My answer would be no, as keys must fit on the page to be searchable)
+ * introduce a new page type, reference page
+   * it will be primarily store the reference to the root of the data structure
+   * it's tuple_def in compressed form
+   * its reference counter -> which if reaches 0, then the underlying data structure and the page get destroyed
+   * you may also store statistic information like height, fanout, number of inserts/updates per second
+   * since this page and its underlying root that it points to are both fixed, the referenceed root pointer may never be appointed
+   * at times it can try to relocate the root page (needs to be done gracefully in case of linked_page_list, since it is circular and not a tree)
+   * it can also be used to house locking information on the underlying data structure
  * implement heap_table (needs to be refined)
    * using array_table as a lookup, bucket_id->(page_id, free_space)
    * free_space will be a hint and may not represent the actual free space on the page
