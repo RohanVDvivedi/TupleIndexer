@@ -38,6 +38,7 @@
    * since this page and its underlying root that it points to are both fixed, the referenceed root pointer may never be appointed
    * at times it can try to relocate the root page (needs to be done gracefully in case of linked_page_list, since it is circular and not a tree)
    * it can also be used to house locking information on the underlying data structure
+ * introduce a new mechanism in page_access_methods to allow taking a persistent write lock on the page on which we already have a write lock on, this will mostly work with iterators
  * implement heap_table (needs to be refined)
    * using array_table as a lookup, bucket_id->(page_id, free_space)
    * free_space will be a hint and may not represent the actual free space on the page
