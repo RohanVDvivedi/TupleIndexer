@@ -35,6 +35,8 @@
      * this is only allowed in case of ACQUIRE_FOR_IN_PLACE_UPDATE and ACQUIRE_FOR_READ
      * do ensure that the current key we are pointing to does fall between the range, else fail this operation
    * add comment to not use, delete and inspected_update, if using bplus_tree with duplicates
+   * make a fucntion that initializes a locked pages stack with a write lock or a read lock on the root page
+      and a function to release all locks on all the pages as utility functions
  * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
      * delete_array_table_range_locker() and delete_page_table_range_locker(), which may descend down the tree again to free up the empty local root page, and its respective
