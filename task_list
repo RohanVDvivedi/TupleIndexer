@@ -1,22 +1,12 @@
 ** PICKED TASKS
-
-** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
- * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
  * hash_table_iterator minor optimization
    * if a hash_table_iterator is initialized with a key, then we do not need to provide the pmm_p to the page_table_iterator for identifying its bucket
- * better return values throughout the project 0 or 1 doesnt fit requirements
-   * all errors will be < 0, and success will be 0
-   * ATTEMPTED_MODIFICATION_WITH_READ_LOCKS
-   * RECORD_DOES_NOT_FIT_SIZE
-   * RECORD_DOES_NOT_MATCH_KEY
-   * RECORD_DOES_NOT_MATCH_KEY_RANGE
-   * RECORD_DUPLICATE_FOUND
-   * INVALID_ITERATOR_POSITION
-   * INVALID_ITERATOR
-   * ABORTED
-   * SUCCESS = 0
- * bplus_tree (allowing duplicates)
+ 
+ * bplus_tree code reusability
+  * make a fucntion that initializes a locked pages stack with a write lock or a read lock on the root page
+      and a function to release all locks on all the pages as utility functions
+
+ * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
    * remove failures to insert if a record with same key found,
      * instead pass a flag suggesting if duplicates are allowed, a new duplicate will always be inserted after the last existing duplicate
      * in return value specify why insert failed
@@ -34,10 +24,9 @@
    * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
      * this is only allowed in case of ACQUIRE_FOR_IN_PLACE_UPDATE and ACQUIRE_FOR_READ
      * do ensure that the current key we are pointing to does fall between the range, else fail this operation
-   * add comment to not use, delete and inspected_update, if using bplus_tree with duplicates
-   * make a fucntion that initializes a locked pages stack with a write lock or a read lock on the root page
-      and a function to release all locks on all the pages as utility functions
- * DEADLOCK condition identified, and needs to be fixed
+   * add comment to not use, delete and inspected_update, if using bplus_tree with duplicates, else they may fail unknowingly
+
+  * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
      * delete_array_table_range_locker() and delete_page_table_range_locker(), which may descend down the tree again to free up the empty local root page, and its respective
      * delete_hash_table_iterator(), when locking a single bucket, and then this bucket becomes empty
@@ -45,15 +34,23 @@
      * Here we assume that only write page locks persists between calls, which is still upto the user's usage of this library.
      * As a general case, one mini-transaction should only consist of 1 iterator open/close OR 1 non-iterator operation.
        * I am stating these here because if you persist write page locks inside a minitransacton, then 2 operations may deadlock, if these include multiple tree downward traversals, over same or different datastructures.
- * once the tuplestore has developments and has provisions to make a fixed length tuple non-nullable and that such a tuple has a new page layout for it
-   * then ensure that all record_defs and index_defs of the hash_table, bplus_tree, linked_page_list and array_table are nullable tuple defs
-   * only bitmap pages are allowed to be ""non-nullable fixed length tuple_defs"", all other tuple defs must be nullable
- * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
-   * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
-   * the root page has a reference counter, and the data is all deleted if the reference counter reaches zero
-   * this tuple_def will be precomputed and put inside the tuple_definitions
-   * implement compare function on them, and a read only byte stream to iterate over it character by character
-   * check if you could allow this complex type to be part of hash_table and bplus_tree (My answer would be no, as keys must fit on the page to be searchable)
+
+  * better return values throughout the project 0 or 1 doesnt fit requirements
+   * all errors will be < 0, and success will be 0
+   * ATTEMPTED_MODIFICATION_WITH_READ_LOCKS
+   * RECORD_DOES_NOT_FIT_SIZE
+   * RECORD_DOES_NOT_MATCH_KEY
+   * RECORD_DOES_NOT_MATCH_KEY_RANGE
+   * RECORD_DUPLICATE_FOUND
+   * INVALID_ITERATOR_POSITION
+   * INVALID_ITERATOR
+   * ABORTED
+   * SUCCESS = 0
+
+** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
+ * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
+ * introduce a new mechanism in page_access_methods to allow taking a persistent write lock on the page on which we already have a write lock on, this will mostly work with iterators
  * introduce a new page type, reference page
    * it will be primarily store the reference to the root of the data structure
    * it's tuple_def in compressed form
@@ -62,7 +59,12 @@
    * since this page and its underlying root that it points to are both fixed, the referenceed root pointer may never be appointed
    * at times it can try to relocate the root page (needs to be done gracefully in case of linked_page_list, since it is circular and not a tree)
    * it can also be used to house locking information on the underlying data structure
- * introduce a new mechanism in page_access_methods to allow taking a persistent write lock on the page on which we already have a write lock on, this will mostly work with iterators
+ * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
+   * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
+   * the root page has a reference counter, and the data is all deleted if the reference counter reaches zero
+   * this tuple_def will be precomputed and put inside the tuple_definitions
+   * implement compare function on them, and a read only byte stream to iterate over it character by character
+   * check if you could allow this complex type to be part of hash_table and bplus_tree (My answer would be no, as keys must fit on the page to be searchable)
  * implement heap_table (needs to be refined)
    * using array_table as a lookup, bucket_id->(page_id, free_space)
    * free_space will be a hint and may not represent the actual free space on the page
