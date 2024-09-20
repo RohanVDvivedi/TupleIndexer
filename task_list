@@ -30,7 +30,10 @@
      * As a general case, one mini-transaction should only consist of 1 iterator open/close OR 1 non-iterator operation.
        * I am stating these here because if you persist write page locks inside a minitransacton, then 2 operations may deadlock, if these include multiple tree downward traversals, over same or different datastructures.
 
-  * better return values throughout the project 0 or 1 doesnt fit requirements
+** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
+ * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
+ * better return values throughout the project 0 or 1 doesnt fit requirements
    * all errors will be < 0, and success will be 0
    * ATTEMPTED_MODIFICATION_WITH_READ_LOCKS
    * RECORD_DOES_NOT_FIT_SIZE
@@ -41,10 +44,6 @@
    * INVALID_ITERATOR
    * ABORTED
    * SUCCESS = 0
-
-** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
- * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
  * introduce a new mechanism in page_access_methods to allow taking a persistent write lock on the page on which we already have a write lock on, this will mostly work with iterators
  * introduce a new page type, reference page
    * it will be primarily store the reference to the root of the data structure
