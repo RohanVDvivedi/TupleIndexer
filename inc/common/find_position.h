@@ -7,10 +7,12 @@
 typedef enum find_position find_position;
 enum find_position
 {
+	MIN,
 	LESSER_THAN,
 	LESSER_THAN_EQUALS,
 	GREATER_THAN_EQUALS,
 	GREATER_THAN,
+	MAX,
 };
 
 #endif
