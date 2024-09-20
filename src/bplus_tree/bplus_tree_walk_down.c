@@ -340,10 +340,102 @@ int walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack* l
 
 persistent_page walk_down_for_iterator_using_key(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	// only READ_LOCK and WRITE_LOCK values for lock_type make sense for this function
 	if(lock_type != READ_LOCK)
-		lock_type == WRITE_LOCK;
+		lock_type = WRITE_LOCK;
 
-	// TODO
+	persistent_page curr_page = get_NULL_persistent_page(pam_p);
+
+	{
+		// get lock on the root page of the bplus_tree in mode (referred by lock_type), this is because root_page can be a leaf page
+		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, lock_type, abort_error);
+		if(*abort_error)
+			return get_NULL_persistent_page(pam_p);
+
+		// pre cache level of the root_page
+		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+
+		if(root_page_level == 0) // if root is the leaf page, then return it
+			return root_page;
+		else
+		{
+			if(lock_type == WRITE_LOCK) // downgrade lock on the root page, if we had to WRITE_LOCK it
+			{
+				downgrade_to_reader_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+					return get_NULL_persistent_page(pam_p);
+				}
+			}
+		}
+
+		// for reaching the leaf make root page as the curr_page
+		curr_page = root_page;
+	}
+
+	// perform a downward pass until you reach the leaf
+	while(1)
+	{
+		// break out of this loop on reaching a leaf page
+		if(is_bplus_tree_leaf_page(&curr_page, bpttd_p))
+			break;
+
+		// pre cache level of the curr_locked_page
+		uint32_t curr_page_level = get_level_of_bplus_tree_page(&curr_page, bpttd_p);
+
+		uint32_t child_index = 0;
+
+		// figure out which child page to go to next, based on f_type, key and key_element_count_concerned
+		switch(f_pos)
+		{
+			case MIN :
+			{
+				child_index = -1;
+				break;
+			}
+			case LESSER_THAN_EQUALS :
+			case GREATER_THAN :
+			{
+				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, bpttd_p);
+				break;
+			}
+			case LESSER_THAN :
+			case GREATER_THAN_EQUALS :
+			{
+				child_index = find_child_index_for_key_s_predecessor(&curr_page, key, key_element_count_concerned, bpttd_p);
+				break;
+			}
+			case MAX :
+			{
+				child_index = get_tuple_count_on_persistent_page(&curr_page, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
+				break;
+			}
+		}
+
+		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
+		// only the leaf_page (if the parent's level == 1) is locked with lock_type, all other pages (the parent_pages) are locked in READ_LOCK mode
+		uint32_t child_page_level = (curr_page_level - 1);
+		uint64_t child_page_id = get_child_page_id_by_child_index(&curr_page, child_index, bpttd_p);
+		persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, ((child_page_level == 0) ? lock_type : READ_LOCK), abort_error);
+
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(pam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+			return get_NULL_persistent_page(pam_p);
+		}
+
+		release_lock_on_persistent_page(pam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(pam_p, transaction_id, &child_page, NONE_OPTION, abort_error);
+			return get_NULL_persistent_page(pam_p);
+		}
+
+		curr_page = child_page;
+	}
+
+	return curr_page;
 }
 
 int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
