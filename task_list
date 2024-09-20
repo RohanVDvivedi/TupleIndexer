@@ -1,10 +1,8 @@
 ** PICKED TASKS
 
  * bplus_tree code reusability
-  * refactor bplus_tree find function to make a stacked and unstacked iterator with either locked pages stack or single persistent page
-  * refactor bplus_tree_iterator as a union of either stacked or unstacked iterator, and segregate their functions
-  * segregate out the current bplus_tree_iterator logic into bplus_tree_stacked_iterator (only 1 leaf locked page, and 1 curr_tuple_index and access functions), and bplus_tree_leaf_only_iterator (a stack of locked pages, curr_tuple_index and access_functions)
-  * find function comes with locking modes locking modes like ACQUIRE_FOR_WRITE (all write locks), ACQUIRE_FOR_IN_PLACE_UPDATE (interior pages are read locked, lead pages are write locks), ACQUIRE_FOR_READ (all read locks) and a flag that suggests if is_stacked or not.
+  * refactor re-implement bplus_tree_iterator
+  * refactor bplus_tree_find to use new bplus_tree_iterator api
 
  * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
    * add functions in iterator to check if there is a next of the current page and a previous of the current page
