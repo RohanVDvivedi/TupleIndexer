@@ -14,6 +14,9 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const page_acc
 // this macro can be passed to key_element_count_concerned (to find_in_bplus_tree), to consider all the key_elements as found in bpttd_p(->key_element_count)
 #define KEY_ELEMENT_COUNT UINT32_C(-1)
 
+#define LEAF_ONLY_WRITER_LOCK 100
+// this can be passed to find_in_bplus_tree as lock_type. with is_stacked = 1, if you want an iterator for which its interior pages are locked with read lock and leaf pages with write lock
+
 // returns a bplus_tree_iterator to read from key 
 // here the key_element_count_concerned suggests the number of elements of the key that would be considered for find operation
 // the key == NULL and find_pos == GREATER_THAN, then the iterator will point to the first tuple of the bplus_tree

@@ -14,18 +14,31 @@
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 struct bplus_tree_iterator
 {
-	locked_pages_stack lps;
+	// if this attribute is 1, then the iteration occurrs using the parent pages, else it happens through the next and prev page pointers on the leaf page
+	int is_stacked;
+
+	int lock_type;
+	/*
+		For stacked iterator lock_type = READ_LOCK, WRITE_LOCK & LEAF_ONLY_WRITER_LOCK
+		else the only valid values are READ_LOCK & WRITE_LOCK
+	*/
+
+	union
+	{
+		locked_pages_stack lps;
+		persistent_page curr_page;
+	};
 
 	// curr_tuple_index is the index of the tuple, that the iterator points
 	// in the curr_page (a bplus_tree_leaf page)
 	uint32_t curr_tuple_index;
 
-	// if this attribute is 1, then the iteration occurrs using the parent pages, else it happens through the next and prev page pointers on the leaf page
-	int is_stacked;
-
 	const bplus_tree_tuple_defs* bpttd_p;
 
 	const page_access_methods* pam_p;
+	/*
+		pmm_p must be provided if lock_type is anything other than READ_LOCK
+	*/
 
 	// WRITE_LOCK or READ_LOCK, for the leaves, is identified by pmm_p == NULL or not
 	// i.e. if pmm_p == NULL ? READ_LOCK : WRITE_LOCK for leaf pages
