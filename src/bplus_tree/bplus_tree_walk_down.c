@@ -350,7 +350,7 @@ int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_s
 			break;
 
 		// pre cache level of the curr_locked_page
-		uint32_t curr_locked_page_level = get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p);
+		uint32_t curr_page_level = get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p);
 
 		// figure out which child page to go to next, based on f_type, key and key_element_count_concerned
 		switch(f_type)
@@ -380,7 +380,7 @@ int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_s
 		}
 
 		// get lock on the child page (this page is surely not the root page) at child_index in curr_locked_page
-		uint32_t child_page_level = (curr_locked_page_level - 1);
+		uint32_t child_page_level = (curr_page_level - 1);
 		uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
 		persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, get_lock_type_for_page_by_page_level(lock_type, child_page_level), abort_error);
 
@@ -480,7 +480,74 @@ int walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack*
 
 int walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// pop the top of the stack, which will happen to be curr_leaf_page, exposing us to the parent pages underneath
+	{
+		locked_page_info* top = get_top_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(pam_p, transaction_id, &(top->ppage), NONE_OPTION, abort_error);
+		pop_from_locked_pages_stack(locked_pages_stack_p);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	// loop over stack to reach the prev
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+
+		if(is_bplus_tree_leaf_page(&(curr_locked_page->ppage), bpttd_p))
+			break;
+
+		uint32_t curr_page_level = get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p);
+
+		// for an interior page,
+		// if it's child_index - 1 is out of bounds then release lock on it and pop it
+		// else lock the child_page on it's child_index - 1 entry and push this child_page onto the lps stack
+
+		// get tuple_count of the page
+		uint32_t tuple_count = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def));
+
+		// decrement its child_index
+		curr_locked_page->child_index--;
+
+		if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count) // if child_index is within bounds, push this child_page onto the lps stack
+		{
+			// then lock the page at child_index, and push it onto the stack
+			uint32_t child_page_level = (curr_page_level - 1);
+			uint64_t child_page_id = get_child_page_id_by_child_index(&(curr_locked_page->ppage), curr_locked_page->child_index, bpttd_p);
+			persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, get_lock_type_for_page_by_page_level(lock_type, child_page_level), abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			// push a locked_page_info for child_page, making its last child + 1,
+			locked_page_info child_locked_page_info = INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX);
+			if(!is_bplus_tree_leaf_page(&(child_locked_page_info.ppage), bpttd_p))
+				child_locked_page_info.child_index = get_tuple_count_on_persistent_page(&(child_locked_page_info.ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)); // this is so that when this becomes initially the top for this loop, it will get decremented to its last_child_index, which is at (tuple_count-1)
+			push_to_locked_pages_stack(locked_pages_stack_p, &child_locked_page_info);
+		}
+		else // pop release lock on the curr_locked_page, and pop it
+		{
+			// pop it from the stack and unlock it
+			release_lock_on_persistent_page(pam_p, transaction_id, &(curr_locked_page->ppage), NONE_OPTION, abort_error);
+			pop_from_locked_pages_stack(locked_pages_stack_p);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+	}
+
+	if(get_element_count_locked_pages_stack(locked_pages_stack_p) == 0) // this implies end of scan
+		return 0;
+
+	return 1;
+
+	ABORT_ERROR:;
+	// on an abort_error, release locks on all the pages, we had locks on until now
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
+	return 0;
 }
 
 void release_all_locks_and_deinitialize_stack_reenterable(locked_pages_stack* locked_pages_stack_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
