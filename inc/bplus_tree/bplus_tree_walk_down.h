@@ -11,6 +11,13 @@
 
 #include<persistent_page_functions.h>
 
+#include<bplus_tree_stacked_iterator_custom_locking_type.h>
+
+/*
+** 	the initialize_locked_pages_stack_for_walk_down function and the walk_down_for_stacked_iterator, walk_next_for_stacked_iterator and walk_next_for_stacked_iterator
+**	does support the additional lock_type as added in bplus_tree_stacked_iterator_custom_locking_type.h
+*/
+
 // the capacity of the stack will be same as the height of the tree i.e. the number of nodes from root to leaf
 // only lock to the root page will be acquired with the given lock type
 // on an abort error, it will return an empty locked pages stack, with no pages kept locked
