@@ -25,8 +25,8 @@ struct bplus_tree_iterator
 
 	union
 	{
-		locked_pages_stack lps;
-		persistent_page curr_page;
+		locked_pages_stack lps;	// use this if is_stacked is set
+		persistent_page curr_page; // else use this
 	};
 
 	// curr_tuple_index is the index of the tuple, that the iterator points
