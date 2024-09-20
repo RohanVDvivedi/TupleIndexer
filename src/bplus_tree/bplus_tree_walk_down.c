@@ -311,3 +311,18 @@ int walk_down_locking_parent_pages_for_update_using_record(uint64_t root_page_id
 
 	return 0;
 }
+
+void release_all_locks_and_deinitialize_stack_reenterable(locked_pages_stack* locked_pages_stack_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// release locks on all the pages, we had locks on until now
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
+
+	// release all memory it occupies and leave the stack so that this function is re-enterable
+	deinitialize_locked_pages_stack(locked_pages_stack_p);
+	(*locked_pages_stack_p) = ((locked_pages_stack){});
+}
