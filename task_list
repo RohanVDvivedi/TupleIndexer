@@ -3,14 +3,15 @@
  * bplus_tree code reusability
   * refactor bplus_tree find function to make a stacked and unstacked iterator with either locked pages stack or single persistent page
   * refactor bplus_tree_iterator as a union of either stacked or unstacked iterator, and segregate their functions
-  * add functions in iterator to check if there is a next of the current page and a previous of the current page
+  * segregate out the current bplus_tree_iterator logic into bplus_tree_stacked_iterator (only 1 leaf locked page, and 1 curr_tuple_index and access functions), and bplus_tree_leaf_only_iterator (a stack of locked pages, curr_tuple_index and access_functions)
+  * find function comes with locking modes locking modes like ACQUIRE_FOR_WRITE (all write locks), ACQUIRE_FOR_IN_PLACE_UPDATE (interior pages are read locked, lead pages are write locks), ACQUIRE_FOR_READ (all read locks) and a flag that suggests if is_stacked or not.
+
+ * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
+   * add functions in iterator to check if there is a next of the current page and a previous of the current page
     * allowing us to check if we can go next or prev or not
     * for stacked iterator check all the interior pages from bottom, and if ther is any 1 page that has its child_index not equal to it's tuple_count - 1, then it has next
     * similarly for has_prev
-
- * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
-   * segregate out the current bplus_tree_iterator logic into bplus_tree_stacked_iterator (only 1 leaf locked page, and 1 curr_tuple_index and access functions), and bplus_tree_leaf_only_iterator (a stack of locked pages, curr_tuple_index and access_functions)
-   * find function comes with locking modes locking modes like ACQUIRE_FOR_WRITE (all write locks), ACQUIRE_FOR_IN_PLACE_UPDATE (interior pages are read locked, lead pages are write locks), ACQUIRE_FOR_READ (all read locks) and a flag that suggests if is_stacked or not.
+    * you will also need has_prev and has_next to be implemented for leaf pages, to allow easy implementation of this feature
    * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
      * this is only allowed in case of ACQUIRE_FOR_IN_PLACE_UPDATE and ACQUIRE_FOR_READ
      * do ensure that the current key we are pointing to does fall between the range, else fail this operation
