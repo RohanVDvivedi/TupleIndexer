@@ -338,7 +338,7 @@ int walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack* l
 	return 0;
 }
 
-int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, uint32_t key_element_count_concerned, find_type f_type, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// perform a downward pass until you reach the leaf locking all the pages
 	while(1)
@@ -353,26 +353,26 @@ int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_s
 		uint32_t curr_page_level = get_level_of_bplus_tree_page(&(curr_locked_page->ppage), bpttd_p);
 
 		// figure out which child page to go to next, based on f_type, key and key_element_count_concerned
-		switch(f_type)
+		switch(f_pos)
 		{
-			case MIN_TUPLE :
+			case MIN :
 			{
 				curr_locked_page->child_index = -1;
 				break;
 			}
-			case LESSER_THAN_EQUALS_KEY :
-			case GREATER_THAN_KEY :
+			case LESSER_THAN_EQUALS :
+			case GREATER_THAN :
 			{
 				curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key, key_element_count_concerned, bpttd_p);
 				break;
 			}
-			case LESSER_THAN_KEY :
-			case GREATER_THAN_EQUALS_KEY :
+			case LESSER_THAN :
+			case GREATER_THAN_EQUALS :
 			{
 				curr_locked_page->child_index = find_child_index_for_key_s_predecessor(&(curr_locked_page->ppage), key, key_element_count_concerned, bpttd_p);
 				break;
 			}
-			case MAX_TUPLE :
+			case MAX :
 			{
 				curr_locked_page->child_index = get_tuple_count_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
 				break;

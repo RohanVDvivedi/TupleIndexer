@@ -35,19 +35,9 @@ int walk_down_locking_parent_pages_for_merge_using_record(locked_pages_stack* lo
 
 int walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack* locked_pages_stack_p, const void* record, uint32_t* release_for_split, uint32_t* release_for_merge, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-// find type is essential to guide the walk_down for the stacked_iterator
-typedef enum find_type find_type;
-enum find_type
-{
-	MIN_TUPLE,
-	LESSER_THAN_KEY,
-	LESSER_THAN_EQUALS_KEY,
-	GREATER_THAN_EQUALS_KEY,
-	GREATER_THAN_KEY,
-	MAX_TUPLE,
-};
+#include<find_position.h>
 
-int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, uint32_t key_element_count_concerned, find_type f_type, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // go next for the current state of the stack, to the next page of the current top leaf page
 // returns 0, if it resulst in end of scan
