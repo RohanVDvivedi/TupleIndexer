@@ -338,6 +338,21 @@ int walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack* l
 	return 0;
 }
 
+int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
+
+int walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
+
+int walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
+
 void release_all_locks_and_deinitialize_stack_reenterable(locked_pages_stack* locked_pages_stack_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// release locks on all the pages, we had locks on until now

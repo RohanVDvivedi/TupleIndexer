@@ -35,16 +35,13 @@ int walk_down_locking_parent_pages_for_merge_using_record(locked_pages_stack* lo
 
 int walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack* locked_pages_stack_p, const void* record, uint32_t* release_for_split, uint32_t* release_for_merge, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-// TODO
-int walk_down_locking_parent_pages_for_stacked_iterator_using_key();
+int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-// TODO
 // go next for the current state of the stack
-int walk_down_next_locking_parent_pages_for_stacked_iterator_using_key();
+int walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-// TODO
 // go prev for the current state of the stack
-int walk_down_prev_locking_parent_pages_for_stacked_iterator_using_key();
+int walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // below function is to be used when you are done with the locked pages stack
 // it is recallable, it does not fail on abort
