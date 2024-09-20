@@ -79,7 +79,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 					if(*abort_error)
 						goto DELETE_EVERYTHING_AND_ABORT;
 
-					curr_pmm_p = hti_p->pmm_p; // this next type reacquire with correct locking
+					curr_pmm_p = hti_p->pmm_p; // this next time reacquire with correct locking
 				}
 			}
 		}
