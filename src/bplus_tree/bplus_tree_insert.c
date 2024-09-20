@@ -1,13 +1,8 @@
 #include<bplus_tree.h>
 
 #include<bplus_tree_walk_down.h>
-#include<storage_capacity_page_util.h>
-#include<bplus_tree_page_header.h>
-#include<persistent_page_functions.h>
 #include<bplus_tree_split_insert_util.h>
-#include<invalid_tuple_indices.h>
-
-#include<stdlib.h>
+#include<persistent_page_functions.h>
 
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {

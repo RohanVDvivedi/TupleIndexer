@@ -4,12 +4,9 @@
 #include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
 #include<bplus_tree_page_header.h>
-#include<bplus_tree_leaf_page_header.h>
-#include<bplus_tree_interior_page_header.h>
 #include<sorted_packed_page_util.h>
 
 #include<persistent_page_functions.h>
-#include<tuple.h>
 
 int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
