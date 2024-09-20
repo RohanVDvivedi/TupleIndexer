@@ -1,9 +1,6 @@
 ** PICKED TASKS
 
  * bplus_tree code reusability
-  * make a function to release all locks on all the pages and deinitialize lps as utility function
-  * segregate split_insert and merge function from releasing locks when done with success
-    * refactor their corresponding calls to call the above mentioned function to release all lock on completion and deinitialize the stack
   * make a function to walk down for find stacked and unstacked
     * with locking modes like ALL_WRITE_LOCKS = WRITE_LOCK, ALL_READ_LOCKS = READ_LOCK and LEAF_WRITE_ONLY = 100
   * refactor bplus_tree find function to make a stacked and unstacked iterator with either locked pages stack or single persistent page
