@@ -3,6 +3,9 @@
 
 // this iterator can only be used to reading leaf tuples of the b+tree
 
+// custom stacked iterator locking type, to only lock leaf pages with write lock, while lock interior pages with read locks
+#define READ_LOCK_INTERIOR_WRITE_LOCK_LEAF 100
+
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 
 // returns NULL if bpi_p is writable OR on an abort error

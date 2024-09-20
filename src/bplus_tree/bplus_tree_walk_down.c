@@ -11,6 +11,19 @@
 
 #include<stdlib.h>
 
+static int get_lock_type_for_page_level(int lock_type, uint32_t level)
+{
+	// handle standard lock types
+	if(lock_type == READ_LOCK || lock_type == WRITE_LOCK)
+		return lock_type;
+
+	// else this is READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
+	if(level == 0) // leaf page
+		return WRITE_LOCK;
+	else
+		return READ_LOCK;
+}
+
 locked_pages_stack initialize_locked_pages_stack_for_walk_down(uint64_t root_page_id, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
