@@ -1,7 +1,5 @@
 ** PICKED TASKS
- * hash_table_iterator minor optimization
-   * if a hash_table_iterator is initialized with a key, then we do not need to provide the pmm_p to the page_table_iterator for identifying its bucket
- 
+
  * bplus_tree code reusability
   * make a fucntion that initializes a locked pages stack with a write lock or a read lock on the root page
       and a function to release all locks on all the pages as utility functions
