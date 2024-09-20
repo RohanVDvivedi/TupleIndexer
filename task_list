@@ -5,6 +5,8 @@
   * refactor bplus_tree_iterator as a union of either stacked or unstacked iterator, and segregate their functions
   * add functions in iterator to check if there is a next of the current page and a previous of the current page
     * allowing us to check if we can go next or prev or not
+    * for stacked iterator check all the interior pages from bottom, and if ther is any 1 page that has its child_index not equal to it's tuple_count - 1, then it has next
+    * similarly for has_prev
 
  * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
    * segregate out the current bplus_tree_iterator logic into bplus_tree_stacked_iterator (only 1 leaf locked page, and 1 curr_tuple_index and access functions), and bplus_tree_leaf_only_iterator (a stack of locked pages, curr_tuple_index and access_functions)
