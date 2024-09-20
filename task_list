@@ -1,9 +1,7 @@
 ** PICKED TASKS
 
  * bplus_tree code reusability
-  * make a function to walk down for find stacked and unstacked
-    * with locking modes like ALL_WRITE_LOCKS = WRITE_LOCK, ALL_READ_LOCKS = READ_LOCK and LEAF_WRITE_ONLY = 100
-  * completed todos of walk_down file
+  * make a function to walk down for find unstacked, with lock type = READ_LOCK or WRITE_LOCK
   * refactor bplus_tree find function to make a stacked and unstacked iterator with either locked pages stack or single persistent page
   * refactor bplus_tree_iterator as a union of either stacked or unstacked iterator, and segregate their functions
   * add functions in iterator to check if there is a next of the current page and a previous of the current page
