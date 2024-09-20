@@ -1,26 +1,24 @@
 ** PICKED TASKS
 
  * bplus_tree code reusability
-  * make a function to release all locks on all the pages as utility functions
+  * make a function to release all locks on all the pages and deinitialize lps as utility function
+  * segregate split_insert and merge function from releasing locks when done with success
+    * refactor their corresponding calls to call the above mentioned function to release all lock on completion and deinitialize the stack
+  * make a function to walk down for find stacked and unstacked
+    * with locking modes like ALL_WRITE_LOCKS = WRITE_LOCK, ALL_READ_LOCKS = READ_LOCK and LEAF_WRITE_ONLY = 100
+  * refactor bplus_tree find function to make a stacked and unstacked iterator with either locked pages stack or single persistent page
+  * refactor bplus_tree_iterator as a union of either stacked or unstacked iterator, and segregate their functions
+
 
  * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
-   * remove failures to insert if a record with same key found,
-     * instead pass a flag suggesting if duplicates are allowed, a new duplicate will always be inserted after the last existing duplicate
-     * in return value specify why insert failed
    * segregate out the current bplus_tree_iterator logic into bplus_tree_stacked_iterator (only 1 leaf locked page, and 1 curr_tuple_index and access functions), and bplus_tree_leaf_only_iterator (a stack of locked pages, curr_tuple_index and access_functions)
    * find function comes with locking modes locking modes like ACQUIRE_FOR_WRITE (all write locks), ACQUIRE_FOR_IN_PLACE_UPDATE (interior pages are read locked, lead pages are write locks), ACQUIRE_FOR_READ (all read locks) and a flag that suggests if is_stacked or not.
-   * and make them into a union in bplus_tree_iterator
-     * get_next, get_prev, get_curr // allowed for all
-     * update_element_in_place // for first 2 lock types
-     * update_curr_and_delete_bplus_tree_stacked_iterator, delete_curr_and_delete_bplus_tree_stacked_iterator and insert_here_and_delete_bplus_tree_stacked_iterator // for first lock type, is_stacked = 1
-       * also utility function to can_insert_here_and_delete_bplus_tree_stacked_iterator, that tests if inserting here at that location is allowed, based on current position
-       * fail without an abort, if update or delete conditions don't match
-       * else perform the operation and delete the iterator, on abort release all locks
-     * delete_bplus_tree_stacked_iterator
-     * clone_bplus_tree_stacked_iterator
    * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
      * this is only allowed in case of ACQUIRE_FOR_IN_PLACE_UPDATE and ACQUIRE_FOR_READ
      * do ensure that the current key we are pointing to does fall between the range, else fail this operation
+   * remove failures to insert if a record with same key found,
+     * instead pass a flag suggesting if duplicates are allowed, a new duplicate will always be inserted after the last existing duplicate
+     * in return value specify why insert failed
    * add comment to not use, delete and inspected_update, if using bplus_tree with duplicates, else they may fail unknowingly
 
   * DEADLOCK condition identified, and needs to be fixed
