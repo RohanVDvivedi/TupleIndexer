@@ -3,6 +3,7 @@
  * bplus_tree code reusability
   * make a fucntion that initializes a locked pages stack with a write lock or a read lock on the root page
       and a function to release all locks on all the pages as utility functions
+  * segregate all walk down functions (for insert, delete, update and for find also) in this file
 
  * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
    * remove failures to insert if a record with same key found,
