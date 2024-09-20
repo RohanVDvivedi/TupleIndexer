@@ -17,7 +17,7 @@ int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_t
 		return 0;
 
 	// walk down taking locks until you reach leaf page level
-	walk_down_locking_parent_pages_for_merge_using_key(root_page_id, locked_pages_stack_p, key, bpttd_p, pam_p, transaction_id, abort_error);
+	walk_down_locking_parent_pages_for_merge_using_key(locked_pages_stack_p, key, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto EXIT;
 

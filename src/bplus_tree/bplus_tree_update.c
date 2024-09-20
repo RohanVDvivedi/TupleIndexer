@@ -58,7 +58,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 
 	uint32_t release_for_split = 0;
 	uint32_t release_for_merge = 0;
-	walk_down_locking_parent_pages_for_update_using_record(root_page_id, locked_pages_stack_p, new_record, &release_for_split, &release_for_merge, bpttd_p, pam_p, transaction_id, abort_error);
+	walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack_p, new_record, &release_for_split, &release_for_merge, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto EXIT;
 

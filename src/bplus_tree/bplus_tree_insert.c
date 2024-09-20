@@ -19,7 +19,7 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		return 0;
 
 	// walk down taking locks until you reach leaf page level
-	walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, locked_pages_stack_p, record, bpttd_p, pam_p, transaction_id, abort_error);
+	walk_down_locking_parent_pages_for_split_insert_using_record(locked_pages_stack_p, record, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto EXIT;
 
