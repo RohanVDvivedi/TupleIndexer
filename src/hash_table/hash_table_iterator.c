@@ -30,7 +30,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 
 	if(hti_p->key != NULL)
 	{
-		const page_modification_methods* curr_pmm_p == NULL; // first attempt with a read lock then if necessary attempt with a write lock
+		const page_modification_methods* curr_pmm_p = NULL; // first attempt with a read lock then if necessary attempt with a write lock
 		while(1)
 		{
 			// fetch the bucket_count of the hash_table
