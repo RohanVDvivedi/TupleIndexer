@@ -34,7 +34,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 		while(1)
 		{
 			// fetch the bucket_count of the hash_table
-			// take a range lock on the page table, to get the bucket_count
+			// take a range lock on the page table, to get the bucket_count -> do this with curr_pmm_p
 			hti_p->ptrl_p = get_new_page_table_range_locker(hti_p->root_page_id, WHOLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, curr_pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto DELETE_EVERYTHING_AND_ABORT;
