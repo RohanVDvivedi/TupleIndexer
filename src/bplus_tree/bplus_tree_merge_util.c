@@ -261,16 +261,17 @@ int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_
 		}
 	}
 
-	// release locks on all the pages, we had locks on until now
-	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
-	{
-		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
-		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
-		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
-	}
-
+	// release locks on all the pages, we had locks on until now in case of an abort
 	if(*abort_error)
+	{
+		while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+			release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+		}
 		return 0;
+	}
 
 	return 1;
 }

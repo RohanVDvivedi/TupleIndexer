@@ -8,8 +8,10 @@
 
 // the locked_pages_stack may contain only the pages in the chain that will participate in the split insert
 // i.e. the root_page may not be in the locked pages stack
-// all the locks are released by this function, even on a failure
-// this function always returns 1, except on an abort_error OR on duplicate insertion
+// all the locks are released by this function, only on an abort_error
+// this function always returns 1, except on an abort_error
+// in absence of an abort error, locks to all pages untouched are left as is,
+// so do call release_all_locks_and_deinitialize_stack_reenterable once you are done with the stack
 int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 #endif
