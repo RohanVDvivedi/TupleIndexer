@@ -27,6 +27,9 @@
      * As a general case, one mini-transaction should only consist of 1 iterator open/close OR 1 non-iterator operation.
        * I am stating these here because if you persist write page locks inside a minitransacton, then 2 operations may deadlock, if these include multiple tree downward traversals, over same or different datastructures.
 
+  * array_table
+   * add logic to handle MIN and MAX values of find_position
+
   * better return values throughout the project 0 or 1 doesnt fit requirements
    * all errors will be < 0, and success will be 0
    * ATTEMPTED_MODIFICATION_WITH_READ_LOCKS
