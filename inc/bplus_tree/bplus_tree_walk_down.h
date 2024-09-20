@@ -49,10 +49,12 @@ enum find_type
 
 int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, uint32_t key_element_count_concerned, find_type f_type, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-// go next for the current state of the stack
+// go next for the current state of the stack, to the next page of the current top leaf page
+// returns 0, if it resulst in end of scan
 int walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-// go prev for the current state of the stack
+// go prev for the current state of the stack, to the prev page of the current top leaf page
+// returns 0, if it resulst in end of scan
 int walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // below function is to be used when you are done with the locked pages stack
