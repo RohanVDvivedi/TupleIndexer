@@ -11,13 +11,13 @@
 
 #include<stdlib.h>
 
-static int get_lock_type_for_page_level(int lock_type, uint32_t level)
+static int get_lock_type_for_page_by_page_level(int lock_type, uint32_t level)
 {
 	// handle standard lock types
 	if(lock_type == READ_LOCK || lock_type == WRITE_LOCK)
 		return lock_type;
 
-	// else this is READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
+	// else this is READ_LOCK_INTERIOR_WRITE_LOCK_LEAF lock_type
 	if(level == 0) // leaf page
 		return WRITE_LOCK;
 	else
@@ -29,12 +29,25 @@ locked_pages_stack initialize_locked_pages_stack_for_walk_down(uint64_t root_pag
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
 
 	// get lock on the root page of the bplus_tree
-	persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, lock_type, abort_error);
+	// to be safe grad read lock only if explicitly stated, else take write lock
+	// if need arises we will downgrade the acquired write lock
+	persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, ((lock_type == READ_LOCK) ? READ_LOCK : WRITE_LOCK), abort_error);
 	if(*abort_error)
 		return ((locked_pages_stack){});
 
 	// get level of the root_page
 	uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+
+	// if the page is write locked and it's level suggests that there should be a read lock, then down grade the lock
+	if(is_persistent_page_write_locked(&root_page) && READ_LOCK == get_lock_type_for_page_by_page_level(lock_type, root_page_level))
+	{
+		downgrade_to_reader_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+			return ((locked_pages_stack){});
+		}
+	}
 
 	// create a stack of capacity = levels
 	if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))

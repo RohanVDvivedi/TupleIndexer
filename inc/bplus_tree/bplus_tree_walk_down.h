@@ -11,11 +11,9 @@
 
 #include<persistent_page_functions.h>
 
-#include<bplus_tree_stacked_iterator_custom_locking_type.h>
-
 /*
 ** 	the initialize_locked_pages_stack_for_walk_down function and the walk_down_for_stacked_iterator, walk_next_for_stacked_iterator and walk_next_for_stacked_iterator
-**	does support the additional lock_type as added in bplus_tree_stacked_iterator_custom_locking_type.h
+**	does support the lock_type READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
 */
 
 // the capacity of the stack will be same as the height of the tree i.e. the number of nodes from root to leaf
@@ -38,7 +36,7 @@ int walk_down_locking_parent_pages_for_merge_using_record(uint64_t root_page_id,
 int walk_down_locking_parent_pages_for_update_using_record(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, uint32_t* release_for_split, uint32_t* release_for_merge, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // TODO
-//int walk_down_locking_parent_pages_for_stacked_iterator_using_key();
+int walk_down_locking_parent_pages_for_stacked_iterator_using_key();
 
 // TODO
 // go next for the current state of the stack
