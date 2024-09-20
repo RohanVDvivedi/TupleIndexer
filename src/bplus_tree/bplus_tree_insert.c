@@ -1,6 +1,6 @@
 #include<bplus_tree.h>
 
-#include<locked_pages_stack.h>
+#include<bplus_tree_walk_down.h>
 #include<storage_capacity_page_util.h>
 #include<bplus_tree_page_header.h>
 #include<persistent_page_functions.h>
@@ -14,25 +14,12 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	if(!check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(bpttd_p, record))
 		return 0;
 
-	// create a stack of capacity = levels
+	// create a locked_pages_stack
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
 
-	{
-		// get lock on the root page of the bplus_tree
-		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, WRITE_LOCK, abort_error);
-		if(*abort_error)
-			return 0;
-
-		// pre cache level of the root_page
-		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
-
-		// create a stack of capacity = levels
-		if(!initialize_locked_pages_stack(locked_pages_stack_p, root_page_level + 1))
-			exit(-1);
-
-		// push the root page onto the stack
-		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(root_page, INVALID_TUPLE_INDEX));
-	}
+	(*locked_pages_stack_p) = initialize_locked_pages_stack_for_walk_down(root_page_id, WRITE_LOCK, bpttd_p, pam_p, transaction_id, abort_error);
+	if(*abort_error) // on abort no pages were kept locked
+		return 0;
 
 	// walk down taking locks until you reach leaf page level
 	walk_down_locking_parent_pages_for_split_insert_using_record(root_page_id, locked_pages_stack_p, record, bpttd_p, pam_p, transaction_id, abort_error);
