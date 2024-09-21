@@ -485,7 +485,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		tuples_to_print++;
 		if(tuples_to_print == 4)
 			debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
-		next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		if(!next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error))
+			break;
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -519,7 +520,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		tuples_to_print++;
 		if(tuples_to_print == 4)
 			debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
-		prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		if(!prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error))
+			break;
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -610,12 +612,13 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			tuples_to_print++;
 			if(tuples_to_print == 4)
 				debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
+			int iterated_further;
 			switch(find_pos)
 			{
 				case LESSER_THAN :
 				case LESSER_THAN_EQUALS :
 				{
-					prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+					iterated_further = prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
 					if(abort_error)
 					{
 						printf("ABORTED\n");
@@ -626,7 +629,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 				case GREATER_THAN_EQUALS :
 				case GREATER_THAN :
 				{
-					next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+					iterated_further = next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
 					if(abort_error)
 					{
 						printf("ABORTED\n");
@@ -640,6 +643,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 					exit(-1);
 				}
 			}
+			if(!iterated_further)
+				break;
 			tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 		}
 
@@ -661,12 +666,13 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			{
 				print_tuple(tuple_to_print, bpttd_p->record_def);
 				tuples_to_print++;
+				int iterated_further;
 				switch(find_pos)
 				{
 					case GREATER_THAN_EQUALS :
 					case GREATER_THAN :
 					{
-						prev_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
+						iterated_further = prev_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
 						if(abort_error)
 						{
 							printf("ABORTED\n");
@@ -677,7 +683,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 					case LESSER_THAN :
 					case LESSER_THAN_EQUALS :
 					{
-						next_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
+						iterated_further = next_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
 						if(abort_error)
 						{
 							printf("ABORTED\n");
@@ -691,6 +697,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 						exit(-1);
 					}
 				}
+				if(!iterated_further)
+					break;
 				tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
 			}
 
@@ -739,9 +747,15 @@ void update_UPDATE_column_for_all_tuples_with_iterator(uint64_t root_page_id, ch
 		update_non_key_element_in_place_at_bplus_tree_iterator(bpi_p, 7, &new_value, transaction_id, &abort_error);
 
 		if(is_forward)
-			next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		{
+			if(!next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error))
+				break;
+		}
 		else
-			prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		{
+			if(!prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error))
+				break;
+		}
 		if(abort_error)
 		{
 			printf("ABORTED\n");
