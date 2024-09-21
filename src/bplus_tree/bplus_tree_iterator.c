@@ -403,7 +403,7 @@ int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* 
 	return updated;
 }
 
-void debug_print_lock_type_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
+void debug_print_lock_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	if(bpi_p->is_stacked)
 	{

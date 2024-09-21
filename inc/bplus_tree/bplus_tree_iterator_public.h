@@ -41,8 +41,6 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 // releasing locks may result in an abort_error
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
 
-void debug_print_lock_type_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
-
 // below functions can be used with only writable iterator
 // you can use it to update only a fixed length non-key column
 
@@ -54,5 +52,8 @@ void debug_print_lock_type_stack_for_bplus_tree_iterator(bplus_tree_iterator* bp
 //			:: also attempting to update to a element value that can increase the tuple size, may even fail, because the slot for the tuple is not big enough
 // on an abort_error, all the lps pages will be unlocked by the bplus_tree_iterator
 int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
+
+// debug function
+void debug_print_lock_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 
 #endif
