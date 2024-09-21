@@ -106,7 +106,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		return !is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->pam_p);
 	}
 	else // iterate forward using the pointers on the parent pages that are stacked
-		return walk_down_next_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
+		return walk_down_prev_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 }
 
 bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
