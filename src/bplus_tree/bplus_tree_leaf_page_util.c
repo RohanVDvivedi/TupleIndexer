@@ -35,6 +35,24 @@ void print_bplus_tree_leaf_page(const persistent_page* ppage, const bplus_tree_t
 	print_persistent_page(ppage, bpttd_p->pas_p->page_size, bpttd_p->record_def);
 }
 
+int has_next_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// get page header
+	bplus_tree_leaf_page_header hdr = get_bplus_tree_leaf_page_header(ppage, bpttd_p);
+
+	// has a next page, if the next page reference is not a NULL_PAGE_ID 
+	return hdr.next_page_id != bpttd_p->pas_p->NULL_PAGE_ID;
+}
+
+int has_prev_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// get page header
+	bplus_tree_leaf_page_header hdr = get_bplus_tree_leaf_page_header(ppage, bpttd_p);
+
+	// has a prev page, if the prev page reference is not a NULL_PAGE_ID 
+	return hdr.prev_page_id != bpttd_p->pas_p->NULL_PAGE_ID;
+}
+
 uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const persistent_page* ppage, const void* key, const bplus_tree_tuple_defs* bpttd_p)
 {
 	return find_succeeding_equals_in_sorted_packed_page(

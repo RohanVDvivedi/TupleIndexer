@@ -13,6 +13,10 @@ int init_bplus_tree_leaf_page(persistent_page* ppage, const bplus_tree_tuple_def
 // prints bplus_tree leaf page
 void print_bplus_tree_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
+// check if the ppage has a next or a prev leaf page
+int has_next_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
+int has_prev_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
+
 // when you want tuples in descending order from the key
 uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const persistent_page* ppage, const void* key, const bplus_tree_tuple_defs* bpttd_p);
 
