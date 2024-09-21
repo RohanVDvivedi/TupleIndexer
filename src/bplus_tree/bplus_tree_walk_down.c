@@ -650,7 +650,7 @@ int walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack*
 	return 0;
 }
 
-int can_walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p)
+int can_walk_down_next_locking_parent_pages_for_stacked_iterator(const locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// iterate from the bottom of the stack
 	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(locked_pages_stack_p); i++)
@@ -670,7 +670,7 @@ int can_walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_st
 	return 0;
 }
 
-int can_walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p)
+int can_walk_down_prev_locking_parent_pages_for_stacked_iterator(const locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// iterate from the bottom of the stack
 	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(locked_pages_stack_p); i++)

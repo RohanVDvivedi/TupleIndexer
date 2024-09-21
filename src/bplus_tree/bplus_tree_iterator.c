@@ -67,6 +67,21 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		return walk_down_next_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 }
 
+// returns if the above function will succeed
+static int can_goto_next_leaf_page(const bplus_tree_iterator* bpi_p)
+{
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
+	if(bpi_p->is_stacked == 0)
+	{
+		persistent_page* curr_leaf_page = get_curr_leaf_page((bplus_tree_iterator*)bpi_p);
+		return has_next_leaf_page(curr_leaf_page, bpi_p->bpttd_p);
+	}
+	else
+		return can_walk_down_next_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), bpi_p->bpttd_p);
+}
+
 // makes the iterator point to prev page of the curr_leaf_page
 // this function releases all locks on an abort_error
 // on abort_error OR on reaching end, all page locks are released, and return value is 0
@@ -107,6 +122,21 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 	}
 	else // iterate forward using the pointers on the parent pages that are stacked
 		return walk_down_prev_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
+}
+
+// returns if the above function will succeed
+static int can_goto_prev_leaf_page(const bplus_tree_iterator* bpi_p)
+{
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
+	if(bpi_p->is_stacked == 0)
+	{
+		persistent_page* curr_leaf_page = get_curr_leaf_page((bplus_tree_iterator*)bpi_p);
+		return has_prev_leaf_page(curr_leaf_page, bpi_p->bpttd_p);
+	}
+	else
+		return can_walk_down_prev_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), bpi_p->bpttd_p);
 }
 
 bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
