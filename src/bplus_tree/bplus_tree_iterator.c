@@ -3,6 +3,7 @@
 #include<persistent_page_functions.h>
 #include<bplus_tree_page_header.h>
 #include<bplus_tree_leaf_page_header.h>
+#include<bplus_tree_leaf_page_util.h>
 #include<bplus_tree_interior_page_util.h>
 #include<bplus_tree_walk_down.h>
 
@@ -294,12 +295,12 @@ int is_empty_bplus_tree(const bplus_tree_iterator* bpi_p)
 
 int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
 {
+	// you can never go next on an empty bplus_tree
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
 	{
 		persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
-
-		// if the page itself is invalid, then quit
-		if(curr_leaf_page == NULL)
-			return 0;
 
 		// increment the current tuple count, if the next tuple we point to will be on this page
 		if(bpi_p->curr_tuple_index + 1 < get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
@@ -312,22 +313,21 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	// else we keep visiting the next pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
-		// iterate to next leaf page
-		if(!goto_next_leaf_page(bpi_p, transaction_id, abort_error))
+		// if we can not go next then fail with 0
+		if(!can_goto_next_leaf_page(bpi_p))
 			return 0;
+
+		// iterate to next leaf page
+		goto_next_leaf_page(bpi_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
 
 		// get curr_leaf_page we are pointing to
 		persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
 
-		// if we reached the end of the scan (curr_leaf_page == NULL), quit with 0
-		if(curr_leaf_page == NULL)
-			return 0;
-
 		uint32_t curr_leaf_page_tuple_count = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
-		// a valid leaf page has atleast a tuple
+		// a valid leaf page has atleast a tuple, this condition is always true for a non-empty bplus_tree
 		if(curr_leaf_page_tuple_count > 0)
 		{
 			bpi_p->curr_tuple_index = 0;
@@ -348,13 +348,11 @@ const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
 {
+	// you can never go prev on an empty bplus_tree
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
 	{
-		persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
-
-		// if the page itself is invalid, then quit
-		if(curr_leaf_page == NULL)
-			return 0;
-
 		// decrement the current tuple count, if the next tuple we point to will be on this page
 		if(bpi_p->curr_tuple_index != 0)
 		{
@@ -366,22 +364,21 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	// else we keep visiting the previous pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
-		// iterate to prev leaf page
-		if(!goto_prev_leaf_page(bpi_p, transaction_id, abort_error))
+		// if we can not go prev then fail with 0
+		if(!can_goto_prev_leaf_page(bpi_p))
 			return 0;
+
+		// iterate to prev leaf page
+		goto_prev_leaf_page(bpi_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
 
 		// get curr_leaf_page we are pointing to
 		persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
 
-		// if we reached the end of the scan (curr_leaf_page == NULL), quit with 0
-		if(curr_leaf_page == NULL)
-			return 0;
-
 		uint32_t curr_leaf_page_tuple_count = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
-		// a valid page has atleast a tuple
+		// a valid page has atleast a tuple, this condition is always true for a non-empty bplus_tree
 		if(curr_leaf_page_tuple_count > 0)
 		{
 			bpi_p->curr_tuple_index = curr_leaf_page_tuple_count - 1;
