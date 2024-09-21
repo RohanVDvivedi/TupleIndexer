@@ -18,7 +18,11 @@ static persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p)
 		return &(curr_leaf_page->ppage);
 	}
 	else
+	{
+		if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->pam_p))
+			return NULL;
 		return &(bpi_p->curr_page);
+	}
 }
 
 // makes the iterator point to next page of the curr_leaf_page
@@ -223,9 +227,14 @@ bplus_tree_iterator* clone_bplus_tree_iterator(const bplus_tree_iterator* bpi_p,
 	}
 	else
 	{
-		clone_p->curr_page = acquire_persistent_page_with_lock(clone_p->pam_p, transaction_id, bpi_p->curr_page.page_id, READ_LOCK, abort_error);
-		if(*abort_error)
-			goto ABORT_ERROR;
+		if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->pam_p))
+			clone_p->curr_page = get_NULL_persistent_page(bpi_p->pam_p);
+		else
+		{
+			clone_p->curr_page = acquire_persistent_page_with_lock(clone_p->pam_p, transaction_id, bpi_p->curr_page.page_id, READ_LOCK, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 	}
 
 	return clone_p;
