@@ -97,6 +97,5 @@
    * inserts and deletes can release page locks if it is deemed that split and merge would not propogate up the tree
    * accomodate any tuple that is atleast half the size of the leaf page, and interior page tuples would be fixed width with non NULL elements
    * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
- * think about implementing more data structures like T-tree, Patricia Trie, etc
 
  * OPTIMIZATION in suffix truncation :: handle cases if INT, UINT, LARGE_UINT, BIT_FIELD, in loop 1, if unequal on ASC-> then set element to last_tuple_page1 element + 1 (to min element if NULL), if unequal on DESC-> then set element to last_tuple_page1 element - 1, if the last_tuple_page1_element is not the min value, else set it to NULL
