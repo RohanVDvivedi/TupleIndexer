@@ -1,13 +1,6 @@
 ** PICKED TASKS
 
 1
- * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
-   * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
-     * this is only allowed in case of ACQUIRE_FOR_IN_PLACE_UPDATE and ACQUIRE_FOR_READ
-     * do ensure that the current key we are pointing to does fall between the range, else fail this operation
-   * remove failures to insert if a record with same key found, instead pass a flag suggesting if duplicates are allowed, a new duplicate will always be inserted after the last existing duplicate
-
-2
   * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
      * delete_array_table_range_locker() and delete_page_table_range_locker(), which may descend down the tree again to free up the empty local root page, and its respective
@@ -20,7 +13,18 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
- * better return values throughout the project 0 or 1 doesnt fit requirements
+ * bplus_tree new features
+   * allow update, delete and possibly insert over a stacked WRITE_LOCK-ed iterator
+   * update only if the keys match and insert only if the key falls within the range of the currently locked range -> need to figure out how to check the 2nd part
+   * need to make split_insert function to accept an insertion index as hint, which will be passed as INVALID_INDEX if you do not know it
+   * split_insert to also take a flag as input that says if the tuple with same key already exists
+   * this will eventually also allow duplicates -> think if we need them, as MySQL's secondary index has them
+      * for this also remove failures to insert if a record with same key found, instead pass a flag suggesting if duplicates are allowed, a new duplicate will always be inserted after the last existing duplicate
+ * bplus_tree optimization
+   * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2] -> need to figure out how to do this
+     * this is only allowed in stacked iterator case of READ_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
+     * do ensure that the current key we are pointing to does fall between the range, else fail this operation
+ * better return values throughout the project 0 or 1 doesnt fit all requirements
    * all errors will be < 0, and success will be 0
    * ATTEMPTED_MODIFICATION_WITH_READ_LOCKS
    * RECORD_DOES_NOT_FIT_SIZE
