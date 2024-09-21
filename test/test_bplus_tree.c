@@ -483,6 +483,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	{
 		print_tuple(tuple_to_print, bpttd_p->record_def);
 		tuples_to_print++;
+		if(tuples_to_print == 4)
+			debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
 		next_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
@@ -515,6 +517,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	{
 		print_tuple(tuple_to_print, bpttd_p->record_def);
 		tuples_to_print++;
+		if(tuples_to_print == 4)
+			debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
 		prev_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
@@ -604,6 +608,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		{
 			print_tuple(tuple_to_print, bpttd_p->record_def);
 			tuples_to_print++;
+			if(tuples_to_print == 4)
+				debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
 			switch(find_pos)
 			{
 				case LESSER_THAN :
