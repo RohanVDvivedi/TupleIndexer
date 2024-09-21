@@ -650,6 +650,46 @@ int walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack*
 	return 0;
 }
 
+int can_walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// iterate from the bottom of the stack
+	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(locked_pages_stack_p); i++)
+	{
+		locked_page_info* ppage_to_check = get_from_bottom_of_locked_pages_stack(locked_pages_stack_p, i);
+
+		// leaf pages are not to be considered for this
+		// this must surely be the last iteration of the loop, as top most page must be a leaf page
+		if(is_bplus_tree_leaf_page(&(ppage_to_check->ppage), bpttd_p))
+			break;
+
+		// if there is atleast 1 interior page who is not pointing to its last child, then the walk_down_next will succeed
+		if(ppage_to_check->child_index != (get_tuple_count_on_persistent_page(&(ppage_to_check->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) - 1))
+			return 1;
+	}
+
+	return 0;
+}
+
+int can_walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// iterate from the bottom of the stack
+	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(locked_pages_stack_p); i++)
+	{
+		locked_page_info* ppage_to_check = get_from_bottom_of_locked_pages_stack(locked_pages_stack_p, i);
+
+		// leaf pages are not to be considered for this
+		// this must surely be the last iteration of the loop, as top most page must be a leaf page
+		if(is_bplus_tree_leaf_page(&(ppage_to_check->ppage), bpttd_p))
+			break;
+
+		// if there is atleast 1 interior page who is not pointing to its first child, then the walk_down_prev will succeed
+		if(ppage_to_check->child_index != ALL_LEAST_KEYS_CHILD_INDEX)
+			return 1;
+	}
+
+	return 0;
+}
+
 void release_all_locks_and_deinitialize_stack_reenterable(locked_pages_stack* locked_pages_stack_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// release locks on all the pages, we had locks on until now

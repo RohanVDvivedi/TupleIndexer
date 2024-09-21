@@ -51,6 +51,13 @@ int walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack*
 // returns 0, if it resulst in end of scan
 int walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
+// the above two functions when called on the last or first page of the scan respectively, will release all the locks and return failure with an empty locked pages stack
+// to avoid this you can use the below function to check if these calls will succeed
+
+int can_walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p);
+
+int can_walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p);
+
 // below function is to be used when you are done with the locked pages stack
 // it is recallable, it does not fail on abort
 void release_all_locks_and_deinitialize_stack_reenterable(locked_pages_stack* locked_pages_stack_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
