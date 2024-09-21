@@ -584,6 +584,17 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 		find_pos = GREATER_THAN_EQUALS;
 		(*bucket_id) += 1;
 	}
+	// convert MIN to GREATER_THAN_EQUALS 0, and MAX to LESSER_THAN_EQUALS UINT64_MAX
+	else if(find_pos == MIN)
+	{
+		find_pos = GREATER_THAN_EQUALS;
+		(*bucket_id) = 0;
+	}
+	else if(find_pos == MAX)
+	{
+		find_pos = LESSER_THAN_EQUALS;
+		(*bucket_id) = UINT64_MAX;
+	}
 
 	if(find_pos == LESSER_THAN_EQUALS)
 	{
