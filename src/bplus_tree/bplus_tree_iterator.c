@@ -313,12 +313,9 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	// else we keep visiting the next pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
-		// if we can not go next then fail with 0
-		if(!can_goto_next_leaf_page(bpi_p))
-			return 0;
-
 		// iterate to next leaf page
-		goto_next_leaf_page(bpi_p, transaction_id, abort_error);
+		if(!goto_next_leaf_page(bpi_p, transaction_id, abort_error))
+			return 0;
 		if(*abort_error)
 			return 0;
 
@@ -375,12 +372,9 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	// else we keep visiting the previous pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
-		// if we can not go prev then fail with 0
-		if(!can_goto_prev_leaf_page(bpi_p))
-			return 0;
-
 		// iterate to prev leaf page
-		goto_prev_leaf_page(bpi_p, transaction_id, abort_error);
+		if(!goto_prev_leaf_page(bpi_p, transaction_id, abort_error))
+			return 0;
 		if(*abort_error)
 			return 0;
 
