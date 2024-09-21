@@ -338,6 +338,17 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	return 1;
 }
 
+int has_next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
+{
+	// you can never go next on an empty bplus_tree
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
+	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
+	// or if there are enough tuples to see next OR there are pages to be visited next
+	return (bpi_p->curr_tuple_index + 1 < get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def))) || can_goto_next_leaf_page(bpi_p);
+}
+
 const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
@@ -387,6 +398,16 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	}
 
 	return 1;
+}
+
+int has_prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
+{
+	// you can never go prev on an empty bplus_tree
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
+	// or if there are enough tuples to see previously OR there are pages to be visited prev
+	return (bpi_p->curr_tuple_index != 0) || can_goto_prev_leaf_page(bpi_p);
 }
 
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
