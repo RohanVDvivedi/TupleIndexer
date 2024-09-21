@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
-1
- * in find function if the tree is empty, then just return the iterator without adjusting the iterator position that is done at the end
-
 2
  * build a function to lock the root page with a given lock type
    * if READ_LOCK or WRITE_LOCK, perform a simple locking with the given type
