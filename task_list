@@ -1,7 +1,4 @@
 ** PICKED TASKS
-1
- * print lock_type for all pages in the iterator in the middle of a scan, build a temporary test case function for testing this
-
 2
  * array_table
    * add logic to handle MIN and MAX values of find_position
