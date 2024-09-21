@@ -478,7 +478,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	}
 
 	debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
-	printf("has_next = %d, has_prev = %d\n", has_next_bplus_tree_iterator(bpi_p), hash_prev_bplus_tree_iterator(bpi_p));
+	printf("has_next = %d, has_prev = %d\n", has_next_bplus_tree_iterator(bpi_p), has_prev_bplus_tree_iterator(bpi_p));
 
 	const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	uint32_t tuples_to_print = 0;
@@ -515,7 +515,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	}
 
 	debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
-	printf("has_next = %d, has_prev = %d\n", has_next_bplus_tree_iterator(bpi_p), hash_prev_bplus_tree_iterator(bpi_p));
+	printf("has_next = %d, has_prev = %d\n", has_next_bplus_tree_iterator(bpi_p), has_prev_bplus_tree_iterator(bpi_p));
 
 	tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	tuples_to_print = 0;
