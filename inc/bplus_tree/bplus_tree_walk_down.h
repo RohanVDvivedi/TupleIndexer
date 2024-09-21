@@ -16,6 +16,8 @@
 **	does support the lock_type READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
 */
 
+#include<bplus_tree_walk_down_custom_lock_type.h>
+
 // the capacity of the stack will be same as the height of the tree i.e. the number of nodes from root to leaf
 // only lock to the root page will be acquired with the given lock type
 // on an abort error, it will return an empty locked pages stack, with no pages kept locked
