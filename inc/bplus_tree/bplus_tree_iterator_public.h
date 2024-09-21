@@ -13,6 +13,7 @@ typedef struct bplus_tree_iterator bplus_tree_iterator;
 bplus_tree_iterator* clone_bplus_tree_iterator(const bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
 
 // returns true, if the leaf page of the bplus_tree_iterator is/will be write locked
+// does not say anything about the locks on the interior pages, you need to remember the lock_type if this is a stacked iterator
 int is_writable_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
 
 // returns true, if the path from the root ot leaf is locked by the iterator and is used for iteration instead of the next and prev linkages of the leaf page
