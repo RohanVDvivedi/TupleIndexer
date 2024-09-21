@@ -372,35 +372,17 @@ persistent_page walk_down_for_iterator_using_key(uint64_t root_page_id, const vo
 	if(lock_type != READ_LOCK)
 		lock_type = WRITE_LOCK;
 
-	persistent_page curr_page = get_NULL_persistent_page(pam_p);
+	// here if lock_type == READ_LOCK, then nothing special happens
+	// else on lock_type == WRITE_LOCK, then interior page must be READ_LOCK-ed and leaf pages must be WRITE_LOCK-ed -> which is a behaviour similar to READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
+	persistent_page curr_page = acquire_root_page_with_lock_optimistically(root_page_id, ((lock_type == READ_LOCK) ? READ_LOCK : READ_LOCK_INTERIOR_WRITE_LOCK_LEAF), bpttd_p, pam_p, transaction_id, abort_error);
+	if(*abort_error)
+		return get_NULL_persistent_page(pam_p);
 
-	{
-		// get lock on the root page of the bplus_tree in mode (referred by lock_type), this is because root_page can be a leaf page
-		persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, lock_type, abort_error);
-		if(*abort_error)
-			return get_NULL_persistent_page(pam_p);
+	// pre cache level of the root_page
+	uint32_t root_page_level = get_level_of_bplus_tree_page(&curr_page, bpttd_p);
 
-		// pre cache level of the root_page
-		uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
-
-		if(root_page_level == 0) // if root is the leaf page, then return it
-			return root_page;
-		else
-		{
-			if(lock_type == WRITE_LOCK) // downgrade lock on the root page, if we had to WRITE_LOCK it
-			{
-				downgrade_to_reader_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
-				if(*abort_error)
-				{
-					release_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
-					return get_NULL_persistent_page(pam_p);
-				}
-			}
-		}
-
-		// for reaching the leaf make root page as the curr_page
-		curr_page = root_page;
-	}
+	if(root_page_level == 0) // if root is the leaf page, then return it
+		return curr_page;
 
 	// perform a downward pass until you reach the leaf
 	while(1)
