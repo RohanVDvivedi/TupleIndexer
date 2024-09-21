@@ -1,9 +1,5 @@
 ** PICKED TASKS
 
- * bplus_tree code reusability
-  * refactor re-implement bplus_tree_iterator
-  * refactor bplus_tree_find to use new bplus_tree_iterator api
-
  * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
    * add functions in iterator to check if there is a next of the current page and a previous of the current page
     * allowing us to check if we can go next or prev or not
