@@ -1,6 +1,5 @@
 ** PICKED TASKS
 1
- * test bplus_tree for the current new developments
  * print lock_type for all pages in the iterator in the middle of a scan, build a temporary test case function for testing this
 
 2
