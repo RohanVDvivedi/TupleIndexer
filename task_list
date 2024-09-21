@@ -14,7 +14,10 @@
  * do not call go next on the page, if the has_next page fails, do similar for go prev functionality
    * i.e. if you are pointing at the MAX tuple then going next fails (similarly, if you are pointing at the MIN tuple then the prev() call fails), keeping the current pages locked as is
    * fail go next and go prev, if the bplus_tree is empty
-   * in find function if the tree is empty, then just return te iterator without adjusting the iterator position that is done at the end
+   * in find function if the tree is empty, then just return the iterator without adjusting the iterator position that is done at the end
+ * build a function to lock the root page with a given lock type
+   * if READ_LOCK or WRITE_LOCK, perform a simple locking with the given type
+   * else it is a complex case, here we first acquire with READ_LOCK assuming it is an interior page, if not, we proceed with the WRITE_LOCK and then check again, if instead a READ_LOCK is required, we down grade the lock and return
 
 4
  * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
