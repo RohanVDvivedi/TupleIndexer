@@ -24,6 +24,47 @@ static int get_lock_type_for_page_by_page_level(int lock_type, uint32_t level)
 		return READ_LOCK;
 }
 
+static persistent_page acquire_root_page_with_lock(uint64_t root_page_id, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// if the lock type requirement is already confirmed
+	if(lock_type == READ_LOCK || lock_type == WRITE_LOCK)
+		return acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, lock_type, abort_error);
+
+	// Now this is the case for READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
+
+	// first do it by optimistically taking a READ_LOCK, assuming it is an interior page
+	persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
+	if(*abort_error)
+		return get_NULL_persistent_page(pam_p);
+	uint32_t root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+	if(READ_LOCK == get_lock_type_for_page_by_page_level(lock_type, root_page_level)) // if the current level confirms that READ_LOCK is the right kind of lock for the root_page return it
+		return root_page;
+
+	// if READ_LOCK is not the required type, then we could in theory upgrade the lock, but that may cause deadlock
+
+	// so release the read lock held
+	release_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+	if(*abort_error)
+		return get_NULL_persistent_page(pam_p);
+
+	// Now we fall back to re trying the lock with a WRITE_LOCK and downgrade if necessary
+	root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, WRITE_LOCK, abort_error);
+	if(*abort_error)
+		return get_NULL_persistent_page(pam_p);
+	root_page_level = get_level_of_bplus_tree_page(&root_page, bpttd_p);
+	if(WRITE_LOCK == get_lock_type_for_page_by_page_level(lock_type, root_page_level)) // if the current level confirms that WRITE_LOCK is the right kind of lock for the root_page return it
+		return root_page;
+
+	// else we downgrade the lock and return it
+	downgrade_to_reader_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
+		return get_NULL_persistent_page(pam_p);
+	}
+	return root_page;
+}
+
 locked_pages_stack initialize_locked_pages_stack_for_walk_down(uint64_t root_page_id, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
