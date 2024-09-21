@@ -17,15 +17,13 @@ struct bplus_tree_iterator
 	// if this attribute is 1, then the iteration occurrs using the parent pages, else it happens through the next and prev page pointers on the leaf page
 	int is_stacked;
 
-	int lock_type;
-	/*
-		For stacked iterator lock_type = READ_LOCK, WRITE_LOCK & LEAF_ONLY_WRITER_LOCK
-		else the only valid values are READ_LOCK & WRITE_LOCK
-	*/
-
 	union
 	{
-		locked_pages_stack lps;	// use this if is_stacked is set
+		struct
+		{
+			int lock_type; // For stacked iterator lock_type = READ_LOCK, WRITE_LOCK & LEAF_ONLY_WRITER_LOCK
+			locked_pages_stack lps;	// use this if is_stacked is set
+		};
 		persistent_page curr_page; // else use this
 	};
 
@@ -50,8 +48,8 @@ struct bplus_tree_iterator
 #define LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE UINT32_MAX
 
 // curr_tuple_index if LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE then the iterator will point to the last
-// after the successfull call to this function (return value != NULL), the lps is solely owned by the bplus_tree_iterator
-// and lps gets deinitialized by the bplus_tree_iterator only after delete_bplus_tree_iterator() call
+// after the successfull call to this function (return value != NULL), the lps/curr_page is solely owned by the bplus_tree_iterator
+// and lps/curr_page gets deinitialized/freed by the bplus_tree_iterator only after delete_bplus_tree_iterator() call
 bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p);
 bplus_tree_iterator* get_new_bplus_tree_stacked_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p);
 

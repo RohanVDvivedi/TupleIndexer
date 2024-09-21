@@ -229,7 +229,47 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 	return 0;
 }
 
-bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+bplus_tree_iterator* get_new_bplus_tree_iterator(persistent_page curr_page, uint32_t curr_tuple_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	// the following 2 must be present
+	if(bpttd_p == NULL || pam_p == NULL)
+		return NULL;
+
+	// the top most page must be a leaf page
+	if(!is_bplus_tree_leaf_page(&curr_page, bpttd_p))
+		return NULL;
+
+	// if pmm_p == NULL, then the top page must be read locked, otherwise return NULL
+	// and if pmm_p != NULL, then the top page must be write locked, otherwise return NULL
+	if((pmm_p == NULL && is_persistent_page_write_locked(&curr_page)) ||
+		(pmm_p != NULL && (!is_persistent_page_write_locked(&curr_page))))
+		return NULL;
+
+	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
+	if(bpi_p == NULL)
+		exit(-1);
+
+	bpt_p->is_stacked = 0;
+	bpi_p->curr_page = curr_page;
+	bpi_p->curr_tuple_index = curr_tuple_index;
+	bpi_p->bpttd_p = bpttd_p;
+	bpi_p->pam_p = pam_p;
+	bpi_p->pmm_p = pmm_p;
+
+	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
+	if(bpi_p->curr_tuple_index == LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE)
+	{
+		uint32_t tuple_count_on_curr_leaf_page = get_tuple_count_on_persistent_page(curr_leaf_page, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
+		if(tuple_count_on_curr_leaf_page == 0)
+			bpi_p->curr_tuple_index = 0;
+		else
+			bpi_p->curr_tuple_index = tuple_count_on_curr_leaf_page - 1;
+	}
+
+	return bpi_p;
+}
+
+bplus_tree_iterator* get_new_bplus_tree_stacked_iterator(locked_pages_stack lps, uint32_t curr_tuple_index, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
@@ -253,7 +293,9 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 	if(bpi_p == NULL)
 		exit(-1);
 
+	bpt_p->is_stacked = 1;
 	bpi_p->lps = lps;
+	bpt_p->lock_type = lock_type;
 	bpi_p->curr_tuple_index = curr_tuple_index;
 	bpi_p->bpttd_p = bpttd_p;
 	bpi_p->pam_p = pam_p;
@@ -268,8 +310,6 @@ bplus_tree_iterator* get_new_bplus_tree_iterator(locked_pages_stack lps, uint32_
 		else
 			bpi_p->curr_tuple_index = tuple_count_on_curr_leaf_page - 1;
 	}
-
-	bpi_p->is_stacked = get_element_count_locked_pages_stack(&lps) > 1;
 
 	return bpi_p;
 }
