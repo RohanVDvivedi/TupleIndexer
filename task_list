@@ -4,7 +4,6 @@
  * add has_next and has_prev for stacked iterator in walk down function
    * loop from bottom and if there is atleast 1 interior page where child index is not tuple_count - 1, then has_next = true
    * loop from bottom and if there is atleast 1 interior page where child index is not ALL_LEAST_KEYS_CHILD_ID, then has_prev = true
- * add has_next_leaf_page and has_prev_leaf_page for leaf pages in leaf page util
  * use these above functions to check has_next and has_prev for the bplus_tree_iterator
  * add is_empty for bplus_tree working on bplus_tree_iterator
    * check if the curr_leaf is empty, if so the bplus_tree is empty
