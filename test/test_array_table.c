@@ -139,8 +139,8 @@ void print_all_from_array_table(uint64_t root_page_id, bucket_range lock_range, 
 	if(!backward)
 	{
 		char memory[64];
-		uint64_t bucket_id = 0;
-		const void* record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, GREATER_THAN_EQUALS, transaction_id, &abort_error);
+		uint64_t bucket_id;
+		const void* record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, MIN, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -162,8 +162,8 @@ void print_all_from_array_table(uint64_t root_page_id, bucket_range lock_range, 
 	else
 	{
 		char memory[64];
-		uint64_t bucket_id = UINT64_MAX;
-		const void* record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, LESSER_THAN_EQUALS, transaction_id, &abort_error);
+		uint64_t bucket_id;
+		const void* record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, MAX, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
