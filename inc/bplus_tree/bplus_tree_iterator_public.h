@@ -41,6 +41,8 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 // releasing locks may result in an abort_error
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
 
+void debug_print_lock_type_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+
 // below functions can be used with only writable iterator
 // you can use it to update only a fixed length non-key column
 

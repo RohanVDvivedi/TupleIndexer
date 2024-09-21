@@ -402,3 +402,24 @@ int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* 
 
 	return updated;
 }
+
+void debug_print_lock_type_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
+{
+	if(bpi_p->is_stacked)
+	{
+		printf("STACKED : ");
+		for(uint32_t i = 0; i < get_element_count_locked_pages_stack(&(bpi_p->lps)); i++)
+		{
+			locked_page_info* t = get_from_bottom_of_locked_pages_stack(&(bpi_p->lps), i);
+			printf("%s, ", (is_persistent_page_write_locked(&(t->ppage)) ? "WRITE_LOCK" : "READ_LOCK"));
+		}
+		printf("\n");
+	}
+	else
+	{
+		if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->pam_p))
+			printf("UNSTACKED : \n");
+		else
+			printf("UNSTACKED : %s\n", (is_persistent_page_write_locked(&(bpi_p->curr_page)) ? "WRITE_LOCK" : "READ_LOCK"));
+	}
+}
