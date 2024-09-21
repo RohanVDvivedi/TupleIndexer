@@ -645,54 +645,59 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		}
 		printf("\n\n");
 
-		printf("getting some previous tuples using the clone : \n");
-
-		tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
-		tuples_to_print = 0;
-		while(tuple_to_print != NULL && tuples_to_print < 5)
+		if(clone_p != NULL)
 		{
-			print_tuple(tuple_to_print, bpttd_p->record_def);
-			tuples_to_print++;
-			switch(find_pos)
-			{
-				case GREATER_THAN_EQUALS :
-				case GREATER_THAN :
-				{
-					prev_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
-					if(abort_error)
-					{
-						printf("ABORTED\n");
-						exit(-1);
-					}
-					break;
-				}
-				case LESSER_THAN :
-				case LESSER_THAN_EQUALS :
-				{
-					next_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
-					if(abort_error)
-					{
-						printf("ABORTED\n");
-						exit(-1);
-					}
-					break;
-				}
-				default :
-				{
-					printf("FIND_POSITION enum not clubbed properly");
-					exit(-1);
-				}
-			}
+			printf("getting some previous tuples using the clone : \n");
+
 			tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
-		}
+			tuples_to_print = 0;
+			while(tuple_to_print != NULL && tuples_to_print < 5)
+			{
+				print_tuple(tuple_to_print, bpttd_p->record_def);
+				tuples_to_print++;
+				switch(find_pos)
+				{
+					case GREATER_THAN_EQUALS :
+					case GREATER_THAN :
+					{
+						prev_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
+						if(abort_error)
+						{
+							printf("ABORTED\n");
+							exit(-1);
+						}
+						break;
+					}
+					case LESSER_THAN :
+					case LESSER_THAN_EQUALS :
+					{
+						next_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
+						if(abort_error)
+						{
+							printf("ABORTED\n");
+							exit(-1);
+						}
+						break;
+					}
+					default :
+					{
+						printf("FIND_POSITION enum not clubbed properly");
+						exit(-1);
+					}
+				}
+				tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
+			}
 
-		delete_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
-		if(abort_error)
-		{
-			printf("ABORTED\n");
-			exit(-1);
+			delete_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			printf("\n");
 		}
-		printf("\n");
+		else
+			printf("clone could not be created\n\n");
 
 		printf("----------------\n\n");
 
