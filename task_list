@@ -1,7 +1,4 @@
 ** PICKED TASKS
-2
- * array_table
-   * add logic to handle MIN and MAX values of find_position
 
 3
  * add has_next and has_prev for stacked iterator in walk down function
