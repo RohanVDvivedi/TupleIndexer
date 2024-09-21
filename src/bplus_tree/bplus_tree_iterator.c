@@ -9,10 +9,15 @@
 
 static persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p)
 {
-	locked_page_info* curr_leaf_page = get_top_of_locked_pages_stack(&(bpi_p->lps));
-	if(curr_leaf_page == NULL)
-		return NULL;
-	return &(curr_leaf_page->ppage);
+	if(bpi_p->is_stacked)
+	{
+		locked_page_info* curr_leaf_page = get_top_of_locked_pages_stack(&(bpi_p->lps));
+		if(curr_leaf_page == NULL)
+			return NULL;
+		return &(curr_leaf_page->ppage);
+	}
+	else
+		return &(bpi_p->curr_page);
 }
 
 // makes the iterator point to next page of the curr_leaf_page
