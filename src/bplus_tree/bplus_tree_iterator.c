@@ -258,7 +258,7 @@ int is_stacked_bplus_tree_iterator(const bplus_tree_iterator* bpi_p)
 
 int is_empty_bplus_tree(const bplus_tree_iterator* bpi_p)
 {
-	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
+	persistent_page* curr_leaf_page = get_curr_leaf_page((bplus_tree_iterator*)bpi_p);
 	return (curr_leaf_page == NULL) || (0 == get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)));
 }
 
