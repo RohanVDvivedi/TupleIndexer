@@ -1,13 +1,7 @@
 ** PICKED TASKS
 
 1
- * use these above functions to check has_next and has_prev for the bplus_tree_iterator
- * add is_empty for bplus_tree working on bplus_tree_iterator
-   * check if the curr_leaf is empty, if so the bplus_tree is empty
- * do not call go next on the page, if the has_next page fails, do similar for go prev functionality
-   * i.e. if you are pointing at the MAX tuple then going next fails (similarly, if you are pointing at the MIN tuple then the prev() call fails), keeping the current pages locked as is
-   * fail go next and go prev, if the bplus_tree is empty
-   * in find function if the tree is empty, then just return the iterator without adjusting the iterator position that is done at the end
+ * in find function if the tree is empty, then just return the iterator without adjusting the iterator position that is done at the end
 
 2
  * build a function to lock the root page with a given lock type
