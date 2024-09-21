@@ -268,7 +268,8 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	while(1)
 	{
 		// iterate to next leaf page
-		goto_next_leaf_page(bpi_p, transaction_id, abort_error);
+		if(!goto_next_leaf_page(bpi_p, transaction_id, abort_error))
+			return 0;
 		if(*abort_error)
 			return 0;
 
@@ -321,7 +322,8 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	while(1)
 	{
 		// iterate to prev leaf page
-		goto_prev_leaf_page(bpi_p, transaction_id, abort_error);
+		if(!goto_prev_leaf_page(bpi_p, transaction_id, abort_error))
+			return 0;
 		if(*abort_error)
 			return 0;
 
