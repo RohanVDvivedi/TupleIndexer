@@ -1,18 +1,13 @@
 ** PICKED TASKS
 
 1
- * build a function to lock the root page with a given lock type
-   * if READ_LOCK or WRITE_LOCK, perform a simple locking with the given type
-   * else it is a complex case, here we first acquire with READ_LOCK assuming it is an interior page, if not, we proceed with the WRITE_LOCK and then check again, if instead a READ_LOCK is required, we down grade the lock and return
-
-2
  * bplus_tree (allowing duplicates) -> start the work as if we are only adding iterator based update/delete and possibly insert
    * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
      * this is only allowed in case of ACQUIRE_FOR_IN_PLACE_UPDATE and ACQUIRE_FOR_READ
      * do ensure that the current key we are pointing to does fall between the range, else fail this operation
    * remove failures to insert if a record with same key found, instead pass a flag suggesting if duplicates are allowed, a new duplicate will always be inserted after the last existing duplicate
 
-3
+2
   * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
      * delete_array_table_range_locker() and delete_page_table_range_locker(), which may descend down the tree again to free up the empty local root page, and its respective
