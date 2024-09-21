@@ -122,9 +122,6 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 	}
 
-	// if the initial leaf_page is empty, then we need to go next or prev immediately after creating the bplus_tree_iterator
-	int is_initial_leaf_page_empty = (0 == get_tuple_count_on_persistent_page(leaf_page, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)));
-
 	bplus_tree_iterator* bpi_p = NULL;
 
 	if(is_stacked)
@@ -150,29 +147,24 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 	}
 
-	// from this point on lps becomes the ownership of the bplus_tree_iterator, it and the leaf_page must not be accessed any further
+	// if the bplus_tree is itself empty then nothing needs to be done any further
+	if(is_empty_bplus_tree(bpi_p))
+		return bpi_p;
 
-	// iterate next or previous in bplus_tree_iterator, based on the f_type
+	// from this point on lps/curr_page becomes the ownership of the bplus_tree_iterator, it and the leaf_page must not be accessed any further
+
+	// iterate next or previous in bplus_tree_iterator, based on the find_pos
 	// this is not required for MIN and MAX
 	// if the initial leaf page is empty, then a single next or previous is necessary to be called, based on where you want to move
 	switch(find_pos)
 	{
 		case LESSER_THAN :
 		{
-			if(is_initial_leaf_page_empty)
-			{
-				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-					return NULL;
-				}
-			}
-
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) >= 0)
 			{
-				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(!prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error))
+					break;
 				if(*abort_error)
 				{
 					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -184,20 +176,11 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 		case LESSER_THAN_EQUALS :
 		{
-			if(is_initial_leaf_page_empty)
-			{
-				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-					return NULL;
-				}
-			}
-
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
 			{
-				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(!prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error))
+					break;
 				if(*abort_error)
 				{
 					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -209,20 +192,11 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 		case GREATER_THAN_EQUALS :
 		{
-			if(is_initial_leaf_page_empty)
-			{
-				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-					return NULL;
-				}
-			}
-
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) < 0)
 			{
-				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(!next_bplus_tree_iterator(bpi_p, transaction_id, abort_error))
+					break;
 				if(*abort_error)
 				{
 					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -234,20 +208,11 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 		}
 		case GREATER_THAN :
 		{
-			if(is_initial_leaf_page_empty)
-			{
-				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-					return NULL;
-				}
-			}
-
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpttd_p->record_def, bpttd_p->key_element_ids, key, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) <= 0)
 			{
-				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(!next_bplus_tree_iterator(bpi_p, transaction_id, abort_error))
+					break;
 				if(*abort_error)
 				{
 					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -257,30 +222,8 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 			}
 			break;
 		}
-		case MIN :
+		default :
 		{
-			if(is_initial_leaf_page_empty)
-			{
-				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-					return NULL;
-				}
-			}
-			break;
-		}
-		case MAX :
-		{
-			if(is_initial_leaf_page_empty)
-			{
-				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
-					return NULL;
-				}
-			}
 			break;
 		}
 	}
