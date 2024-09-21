@@ -785,6 +785,21 @@ void* update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER(update_UPDATE_co
 
 void run_concurrent_writable_scan_forward_and_backward(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
+/*
+	// all possible combinations that support concurrency without blocking each other or a deadlock
+
+	// stacked_iterator with a WRITE_LOCK will always block the other thread, hence not advisable
+	// if both are unstacked iterators with WRITE_LOCK then they will deadlock
+
+	// then only possible concurrent solutions are
+
+	update_UPDATE_column_params p1 = {root_page_id, 'F', 1, 1, READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, bpttd_p, pam_p, pmm_p};
+	update_UPDATE_column_params p2 = {root_page_id, 'B', 0, 1, READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, bpttd_p, pam_p, pmm_p};
+
+	update_UPDATE_column_params p1 = {root_page_id, 'F', 1, 0, WRITE_LOCK, bpttd_p, pam_p, pmm_p};
+	update_UPDATE_column_params p2 = {root_page_id, 'B', 0, 1, READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, bpttd_p, pam_p, pmm_p};
+*/
+
 	update_UPDATE_column_params p1 = {root_page_id, 'F', 1, 0, WRITE_LOCK, bpttd_p, pam_p, pmm_p};
 	update_UPDATE_column_params p2 = {root_page_id, 'B', 0, 1, READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, bpttd_p, pam_p, pmm_p};
 
