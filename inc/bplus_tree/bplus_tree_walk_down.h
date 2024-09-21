@@ -39,8 +39,8 @@ int walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack* l
 
 #include<find_position.h>
 
-// lock_type = READ_LOCK and WRITE_LOCK behaves normally, any other lock type is handled as if WRITE_LOCK was passed as lock_type
 // in any lock_type, the interior pages are always locked with read locks and the locks on interior pages are not held any more than it could be required for latch crabbing
+// you are returned a leaf page with the provided lock_type
 persistent_page walk_down_for_iterator_using_key(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);

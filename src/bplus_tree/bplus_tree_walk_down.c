@@ -368,13 +368,14 @@ int walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack* l
 
 persistent_page walk_down_for_iterator_using_key(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
-	// only READ_LOCK and WRITE_LOCK values for lock_type make sense for this function
-	if(lock_type != READ_LOCK)
-		lock_type = WRITE_LOCK;
+	// since this function only results with a lock on the leaf
+	// so a WRITE_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, are logically same
+	if(lock_type == WRITE_LOCK)
+		lock_type = READ_LOCK_INTERIOR_WRITE_LOCK_LEAF;
 
 	// here if lock_type == READ_LOCK, then nothing special happens
 	// else on lock_type == WRITE_LOCK, then interior page must be READ_LOCK-ed and leaf pages must be WRITE_LOCK-ed -> which is a behaviour similar to READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
-	persistent_page curr_page = acquire_root_page_with_lock_optimistically(root_page_id, ((lock_type == READ_LOCK) ? READ_LOCK : READ_LOCK_INTERIOR_WRITE_LOCK_LEAF), bpttd_p, pam_p, transaction_id, abort_error);
+	persistent_page curr_page = acquire_root_page_with_lock_optimistically(root_page_id, lock_type, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		return get_NULL_persistent_page(pam_p);
 
@@ -427,7 +428,7 @@ persistent_page walk_down_for_iterator_using_key(uint64_t root_page_id, const vo
 		// only the leaf_page (if the parent's level == 1) is locked with lock_type, all other pages (the parent_pages) are locked in READ_LOCK mode
 		uint32_t child_page_level = (curr_page_level - 1);
 		uint64_t child_page_id = get_child_page_id_by_child_index(&curr_page, child_index, bpttd_p);
-		persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, ((child_page_level == 0) ? lock_type : READ_LOCK), abort_error);
+		persistent_page child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, child_page_id, get_lock_type_for_page_by_page_level(lock_type, child_page_level), abort_error);
 
 		if(*abort_error)
 		{
