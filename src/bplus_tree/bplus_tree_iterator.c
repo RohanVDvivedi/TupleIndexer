@@ -476,13 +476,13 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
 {
-	while(get_element_count_locked_pages_stack(&(bpi_p->lps)) > 0)
+	if(bpi_p->is_stacked)
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
+	else
 	{
-		locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
-		release_lock_on_persistent_page(bpi_p->pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
-		pop_bottom_from_locked_pages_stack(&(bpi_p->lps));
+		if(!is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->pam_p))
+			release_lock_on_persistent_page(bpi_p->pam_p, transaction_id, &(bpi_p->curr_page), NONE_OPTION, abort_error);
 	}
-	deinitialize_locked_pages_stack(&(bpi_p->lps));
 	free(bpi_p);
 }
 
