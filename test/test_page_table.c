@@ -105,8 +105,8 @@ int main()
 	}
 
 	printf("getting all by find forward\n\n");
-	uint64_t bucket_id = 0;
-	uint64_t page_id = find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_id, GREATER_THAN_EQUALS, transaction_id, &abort_error);
+	uint64_t bucket_id;
+	uint64_t page_id = find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_id, MIN, transaction_id, &abort_error);
 	while(page_id != pam_p->pas.NULL_PAGE_ID)
 	{
 		printf("%"PRIu64" -> %"PRIu64"\n", bucket_id, page_id);
@@ -115,8 +115,7 @@ int main()
 	printf("\n\n");
 
 	printf("getting all by find reverse\n\n");
-	bucket_id = UINT64_MAX;
-	page_id = find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_id, LESSER_THAN_EQUALS, transaction_id, &abort_error);
+	page_id = find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_id, MAX, transaction_id, &abort_error);
 	while(page_id != pam_p->pas.NULL_PAGE_ID)
 	{
 		printf("%"PRIu64" -> %"PRIu64"\n", bucket_id, page_id);
