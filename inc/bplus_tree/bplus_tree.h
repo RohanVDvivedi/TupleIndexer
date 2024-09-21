@@ -14,7 +14,7 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const page_acc
 // this macro can be passed to key_element_count_concerned (to find_in_bplus_tree), to consider all the key_elements as found in bpttd_p(->key_element_count)
 #define KEY_ELEMENT_COUNT UINT32_C(-1)
 
-#define LEAF_ONLY_WRITER_LOCK 100
+#define READ_LOCK_INTERIOR_WRITE_LOCK_LEAF 100
 // this can be passed to find_in_bplus_tree as lock_type. with is_stacked = 1, if you want an iterator for which its interior pages are locked with read lock and leaf pages with write lock
 
 // returns a bplus_tree_iterator to read from key 
@@ -24,7 +24,7 @@ uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const page_acc
 // it may return NULL, only on an abort_error
 // if pmm_p == NULL, then iterator would be read-only
 // if is_stacked == 1, the iterator uses parent linkages for the next leaf and prev leaf page iteration
-bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int is_stacked, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int is_stacked, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 typedef struct update_inspector update_inspector;
 struct update_inspector
