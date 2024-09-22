@@ -22,13 +22,13 @@ int is_stacked_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
 // check if the bplus_tree is empty or not
 int is_empty_bplus_tree(const bplus_tree_iterator* bpi_p);
 
+int is_beyond_min_tuple_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
+int is_beyond_max_tuple_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
+
 // it moves the cursor forward by a tuple
 // returns 1 for success, it returns 0, if there are no records to move to
 // on an abort_error, all the lps pages will be unlocked by the bplus_tree_iterator
 int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
-
-// check to see if next call will succeed
-int has_next_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 
 // returns pointer to the current tuple that the cursor points to
 // it returns NULL,
@@ -42,9 +42,6 @@ const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 // returns 1 for success, it returns 0, if there are no records to move to
 // on an abort_error, all the lps pages will be unlocked by the bplus_tree_iterator
 int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
-
-// check to see if prev call will succeed
-int has_prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 
 // all locks held by the iterator will be released before, the iterator is destroyed/deleted
 // releasing locks may result in an abort_error

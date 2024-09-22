@@ -293,29 +293,54 @@ int is_empty_bplus_tree(const bplus_tree_iterator* bpi_p)
 	return (curr_leaf_page == NULL) || (0 == get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)));
 }
 
+int is_beyond_min_tuple_bplus_tree_iterator(const bplus_tree_iterator* bpi_p)
+{
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
+	// if the current tuple index is -1, and there is no prev leaf page
+	return (bpi_p->curr_tuple_index == -1) && (!can_goto_prev_leaf_page(bpi_p));
+}
+
+int is_beyond_max_tuple_bplus_tree_iterator(const bplus_tree_iterator* bpi_p)
+{
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
+	// if the current tuple index is tuple_count, and there is no next leaf page
+	persistent_page* curr_leaf_page = get_curr_leaf_page((bplus_tree_iterator*)bpi_p);
+	return (bpi_p->curr_tuple_index == get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def))) && (!can_goto_next_leaf_page(bpi_p));
+}
+
 int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
 {
 	// you can never go next on an empty bplus_tree
 	if(is_empty_bplus_tree(bpi_p))
 		return 0;
 
+	// you can not go next if you are beyond max_tuple
+	if(is_beyond_max_tuple_bplus_tree_iterator(bpi_p))
+		return 0;
+
+	bpi_p->curr_tuple_index++;
+
 	{
 		persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
 
-		// increment the current tuple count, if the next tuple we point to will be on this page
-		if(bpi_p->curr_tuple_index + 1 < get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
-		{
-			bpi_p->curr_tuple_index++;
+		// if the next tuple we point to will be on this page, return success
+		if(bpi_p->curr_tuple_index < get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def)))
 			return 1;
-		}
 	}
 
 	// else we keep visiting the next pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
+		// if there is no where else to go, then we are beyong max_tuple
+		if(!can_goto_next_leaf_page(bpi_p))
+			break;
+
 		// iterate to next leaf page
-		if(!goto_next_leaf_page(bpi_p, transaction_id, abort_error))
-			return 0;
+		goto_next_leaf_page(bpi_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
 
@@ -335,17 +360,6 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	return 1;
 }
 
-int has_next_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
-{
-	// you can never go next on an empty bplus_tree
-	if(is_empty_bplus_tree(bpi_p))
-		return 0;
-
-	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
-	// or if there are enough tuples to see next OR there are pages to be visited next
-	return (bpi_p->curr_tuple_index + 1 < get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def))) || can_goto_next_leaf_page(bpi_p);
-}
-
 const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 {
 	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
@@ -360,21 +374,27 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	if(is_empty_bplus_tree(bpi_p))
 		return 0;
 
+	// you can not go prev if you are beyond min_tuple
+	if(is_beyond_min_tuple_bplus_tree_iterator(bpi_p))
+		return 0;
+
+	bpi_p->curr_tuple_index--;
+
 	{
-		// decrement the current tuple count, if the next tuple we point to will be on this page
-		if(bpi_p->curr_tuple_index != 0)
-		{
-			bpi_p->curr_tuple_index--;
+		// if the next tuple we point to will be on this page, return success
+		if(bpi_p->curr_tuple_index != -1)
 			return 1;
-		}
 	}
 
 	// else we keep visiting the previous pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
+		// if there is no where else to go, then we are beyong min_tuple
+		if(!can_goto_prev_leaf_page(bpi_p))
+			break;
+
 		// iterate to prev leaf page
-		if(!goto_prev_leaf_page(bpi_p, transaction_id, abort_error))
-			return 0;
+		goto_prev_leaf_page(bpi_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
 
@@ -392,16 +412,6 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	}
 
 	return 1;
-}
-
-int has_prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
-{
-	// you can never go prev on an empty bplus_tree
-	if(is_empty_bplus_tree(bpi_p))
-		return 0;
-
-	// or if there are enough tuples to see previously OR there are pages to be visited prev
-	return (bpi_p->curr_tuple_index != 0) || can_goto_prev_leaf_page(bpi_p);
 }
 
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error)
