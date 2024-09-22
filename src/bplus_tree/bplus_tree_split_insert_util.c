@@ -30,7 +30,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 		if(is_bplus_tree_leaf_page(&(curr_locked_page.ppage), bpttd_p)) // is a leaf page, insert / split_insert record to the leaf page
 		{
 			// if insertion_index is not provided, then find it
-			if(insertion_index == INVALID_INDEX)
+			if(insertion_index == INVALID_TUPLE_INDEX)
 			{
 				insertion_index = find_insertion_point_in_sorted_packed_page(
 									&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 

@@ -6,8 +6,8 @@
 
 #include<array_table_tuple_definitions_public.h>
 
-// The function (find_non_NULL_PAGE_ID_in_page_table) makes use of the fact that entries_per_page != INVALID_INDEX (UINT32_MAX)
-// i.e. entries_per_page < INVALID_INDEX (UINT32_MAX)
+// The function (find_non_NULL_PAGE_ID_in_page_table) makes use of the fact that entries_per_page != INVALID_TUPLE_INDEX (UINT32_MAX)
+// i.e. entries_per_page < INVALID_TUPLE_INDEX (UINT32_MAX)
 
 typedef struct page_table_tuple_defs page_table_tuple_defs;
 struct page_table_tuple_defs

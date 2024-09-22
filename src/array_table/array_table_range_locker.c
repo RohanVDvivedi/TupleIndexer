@@ -566,8 +566,8 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 
 const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p, uint64_t* bucket_id, void* preallocated_memory, find_position find_pos, const void* transaction_id, int* abort_error)
 {
-	// This function makes use of the fact that (leaf or index)_entries_per_page != INVALID_INDEX (UINT32_MAX)
-	// i.e. (leaf or index)_entries_per_page < INVALID_INDEX (UINT32_MAX)
+	// This function makes use of the fact that (leaf or index)_entries_per_page != INVALID_TUPLE_INDEX (UINT32_MAX)
+	// i.e. (leaf or index)_entries_per_page < INVALID_TUPLE_INDEX (UINT32_MAX)
 
 	// convert find_pos from LESSER_THAN to LESSER_THAN_EQUALS and GREATER_THAN to GREATER_THAN_EQUALS
 	if(find_pos == LESSER_THAN)

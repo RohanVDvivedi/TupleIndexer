@@ -163,7 +163,7 @@ int inspected_update_in_bplus_tree(uint64_t root_page_id, void* new_record, cons
 			release_for_split--;
 		}
 
-		result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
+		result = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, new_record, INVALID_TUPLE_INDEX, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto EXIT;
 
