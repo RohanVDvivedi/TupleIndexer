@@ -14,10 +14,10 @@
 #include<executor.h>
 
 // uncomment based on the keys that you want to test with
-#define KEY_NAME_EMAIL
+//#define KEY_NAME_EMAIL
 //#define KEY_INDEX_PHONE
 //#define KEY_PHONE_SCORE
-//#define KEY_EMAIL_AGE_SEX
+#define KEY_EMAIL_AGE_SEX
 //#define KEY_SEX_EMAIL
 //#define KEY_SCORE_INDEX
 //#define KEY_SCORE_NAME
@@ -670,7 +670,10 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 						tuples_to_print = 0;
 						while(!is_beyond_min_tuple_bplus_tree_iterator(clone_p) && tuples_to_print < 5)
 						{
-							print_tuple(tuple_to_print, bpttd_p->record_def);
+							if(tuples_to_print == NULL)
+								printf("NULL\n");
+							else
+								print_tuple(tuple_to_print, bpttd_p->record_def);
 							tuples_to_print++;
 							prev_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
 							if(abort_error)
@@ -689,7 +692,10 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 						tuples_to_print = 0;
 						while(!is_beyond_max_tuple_bplus_tree_iterator(clone_p) && tuples_to_print < 5)
 						{
-							print_tuple(tuple_to_print, bpttd_p->record_def);
+							if(tuples_to_print == NULL)
+								printf("NULL\n");
+							else
+								print_tuple(tuple_to_print, bpttd_p->record_def);
 							tuples_to_print++;
 							next_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
 							if(abort_error)
