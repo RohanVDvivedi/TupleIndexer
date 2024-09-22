@@ -1,5 +1,10 @@
 ** PICKED TASKS
 
+0
+ * discard system_header_size from the project
+ * TupleIndexer and TupleStore will remain agnostic to this value, and the surrounding page contents
+ * refactor headers accordingly
+
 1
   * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
@@ -17,6 +22,7 @@
    * allow update, delete and possibly insert over a stacked WRITE_LOCK-ed iterator
    * update only if the keys match and insert only if the key falls within the range of the currently locked range -> need to figure out how to check the 2nd part
      * update succeeds even on READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, if the new record is equal in size to the old record
+   * build logic to use the locked pages stack to figure out how many bottom most parent pages can be discarded for a split_insert or merge, this might help to preemptively release page locks if you plan to delete the iterator right after an update, delete or an insert
    * insert to also take a flag as input that says if the finding a duplicate should fail the insertion or not.
  * bplus_tree optimization
    * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
