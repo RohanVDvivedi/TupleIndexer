@@ -23,7 +23,21 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	if(*abort_error)
 		goto EXIT;
 
-	inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, record, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
+	// this has to be a leaf page
+	locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+
+	// find index of last record that has the matching key on the page
+	uint32_t found_index = find_last_in_sorted_packed_page(
+										&(curr_locked_page->ppage), bpttd_p->pas_p->page_size,
+										bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
+										record, bpttd_p->record_def, bpttd_p->key_element_ids
+									);
+
+	// if such a record is found, we exit with failure
+	if(NO_TUPLE_FOUND != found_index)
+		goto EXIT;
+
+	inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, record, INVALID_TUPLE_INDEX, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto EXIT;
 
