@@ -670,7 +670,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 						tuples_to_print = 0;
 						while(!is_beyond_min_tuple_bplus_tree_iterator(clone_p) && tuples_to_print < 5)
 						{
-							if(tuples_to_print == NULL)
+							if(tuple_to_print == NULL)
 								printf("NULL\n");
 							else
 								print_tuple(tuple_to_print, bpttd_p->record_def);
@@ -692,7 +692,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 						tuples_to_print = 0;
 						while(!is_beyond_max_tuple_bplus_tree_iterator(clone_p) && tuples_to_print < 5)
 						{
-							if(tuples_to_print == NULL)
+							if(tuple_to_print == NULL)
 								printf("NULL\n");
 							else
 								print_tuple(tuple_to_print, bpttd_p->record_def);
