@@ -52,7 +52,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 
 			// if it does not already exist then try to insert it
 			uint32_t insertion_point = insertion_index;
-			inserted = insert_at_sorted_packed_page(
+			inserted = insert_at_in_sorted_packed_page(
 									&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									record, 

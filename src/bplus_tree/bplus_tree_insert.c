@@ -3,6 +3,7 @@
 #include<bplus_tree_walk_down.h>
 #include<bplus_tree_split_insert_util.h>
 #include<persistent_page_functions.h>
+#include<sorted_packed_page_util.h>
 
 int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
