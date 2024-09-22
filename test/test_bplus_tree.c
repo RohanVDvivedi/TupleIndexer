@@ -478,7 +478,6 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	}
 
 	debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
-	printf("has_next = %d, has_prev = %d\n", has_next_bplus_tree_iterator(bpi_p), has_prev_bplus_tree_iterator(bpi_p));
 
 	const void* tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	uint32_t tuples_to_print = 0;
@@ -515,7 +514,6 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	}
 
 	debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
-	printf("has_next = %d, has_prev = %d\n", has_next_bplus_tree_iterator(bpi_p), has_prev_bplus_tree_iterator(bpi_p));
 
 	tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	tuples_to_print = 0;
@@ -661,33 +659,45 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		{
 			printf("getting some previous tuples using the clone : \n");
 
-			tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
-			tuples_to_print = 0;
-			while(tuple_to_print != NULL && tuples_to_print < 5)
+			if(!is_empty_bplus_tree(clone_p))
 			{
-				print_tuple(tuple_to_print, bpttd_p->record_def);
-				tuples_to_print++;
 				switch(find_pos)
 				{
 					case GREATER_THAN_EQUALS :
 					case GREATER_THAN :
 					{
-						prev_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
-						if(abort_error)
+						tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
+						tuples_to_print = 0;
+						while(!is_beyond_min_tuple_bplus_tree_iterator(clone_p) && tuples_to_print < 5)
 						{
-							printf("ABORTED\n");
-							exit(-1);
+							print_tuple(tuple_to_print, bpttd_p->record_def);
+							tuples_to_print++;
+							prev_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
+							if(abort_error)
+							{
+								printf("ABORTED\n");
+								exit(-1);
+							}
+							tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
 						}
 						break;
 					}
 					case LESSER_THAN :
 					case LESSER_THAN_EQUALS :
 					{
-						next_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
-						if(abort_error)
+						tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
+						tuples_to_print = 0;
+						while(!is_beyond_max_tuple_bplus_tree_iterator(clone_p) && tuples_to_print < 5)
 						{
-							printf("ABORTED\n");
-							exit(-1);
+							print_tuple(tuple_to_print, bpttd_p->record_def);
+							tuples_to_print++;
+							next_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
+							if(abort_error)
+							{
+								printf("ABORTED\n");
+								exit(-1);
+							}
+							tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
 						}
 						break;
 					}
@@ -697,8 +707,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 						exit(-1);
 					}
 				}
-				tuple_to_print = get_tuple_bplus_tree_iterator(clone_p);
 			}
+			
 
 			delete_bplus_tree_iterator(clone_p, transaction_id, &abort_error);
 			if(abort_error)
