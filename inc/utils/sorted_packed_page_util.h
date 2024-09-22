@@ -62,6 +62,14 @@ int insert_to_sorted_packed_page(
 									int* abort_error
 								);
 
+// checks to ensure that the position for the insertion of the new tuple will not disturn the tuple sort ordering
+int is_correct_insertion_index_for_insert_at_in_sorted_packed_page(
+									persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const void* tuple, 
+									uint32_t index
+								);
+
 // insert tuple at given index (pushing elements at index >= index, down)
 // returns 1, if tuple was inserted
 int insert_at_in_sorted_packed_page(

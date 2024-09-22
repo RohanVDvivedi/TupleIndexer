@@ -119,14 +119,11 @@ int insert_to_sorted_packed_page(
 	return insert_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), new_index, tuple, abort_error);
 }
 
-int insert_at_in_sorted_packed_page(
+int is_correct_insertion_index_for_insert_at_in_sorted_packed_page(
 									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const void* tuple, 
-									uint32_t index,
-									const page_modification_methods* pmm_p,
-									const void* transaction_id,
-									int* abort_error
+									uint32_t index
 								)
 {
 	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
@@ -152,6 +149,23 @@ int insert_at_in_sorted_packed_page(
 		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count) < 0)
 			return 0;
 	}
+
+	return 1;
+}
+
+int insert_at_in_sorted_packed_page(
+									persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const void* tuple, 
+									uint32_t index,
+									const page_modification_methods* pmm_p,
+									const void* transaction_id,
+									int* abort_error
+								)
+{
+	// fail if this function is not called with a correct insertion index
+	if(!is_correct_insertion_index_for_insert_at_in_sorted_packed_page(ppage, page_size, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count, tuple, index))
+		return 0;
 
 	// insert tuple to the page at the desired index
 	return insert_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), index, tuple, abort_error);
