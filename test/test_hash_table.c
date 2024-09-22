@@ -263,7 +263,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, 1, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -391,7 +391,7 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, 1, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -483,7 +483,7 @@ result update_non_key_element_in_file(uint64_t root_page_id, char* element, char
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, 1, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -577,7 +577,7 @@ result update_in_file(uint64_t root_page_id, char* element, char* file_name, uin
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, 1, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -691,7 +691,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, 1, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -867,7 +867,7 @@ int main()
 	printf("\n");
 
 	// print the constructed page table
-	print_hash_table(root_page_id, 1, &httd, pam_p, transaction_id, &abort_error);
+	print_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	/* TESTS STARTED */
 
@@ -931,7 +931,7 @@ int main()
 	printf("update_non_key to ABC in hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	// print the constructed page table
-	print_hash_table(root_page_id, 1, &httd, pam_p, transaction_id, &abort_error);
+	print_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	print_2_buckets(root_page_id, 10, &httd, pam_p);
 
@@ -952,7 +952,7 @@ int main()
 #endif
 
 	// print the constructed page table
-	print_hash_table(root_page_id, 1, &httd, pam_p, transaction_id, &abort_error);
+	print_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	/* TESTS ENDED */
 
