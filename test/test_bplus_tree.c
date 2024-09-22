@@ -14,10 +14,10 @@
 #include<executor.h>
 
 // uncomment based on the keys that you want to test with
-//#define KEY_NAME_EMAIL
+#define KEY_NAME_EMAIL
 //#define KEY_INDEX_PHONE
 //#define KEY_PHONE_SCORE
-#define KEY_EMAIL_AGE_SEX
+//#define KEY_EMAIL_AGE_SEX
 //#define KEY_SEX_EMAIL
 //#define KEY_SCORE_INDEX
 //#define KEY_SCORE_NAME
