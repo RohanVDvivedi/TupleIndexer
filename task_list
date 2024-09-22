@@ -1,11 +1,5 @@
 ** PICKED TASKS
 
-0
-* need to make split_insert function to accept an insertion index as hint, which will be passed as INVALID_INDEX if you do not know it
-  * always check if the new record actually goes in between the tuples at the provided insertion index
-  * insert function will have to find the tuple to ensure that it does not exist in the bplus_tree, and then call split_insert with INVALID_INDEX
-  * while inspected_update needs to pass its old_tuple's found index as input
-
 1
   * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
