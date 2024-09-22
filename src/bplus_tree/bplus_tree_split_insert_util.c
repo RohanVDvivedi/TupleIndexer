@@ -13,7 +13,7 @@
 
 #include<stdlib.h>
 
-int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_pages_stack_p, const void* record, uint32_t insertion_index, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// inserted will be set if the record, was inserted
 	int inserted = 0;
@@ -29,32 +29,40 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 
 		if(is_bplus_tree_leaf_page(&(curr_locked_page.ppage), bpttd_p)) // is a leaf page, insert / split_insert record to the leaf page
 		{
-			// check if the record already exists in this leaf page
-			int found = (NO_TUPLE_FOUND != find_last_in_sorted_packed_page(
-												&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 
-												bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
-												record, bpttd_p->record_def, bpttd_p->key_element_ids
-											));
-
-			if(found)
+			// if insertion_index is not provided, then find it
+			if(insertion_index == INVALID_INDEX)
 			{
-				release_lock_on_persistent_page(pam_p, transaction_id, &(curr_locked_page.ppage), NONE_OPTION, abort_error);
-				//if(*abort_error) // -> we need to do the same thing even on an abort
-				//	break;
-				break;
+				insertion_index = find_insertion_point_in_sorted_packed_page(
+									&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
+									record
+								);
+			}
+			else // if it was provided then make sure that it is correct, in keeping the sorted ordering correct
+			{
+				// this will happen only if you do not provide the inputs properly, hence must never happen
+				if(!is_correct_insertion_point_for_insert_at_in_sorted_packed_page(
+									persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const uint32_t* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const void* tuple, 
+									uint32_t index
+								))
+					return 0;
 			}
 
 			// if it does not already exist then try to insert it
-			uint32_t insertion_point;
-			inserted = insert_to_sorted_packed_page(
+			uint32_t insertion_point = insertion_index;
+			inserted = insert_at_sorted_packed_page(
 									&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
 									record, 
-									&insertion_point,
+									insertion_point,
 									pmm_p,
 									transaction_id,
 									abort_error
 								);
+
+			// the above function may fail only because of space requirements, because we already checked the insertion_point
 
 			if((*abort_error) || inserted)
 			{
