@@ -1,5 +1,11 @@
 ** PICKED TASKS
 
+0
+* need to make split_insert function to accept an insertion index as hint, which will be passed as INVALID_INDEX if you do not know it
+  * always check if the new record actually goes in between the tuples at the provided insertion index
+  * insert function will have to find the tuple to ensure that it does not exist in the bplus_tree, and then call split_insert with INVALID_INDEX
+  * while inspected_update needs to pass its old_tuple's found index as input
+
 1
   * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
@@ -17,8 +23,6 @@
    * allow update, delete and possibly insert over a stacked WRITE_LOCK-ed iterator
    * update only if the keys match and insert only if the key falls within the range of the currently locked range -> need to figure out how to check the 2nd part
      * update succeeds even on READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, if the new record is atleast greater than or equal to the old record in size
-   * need to make split_insert function to accept an insertion index as hint, which will be passed as INVALID_INDEX if you do not know it
-     * always check if the new record actually goes in between the tuples at the provided insertion index
    * insert to also take a flag as input that says if the tuple with same key already exists
      * finds a found_index and inserts at the insertion index -> both needs to be found on tha page
    * this will eventually also allow duplicates -> think if we need them, as MySQL's secondary index has them
