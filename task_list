@@ -4,6 +4,7 @@
  * discard system_header_size from the project
  * TupleIndexer and TupleStore will remain agnostic to this value, and the surrounding page contents
  * refactor headers accordingly
+ * use static byte arrays to serialize the header, instead of mallocing exact bytes, char header_buffer[sizeof(header_object)] should be more than enough for this
 
 1
   * DEADLOCK condition identified, and needs to be fixed
