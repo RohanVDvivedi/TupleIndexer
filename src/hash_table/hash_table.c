@@ -392,7 +392,7 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 	return 0;
 }
 
-void print_hash_table(uint64_t root_page_id, int only_buckets, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// take a range lock on the page table, to get the bucket_count
 	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);

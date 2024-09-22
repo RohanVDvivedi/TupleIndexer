@@ -41,7 +41,7 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 
 // prints all the pages in the hash_table
 // it may return an abort_error, unable to print all of the hash_table pages
-void print_hash_table(uint64_t root_page_id, int only_buckets, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 #include<hash_table_iterator_public.h>
 
