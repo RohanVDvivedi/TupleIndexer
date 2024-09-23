@@ -16,6 +16,16 @@
      * As a general case, one mini-transaction should only consist of 1 iterator open/close OR 1 non-iterator operation.
        * I am stating these here because if you persist write page locks inside a minitransacton, then 2 operations may deadlock, if these include multiple tree downward traversals, over same or different datastructures.
 
+2
+  * bplus_tree optimization
+   * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
+     * this is only allowed in stacked iterator case of READ_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
+     * do ensure that the current key we are pointing to does fall between the range, else fail this operation
+     * start from the botom page i.e. the parent most page
+       * break out if it is a leaf page
+       * for each interior page if find_child_index_for_key_s_predecessor(key1) == find_child_index_for_key(key2) == child_index, then release lock on this page, else break out of this loop
+     * put this function in bplus_tree_walk_down source file, call it narrow_down_locked_parents_range
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
@@ -25,14 +35,6 @@
      * update succeeds even on READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, if the new record is equal in size to the old record
    * build logic to use the locked pages stack to figure out how many bottom most parent pages can be discarded for a split_insert or merge, this might help to preemptively release page locks if you plan to delete the iterator right after an update, delete or an insert
    * insert to also take a flag as input that says if the finding a duplicate should fail the insertion or not.
- * bplus_tree optimization
-   * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
-     * this is only allowed in stacked iterator case of READ_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
-     * do ensure that the current key we are pointing to does fall between the range, else fail this operation
-     * start from the botom page i.e. the parent most page
-       * break out if it is a leaf page
-       * for each interior page if find_child_index_for_key_s_predecessor(key1) == find_child_index_for_key(key2), then release lock on this page, else break out of this loop
-     * put this function in bplus_tree_walk_down source file, call it narrow_down_locked_parents_range
  * better return values throughout the project 0 or 1 doesnt fit all requirements
    * all errors will be < 0, and success will be 0
    * ATTEMPTED_MODIFICATION_WITH_READ_LOCKS
