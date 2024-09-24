@@ -24,6 +24,8 @@
      * start from the botom page i.e. the parent most page
        * break out if it is a leaf page
        * for each interior page if find_child_index_for_key_s_predecessor(key1) == find_child_index_for_key(key2) == child_index, then release lock on this page, else break out of this loop
+     * key1 == NULL -> key1 is -infinity, if key2 == NULL, key2 is +infinity
+     * handle cases when key1 == NULL -> child_index for it is always the ALL_LEAST_KEYS_CHILD_INDEX, if key2 == NULL -> child_index for it is always (tuple_count - 1)
      * put this function in bplus_tree_walk_down source file, call it narrow_down_locked_parents_range
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
