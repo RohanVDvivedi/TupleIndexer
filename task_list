@@ -1,5 +1,8 @@
 ** PICKED TASKS
 
+0
+ * refactor hash_table to get bucket_count using MAX instead of LESSER_THAN_EQUALS UINT64_MAX
+
 1
   * DEADLOCK condition identified, and needs to be fixed
    * delete_array_table_range_locker is not allowed to walk down the tree again
