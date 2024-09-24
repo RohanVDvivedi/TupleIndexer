@@ -1,11 +1,5 @@
 ** PICKED TASKS
 
-0
- * discard system_header_size from the project
- * TupleIndexer and TupleStore will remain agnostic to this value, and the surrounding page contents
- * refactor headers accordingly
- * use static byte arrays to serialize the header, instead of mallocing exact bytes, char header_buffer[sizeof(header_object)] should be more than enough for this
-
 1
   * DEADLOCK condition identified, and needs to be fixed
    * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
