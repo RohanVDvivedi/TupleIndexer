@@ -31,7 +31,8 @@
    * update only if the keys match and insert only if the key falls within the range of the currently locked range -> need to figure out how to check the 2nd part
      * update succeeds even on READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, if the new record is equal in size to the old record
    * build logic to use the locked pages stack to figure out how many bottom most parent pages can be discarded for a split_insert or merge, this might help to preemptively release page locks if you plan to delete the iterator right after an update, delete or an insert
-   * insert to also take a flag as input that says if the finding a duplicate should fail the insertion or not.
+   * store this information in bpttd whether the bplus_tree iterator allows duplicates or not, if it does then do not check for found_index
+   * upon update walk down the tree to the same entry -> think how to do this?, upon delete take a parameter to check whether to go next or previous
  * better return values throughout the project 0 or 1 doesnt fit all requirements
    * all errors will be < 0, and success will be 0
    * ATTEMPTED_MODIFICATION_WITH_READ_LOCKS
