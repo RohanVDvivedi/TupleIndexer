@@ -15,15 +15,6 @@ struct page_access_specs
 	// this is what is considered as a NULL pointer for TupleStore
 	// NULL_PAGE_ID < (1 << (page_id_width * 8))
 	uint64_t NULL_PAGE_ID;
-
-	// this is the additional page header space left out by the library for your use
-	// any page that will be used by the library for the bplus_tree will have page_header of size system_header_size plus the ones additionally required by the specific page type
-	// this many number of bytes will be left in the preface of the page_header and will be left untouched by TupleIndexer
-	// this part of the header can be used for storing :
-	// * pageLSN (latest log_sequence_number that modified the page, for idempotency of physiological logs)
-	// * write_locked_by_transaction_id (to persistently lock the whole page for writing, while the latch on the page has been released)
-	// * checksum (lets say crc32 of the whole page, for integrity checks by the recovery manager)
-	uint32_t system_header_size;
 };
 
 // if this function returns 0, that implies that the pas's passed params are invalid

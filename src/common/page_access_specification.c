@@ -12,10 +12,6 @@ int is_valid_page_access_specs(const page_access_specs* pas_p)
 	if(pas_p->page_id_width < 8 && pas_p->NULL_PAGE_ID >= ( ((uint64_t)(1)) << (pas_p->page_id_width * 8) ) )
 		return 0;
 
-	// if the page can not even fit the system header on the page, then fail
-	if(!can_page_header_fit_on_persistent_page(pas_p->system_header_size, pas_p->page_size))
-		return 0;
-
 	return 1;
 }
 
@@ -24,5 +20,4 @@ void print_page_access_specs(const page_access_specs* pas_p)
 	printf("page_id_width = %"PRIu8"\n", pas_p->page_id_width);
 	printf("page_size = %"PRIu32"\n", pas_p->page_size);
 	printf("NULL_PAGE_ID = %"PRIu64"\n", pas_p->NULL_PAGE_ID);
-	printf("system_header_size = %"PRIu32"\n", pas_p->system_header_size);
 }
