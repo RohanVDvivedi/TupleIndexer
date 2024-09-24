@@ -84,14 +84,12 @@
          * get_curr_bucket_id -> returns the current bucket_id that the iterator points to
          * get_curr_page -> returns persistent page to work with
      * vaccum a range of bucket_ids, take a flag that instructs if the bucket_range is strict (if flexible vaccum any super set of the buckets containing the provided bucket range), fix the free_space and discard entries pointing to empty pages, use this after a bulk insert/delete operations
- * implement redistribute keys functions for fixed length index_def, this will reduce propogation of merges, this task can be delayed to be done at the end
-   * this will be supported only for fixed_length index entries
-   * function will move only 1 leaf/index entry from left to right or right to left at a time, everything will be done in place
-   * fails if the receiving page is out of space, easy peasy with unaltered and altered util functions
-   * parent page will also be required and will be updated immediately in the call, all 3 pages, parent and 2 children will be provided as is
-   * will fail, also if index entries are not fixed sized
-   * separate function to be worked out for leaf and index pages
-   * also we will call this, as rotation and we need functions to check if we can left and right rotate
+ * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages
+   * this will be implemented for variable length keys aswell
+   * this will take parent page, left page and right page as input and will perform a borrow to make left and right pages balanced if it is possible by the use of borrowing
+   * since this function will also modify the parent page, do relese lock on the parent page also if this operation succeeds
+   * these functions will be called inside the merge_and unlock_pages_up right before we attempt to merge
+   * if the borrowing succeeds we can directly release locks on all the three pages, pop the parent from the locked pages stack and break out of this loop
  * make functions to get the maximum pages that will be locked at once for any of the TupleIndexer data structures and iterators
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
