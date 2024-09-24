@@ -15,6 +15,10 @@
    * add a comment that not calling vaccum will still be logically correct but not give you optimum disk usage
 
 2
+  * bplus_tree refactoring walk_down functions
+    * make all walk down functions take int is_key, const void* key_OR_record as inputs
+    * make 2 macros for all the walk down function and name them walk_down_*_using_key(passing is_key = 1) and walk_down_*_using_record(passing is_key = 0)
+    * major requirement for future tasks
   * bplus_tree optimization
    * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
      * this is only allowed in stacked iterator case of READ_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
