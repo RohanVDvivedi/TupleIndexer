@@ -2,13 +2,14 @@
 
 1
   * DEADLOCK condition identified, and needs to be fixed
-   * if page locks are persisted between calls, (predominantly write locks on pages, are assumed here, as persisting read locks for these library does not make sense, it will just hamper performance by limiting concurrency), then certain operations may create deadlocks, like
-     * delete_array_table_range_locker() and delete_page_table_range_locker(), which may descend down the tree again to free up the empty local root page, and its respective
-     * delete_hash_table_iterator(), when locking a single bucket, and then this bucket becomes empty
-     * segregate these into separate functions to avoid deadlocks, the above mentioned operations do not alter or break the functionality, they would just be NO-OP in case they are not executed.
-     * Here we assume that only write page locks persists between calls, which is still upto the user's usage of this library.
-     * As a general case, one mini-transaction should only consist of 1 iterator open/close OR 1 non-iterator operation.
-       * I am stating these here because if you persist write page locks inside a minitransacton, then 2 operations may deadlock, if these include multiple tree downward traversals, over same or different datastructures.
+   * delete_array_table_range_locker is not allowed to walk down the tree again
+     * segregate the removal of empty local root into a new function, only build parameters for this vaccum in this function
+     * add comment that a read locking range locker and when local root is the root of the tree, or when the local root is not empty, then a vaccum will never be required
+     * vaccum will be like a function that can be called on the range_locker, and it will just perform a cleanup if the leaf page that the bucket resides in is empty
+   * add a similar function to page table
+   * similarly if a hash_table_iterator is started with a key, then upon delete if this bucket becomes empty, then instead return vaccum paramaters for the page_table and hash_table for the key to be tested
+     * here we will have a function that will perform the vaccum in the hash_table.h
+   * add a comment that not calling vaccum will still be logically correct but not give you optimum disk usage
 
 2
   * bplus_tree optimization
