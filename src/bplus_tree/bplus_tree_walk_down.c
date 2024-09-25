@@ -664,6 +664,88 @@ int can_walk_down_prev_locking_parent_pages_for_stacked_iterator(const locked_pa
 	return 0;
 }
 
+int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record1, find_position f_pos1, const void* key_OR_record2, find_position f_pos2, int is_key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// f_pos1 must be MIN, GREATER_THAN or GREATER_THAN_EQUALS
+	if(f_pos1 != MIN && f_pos1 != GREATER_THAN && f_pos1 != GREATER_THAN_EQUALS)
+		return 0;
+
+	// f_pos2 must be MAX, LESSER_THAN or LESSER_THAN_EQUALS
+	if(f_pos2 != MAX && f_pos2 != LESSER_THAN && f_pos2 != LESSER_THAN_EQUALS)
+		return 0;
+
+	// key_OR_record1 must be <= key_OR_record2
+	if(is_key && compare_tuples(key_OR_record1, bpttd_p->key_def, NULL, key_OR_record2, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
+		return 0;
+	else if(!is_key && compare_tuples(key_OR_record1, bpttd_p->record_def, bpttd_p->key_element_ids, key_OR_record2, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
+		return 0;
+
+	// iterate on all pages, to analyze if we could free them
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+
+		// if bottom is a leaf page, break
+		if(is_bplus_tree_leaf_page(&(bottom->ppage), bpttd_p))
+			break;
+
+		uint32_t child_index1 = ALL_LEAST_KEYS_CHILD_INDEX;
+		if(f_pos1 == GREATER_THAN)
+		{
+			if(is_key)
+				child_index1 = find_child_index_for_key(&(bottom->ppage), key_OR_record1, key_element_count_concerned, bpttd_p);
+			else
+				child_index1 = find_child_index_for_record(&(bottom->ppage), key_OR_record1, key_element_count_concerned, bpttd_p);
+		}
+		else if(f_pos1 == GREATER_THAN_EQUALS)
+		{
+			if(is_key)
+				child_index1 = find_child_index_for_key_s_predecessor(&(bottom->ppage), key_OR_record1, key_element_count_concerned, bpttd_p);
+			else
+				child_index1 = find_child_index_for_record_s_predecessor(&(bottom->ppage), key_OR_record1, key_element_count_concerned, bpttd_p);
+		}
+
+		uint32_t child_index2 = get_tuple_count_on_persistent_page(&(bottom->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
+		if(f_pos2 == LESSER_THAN_EQUALS)
+		{
+			if(is_key)
+				child_index2 = find_child_index_for_key(&(bottom->ppage), key_OR_record2, key_element_count_concerned, bpttd_p);
+			else
+				child_index2 = find_child_index_for_record(&(bottom->ppage), key_OR_record2, key_element_count_concerned, bpttd_p);
+		}
+		else if(f_pos2 == LESSER_THAN)
+		{
+			if(is_key)
+				child_index2 = find_child_index_for_key_s_predecessor(&(bottom->ppage), key_OR_record2, key_element_count_concerned, bpttd_p);
+			else
+				child_index2 = find_child_index_for_record_s_predecessor(&(bottom->ppage), key_OR_record2, key_element_count_concerned, bpttd_p);
+		}
+
+		// child_index1, child_index2 and bottom->child_index all three must match
+		if(child_index1 != bottom->child_index || child_index2 != bottom->child_index)
+			break;
+
+		// all conditions successfully met, so release lock on the bootom most page and break out
+		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	return 1;
+
+	ABORT_ERROR:;
+	// on an abort_error, release locks on all the pages, we had locks on until now
+	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
+	{
+		locked_page_info* bottom = get_bottom_of_locked_pages_stack(locked_pages_stack_p);
+		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
+	}
+	return 0;
+}
+
 void release_all_locks_and_deinitialize_stack_reenterable(locked_pages_stack* locked_pages_stack_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// release locks on all the pages, we had locks on until now
