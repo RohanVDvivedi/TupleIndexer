@@ -26,7 +26,7 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
- * deadlock can also occure in merge_unlock_pages_up, to avoid this we need to prevent merging leaf pages with previous -> need to think if we should do this
+ * deadlock can also occur in merge_unlock_pages_up, to avoid this we need to prevent merging leaf pages with previous -> need to think if we should do this
    * many such further cases to be found
  * bplus_tree new features
    * allow update, delete over a stacked WRITE_LOCK-ed iterator
@@ -77,7 +77,9 @@
    * since this function will also modify the parent page, do relese lock on the parent page also if this operation succeeds
    * these functions will be called inside the merge_and unlock_pages_up right before we attempt to merge
    * if the borrowing succeeds we can directly release locks on all the three pages, pop the parent from the locked pages stack and break out of this loop
- * make functions to get the maximum pages that will be locked at once for any of the TupleIndexer data structures and iterators
+ * make functions to get the maximum pages that will be locked at any instance for any of the TupleIndexer data structures and iterators
+   * build functions to get level of the root page (of all data structures except linked_page_list) -> a read only task
+     * this will assist in deciding the number of pages that we will need in the bufferpool
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
