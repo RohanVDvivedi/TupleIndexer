@@ -428,6 +428,10 @@ void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transact
 
 int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key1, find_position f_pos1, const void* key2, find_position f_pos2, uint32_t key_element_count_concerned, const void* transaction_id, int* abort_error)
 {
+	// you can never narrow_down iterator on an empty bplus_tree
+	if(is_empty_bplus_tree(bpi_p))
+		return 0;
+
 	// does not work with unstacked iterator
 	if(!bpi_p->is_stacked)
 		return 0;
