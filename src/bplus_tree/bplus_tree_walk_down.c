@@ -674,11 +674,14 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 	if(f_pos2 != MAX && f_pos2 != LESSER_THAN && f_pos2 != LESSER_THAN_EQUALS)
 		return 0;
 
-	// key_OR_record1 must be <= key_OR_record2
-	if(is_key && compare_tuples(key_OR_record1, bpttd_p->key_def, NULL, key_OR_record2, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
-		return 0;
-	else if(!is_key && compare_tuples(key_OR_record1, bpttd_p->record_def, bpttd_p->key_element_ids, key_OR_record2, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
-		return 0;
+	if(f_pos1 != MIN && f_pos2 != MAX)
+	{
+		// key_OR_record1 must be <= key_OR_record2
+		if(is_key && compare_tuples(key_OR_record1, bpttd_p->key_def, NULL, key_OR_record2, bpttd_p->key_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
+			return 0;
+		else if(!is_key && compare_tuples(key_OR_record1, bpttd_p->record_def, bpttd_p->key_element_ids, key_OR_record2, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
+			return 0;
+	}
 
 	// iterate on all pages, to analyze if we could free them
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
