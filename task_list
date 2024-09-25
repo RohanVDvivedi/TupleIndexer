@@ -11,18 +11,6 @@
      * here we will have a function that will perform the vaccum in the hash_table.h
    * add a comment that not calling vaccum will still be logically correct but not give you optimum disk usage
 
-2
-  * bplus_tree optimization
-   * allow releasing parent page read locks on the stacked iterator, such that all results fall between the range [key1, key2]
-     * this is only allowed in stacked iterator case of lock_type = READ_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
-     * do ensure that the current key we are pointing to does fall between the range, else fail this operation
-     * start from the botom page i.e. the parent most page
-       * break out if it is a leaf page
-       * for each interior page if find_child_index_for_key_s_predecessor(key1) == find_child_index_for_key(key2) == child_index, then release lock on this page, else break out of this loop
-     * key1 == NULL -> key1 is -infinity, if key2 == NULL, key2 is +infinity
-     * handle cases when key1 == NULL -> child_index for it is always the ALL_LEAST_KEYS_CHILD_INDEX, if key2 == NULL -> child_index for it is always (tuple_count - 1)
-     * put this function in bplus_tree_walk_down source file, call it narrow_down_locked_parents_range
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
