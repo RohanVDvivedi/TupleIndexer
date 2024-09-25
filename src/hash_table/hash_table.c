@@ -44,8 +44,8 @@ uint64_t get_bucket_count_hash_table(uint64_t root_page_id, const hash_table_tup
 		return 0;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count = UINT64_MAX;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	uint64_t bucket_count;
+	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -80,8 +80,8 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		return 0;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count = UINT64_MAX;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	uint64_t bucket_count;
+	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -276,8 +276,8 @@ int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		return 0;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count = UINT64_MAX;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	uint64_t bucket_count;
+	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -353,8 +353,8 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 		return 0;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count = UINT64_MAX;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	uint64_t bucket_count;
+	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
 	if(*abort_error)
 		goto DELETE_BUCKET_RANGE_LOCKER_AND_ABORT;
 
@@ -400,8 +400,8 @@ void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		return ;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count = UINT64_MAX;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+	uint64_t bucket_count;
+	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
 	if(*abort_error)
 		goto DELETE_BUCKET_RANGE_LOCKER_AND_ABORT;
 

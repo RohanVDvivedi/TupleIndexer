@@ -40,8 +40,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 				goto DELETE_EVERYTHING_AND_ABORT;
 
 			// get the current bucket_count of the hash_table
-			hti_p->bucket_count = UINT64_MAX;
-			find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &(hti_p->bucket_count), LESSER_THAN_EQUALS, transaction_id, abort_error);
+			find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &(hti_p->bucket_count), MAX, transaction_id, abort_error);
 			if(*abort_error)
 				goto DELETE_EVERYTHING_AND_ABORT;
 
@@ -93,8 +92,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 			goto DELETE_EVERYTHING_AND_ABORT;
 
 		// get the current bucket_count of the hash_table
-		hti_p->bucket_count = UINT64_MAX;
-		find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &(hti_p->bucket_count), LESSER_THAN_EQUALS, transaction_id, abort_error);
+		find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &(hti_p->bucket_count), MAX, transaction_id, abort_error);
 		if(*abort_error)
 			goto DELETE_EVERYTHING_AND_ABORT;
 
@@ -541,8 +539,8 @@ void delete_hash_table_iterator(hash_table_iterator* hti_p, const void* transact
 			goto DELETE_EVERYTHING_AND_ABORT;
 
 		// get the current bucket_count of the hash_table
-		uint64_t bucket_count = UINT64_MAX;
-		find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &bucket_count, LESSER_THAN_EQUALS, transaction_id, abort_error);
+		uint64_t bucket_count;
+		find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
 		if(*abort_error)
 			goto DELETE_EVERYTHING_AND_ABORT;
 
