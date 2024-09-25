@@ -317,7 +317,7 @@ int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_s
 	return 0;
 }
 
-persistent_page walk_down_for_iterator_using_key(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// since this function only results with a lock on the leaf
 	// so a WRITE_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, are logically same
@@ -359,13 +359,19 @@ persistent_page walk_down_for_iterator_using_key(uint64_t root_page_id, const vo
 			case LESSER_THAN_EQUALS :
 			case GREATER_THAN :
 			{
-				child_index = find_child_index_for_key(&curr_page, key, key_element_count_concerned, bpttd_p);
+				if(is_key)
+					child_index = find_child_index_for_key(&curr_page, key_OR_record, key_element_count_concerned, bpttd_p);
+				else
+					child_index = find_child_index_for_record(&curr_page, key_OR_record, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case LESSER_THAN :
 			case GREATER_THAN_EQUALS :
 			{
-				child_index = find_child_index_for_key_s_predecessor(&curr_page, key, key_element_count_concerned, bpttd_p);
+				if(is_key)
+					child_index = find_child_index_for_key_s_predecessor(&curr_page, key_OR_record, key_element_count_concerned, bpttd_p);
+				else
+					child_index = find_child_index_for_record_s_predecessor(&curr_page, key_OR_record, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case MAX :
@@ -400,7 +406,7 @@ persistent_page walk_down_for_iterator_using_key(uint64_t root_page_id, const vo
 	return curr_page;
 }
 
-int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_stack* locked_pages_stack_p, const void* key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// perform a downward pass until you reach the leaf locking all the pages
 	while(1)
@@ -425,13 +431,19 @@ int walk_down_locking_parent_pages_for_stacked_iterator_using_key(locked_pages_s
 			case LESSER_THAN_EQUALS :
 			case GREATER_THAN :
 			{
-				curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key, key_element_count_concerned, bpttd_p);
+				if(is_key)
+					curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key_OR_record, key_element_count_concerned, bpttd_p);
+				else
+					curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), key_OR_record, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case LESSER_THAN :
 			case GREATER_THAN_EQUALS :
 			{
-				curr_locked_page->child_index = find_child_index_for_key_s_predecessor(&(curr_locked_page->ppage), key, key_element_count_concerned, bpttd_p);
+				if(is_key)
+					curr_locked_page->child_index = find_child_index_for_key_s_predecessor(&(curr_locked_page->ppage), key_OR_record, key_element_count_concerned, bpttd_p);
+				else
+					curr_locked_page->child_index = find_child_index_for_record_s_predecessor(&(curr_locked_page->ppage), key_OR_record, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case MAX :
