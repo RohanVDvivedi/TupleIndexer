@@ -426,6 +426,22 @@ void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transact
 	free(bpi_p);
 }
 
+int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key1, find_position f_pos1, const void* key2, find_position f_pos2, uint32_t key_element_count_concerned, const void* transaction_id, int* abort_error)
+{
+	// does not work with unstacked iterator
+	if(!bpi_p->is_stacked)
+		return 0;
+
+	// does not work with WRITE_LOCK-ed stacked iterator
+	if(bpi_p->lock_type == WRITE_LOCK)
+		return 0;
+
+	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
+		key_element_count_concerned = bpi_p->bpttd_p->key_element_count;
+
+	return narrow_down_range_for_stacked_iterator_using_keys(&(bpi_p->lps), key1, f_pos1, key2, f_pos2, key_element_count_concerned, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
+}
+
 int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
 	// cannot update non WRITE_LOCKed bplus_tree_iterator

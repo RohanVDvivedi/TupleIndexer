@@ -4,7 +4,8 @@
 // this iterator can only be used to reading leaf tuples of the b+tree
 
 // custom stacked iterator locking type, to only lock leaf pages with write lock, while lock interior pages with read locks
-#define READ_LOCK_INTERIOR_WRITE_LOCK_LEAF 100
+#include<bplus_tree_walk_down_custom_lock_type.h>
+#include<find_position.h>
 
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 
@@ -47,10 +48,17 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 // releasing locks may result in an abort_error
 void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction_id, int* abort_error);
 
+// debug function
+void debug_print_lock_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+
+#include<stdint.h>
+
+// works only on stacked iterator, with lock_type = READ_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, else it will fail with a 0
+int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key1, find_position f_pos1, const void* key2, find_position f_pos2, uint32_t key_element_count_concerned, const void* transaction_id, int* abort_error);
+
 // below functions can be used with only writable iterator
 // you can use it to update only a fixed length non-key column
 
-#include<stdint.h>
 #include<user_value.h>
 
 // update a non_key column inplace at the place that the bplus_tree_iterator is pointing to
@@ -58,8 +66,5 @@ void delete_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transact
 //			:: also attempting to update to a element value that can increase the tuple size, may even fail, because the slot for the tuple is not big enough
 // on an abort_error, all the lps pages will be unlocked by the bplus_tree_iterator
 int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
-
-// debug function
-void debug_print_lock_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 
 #endif

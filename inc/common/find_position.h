@@ -1,9 +1,6 @@
 #ifndef FIND_POSITION_H
 #define FIND_POSITION_H
 
-// order of the enum values in find_position must remain the same
-// bplus_tree's internal enums used for find depend on this.
-
 typedef enum find_position find_position;
 enum find_position
 {
@@ -14,5 +11,8 @@ enum find_position
 	GREATER_THAN,
 	MAX,
 };
+
+// this macro can be passed to key_element_count_concerned (parameters of bplus_tree or data structures alike), to consider all the key_elements as found in bpttd_p(->key_element_count)
+#define KEY_ELEMENT_COUNT UINT32_C(-1)
 
 #endif
