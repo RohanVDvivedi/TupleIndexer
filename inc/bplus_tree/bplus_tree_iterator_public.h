@@ -54,6 +54,7 @@ void debug_print_lock_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 #include<stdint.h>
 
 // works only on stacked iterator, with lock_type = READ_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, else it will fail with a 0
+// here f_pos1 = MIN, refers to the -infinity, and f_pos2 = MAX refers to +infiniy
 int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key1, find_position f_pos1, const void* key2, find_position f_pos2, uint32_t key_element_count_concerned, const void* transaction_id, int* abort_error);
 
 // below functions can be used with only writable iterator
