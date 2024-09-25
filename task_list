@@ -14,6 +14,7 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
+ * test narrow_down_range_bplus_tree_iterator functionality(), using debug_print_lock_stack_for_bplus_tree_iterator() and observe the locked range shrink
  * deadlock can also occur in merge_unlock_pages_up, to avoid this we need to prevent merging leaf pages with previous -> need to think if we should do this
    * many such further cases to be found
  * bplus_tree new features
