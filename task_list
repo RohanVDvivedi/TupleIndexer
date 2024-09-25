@@ -36,18 +36,6 @@
    * store this information in bpttd whether the bplus_tree iterator allows duplicates or not, if it does then do not check for found_index
    * upon update walk down the tree to the same entry -> think how to do this?, upon delete take a parameter to check whether to go next or previous
      * if after an update or delete the locked pages tsack becomes empty, then deinitialize the stack, initialize it again with the same lock type and walk down again to the right tuple in the write direction
- * better return values throughout the project 0 or 1 doesnt fit all requirements
-   * all errors will be < 0, and success will be 0
-   * ATTEMPTED_MODIFICATION_WITH_READ_LOCKS
-   * RECORD_DOES_NOT_FIT_SIZE
-   * RECORD_DOES_NOT_MATCH_KEY
-   * RECORD_DOES_NOT_MATCH_KEY_RANGE
-   * RECORD_DUPLICATE_FOUND
-   * INVALID_ITERATOR_POSITION
-   * INVALID_ITERATOR
-   * ABORTED
-   * SUCCESS = 0
- * introduce a new mechanism in page_access_methods to allow taking a persistent write lock on the page on which we already have a write lock on, this will mostly work with iterators
  * introduce a new page type, reference page
    * it will be primarily store the reference to the root of the data structure
    * it's tuple_def in compressed form
