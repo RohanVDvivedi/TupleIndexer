@@ -15,7 +15,7 @@
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
  * test narrow_down_range_bplus_tree_iterator functionality() with actual database to ensure that the results are indeed correct
- * deadlock can also occur in merge_unlock_pages_up, to avoid this we need to prevent merging leaf pages with previous -> need to think if we should do this
+ * deadlock can also occur in merge_unlock_pages_up, to avoid this we need to prevent merging leaf pages with previous -> need to think if we should do this OR should we leave it onto the MinTxEngine to resolve it
    * many such further cases to be found
  * bplus_tree new features
    * allow update, delete over a stacked WRITE_LOCK-ed iterator
