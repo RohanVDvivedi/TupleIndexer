@@ -1017,6 +1017,51 @@ int main()
 #endif
 
 
+	#ifdef KEY_NAME_EMAIL
+		if(KEY_ELEMENTS_SORT_DIRECTION[0] == ASC)
+		{
+			printf("Testing narrowing down functionality for the bplus tree iterator\n");
+
+			char key[PAGE_SIZE];
+			build_key_tuple_from_record_struct(&bpttd, key, &(record){.name = "Theresa Silva"});
+
+			char key1[PAGE_SIZE];
+			build_key_tuple_from_record_struct(&bpttd, key1, &(record){.name = "Teresa Simon"});
+
+			char key2[PAGE_SIZE];
+			build_key_tuple_from_record_struct(&bpttd, key2, &(record){.name = "Theresa Simon"});
+
+			bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, key, 1, GREATER_THAN_EQUALS, 1, READ_LOCK, &bpttd, pam_p, NULL, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+
+			printf("Lock stack before narrowing down\n");
+			debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
+
+			int result = narrow_down_range_bplus_tree_iterator(bpi_p, key1, GREATER_THAN_EQUALS, key2, LESSER_THAN_EQUALS, 1, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+
+			printf("Lock stack after narrowing down : %d\n", result);
+			debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
+
+			delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+
+			printf("\n\n");
+		}
+	#endif
+
 
 	// read using the update functionality
 	res = update_in_file(root_page_id, &ri, TEST_DATA_FILE, 4, 4, 256, 0, 0, &bpttd, pam_p, pmm_p);
