@@ -59,7 +59,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 					goto DELETE_EVERYTHING_AND_ABORT;
 
 				// close the hti_p->ptrl_p
-				delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+				delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, we did not modify anything
 				hti_p->ptrl_p = NULL;
 				if(*abort_error)
 					goto DELETE_EVERYTHING_AND_ABORT;
@@ -73,7 +73,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 				else // else release all locks on the page table and reacquire with the correct lock mode
 				{
 					// close the hti_p->ptrl_p
-					delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+					delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, we did not modify anything
 					hti_p->ptrl_p = NULL;
 					if(*abort_error)
 						goto DELETE_EVERYTHING_AND_ABORT;
@@ -125,7 +125,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 
 	DELETE_EVERYTHING_AND_ABORT:;
 	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are aborting
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	free(hti_p);
@@ -170,7 +170,7 @@ hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p,
 
 	DELETE_EVERYTHING_AND_ABORT:;
 	if(clone_p->ptrl_p)
-		delete_page_table_range_locker(clone_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(clone_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no abort required here, as we did not make any update
 	if(clone_p->lpli_p)
 		delete_linked_page_list_iterator(clone_p->lpli_p, transaction_id, abort_error);
 	free(clone_p);
@@ -274,7 +274,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 
 	ABORT_ERROR:;
 	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	return 0;
@@ -332,7 +332,7 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 
 	ABORT_ERROR:;
 	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	return 0;
@@ -371,7 +371,7 @@ int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 			goto ABORT_ERROR;
 
 		// now you may release locks on the range_locker iterator ptrl_p
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error);  // no vaccum required here, since we only performed a set with a non NULL value
 		hti_p->ptrl_p = NULL;
 		if(*abort_error)
 			goto ABORT_ERROR;
@@ -386,7 +386,7 @@ int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 
 	ABORT_ERROR:;
 	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	return 0;
@@ -418,7 +418,7 @@ int update_at_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 
 	ABORT_ERROR:;
 	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	return 0;
@@ -482,7 +482,7 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 
 	ABORT_ERROR:;
 	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	return 0;
