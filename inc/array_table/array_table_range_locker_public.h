@@ -42,8 +42,8 @@ int set_in_array_table(array_table_range_locker* atrl_p, uint64_t bucket_id, con
 const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p, uint64_t* bucket_id, void* preallocated_memory, find_position find_pos, const void* transaction_id, int* abort_error);
 
 // deletes the array_table_range_locker, and releases lock on the local_root (if it is not NULL_persistent_page)
-// we may need to unlock the local_root and descend down from the actual root, if the local_root becomes empty
-// this is why we store the root_page_id in the atrl
-void delete_array_table_range_locker(array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error);
+// a vaccum is equired if the local_root is not the global root, it was write locked and it is empty
+// if needs_vaccum is set, then you need to open a new iterator, in write locked mode on the WHOLE_BUCKET_RANGE and call vaccum
+void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint32_t vaccum_bucket_id, int* needs_vaccum, const void* transaction_id, int* abort_error);
 
 #endif
