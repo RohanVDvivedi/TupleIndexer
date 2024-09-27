@@ -524,6 +524,10 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 
 void delete_hash_table_iterator(hash_table_iterator* hti_p, hash_table_vaccum_params* htvp, const void* transaction_id, int* abort_error)
 {
+	htvp->page_table_vaccum_needed = 0;
+	htvp->hash_table_vaccum_needed = 0;
+	htvp->hash_table_vaccum_key = NULL;
+
 	// if it is a keyed iterator, then it is our duty to NULL the empty bucket linked_page_list, as a part of vaccum
 	if((hti_p->key != NULL) && (!(*abort_error)) && (hti_p->pmm_p != NULL) && (hti_p->lpli_p != NULL) && (hti_p->ptrl_p == NULL) && is_empty_linked_page_list(hti_p->lpli_p))
 	{
