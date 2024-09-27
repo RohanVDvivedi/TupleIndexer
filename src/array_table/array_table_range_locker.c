@@ -962,31 +962,27 @@ static void backward_pass_to_free_local_root(uint64_t root_page_id, uint64_t dis
 	return;
 }
 
-void delete_array_table_range_locker(array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error)
+void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint32_t* vaccum_bucket_id, int* vaccum_needed, const void* transaction_id, int* abort_error)
 {
-	// we will need to make a second pass from root to discard the local_root
+	// we will need to vaccum to discard the local_root
 	// if, the range_locker is writable, there was no abort, and local_root is still locked
 	// local_root != actual_root
 	// and the local_root is empty (i.e. has only NULL_PAGE_IDS)
-	int will_need_to_discard_if_empty = (atrl_p->pmm_p != NULL) && ((*abort_error) == 0) &&
-										(!is_persistent_page_NULL(&(atrl_p->local_root), atrl_p->pam_p)) &&
-										(atrl_p->local_root.page_id != atrl_p->root_page_id) &&
-										has_all_NULL_entries_in_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
+	(*vaccum_needed) = (atrl_p->pmm_p != NULL) && ((*abort_error) == 0) &&
+						(!is_persistent_page_NULL(&(atrl_p->local_root), atrl_p->pam_p)) &&
+						(atrl_p->local_root.page_id != atrl_p->root_page_id) &&
+						has_all_NULL_entries_in_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
 
 	// you need to re enter using the root_page_id and go to this bucket_id to discard the local root
-	uint64_t discard_target = atrl_p->attd_p->pas_p->NULL_PAGE_ID;
-	if(will_need_to_discard_if_empty)
-		discard_target = get_first_bucket_id_of_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
+	if((*vaccum_needed))
+		(*vaccum_bucket_id) = get_first_bucket_id_of_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
 
 	if(!is_persistent_page_NULL(&(atrl_p->local_root), atrl_p->pam_p))
 	{
 		release_lock_on_persistent_page(atrl_p->pam_p, transaction_id, &(atrl_p->local_root), NONE_OPTION, abort_error);
 		if(*abort_error)
-			will_need_to_discard_if_empty = 0;
+			(*vaccum_needed) = 0;
 	}
-
-	if(will_need_to_discard_if_empty)
-		backward_pass_to_free_local_root(atrl_p->root_page_id, discard_target, atrl_p->attd_p, atrl_p->pam_p, atrl_p->pmm_p, transaction_id, abort_error);
 
 	free(atrl_p);
 
