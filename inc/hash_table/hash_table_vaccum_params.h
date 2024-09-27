@@ -6,7 +6,7 @@ struct hash_table_vaccum_params
 {
 	// low level page table vaccum
 	int page_table_vaccum_needed;
-	uint64_t page_table_vaccum_id;
+	uint64_t page_table_vaccum_bucket_id;
 
 	// high level hash table vaccum
 	int hash_table_vaccum_needed;

@@ -45,4 +45,11 @@ void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 
 #include<hash_table_iterator_public.h>
 
+#include<hash_table_vaccum_params.h>
+
+// performs hash_table vaccum
+// returns 1 on success
+// htvp is an array of hash_table_vaccum_params of length vaccum_params_count, it can be used to batch vaccum
+int perform_vaccum_hash_table(uint64_t root_page_id, const hash_table_vaccum_params* htvp, uint32_t params_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+
 #endif

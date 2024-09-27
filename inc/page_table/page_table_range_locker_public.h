@@ -51,6 +51,6 @@ void delete_page_table_range_locker(page_table_range_locker* ptrl_p, uint64_t* v
 // vaccum must be called with the local_root being the global root, in write locked mode -> this is so as to ensure that a range_locker initialized for vaccum does not create cascading vaccum calls
 // this will check if pages corresponding the vaccum_bucket_id is empty, if so, it will discard all logically redundant pages
 // on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker
-int perform_vaccum_page_table_range_locker(page_table_range_locker* aptrl_p, uint64_t vaccum_bucket_id, const void* transaction_id, int* abort_error);
+int perform_vaccum_page_table_range_locker(page_table_range_locker* ptrl_p, uint64_t vaccum_bucket_id, const void* transaction_id, int* abort_error);
 
 #endif
