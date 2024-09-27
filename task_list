@@ -1,15 +1,8 @@
 ** PICKED TASKS
 
 1
-  * DEADLOCK condition identified, and needs to be fixed
-   * delete_array_table_range_locker is not allowed to walk down the tree again
-     * segregate the removal of empty local root into a new function, only build parameters for this vaccum in this function
-     * add comment that a read locking range locker and when local root is the root of the tree, or when the local root is not empty, then a vaccum will never be required
-     * vaccum will be like a function that can be called on the range_locker, and it will just perform a cleanup if the leaf page that the bucket resides in is empty
-   * add a similar function to page table
-   * similarly if a hash_table_iterator is started with a key, then upon delete if this bucket becomes empty, then instead return vaccum paramaters for the page_table and hash_table for the key to be tested
-     * here we will have a function that will perform the vaccum in the hash_table.h
-   * add a comment that not calling vaccum will still be logically correct but not give you optimum disk usage
+  * fix testcases of array_table, page_table, hash_table and sorter
+  * compare outputs of testcases of array_table, page_table, hash_table and sorter
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
