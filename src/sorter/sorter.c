@@ -67,7 +67,7 @@ static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const v
 		if(*abort_error)
 			goto ABORT_ERROR;
 
-		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 		ptrl_p = NULL;
 		if(*abort_error)
 			goto ABORT_ERROR;
@@ -80,7 +80,7 @@ static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const v
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
 	if(ptrl_p != NULL)
-		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;
 }
 
@@ -220,7 +220,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 			if(*abort_error)
 				goto ABORT_ERROR;
 
-			delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+			delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 			ptrl_p = NULL;
 			if(*abort_error)
 				goto ABORT_ERROR;
@@ -267,7 +267,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 			if(*abort_error)
 				goto ABORT_ERROR;
 
-			delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+			delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 			ptrl_p = NULL;
 			if(*abort_error)
 				goto ABORT_ERROR;
@@ -373,7 +373,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 					}
 				}
 
-				delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+				delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 				ptrl_p = NULL;
 				if(*abort_error)
 					goto ABORT_ERROR;
@@ -426,7 +426,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
 	if(ptrl_p != NULL)
-		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	while(!is_empty_active_sorted_run_heap(&input_runs_heap))
 	{
 		active_sorted_run e = *get_front_of_active_sorted_run_heap(&input_runs_heap);
@@ -512,7 +512,7 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 		if(*abort_error)
 			goto ABORT_ERROR;
 
-		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 		ptrl_p = NULL;
 		if(*abort_error)
 			goto ABORT_ERROR;
@@ -542,7 +542,7 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 				goto ABORT_ERROR;
 		}
 
-		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 		ptrl_p = NULL;
 		if(*abort_error)
 			goto ABORT_ERROR;
@@ -560,6 +560,6 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
 	if(ptrl_p != NULL)
-		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;
 }
