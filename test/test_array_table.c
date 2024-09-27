@@ -43,6 +43,32 @@ tuple_def* get_tuple_definition()
 	return def;
 }
 
+int vaccum_in_array_table(uint64_t root_page_id, uint64_t vaccum_bucket_id, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	array_table_range_locker* atrl_p = get_new_array_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, attd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	int success = perform_vaccum_array_table_range_locker(atrl_p, vaccum_bucket_id, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	delete_array_table_range_locker(atrl_p, NULL, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	return success;
+}
+
 int update_in_array_table(uint64_t root_page_id, bucket_range lock_range, uint32_t ops, uint64_t* bucket_ids, char** datas, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	array_table_range_locker* atrl_p = get_new_array_table_range_locker(root_page_id, lock_range, attd_p, pam_p, pmm_p, transaction_id, &abort_error);
@@ -81,12 +107,17 @@ int update_in_array_table(uint64_t root_page_id, bucket_range lock_range, uint32
 		}
 	}
 
-	delete_array_table_range_locker(atrl_p, transaction_id, &abort_error);
+	int vaccum_needed;
+	uint64_t vaccum_bucket_id;
+	delete_array_table_range_locker(atrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	if(vaccum_bucket_id)
+		vaccum_in_array_table(root_page_id, vaccum_bucket_id, attd_p, pam_p, pmm_p);
 
 	return success;
 }
@@ -119,7 +150,7 @@ void print_from_array_table(uint64_t root_page_id, bucket_range lock_range, uint
 		}
 	}
 
-	delete_array_table_range_locker(atrl_p, transaction_id, &abort_error);
+	delete_array_table_range_locker(atrl_p, NULL, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -183,7 +214,7 @@ void print_all_from_array_table(uint64_t root_page_id, bucket_range lock_range, 
 		}
 	}
 
-	delete_array_table_range_locker(atrl_p, transaction_id, &abort_error);
+	delete_array_table_range_locker(atrl_p, NULL, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
