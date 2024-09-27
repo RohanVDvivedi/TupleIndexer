@@ -796,7 +796,7 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 	return NULL;
 }
 
-void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint32_t* vaccum_bucket_id, int* vaccum_needed, const void* transaction_id, int* abort_error)
+void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint64_t* vaccum_bucket_id, int* vaccum_needed, const void* transaction_id, int* abort_error)
 {
 	// we will need to vaccum to discard the local_root
 	// if, the range_locker is writable, there was no abort, and local_root is still locked
@@ -819,11 +819,9 @@ void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint32_t*
 	}
 
 	free(atrl_p);
-
-	return;
 }
 
-int perform_vaccum_array_table_range_locker(array_table_range_locker* atrl_p, uint32_t vaccum_bucket_id, const void* transaction_id, int* abort_error)
+int perform_vaccum_array_table_range_locker(array_table_range_locker* atrl_p, uint64_t vaccum_bucket_id, const void* transaction_id, int* abort_error)
 {
 	// we cannot set if the atrl is not locked for reading
 	if(!is_writable_array_table_range_locker(atrl_p))
