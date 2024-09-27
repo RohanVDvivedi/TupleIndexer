@@ -198,7 +198,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 
 				if(new_range.first_bucket_id > new_range.last_bucket_id)
 				{
-					delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+					delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum needed, because we have only been seting new non null values here
 					ptrl_p = NULL;
 					if(*abort_error)
 						goto ABORT_ERROR;
@@ -254,7 +254,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	EXIT:;
 	ABORT_ERROR:;
 	if(ptrl_p != NULL)
-		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we will do this here, only if we aborted, hence no vaccum needed
 	if(split_content != NULL)
 		delete_linked_page_list_iterator(split_content, transaction_id, abort_error);
 	if(split_hash_buckets[0].bucket_iterator != NULL)
@@ -388,7 +388,7 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 	return 1;
 
 	DELETE_BUCKET_RANGE_LOCKER_AND_ABORT:;
-	delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+	delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we are facing abort, so no need for vaccum
 	return 0;
 }
 
@@ -434,6 +434,6 @@ void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	return ;
 
 	DELETE_BUCKET_RANGE_LOCKER_AND_ABORT:;
-	delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+	delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we are facing abort, so no need for vaccum
 	return ;
 }
