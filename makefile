@@ -11,7 +11,7 @@ PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions_
 				array_table/array_table.h array_table/array_table_tuple_definitions_public.h array_table/array_table_range_locker_public.h \
 				page_table/page_table.h page_table/page_table_tuple_definitions_public.h page_table/page_table_range_locker_public.h \
 				linked_page_list/linked_page_list.h linked_page_list/linked_page_list_tuple_definitions_public.h linked_page_list/linked_page_list_iterator_public.h \
-				hash_table/hash_table.h hash_table/hash_table_tuple_definitions_public.h hash_table/hash_table_iterator_public.h \
+				hash_table/hash_table.h hash_table/hash_table_tuple_definitions_public.h hash_table/hash_table_iterator_public.h hash_table/hash_table_vaccum_params.h \
 				sorter/sorter.h sorter/sorter_tuple_definitions_public.h \
 				interface/page_access_methods.h interface/page_access_methods_options.h interface/opaque_page_access_methods.h interface/unWALed_in_memory_data_store.h \
 				interface/page_modification_methods.h interface/opaque_page_modification_methods.h interface/unWALed_page_modification_methods.h \
