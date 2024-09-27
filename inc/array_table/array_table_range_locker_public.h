@@ -47,4 +47,9 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 // not performing a vaccum will still keep your array_table logically consistent but it will have a bloat that you would not be able to fix
 void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint32_t* vaccum_bucket_id, int* vaccum_needed, const void* transaction_id, int* abort_error);
 
+// vaccum must be called with the local_root being the global root, in write locked mode -> this is so as to ensure that a range_locker initialized for vaccum does not create cascading vaccum calls
+// this will check if pages corresponding the vaccum_bucket_id is empty, if so, it will discard all logically redundant pages
+// on an abort error, lock on the local root is released, then you only need to call delete_array_table_range_locker
+int perform_vaccum_array_table_range_locker(array_table_range_locker* atrl_p, uint32_t vaccum_bucket_id, const void* transaction_id, int* abort_error);
+
 #endif
