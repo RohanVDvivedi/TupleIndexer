@@ -23,6 +23,32 @@
 const void* transaction_id = NULL;
 int abort_error = 0;
 
+int vaccum_in_page_table(uint64_t root_page_id, uint64_t vaccum_bucket_id, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, pttd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	int success = perform_vaccum_page_table_range_locker(ptrl_p, vaccum_bucket_id, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	return success;
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -51,6 +77,9 @@ int main()
 	/* SETUP COMPLETED */
 	printf("\n");
 
+	int vaccum_needed;
+	uint64_t vaccum_bucket_id;
+
 	/* TESTS STARTED */
 
 	// print the constructed page table
@@ -68,12 +97,15 @@ int main()
 		set_in_page_table(ptrl_p, ith_bucket_id(i), ith_bucket_id(i), transaction_id, &abort_error);
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	if(vaccum_needed)
+		vaccum_in_page_table(root_page_id, vaccum_bucket_id, &pttd, pam_p, pmm_p);
 
 	// print the constructed page table
 	print_page_table(root_page_id, 1, &pttd, pam_p, transaction_id, &abort_error);
@@ -90,12 +122,15 @@ int main()
 		printf("%"PRIu64 " -> %"PRIu64"\n", i_by_2_th_bucket_id(i), get_from_page_table(ptrl_p, i_by_2_th_bucket_id(i), transaction_id, &abort_error));
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	if(vaccum_needed)
+		vaccum_in_page_table(root_page_id, vaccum_bucket_id, &pttd, pam_p, pmm_p);
 
 	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
@@ -123,12 +158,15 @@ int main()
 	}
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	if(vaccum_needed)
+		vaccum_in_page_table(root_page_id, vaccum_bucket_id, &pttd, pam_p, pmm_p);
 
 	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -142,12 +180,15 @@ int main()
 		set_in_page_table(ptrl_p, ith_bucket_id(i), pam_p->pas.NULL_PAGE_ID, transaction_id, &abort_error);
 	printf("\n\n");
 
-	delete_page_table_range_locker(ptrl_p, transaction_id, &abort_error);
+	delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	if(vaccum_needed)
+		vaccum_in_page_table(root_page_id, vaccum_bucket_id, &pttd, pam_p, pmm_p);
 
 	// print the constructed page table
 	print_page_table(root_page_id, 1, &pttd, pam_p, transaction_id, &abort_error);
