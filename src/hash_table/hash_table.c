@@ -339,7 +339,7 @@ int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	EXIT:;
 	ABORT_ERROR:;
 	if(ptrl_p != NULL)
-		delete_page_table_range_locker(ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 	return result;
