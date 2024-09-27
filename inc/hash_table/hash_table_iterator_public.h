@@ -67,6 +67,6 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 
 #include<hash_table_vaccum_params.h>
 
-void delete_hash_table_iterator(hash_table_iterator* hti_p, const void* transaction_id, int* abort_error);
+void delete_hash_table_iterator(hash_table_iterator* hti_p, hash_table_vaccum_params* htvp, const void* transaction_id, int* abort_error);
 
 #endif

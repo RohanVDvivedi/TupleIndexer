@@ -78,7 +78,7 @@ void delete_page_table_range_locker(page_table_range_locker* ptrl_p, uint64_t* v
 	return delete_array_table_range_locker(&(ptrl_p->atrl), vaccum_bucket_id, vaccum_needed, transaction_id, abort_error);
 }
 
-int perform_vaccum_page_table_range_locker(page_table_range_locker* aptrl_p, uint64_t vaccum_bucket_id, const void* transaction_id, int* abort_error)
+int perform_vaccum_page_table_range_locker(page_table_range_locker* ptrl_p, uint64_t vaccum_bucket_id, const void* transaction_id, int* abort_error)
 {
 	return perform_vaccum_array_table_range_locker(&(ptrl_p->atrl), vaccum_bucket_id, transaction_id, abort_error);
 }

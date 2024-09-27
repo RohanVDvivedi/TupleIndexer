@@ -516,81 +516,31 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 
 	ABORT_ERROR:;
 	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum needed here as the tuple stiull exists and nothing has been logically deleted
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	return 0;
 }
 
-void delete_hash_table_iterator(hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
+void delete_hash_table_iterator(hash_table_iterator* hti_p, hash_table_vaccum_params* htvp, const void* transaction_id, int* abort_error)
 {
-	// if it is a keyed iterator, then it is our duty to NULL the empty bucket linked_page_list
+	// if it is a keyed iterator, then it is our duty to NULL the empty bucket linked_page_list, as a part of vaccum
 	if((hti_p->key != NULL) && (!(*abort_error)) && (hti_p->pmm_p != NULL) && (hti_p->lpli_p != NULL) && (hti_p->ptrl_p == NULL) && is_empty_linked_page_list(hti_p->lpli_p))
 	{
-		// release lock on hti_p->lpli_p
-		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
-		hti_p->lpli_p = NULL;
-		if(*abort_error)
-			goto DELETE_EVERYTHING_AND_ABORT;
-
-		// take a range lock on the page table, to get the bucket_count
-		hti_p->ptrl_p = get_new_page_table_range_locker(hti_p->root_page_id, WHOLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
-		if(*abort_error)
-			goto DELETE_EVERYTHING_AND_ABORT;
-
-		// get the current bucket_count of the hash_table
-		uint64_t bucket_count;
-		find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
-		if(*abort_error)
-			goto DELETE_EVERYTHING_AND_ABORT;
-
-		// go to the bucket that key points to
-		hti_p->curr_bucket_id = get_bucket_index_for_key_using_hash_table_tuple_definitions(hti_p->httd_p, hti_p->key, bucket_count);
-
-		// 
-		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
-		if(*abort_error)
-			goto DELETE_EVERYTHING_AND_ABORT;
-		if(curr_bucket_head_page_id != hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID)
-		{
-			// open a linked_page_list_iterator at bucket_head_page_id
-			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
-			if(*abort_error)
-				goto DELETE_EVERYTHING_AND_ABORT;
-
-			int is_curr_bucket_empty = is_empty_linked_page_list(hti_p->lpli_p);
-
-			// release lock on hti_p->lpli_p
-			delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
-			hti_p->lpli_p = NULL;
-			if(*abort_error)
-				goto DELETE_EVERYTHING_AND_ABORT;
-
-			// if the corresponding linked_page_list exists and is empty, then delete it and set it's entry in page_table as NULL
-			if(is_curr_bucket_empty)
-			{
-				// destroy the linked_page_list
-				destroy_linked_page_list(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, transaction_id, abort_error);
-				if(*abort_error)
-					goto DELETE_EVERYTHING_AND_ABORT;
-
-				set_in_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
-				if(*abort_error)
-					goto DELETE_EVERYTHING_AND_ABORT;
-			}
-		}
-
-		// delete range locker
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
-		hti_p->ptrl_p = NULL;
-		if(*abort_error)
-			goto DELETE_EVERYTHING_AND_ABORT;
+		htvp->hash_table_vaccum_needed = 1;
+		htvp->hash_table_vaccum_key = hti_p->key;
 	}
 
-	DELETE_EVERYTHING_AND_ABORT:;
 	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
+		delete_page_table_range_locker(hti_p->ptrl_p, &(htvp->page_table_vaccum_bucket_id), &(htvp->page_table_vaccum_needed), transaction_id, abort_error);
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	free(hti_p);
+
+	// on abort no vaccum is needed
+	if(*abort_error)
+	{
+		htvp->hash_table_vaccum_needed = 0;
+		htvp->page_table_vaccum_needed = 0;
+	}
 }
