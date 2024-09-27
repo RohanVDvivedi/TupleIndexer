@@ -116,7 +116,7 @@ int update_in_array_table(uint64_t root_page_id, bucket_range lock_range, uint32
 		exit(-1);
 	}
 
-	if(vaccum_bucket_id)
+	if(vaccum_needed)
 		vaccum_in_array_table(root_page_id, vaccum_bucket_id, attd_p, pam_p, pmm_p);
 
 	return success;
