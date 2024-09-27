@@ -25,13 +25,11 @@ uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tupl
 	set_in_page_table(ptrl_p, initial_bucket_count, root_page_id, transaction_id, abort_error);
 	if(*abort_error)
 	{
-		uint64_t vaccum_bucket_id; int vaccum_needed;
-		delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, abort_error); // vaccum will not be required here, it is already an abort
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // vaccum will not be required here, it is already an abort
 		return httd_p->pttd.pas_p->NULL_PAGE_ID;
 	}
 
-	uint64_t vaccum_bucket_id; int vaccum_needed;
-	delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, abort_error); // vaccum will not be required here, since we only performed a single set call
+	delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // vaccum will not be required here, since we only performed a single set call
 	if(*abort_error)
 		return httd_p->pttd.pas_p->NULL_PAGE_ID;
 
@@ -54,10 +52,7 @@ uint64_t get_bucket_count_hash_table(uint64_t root_page_id, const hash_table_tup
 	//EXIT:; // -> unused label, i.e. for the happy case
 	ABORT_ERROR:;
 	if(ptrl_p != NULL)
-	{
-		uint64_t vaccum_bucket_id; int vaccum_needed;
-		delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, abort_error); // vaccum will not be required here, we only perforned a read
-	}
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // vaccum will not be required here, we only perforned a read
 	if(*abort_error)
 		return 0;
 	return bucket_count;
@@ -381,8 +376,7 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 			goto DELETE_BUCKET_RANGE_LOCKER_AND_ABORT;
 	}
 
-	uint64_t vaccum_bucket_id; int vaccum_needed;
-	delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, abort_error); // vaccum will not be required here, since we are anyway destroying it
+	delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // vaccum will not be required here, since we are anyway destroying it
 	if(*abort_error)
 		return 0;
 
@@ -433,8 +427,7 @@ void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 			printf("%"PRIu64" -> EMPTY_BUCKET\n\n", bucket_id);
 	}
 
-	uint64_t vaccum_bucket_id; int vaccum_needed;
-	delete_page_table_range_locker(ptrl_p, &vaccum_bucket_id, &vaccum_needed, transaction_id, abort_error); // vaccum will not be required here, we are only reading
+	delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // vaccum will not be required here, we are only reading
 	if(*abort_error)
 		return ;
 
