@@ -45,6 +45,7 @@ const void* find_non_NULL_entry_in_array_table(array_table_range_locker* atrl_p,
 // a vaccum is required if the local_root is not the global root, it was write locked and it is empty
 // if needs_vaccum is set, then you need to open a new iterator, in write locked mode on the WHOLE_BUCKET_RANGE and call vaccum
 // not performing a vaccum will still keep your array_table logically consistent but it will have a bloat that you would not be able to fix
+// if you are sure of not calling a vaccum, then you may pass vaccum parameters as NULLs
 void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint64_t* vaccum_bucket_id, int* vaccum_needed, const void* transaction_id, int* abort_error);
 
 // vaccum must be called with the local_root being the global root, in write locked mode -> this is so as to ensure that a range_locker initialized for vaccum does not create cascading vaccum calls

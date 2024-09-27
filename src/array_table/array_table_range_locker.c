@@ -802,20 +802,24 @@ void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint64_t*
 	// if, the range_locker is writable, there was no abort, and local_root is still locked
 	// local_root != actual_root
 	// and the local_root is empty (i.e. has only NULL_PAGE_IDS)
-	(*vaccum_needed) = (atrl_p->pmm_p != NULL) && ((*abort_error) == 0) &&
+	if(vaccum_needed)
+		(*vaccum_needed) = (atrl_p->pmm_p != NULL) && ((*abort_error) == 0) &&
 						(!is_persistent_page_NULL(&(atrl_p->local_root), atrl_p->pam_p)) &&
 						(atrl_p->local_root.page_id != atrl_p->root_page_id) &&
 						has_all_NULL_entries_in_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
 
 	// you need to re enter using the root_page_id and go to this bucket_id to discard the local root
-	if((*vaccum_needed))
+	if(vaccum_needed && vaccum_bucket_id && (*vaccum_needed))
 		(*vaccum_bucket_id) = get_first_bucket_id_of_array_table_page(&(atrl_p->local_root), atrl_p->attd_p);
 
 	if(!is_persistent_page_NULL(&(atrl_p->local_root), atrl_p->pam_p))
 	{
 		release_lock_on_persistent_page(atrl_p->pam_p, transaction_id, &(atrl_p->local_root), NONE_OPTION, abort_error);
 		if(*abort_error)
-			(*vaccum_needed) = 0;
+		{
+			if(vaccum_needed)
+				(*vaccum_needed) = 0;
+		}
 	}
 
 	free(atrl_p);
