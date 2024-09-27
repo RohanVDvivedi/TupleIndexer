@@ -73,7 +73,12 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 	return get_value_from_element_from_tuple(ptrl_p->atrl.attd_p->record_def, 0, res).uint_value;
 }
 
-void delete_page_table_range_locker(page_table_range_locker* ptrl_p, const void* transaction_id, int* abort_error)
+void delete_page_table_range_locker(page_table_range_locker* ptrl_p, uint32_t* vaccum_bucket_id, int* vaccum_needed, const void* transaction_id, int* abort_error)
 {
-	return delete_array_table_range_locker(&(ptrl_p->atrl), transaction_id, abort_error);
+	return delete_array_table_range_locker(&(ptrl_p->atrl), vaccum_bucket_id, vaccum_needed, transaction_id, abort_error);
+}
+
+int perform_vaccum_page_table_range_locker(page_table_range_locker* aptrl_p, uint32_t vaccum_bucket_id, const void* transaction_id, int* abort_error)
+{
+	return perform_vaccum_array_table_range_locker(&(ptrl_p->atrl), vaccum_bucket_id, transaction_id, abort_error);
 }
