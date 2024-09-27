@@ -234,12 +234,15 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		if(rest && is_curr_bucket_full_for_hash_table_iterator(hti_p))
 			fill_figure++;
 
-		delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
+		hash_table_vaccum_params htvp;
+		delete_hash_table_iterator(hti_p, &htvp, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
 		}
+
+		// no vaccum required here since we are only performing an insert
 
 		if(fill_figure > MAX_THRESHOLD)
 		{
@@ -362,7 +365,8 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 		if(rest && is_curr_bucket_full_for_hash_table_iterator(hti_p))
 			fill_figure++;
 
-		delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
+		hash_table_vaccum_params htvp;
+		delete_hash_table_iterator(hti_p, &htvp, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -469,12 +473,15 @@ result update_non_key_element_in_file(uint64_t root_page_id, char* element, char
 				break;
 		}
 
-		delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
+		hash_table_vaccum_params htvp;
+		delete_hash_table_iterator(hti_p, &htvp, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
 		}
+
+		// no vaccum required here since we are only updating an element of tuple in place
 
 		// increment the tuples_processed count
 		res.records_processed++;
@@ -563,12 +570,15 @@ result update_in_file(uint64_t root_page_id, char* element, char* file_name, uin
 				break;
 		}
 
-		delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
+		hash_table_vaccum_params htvp;
+		delete_hash_table_iterator(hti_p, &htvp, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
 		}
+
+		// no vaccum required here since we are only updating an element of tuple in place
 
 		// increment the tuples_processed count
 		res.records_processed++;
@@ -662,7 +672,16 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 				break;
 		}
 
-		delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
+		hash_table_vaccum_params htvp;
+		delete_hash_table_iterator(hti_p, &htvp, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		// here since we deleted using a key, we might have emptied a bucket, hence a vaccum is necessary
+		perform_vaccum_hash_table(root_page_id, &htvp, 1, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -741,7 +760,16 @@ int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, 
 			break;
 	}
 
-	delete_hash_table_iterator(hti_p, transaction_id, &abort_error);
+	hash_table_vaccum_params htvp;
+	delete_hash_table_iterator(hti_p, &htvp, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	// here since we deleted using a key, we might have emptied a bucket, hence a vaccum is necessary
+	perform_vaccum_hash_table(root_page_id, &htvp, 1, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -818,19 +846,23 @@ void print_2_buckets(uint64_t root_page_id, uint64_t start_bucket_id, const hash
 			break;
 	}
 
-	delete_hash_table_iterator(hti1_p, transaction_id, &abort_error);
+	hash_table_vaccum_params htvp;
+
+	delete_hash_table_iterator(hti1_p, &htvp, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
 
-	delete_hash_table_iterator(hti2_p, transaction_id, &abort_error);
+	delete_hash_table_iterator(hti2_p, &htvp, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	// no vaccum required here, since we are only reading data
 
 	printf("\n\n");
 }
