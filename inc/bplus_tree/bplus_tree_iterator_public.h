@@ -61,6 +61,7 @@ int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void
 // you can use it to update only a fixed length non-key column
 
 #include<user_value.h>
+#include<tuple.h>
 
 // update a non_key column inplace at the place that the bplus_tree_iterator is pointing to
 // ADVISED 	:: only update columns that do not change the tuple size on the page, else the page may become less than half full and this can not be fixed without a merge, and you can not mrege with an iterator
