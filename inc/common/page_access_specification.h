@@ -32,6 +32,7 @@ struct page_access_specs
 	data_type_info page_id_type_info;
 
 	// helps in working with pages composed on only page_ids
+	// the type_info of this tuple_Def must be the attribute above
 	tuple_def page_id_tuple_def;
 };
 
