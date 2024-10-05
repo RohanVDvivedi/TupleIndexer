@@ -455,9 +455,10 @@ int merge_bplus_tree_interior_pages(persistent_page* page1, const void* separato
 	uint64_t separator_tuple_child_page_id = get_least_keys_page_id_of_bplus_tree_interior_page(page2, bpttd_p);
 
 	// since this update is to a fixed_length UINT type, it must either end in success OR in abort_error
+	// index def will always have (key_element_count + 1) number of elements, this last one at index key_element_count will always be the child_page_id
 	set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, page1, bpttd_p->pas_p->page_size, bpttd_p->index_def,
 												get_tuple_count_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) - 1,
-												get_element_def_count_tuple_def(bpttd_p->index_def) - 1,
+												STATIC_POSITION(bpttd_p->key_element_count),
 												&((const user_value){.uint_value = separator_tuple_child_page_id}),
 												abort_error);
 	if(*abort_error)
