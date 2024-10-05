@@ -1112,7 +1112,7 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	return 0;
 }
 
-int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
+int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
 	// fail if this is not a writable iterator
 	if(!is_writable_linked_page_list_iterator(lpli_p))
@@ -1137,8 +1137,11 @@ int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterat
 
 #include<sorted_packed_page_util.h>
 
-void sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error)
+int sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error)
 {
+	if(!are_all_positions_accessible_for_tuple_def(lpli_p->lpltd_p->record_def, key_element_ids, key_element_count))
+		return 0;
+
 	sort_and_convert_to_sorted_packed_page(
 									get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, 
 									lpli_p->lpltd_p->record_def, key_element_ids, key_compare_direction, key_element_count,
@@ -1146,4 +1149,6 @@ void sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_
 									transaction_id,
 									abort_error
 								);
+
+	return 1;
 }

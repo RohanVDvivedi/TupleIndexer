@@ -88,9 +88,10 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 // ADVISED 	:: only update columns that do not change the tuple size on the page, else the page may become less than half full and this can not be fixed by this function
 //			:: also attempting to update to a element value that can increase the tuple size, may even fail, because the slot for the tuple is not big enough
 // on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
-int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
+int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
 
 // sort all tuple on only the curr_page in linked_page_list_iterator
-void sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error);
+// fails only if any of your key_element_ids does not have a corresponding type_info in the tuple_def of the tuples existing on the page
+int sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error);
 
 #endif
