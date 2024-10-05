@@ -11,10 +11,6 @@ int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p
 	// zero initialize lpltd_p
 	(*lpltd_p) = (linked_page_list_tuple_defs){};
 
-	// basic parameter check
-	if(get_element_def_count_tuple_def(record_def) == 0)
-		return 0;
-
 	// check id page_access_specs struct is valid
 	if(!is_valid_page_access_specs(pas_p))
 		return 0;
@@ -39,10 +35,7 @@ int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p
 		lpltd_p->max_record_size = record_def->size_def.size;
 
 	// initialize record_def from the record_def provided
-	lpltd_p->record_def = clone_tuple_def(record_def);
-	if(lpltd_p->record_def == NULL) // memory allocation failed
-		exit(-1);
-	finalize_tuple_def(lpltd_p->record_def);
+	lpltd_p->record_def = record_def;
 
 	return 1;
 }
@@ -64,10 +57,6 @@ int check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(const
 
 void deinit_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p)
 {
-	// delete tuple_def if it exists
-	if(lpltd_p->record_def)
-		delete_tuple_def(lpltd_p->record_def);
-
 	// reset all attributes to NULL or 0
 	lpltd_p->pas_p = NULL;
 	lpltd_p->record_def = NULL;

@@ -13,7 +13,7 @@ struct linked_page_list_tuple_defs
 	const page_access_specs* pas_p;
 
 	// tuple definition of all the pages in the linked_page_list
-	tuple_def* record_def;
+	const tuple_def* record_def;
 
 	// maximum size of the record, that can be inserted into this linked_page_list
 	uint32_t max_record_size;
