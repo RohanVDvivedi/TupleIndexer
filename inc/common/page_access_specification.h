@@ -2,6 +2,7 @@
 #define PAGE_ACCESS_SPECIFICATION_H
 
 #include<inttypes.h>
+#include<tuple_def.h>
 
 typedef struct page_access_specs page_access_specs;
 struct page_access_specs
@@ -24,6 +25,14 @@ struct page_access_specs
 	// * write_locked_by_transaction_id (to persistently lock the whole page for writing, while the latch on the page has been released)
 	// * checksum (lets say crc32 of the whole page, for integrity checks by the recovery manager)
 	uint32_t system_header_size;
+
+	// every page access spec defines the page_id type is it a NON NULLABLE unsigned integral type as wide as page_id_width
+
+	// defines a non-nullable unsigned integral type of page_id_width bytes to store page_id-s
+	data_type_info page_id_type_info;
+
+	// helps in working with pages composed on only page_ids
+	tuple_def page_id_tuple_def;
 };
 
 // if this function returns 0, that implies that the pas's passed params are invalid
