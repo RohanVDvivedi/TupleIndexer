@@ -5,7 +5,7 @@
  * shallow copy in tuple definition functions
  * shallow constructionf of key def and index def -> first ensure that all key element ids are non null and are valid
  * for bplus tree and hash table ensure that no keys in the records are OUT_OF_BOUNDS
- * testcase refactpring
+ * testcase refactporing
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
