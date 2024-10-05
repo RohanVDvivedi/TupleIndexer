@@ -18,8 +18,8 @@ struct array_table_tuple_defs
 	const page_access_specs* pas_p;
 
 	// tuple definition of all the pages in the array_table
-	tuple_def* record_def; // tuple definition of the leaf pages
-	tuple_def* index_def;  // tuple definition of interior pages
+	const tuple_def* record_def; // tuple definition of the leaf pages
+	const tuple_def* index_def;  // tuple definition of interior pages -> this will be same as &(pas_p->page_id_tuple_def)
 	// additionally each index_entry is just a UINT value of page_id_width in the entry_def
 
 	// this decides the number of entries that can fit on any of the array_table page (leaf or interior pages)

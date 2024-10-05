@@ -29,29 +29,11 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 	if(!is_fixed_sized_tuple_def(record_def))
 		return 0;
 
-	int res = 1;
-
 	// initialize index_def
-	attd_p->index_def = get_new_tuple_def("temp_index_def", 1, attd_p->pas_p->page_size);
-	if(attd_p->index_def == NULL) // memory allocation failed
-		exit(-1);
-	res = insert_element_def(attd_p->index_def, "child_page_id", UINT, attd_p->pas_p->page_id_width, 1, &((user_value){.uint_value = attd_p->pas_p->NULL_PAGE_ID}));
-	if(res == 0)
-	{
-		deinit_array_table_tuple_definitions(attd_p);
-		return 0;
-	}
-	res = finalize_tuple_def(attd_p->index_def);
-	if(res == 0)
-	{
-		deinit_array_table_tuple_definitions(attd_p);
-		return 0;
-	}
+	attd_p->index_def = &(pas_p->page_id_tuple_def);
 
-	attd_p->record_def = clone_tuple_def(record_def);
-	if(attd_p->record_def == NULL) // memory allocation failed
-		exit(-1);
-	finalize_tuple_def(attd_p->record_def);
+	// copy record_def
+	attd_p->record_def = record_def;
 
 	// number of entries that can fit on the leaf page
 	attd_p->leaf_entries_per_page = get_maximum_tuple_count_on_persistent_page(sizeof_ARRAY_TABLE_PAGE_HEADER(attd_p), attd_p->pas_p->page_size, &(attd_p->record_def->size_def));
@@ -122,11 +104,6 @@ int get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tupl
 
 void deinit_array_table_tuple_definitions(array_table_tuple_defs* attd_p)
 {
-	if(attd_p->record_def)
-		delete_tuple_def(attd_p->record_def);
-	if(attd_p->index_def)
-		delete_tuple_def(attd_p->index_def);
-
 	attd_p->pas_p = NULL;
 	attd_p->record_def = NULL;
 	attd_p->index_def = NULL;
