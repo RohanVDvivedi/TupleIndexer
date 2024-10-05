@@ -42,7 +42,7 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 
 	if(res == NULL)
 		return ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID;
-	return get_value_from_element_from_tuple(ptrl_p->atrl.attd_p->record_def, 0, res).uint_value;
+	return get_value_from_element_from_tuple(ptrl_p->atrl.attd_p->record_def, SELF, res).uint_value;
 }
 
 int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint64_t page_id, const void* transaction_id, int* abort_error)
@@ -54,7 +54,7 @@ int set_in_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id, uint6
 	{
 		page_id_entry = page_id_entry_memory;
 		init_tuple(ptrl_p->atrl.attd_p->record_def, page_id_entry);
-		set_element_in_tuple(ptrl_p->atrl.attd_p->record_def, 0, page_id_entry, &((user_value){.uint_value = page_id}));
+		set_element_in_tuple(ptrl_p->atrl.attd_p->record_def, SELF, page_id_entry, &((user_value){.uint_value = page_id}), UINT32_MAX);
 	}
 
 	return set_in_array_table(&(ptrl_p->atrl), bucket_id, page_id_entry, transaction_id, abort_error);
@@ -70,7 +70,7 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 
 	if(res == NULL)
 		return ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID;
-	return get_value_from_element_from_tuple(ptrl_p->atrl.attd_p->record_def, 0, res).uint_value;
+	return get_value_from_element_from_tuple(ptrl_p->atrl.attd_p->record_def, SELF, res).uint_value;
 }
 
 void delete_page_table_range_locker(page_table_range_locker* ptrl_p, uint64_t* vaccum_bucket_id, int* vaccum_needed, const void* transaction_id, int* abort_error)
