@@ -2,51 +2,55 @@
 
 #include<stdlib.h>
 
-int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, uint32_t key_element_count, uint64_t (*hash_func)(const void* data, uint32_t data_size))
+int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def, const positional_accessor* key_element_ids, uint32_t key_element_count, uint64_t (*hash_func)(const void* data, uint32_t data_size))
 {
 	// zero initialize httd_p
 	(*httd_p) = (hash_table_tuple_defs){};
 
 	// basic parameter check
-	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || get_element_def_count_tuple_def(record_def) == 0)
+	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL)
 		return 0;
 
 	// check id page_access_specs struct is valid
 	if(!is_valid_page_access_specs(pas_p))
 		return 0;
 
+	// if positional accessor is invalid catch it here
+	if(!are_all_positions_accessible_for_tuple_def(record_def, key_element_ids, key_element_count))
+		return 0;
+
 	httd_p->hash_func = hash_func;
 
 	httd_p->key_element_count = key_element_count;
 
-	httd_p->key_element_ids = malloc(sizeof(uint32_t) * httd_p->key_element_count);
-	if(httd_p->key_element_ids == NULL) // memory allocation failed
-		exit(-1);
-	memory_move(httd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * httd_p->key_element_count);
+	httd_p->key_element_ids = key_element_ids;
 
 	// initialize key def
 
 	// allocate memory for key_def and initialize it
-	httd_p->key_def = get_new_tuple_def("temp_key_def", key_element_count, pas_p->page_size);
-	if(httd_p->key_def == NULL) // memory allocation failed
-		exit(-1);
-
-	// result of inserting element_definitions to key_def
-	int res = 1;
-
-	// initialize element_defs of the key_def
-	for(uint32_t i = 0; i < key_element_count && res == 1; i++)
-		res = res && insert_copy_of_element_def(httd_p->key_def, NULL, record_def, httd_p->key_element_ids[i]);
-	
-	// if any of the index element_definitions could not be inserted
-	if(!res)
 	{
-		deinit_hash_table_tuple_definitions(httd_p);
-		return 0;
-	}
+		data_type_info* key_type_info = malloc(sizeof_tuple_data_type_info(key_element_count));
+		if(key_type_info == NULL)
+			exit(-1);
+		initialize_tuple_data_type_info(key_type_info, "temp_key_def", 1, pas_p->page_size, key_element_count);
 
-	// end step
-	finalize_tuple_def(httd_p->key_def);
+		for(uint32_t i = 0; i < key_element_count; i++)
+		{
+			key_type_info->containees[i].field_name[0] = '\0'; // field name here is redundant
+			key_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple(record_def, key_element_ids[i]);
+		}
+
+		httd_p->key_def = malloc(sizeof(tuple_def));
+		if(httd_p->key_def == NULL)
+			exit(-1);
+		if(!initialize_tuple_def(httd_p->key_def, key_type_info))
+		{
+			free(httd_p->key_def);
+			free(key_type_info);
+			deinit_hash_table_tuple_definitions(httd_p);
+			return 0;
+		}
+	}
 
 	if(!init_linked_page_list_tuple_definitions(&(httd_p->lpltd), pas_p, record_def))
 	{
@@ -68,6 +72,10 @@ int check_if_record_can_be_inserted_for_hash_table_tuple_definitions(const hash_
 	if(record_tuple == NULL)
 		return 0;
 
+	// if atleast one key element is OUT_OF_BOUNDS then fail
+	if(!are_all_positions_accessible_for_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, httd_p->key_element_count))
+		return 0;
+
 	return check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(&(httd_p->lpltd), record_tuple);
 }
 
@@ -79,7 +87,7 @@ int extract_key_from_record_tuple_using_hash_table_tuple_definitions(const hash_
 	// copy all the elements from record into the key tuple
 	int res = 1;
 	for(uint32_t i = 0; i < httd_p->key_element_count && res == 1; i++)
-		res = set_element_in_tuple_from_tuple(httd_p->key_def, i, key, httd_p->lpltd.record_def, httd_p->key_element_ids[i], record_tuple);
+		res = set_element_in_tuple_from_tuple(httd_p->key_def, STATIC_POSITION(i), key, httd_p->lpltd.record_def, httd_p->key_element_ids[i], record_tuple, UINT32_MAX);
 
 	return res;
 }
@@ -172,14 +180,19 @@ uint64_t get_bucket_index_for_record_using_hash_table_tuple_definitions(const ha
 
 void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
 {
-	if(httd_p->key_element_ids)
-		free(httd_p->key_element_ids);
 	if(httd_p->key_def)
-		delete_tuple_def(httd_p->key_def);
+	{
+		if(httd_p->key_def->type_info)
+			free(httd_p->key_def->type_info);
+		free(httd_p->key_def);
+	}
 
 	deinit_linked_page_list_tuple_definitions(&(httd_p->lpltd));
-
 	deinit_page_table_tuple_definitions(&(httd_p->pttd));
+	httd_p->key_element_count = 0;
+	httd_p->key_element_ids = NULL;
+	httd_p->key_def = NULL;
+	httd_p->hash_func = NULL;
 }
 
 void print_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
@@ -193,7 +206,12 @@ void print_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
 	{
 		printf("{ ");
 		for(uint32_t i = 0; i < httd_p->key_element_count; i++)
-			printf("%u, ", httd_p->key_element_ids[i]);
+		{
+			printf("{ ");
+			for(uint32_t j = 0; j < httd_p->key_element_ids[i].positions_length; j++)
+				printf("%u, ", httd_p->key_element_ids[i].positions[j]);
+			printf(" }, ");
+		}
 		printf(" }\n");
 	}
 	else
