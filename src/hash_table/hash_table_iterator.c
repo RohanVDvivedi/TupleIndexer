@@ -488,7 +488,7 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 	return 0;
 }
 
-int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
+int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
 	// iterator must be writable
 	if(!is_writable_hash_table_iterator(hti_p))
@@ -503,8 +503,19 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 	// make sure that the element that the user is trying to update in place is not a key for the hash_table
 	// if you allow so, it could be a disaster
 	for(uint32_t i = 0; i < hti_p->httd_p->key_element_count; i++)
-		if(hti_p->httd_p->key_element_ids[i] == element_index)
+	{
+		int match = 1;
+		for(uint32_t j = 0; j < min(hti_p->httd_p->key_element_ids[i].positions_length, element_index.positions_length); j++)
+		{
+			if(hti_p->httd_p->key_element_ids[i].positions[j] != element_index.positions[j])
+			{
+				match = 0;
+				break;
+			}
+		}
+		if(match)
 			return 0;
+	}
 
 	// go ahead with the actual update
 	// you may not access curr_tuple beyond the below call
