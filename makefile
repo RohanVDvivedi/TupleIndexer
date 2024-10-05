@@ -59,8 +59,8 @@ ${OBJ_DIR}/% :
 # generic rule to build any object file, it will depend on the existing of its directory path (i.e. ${@D}, this must use secondar expansion of makefile)
 .SECONDEXPANSION:
 ${OBJECTS} : ${OBJ_DIR}/%.o : ${SRC_DIR}/%.c | $${@D}
-	mkdir -p $(dir $@) && touch $@
-	#${CC} ${CFLAGS} -c $< -o $@
+	#mkdir -p $(dir $@) && touch $@
+	${CC} ${CFLAGS} -c $< -o $@
 
 # rule to make the directory for storing libraries, that we create
 ${LIB_DIR} :
