@@ -3,7 +3,7 @@
 
 #include<persistent_page_functions.h>
 
-#include<tuple_def.h>
+#include<tuple.h>
 
 int init_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d, int* abort_error);
 
@@ -23,7 +23,7 @@ uint32_t discard_trailing_tomb_stones_on_persistent_page(const page_modification
 
 int swap_tuples_on_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2, int* abort_error);
 
-int set_element_in_tuple_in_place_on_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, uint32_t element_index, const user_value* value, int* abort_error);
+int set_element_in_tuple_in_place_on_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value, int* abort_error);
 
 void clone_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page* ppage_src, int* abort_error);
 
