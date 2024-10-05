@@ -3,7 +3,7 @@
 
 #include<stdint.h>
 
-#include<tuple_def.h>
+#include<tuple.h>
 #include<persistent_page.h>
 
 /*
@@ -54,7 +54,7 @@ struct page_modification_methods
 
 	int (*swap_tuples_on_page)(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2, int* abort_error);
 
-	int (*set_element_in_tuple_in_place_on_page)(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, uint32_t element_index, const user_value* value, int* abort_error);
+	int (*set_element_in_tuple_in_place_on_page)(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value, int* abort_error);
 
 	void (*clone_page)(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src, int* abort_error);
 
