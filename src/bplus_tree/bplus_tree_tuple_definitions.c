@@ -7,17 +7,21 @@
 
 #include<stdlib.h>
 
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count)
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count)
 {
 	// zero initialize bpttd_p
 	(*bpttd_p) = (bplus_tree_tuple_defs){};
 
 	// basic parameter check
-	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL || get_element_def_count_tuple_def(record_def) == 0)
+	if(key_element_count == 0 || key_element_ids == NULL || record_def == NULL)
 		return 0;
 
 	// check id page_access_specs struct is valid
 	if(!is_valid_page_access_specs(pas_p))
+		return 0;
+
+	// if positional accessor is invalid catch it here
+	if(!are_all_positions_accessible_for_tuple_def(record_def, key_element_ids, key_element_count))
 		return 0;
 
 	// initialize page_access_specs fo the bpttd
@@ -30,20 +34,11 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 
 	bpttd_p->key_element_count = key_element_count;
 
-	bpttd_p->key_element_ids = malloc(sizeof(uint32_t) * bpttd_p->key_element_count);
-	if(bpttd_p->key_element_ids == NULL) // memory allocation failed
-		exit(-1);
-	memory_move(bpttd_p->key_element_ids, key_element_ids, sizeof(uint32_t) * bpttd_p->key_element_count);
+	bpttd_p->key_element_ids = key_element_ids;
 
-	bpttd_p->key_compare_direction = malloc(sizeof(compare_direction) * bpttd_p->key_element_count);
-	if(bpttd_p->key_compare_direction == NULL) // memory allocation failed
-		exit(-1);
-	memory_move(bpttd_p->key_compare_direction, key_compare_direction, sizeof(compare_direction) * bpttd_p->key_element_count);
+	bpttd_p->key_compare_direction = key_compare_direction;
 
-	bpttd_p->record_def = clone_tuple_def(record_def);
-	if(bpttd_p->record_def == NULL) // memory allocation failed
-		exit(-1);
-	finalize_tuple_def(bpttd_p->record_def);
+	bpttd_p->record_def = record_def;
 
 	// initialize index_def
 
@@ -132,6 +127,10 @@ int check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(const bplus
 {
 	// you must not insert a NULL resord in bplus_tree
 	if(record_tuple == NULL)
+		return 0;
+
+	// if atleast one key element is OUT_OF_BOUNDS then fail
+	if(!are_all_positions_accessible_for_tuple(record_tuple, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count))
 		return 0;
 
 	uint32_t record_tuple_size = get_tuple_size(bpttd_p->record_def, record_tuple);
@@ -225,16 +224,18 @@ int build_index_entry_from_key_using_bplus_tree_tuple_definitions(const bplus_tr
 
 void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p)
 {
-	if(bpttd_p->record_def)
-		delete_tuple_def(bpttd_p->record_def);
 	if(bpttd_p->index_def)
-		delete_tuple_def(bpttd_p->index_def);
+	{
+		if(bpttd_p->index_def->type_info)
+			free(bpttd_p->index_def->type_info);
+		free(bpttd_p->index_def);
+	}
 	if(bpttd_p->key_def)
-		delete_tuple_def(bpttd_p->key_def);
-	if(bpttd_p->key_element_ids)
-		free(bpttd_p->key_element_ids);
-	if(bpttd_p->key_compare_direction)
-		free(bpttd_p->key_compare_direction);
+	{
+		if(bpttd_p->key_def->type_info)
+			free(bpttd_p->key_def->type_info);
+		free(bpttd_p->key_def);
+	}	
 
 	bpttd_p->pas_p = NULL;
 	bpttd_p->key_element_count = 0;
@@ -260,7 +261,12 @@ void print_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p)
 	{
 		printf("{ ");
 		for(uint32_t i = 0; i < bpttd_p->key_element_count; i++)
-			printf("%u, ", bpttd_p->key_element_ids[i]);
+		{
+			printf("{ ");
+			for(uint32_t j = 0; j < bpttd_p->key_element_ids[i].positions_length; j++)
+				printf("%u, ", bpttd_p->key_element_ids[i].positions[j]);
+			printf(" }, ");
+		}
 		printf(" }\n");
 	}
 	else
