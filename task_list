@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
 * REFACTORING TO MATCH TUPLE STORE API
+ * add a data_type_info and tuple_def for page_id
  * key_element_ids to positional_accessor*
  * shallow copy in tuple definition functions
  * shallow constructionf of key def and index def -> first ensure that all key element ids are non null and are valid
