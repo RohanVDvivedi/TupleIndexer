@@ -6,6 +6,7 @@
 #include<bplus_tree_interior_page_header.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count)
 {
@@ -40,57 +41,58 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 
 	bpttd_p->record_def = record_def;
 
-	// initialize index_def
-
-	// allocate memory for index def and initialize it
-	bpttd_p->index_def = get_new_tuple_def("temp_index_def", key_element_count + 1, bpttd_p->pas_p->page_size);
-	if(bpttd_p->index_def == NULL) // memory allocation failed
-		exit(-1);
-
-	// result of inserting element_definitions to index def
-	int res = 1;
-
-	// initialize element_defs of the index_def
-	for(uint32_t i = 0; i < key_element_count && res == 1; i++)
-		res = insert_copy_of_element_def(bpttd_p->index_def, NULL, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
-	
-	// the unsigned int page id that the index entry will point to
-	// this element must be a NON NULL, with default_value being bpttd_p->NULL_PAGE_ID
-	res = res && insert_element_def(bpttd_p->index_def, "child_page_id", UINT, bpttd_p->pas_p->page_id_width, 1, &((user_value){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}));
-
-	// if any of the index element_definitions could not be inserted
-	if(!res)
+	// allocate memory for key_def and initialize it
 	{
-		deinit_bplus_tree_tuple_definitions(bpttd_p);
-		return 0;
+		data_type_info* index_type_info = malloc(sizeof_tuple_data_type_info(key_element_count + 1));
+		if(index_type_info == NULL)
+			exit(-1);
+		initialize_tuple_data_type_info(index_type_info, "temp_index_def", 1, pas_p->page_size, key_element_count + 1);
+
+		for(uint32_t i = 0; i < key_element_count; i++)
+		{
+			index_type_info->containees[i].field_name[0] = '\0'; // field name here is redundant
+			index_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple(record_def, key_element_ids[i]);
+		}
+
+		strcpy(index_type_info->containees[key_element_count].field_name, "child_page_id");
+		index_type_info->containees[key_element_count].type_info = (data_type_info*) (&(pas_p->page_id_type_info));
+
+		bpttd_p->index_def = malloc(sizeof(tuple_def));
+		if(bpttd_p->index_def == NULL)
+			exit(-1);
+		if(!initialize_tuple_def(bpttd_p->index_def, index_type_info))
+		{
+			free(bpttd_p->index_def);
+			free(index_type_info);
+			deinit_bplus_tree_tuple_definitions(bpttd_p);
+			return 0;
+		}
 	}
-
-	// end step
-	finalize_tuple_def(bpttd_p->index_def);
-
-	// initialize key def
 
 	// allocate memory for key_def and initialize it
-	bpttd_p->key_def = get_new_tuple_def("temp_key_def", key_element_count, bpttd_p->pas_p->page_size);
-	if(bpttd_p->key_def == NULL) // memory allocation failed
-		exit(-1);
-
-	// result of inserting element_definitions to key_def
-	res = 1;
-
-	// initialize element_defs of the key_def
-	for(uint32_t i = 0; i < key_element_count && res == 1; i++)
-		res = res && insert_copy_of_element_def(bpttd_p->key_def, NULL, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
-	
-	// if any of the index element_definitions could not be inserted
-	if(!res)
 	{
-		deinit_bplus_tree_tuple_definitions(bpttd_p);
-		return 0;
-	}
+		data_type_info* key_type_info = malloc(sizeof_tuple_data_type_info(key_element_count));
+		if(key_type_info == NULL)
+			exit(-1);
+		initialize_tuple_data_type_info(key_type_info, "temp_key_def", 1, pas_p->page_size, key_element_count);
 
-	// end step
-	finalize_tuple_def(bpttd_p->key_def);
+		for(uint32_t i = 0; i < key_element_count; i++)
+		{
+			key_type_info->containees[i].field_name[0] = '\0'; // field name here is redundant
+			key_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple(record_def, key_element_ids[i]);
+		}
+
+		bpttd_p->key_def = malloc(sizeof(tuple_def));
+		if(bpttd_p->key_def == NULL)
+			exit(-1);
+		if(!initialize_tuple_def(bpttd_p->key_def, key_type_info))
+		{
+			free(bpttd_p->key_def);
+			free(key_type_info);
+			deinit_bplus_tree_tuple_definitions(bpttd_p);
+			return 0;
+		}
+	}
 
 	/* compute max_record_size for the leaf pages and interior pages of the bplus tree */
 	{
