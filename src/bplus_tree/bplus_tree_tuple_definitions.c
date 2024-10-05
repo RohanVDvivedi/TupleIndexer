@@ -189,7 +189,7 @@ int extract_key_from_record_tuple_using_bplus_tree_tuple_definitions(const bplus
 	// copy all the elements from record into the key tuple
 	int res = 1;
 	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
-		res = set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+		res = set_element_in_tuple_from_tuple(bpttd_p->key_def, STATIC_POSITION(i), key, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple, UINT32_MAX);
 
 	return res;
 }
@@ -202,7 +202,7 @@ int extract_key_from_index_entry_using_bplus_tree_tuple_definitions(const bplus_
 	// copy all the elements from index_entry into the key tuple
 	int res = 1;
 	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
-		res = set_element_in_tuple_from_tuple(bpttd_p->key_def, i, key, bpttd_p->index_def, i, index_entry);
+		res = set_element_in_tuple_from_tuple(bpttd_p->key_def, STATIC_POSITION(i), key, bpttd_p->index_def, STATIC_POSITION(i), index_entry, UINT32_MAX);
 
 	return res;
 }
@@ -215,11 +215,11 @@ int build_index_entry_from_record_tuple_using_bplus_tree_tuple_definitions(const
 	// copy all the elements from record to the index_tuple, except for the child_page_id
 	int res = 1;
 	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
-		res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple);
+		res = set_element_in_tuple_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], record_tuple, UINT32_MAX);
 
 	// copy the child_page_id to the last element in the index entry
 	if(res == 1)
-		res = set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((const user_value){.uint_value = child_page_id}));
+		res = set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((const user_value){.uint_value = child_page_id}), UINT32_MAX);
 
 	return res;
 }
@@ -232,11 +232,11 @@ int build_index_entry_from_key_using_bplus_tree_tuple_definitions(const bplus_tr
 	// copy all the elements from key to the index_tuple
 	int res = 1;
 	for(uint32_t i = 0; i < bpttd_p->key_element_count && res == 1; i++)
-		res = set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->key_def, i, key);
+		res = set_element_in_tuple_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, bpttd_p->key_def, STATIC_POSITION(i), key, UINT32_MAX);
 
 	// copy the child_page_id to the last element in the index entry
 	if(res == 1)
-		set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((user_value){.uint_value = child_page_id}));
+		set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((user_value){.uint_value = child_page_id}), UINT32_MAX);
 
 	return res;
 }
