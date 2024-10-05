@@ -1,10 +1,6 @@
 ** PICKED TASKS
 
 * REFACTORING TO MATCH TUPLE STORE API
- * shallow copy in tuple definition functions for bplus_tree
- * shallow construction of key def and index def -> first ensure that all data types indexed by key element ids are non null and are valid
-   * for bplus tree ensure that for no inserted record the key element is not OUT_OF_BOUNDS
-   * for bplus tree construct the index record in place to ensure that the index entry for the record will fit the interior pages
  * fix logic in suffix truncation logic of building interior page separatopr entry in bplus tree and fix it
  * testcase refactoring
 
