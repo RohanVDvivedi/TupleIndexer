@@ -446,7 +446,7 @@ int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void
 	return narrow_down_range_for_stacked_iterator_using_keys(&(bpi_p->lps), key1, f_pos1, key2, f_pos2, key_element_count_concerned, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 }
 
-int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, uint32_t element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
+int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
 	// cannot update non WRITE_LOCKed bplus_tree_iterator
 	if(!is_writable_bplus_tree_iterator(bpi_p))
@@ -455,8 +455,19 @@ int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* 
 	// make sure that the element that the user is trying to update in place is not a key for the bplus_tree
 	// if you allow so, it could be a disaster
 	for(uint32_t i = 0; i < bpi_p->bpttd_p->key_element_count; i++)
-		if(bpi_p->bpttd_p->key_element_ids[i] == element_index)
+	{
+		int match = 1;
+		for(uint32_t j = 0; j < min(bpi_p->bpttd_p->key_element_ids[i].positions_length, element_index.positions_length); j++)
+		{
+			if(bpi_p->bpttd_p->key_element_ids[i].positions[j] != element_index.positions[j])
+			{
+				match = 0;
+				break;
+			}
+		}
+		if(match)
 			return 0;
+	}
 
 	// get current leaf page that the bplus_tree_iterator is pointing to
 	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
