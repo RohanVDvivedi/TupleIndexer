@@ -16,21 +16,23 @@ struct bplus_tree_tuple_defs
 	uint32_t key_element_count;
 
 	// element ids of the keys (as per their element_ids in record_def) in the order as you want them to be ordered
-	uint32_t* key_element_ids;
+	const positional_accessor* key_element_ids;
 
 	// compare direction for the keys, array of ASC/DESC
-	compare_direction* key_compare_direction;
+	const compare_direction* key_compare_direction;
 
 	// ith element_def in index_def has the same type, name and size as the key_element_ids[i] th element_def in record_def
 
 	// tuple definition of the leaf pages in the bplus_tree
-	tuple_def* record_def;
+	const tuple_def* record_def;
 
 	// tuple definition of the interior pages in the bplus_tree
+	// shallow tuple_def with containees from the record_def and the page_id dti
 	tuple_def* index_def;
 
 	// tuple definition of the key to be used with this bplus_tree
 	// for all of find, insert, update and delete functionalities
+	// shallow tuple_def with containees from the record_def
 	tuple_def* key_def;
 
 	// precomputed value of max_record_size (for the tuple that goes into leaf pages of the bplus_tree) that can be inserted into a bplus_tree defined using this bplus_tree_tuple_defs struct
@@ -42,10 +44,10 @@ struct bplus_tree_tuple_defs
 
 // initializes the attributes in bplus_tree_tuple_defs struct as per the provided parameters
 // the parameter pas_p must point to the pas attribute of the data_access_method that you are using it with
-// it allocates memory only for key_element_ids, key_compare_direction, record_def, index_def and key_def
+// it allocates memory only for index_def and key_def
 // returns 1 for success, it fails with 0, if the record_def has element_count 0 OR key_element_count == 0 OR key_element_ids == NULL OR if any of the key_element_ids is out of bounds
 // it also fails if the pas_p does not pass is_valid_page_access_specs(pas_p)
-int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const uint32_t* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count);
+int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page_access_specs* pas_p, const tuple_def* record_def, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count);
 
 // checks to see if a record_tuple can be inserted into a bplus_tree
 // note :: you can not insert a NULL record in bplus_tree
