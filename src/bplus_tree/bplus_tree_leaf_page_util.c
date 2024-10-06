@@ -141,7 +141,7 @@ int must_split_for_insert_bplus_tree_leaf_page(const persistent_page* page1, con
 	return !can_append_tuple_on_persistent_page_if_done_resiliently(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), tuple_to_insert);
 }
 
-//#define USE_SUFFIX_TRUNCATION
+#define USE_SUFFIX_TRUNCATION
 
 // for this function it is assumed, that last_tuple_page1 <= first_tuple_page2, on comparing key elements (at indices key_element_ids) sorted by key_compare_direction
 static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple_defs* bpttd_p, const void* last_tuple_page1, const void* first_tuple_page2, uint64_t child_page_id, void* index_entry)
@@ -153,7 +153,7 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 // for this function it is assumed, that last_tuple_page1 <= first_tuple_page2, on comparing key elements (at indices key_element_ids) sorted by key_compare_direction
 // This is the suffix_truncated version for the above function
 // At the moment this code is buggy (i.e. has bug), it does not generate correct result if the key_compare_direction has DESC
-/*static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const bplus_tree_tuple_defs* bpttd_p, const void* last_tuple_page1, const void* first_tuple_page2, uint64_t child_page_id, void* index_entry)
+static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const bplus_tree_tuple_defs* bpttd_p, const void* last_tuple_page1, const void* first_tuple_page2, uint64_t child_page_id, void* index_entry)
 {
 	// init the index_entry
 	init_tuple(bpttd_p->index_def, index_entry);
@@ -162,22 +162,22 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 	uint32_t i = 0;
 
 	int cmp_ltp1_ie = 0; // result of comparison between last_tuple_page1 and index_entry for the first i elements
-	int cmp_ie_ftp2 = 0; // result of comparison between last_tuple_page1 and index_entry for the first i elements
+	int cmp_ie_ftp2 = 0; // result of comparison between index_entry and first_tuple_page2 for the first i elements
 	// we finally want the inequality last_tuple_page1 < index_entry <= first_tuple_page1 to be satisfied
 
 	// as we iterate over the key columns given by key_element_ids
 	// the index entry will first diverge from the last_tuple_page1 in the first loop
-	// and then will diverge from first_tuple_page2 in the second loop
+	// and then will preferably diverge from first_tuple_page2 in the second loop
 
 	while(i < bpttd_p->key_element_count && cmp_ltp1_ie == 0)
 	{
 		// comparison results with ith element having the uninitialized values in index_entry
 		int new_cmp_ltp1_ie = cmp_ltp1_ie;
 		if(new_cmp_ltp1_ie == 0)
-			new_cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, i) * bpttd_p->key_compare_direction[i];
+			new_cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, STATIC_POSITION(i)) * bpttd_p->key_compare_direction[i];
 		int new_cmp_ie_ftp2 = cmp_ie_ftp2;
 		if(new_cmp_ie_ftp2 == 0)
-			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
+			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, STATIC_POSITION(i), first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
 
 		if(new_cmp_ltp1_ie == -1 && (new_cmp_ie_ftp2 == -1 || new_cmp_ie_ftp2 == 0))
 		{
@@ -187,22 +187,20 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 			break;
 		}
 
-		const element_def* ele_d = get_element_def_by_id(bpttd_p->index_def, i);
+		const data_type_info* ele_d = get_type_info_for_element_from_tuple_def(bpttd_p->index_def, STATIC_POSITION(i));
 
 		// raw compare result (without compare direction) of the current elements of ith keys in last_tuple_page1 and first_tuple_page2
 		int cmp = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
 
 		// if the corresponding elements in the record tuples are equal OR
-		// if the elements are not VAR_STRING or VAR_BLOB, then proceed as usual
-		// Even in case of STRING and BLOB, we can reduce the compare lengths using suffix-truncation, hence try that
-		if(0 == cmp || (ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB
-				&& ele_d->type != STRING && ele_d->type != BLOB))
+		// if the elements are not STRING or BLOB, then proceed as usual
+		if(0 == cmp || (ele_d->type != STRING && ele_d->type != BLOB))
 		{
 			// if not set, fail
-			if(!set_element_in_tuple_from_tuple(bpttd_p->index_def, i, index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2))
+			if(!set_element_in_tuple_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, UINT32_MAX))
 				return 0;
 		}
-		else // we can only suffix truncate VAR_STRING or VAR_BLOB
+		else // we can only suffix truncate STRING or BLOB types
 		{
 			const user_value last_tuple_page1_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
 			const user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
@@ -217,21 +215,21 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 					{
 						// if last_tuple_page1_element is NULL, then set the corresponding index_entry_element to EMPTY_USER_VALUE
 						// first_tuple_page2 is bound to be greater than or equal to EMPTY_USER_VALUE
-						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, EMPTY_USER_VALUE))
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_USER_VALUE, UINT32_MAX))
 							return 0;
-						break;
+						break; // break from the switch case not the loop
 					}
 
 					// case when none of them is NULL
 
 					// compute the number of characters matched
 					uint32_t match_lengths = 0;
-					for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && ((const char*)(last_tuple_page1_element.data))[match_lengths] == ((const char*)(first_tuple_page2_element.data))[match_lengths]; match_lengths++);
+					for(; match_lengths < last_tuple_page1_element.string_or_blob_size && match_lengths < first_tuple_page2_element.string_or_blob_size && ((const char*)(last_tuple_page1_element.string_or_blob_value))[match_lengths] == ((const char*)(first_tuple_page2_element.string_or_blob_value))[match_lengths]; match_lengths++);
 
 					user_value first_tuple_page2_element_copy = first_tuple_page2_element;
-					first_tuple_page2_element_copy.data_size = match_lengths + 1;
+					first_tuple_page2_element_copy.string_or_blob_size = match_lengths + 1;
 					// if not set, fail
-					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element_copy))
+					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &first_tuple_page2_element_copy, UINT32_MAX))
 						return 0;
 					break;
 				}
@@ -242,7 +240,7 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 					if(is_user_value_NULL(&first_tuple_page2_element))
 					{
 						// if first_tuple_page2_element is NULL, then set the corresponding index_entry_element to NULL_USER_VALUE
-						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, NULL_USER_VALUE))
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, NULL_USER_VALUE, UINT32_MAX))
 							return 0;
 						break;
 					}
@@ -251,20 +249,20 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 
 					// compute the number of characters matched
 					uint32_t match_lengths = 0;
-					for(; match_lengths < last_tuple_page1_element.data_size && match_lengths < first_tuple_page2_element.data_size && ((const char*)(last_tuple_page1_element.data))[match_lengths] == ((const char*)(first_tuple_page2_element.data))[match_lengths]; match_lengths++);
+					for(; match_lengths < last_tuple_page1_element.string_or_blob_size && match_lengths < first_tuple_page2_element.string_or_blob_size && ((const char*)(last_tuple_page1_element.string_or_blob_value))[match_lengths] == ((const char*)(first_tuple_page2_element.string_or_blob_value))[match_lengths]; match_lengths++);
 
-					if(match_lengths + 1 < last_tuple_page1_element.data_size) // to ensure that index_entry does not become equal to last_tuple_page1's index representation
+					if(match_lengths + 1 < last_tuple_page1_element.string_or_blob_size) // to ensure that index_entry does not become equal to last_tuple_page1's index representation
 					{
 						user_value last_tuple_page1_element_copy = last_tuple_page1_element;
-						last_tuple_page1_element_copy.data_size = match_lengths + 1;
+						last_tuple_page1_element_copy.string_or_blob_size = match_lengths + 1;
 						// if not set, fail
-						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &last_tuple_page1_element_copy))
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &last_tuple_page1_element_copy, UINT32_MAX))
 							return 0;
 					}
 					else // bad edge case, no truncation can be done now
 					{
 						// if not set, fail
-						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &first_tuple_page2_element))
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &first_tuple_page2_element, UINT32_MAX))
 							return 0;
 					}
 					break;
@@ -273,9 +271,9 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 		}
 
 		if(cmp_ltp1_ie == 0)
-			cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, i) * bpttd_p->key_compare_direction[i];
+			cmp_ltp1_ie = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], index_entry, bpttd_p->index_def, STATIC_POSITION(i)) * bpttd_p->key_compare_direction[i];
 		if(cmp_ie_ftp2 == 0)
-			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
+			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, STATIC_POSITION(i), first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
 
 		i++;
 	}
@@ -286,7 +284,7 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 	{
 		int new_cmp_ie_ftp2 = cmp_ie_ftp2;
 		if(new_cmp_ie_ftp2 == 0)
-			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
+			new_cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, STATIC_POSITION(i), first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
 
 		if(new_cmp_ie_ftp2 == -1)
 		{
@@ -295,7 +293,7 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 			break;
 		}
 
-		const element_def* ele_d = get_element_def_by_id(bpttd_p->index_def, i);
+		const data_type_info* ele_d = get_type_info_for_element_from_tuple_def(bpttd_p->index_def, STATIC_POSITION(i));
 
 		switch(bpttd_p->key_compare_direction[i])
 		{
@@ -304,83 +302,105 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 			{
 				// NULL is the least value of any type
 				// check if index entry element is NULL
-				if(is_NULL_in_tuple(bpttd_p->index_def, i, index_entry))
-					break;
+				{
+					const user_value index_entry_element = get_value_from_element_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry);
+					if(is_user_value_NULL(&index_entry_element))
+						break;
+				}
 
 				// if not NULL, then set it to NULL
 				// this may fail if the element is non-nullable
-				if(set_element_in_tuple(bpttd_p->index_def, i, index_entry, NULL_USER_VALUE))
+				if(set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, NULL_USER_VALUE, UINT32_MAX))
 					break;
 
 				// else set it to min_val for that element
-				const user_value min_val = get_MIN_user_value(ele_d);
-				// if not set, fail
-				if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &min_val))
-					return 0;
+				if(is_primitive_numeral_type_info(ele_d))
+				{
+					const user_value min_val = get_MIN_value_for_primitive_numeral_type_info(ele_d);
+					// if not set, fail
+					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &min_val, UINT32_MAX))
+						return 0;
+				}
+				else // min value of a non primitive numeral type info is generally EMPTY_USER_VALUE
+				{
+					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_USER_VALUE, UINT32_MAX))
+						return 0;
+				}
 				break;
 			}
 			// if max value exists then set it, else set the last_tuple_page2's ith element
 			case DESC :
 			{
-				// max values of *STRING and *BLOB types are difficult to compute
 				// handling the numeral element case first
-				if(ele_d->type != STRING && ele_d->type != BLOB
-				&& ele_d->type != VAR_STRING && ele_d->type != VAR_BLOB)
+				if(is_primitive_numeral_type_info(ele_d))
 				{
 					// if not set, fail
-					const user_value max_val = get_MAX_user_value_for_numeral_element_def(ele_d);
-					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &max_val))
+					const user_value max_val = get_MAX_value_for_primitive_numeral_type_info(ele_d);
+					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &max_val, UINT32_MAX))
 						return 0;
 				}
-				else
+				else if(ele_d->type == STRING || ele_d->type == BLOB) // max values of STRING and BLOB types are difficult to compute
 				{
 					const user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 					if(is_user_value_NULL(&first_tuple_page2_element))
 					{
 						// the shortest string greater than NULL, is an empty string
-						if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, EMPTY_USER_VALUE))
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_USER_VALUE, UINT32_MAX))
 							return 0;
 						break;
 					}
 
-					// count the number of CHAR_MAX characters in the prefix of the first_tuple_page2_element
+					// count the number of UCHAR_MAX characters in the prefix of the first_tuple_page2_element
 					uint32_t maximum_char_value_prefix_count = 0;
-					while(maximum_char_value_prefix_count < first_tuple_page2_element.data_size
-						&& ((const char*)(first_tuple_page2_element.data))[maximum_char_value_prefix_count] == SIGNED_MAX_VALUE_OF(char))
+					while(maximum_char_value_prefix_count < first_tuple_page2_element.string_or_blob_size
+						&& ((const unsigned char*)(first_tuple_page2_element.string_or_blob_value))[maximum_char_value_prefix_count] == UNSIGNED_MAX_VALUE_OF(unsigned char))
 						maximum_char_value_prefix_count++;
 
-					// build max value element, and if memory allocation fails then quit
-					int memory_allocation_error = 0;
-					user_value max_val = get_MAX_user_value_for_string_OR_blob_element_def(ele_d, min(maximum_char_value_prefix_count + 1, first_tuple_page2_element.data_size), &memory_allocation_error);
-					if(memory_allocation_error)
-						exit(-1);
+					// build max value element inside index entry of length `maximum_char_value_prefix_count + 1`, where each byte is UCHAR_MAX
 
-					// if not set, fail
-					if(!set_element_in_tuple(bpttd_p->index_def, i, index_entry, &max_val))
-					{
-						free((void*)max_val.data);
+					// first set it to EMPTY_USER_VALUE i.e. empty string
+					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_USER_VALUE, UINT32_MAX))
 						return 0;
+
+					// a variable string or blob has 0 elements if empty, if so expand it to hold maximum_char_value_prefix_count elements, and then again expand it by 1 byte, we would still be fine if the second expand fails
+					if(get_element_count_for_element_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry) == 0)
+					{
+						if(!expand_element_count_for_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, 0, maximum_char_value_prefix_count, UINT32_MAX))
+							return 0;
+						expand_element_count_for_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, maximum_char_value_prefix_count, 1, UINT32_MAX);
 					}
-					free((void*)max_val.data);
+
+					// now set all the elements of this new string or blob type to UCHAR_MAX
+					for(uint32_t j = 0; j < get_element_count_for_element_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry); j++)
+					{
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i, j), index_entry, &(user_value){.uint_value = UNSIGNED_MAX_VALUE_OF(unsigned char)}, UINT32_MAX))
+							return 0;
+					}
+				}
+				else // MAX values for TUPLE and ARRAY types are generally not defined, so copy the first tuple page2 element as is
+				{
+					// if not set, fail
+					if(!set_element_in_tuple_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, UINT32_MAX))
+						return 0;
 				}
 				break;
 			}
 		}
 
 		if(cmp_ie_ftp2 == 0)
-			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, i, first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
+			cmp_ie_ftp2 = compare_elements_of_tuple(index_entry, bpttd_p->index_def, STATIC_POSITION(i), first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]) * bpttd_p->key_compare_direction[i];
 
 		i++;
 	}
 
 	// copy the child_page_id to the last element in the index entry
-	if(!set_element_in_tuple(bpttd_p->index_def, get_element_def_count_tuple_def(bpttd_p->index_def) - 1, index_entry, &((const user_value){.uint_value = child_page_id})))
+	if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((const user_value){.uint_value = child_page_id}), UINT32_MAX))
 		return 0;
 
 	// success
 	return 1;
-}*/
+}
 
 int split_insert_bplus_tree_leaf_page(persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error, void* output_parent_insert)
 {
