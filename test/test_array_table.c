@@ -22,25 +22,33 @@ int abort_error = 0;
 
 uint32_t access_counter = 0;
 
+tuple_def tuple_definition;
+char tuple_type_info_memory[sizeof_tuple_data_type_info(2)];
+data_type_info* tuple_type_info = (data_type_info*)tuple_type_info_memory;
+data_type_info c1_type_info;
+
 tuple_def* get_tuple_definition()
 {
 	// initialize tuple definition and insert element definitions
-	tuple_def* def = get_new_tuple_def("entry", 2, PAGE_SIZE);
+	initialize_tuple_data_type_info(tuple_type_info, "entry", 1, PAGE_SIZE, 2);
 
-	insert_element_def(def, "access_index", UINT, 4, 1, ZERO_USER_VALUE);
-	insert_element_def(def, "content", STRING, 60, 1, EMPTY_USER_VALUE);
+	strcpy(tuple_type_info->containees[0].field_name, "access_index");
+	tuple_type_info->containees[0].type_info = UINT_NON_NULLABLE[4];
 
-	finalize_tuple_def(def);
+	c1_type_info = get_fixed_length_string_type("STRING", 60, 0);
+	strcpy(tuple_type_info->containees[1].field_name, "content");
+	tuple_type_info->containees[1].type_info = &c1_type_info;
 
-	if(is_empty_tuple_def(def))
+	if(!initialize_tuple_def(&tuple_definition, tuple_type_info))
 	{
-		printf("ERROR BUILDING TUPLE DEFINITION\n");
+		printf("failed finalizing tuple definition\n");
 		exit(-1);
 	}
 
-	print_tuple_def(def);
+	print_tuple_def(&tuple_definition);
 	printf("\n\n");
-	return def;
+
+	return &tuple_definition;
 }
 
 int vaccum_in_array_table(uint64_t root_page_id, uint64_t vaccum_bucket_id, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
@@ -95,8 +103,8 @@ int update_in_array_table(uint64_t root_page_id, bucket_range lock_range, uint32
 		{
 			char record[64];
 			init_tuple(attd_p->record_def, record);
-			set_element_in_tuple(attd_p->record_def, 0, record, &(user_value){.uint_value = access_counter});
-			set_element_in_tuple(attd_p->record_def, 1, record, &(user_value){.data = datas[i], .data_size = strlen(datas[i])});
+			set_element_in_tuple(attd_p->record_def, STATIC_POSITION(0), record, &(user_value){.uint_value = access_counter}, UINT32_MAX);
+			set_element_in_tuple(attd_p->record_def, STATIC_POSITION(1), record, &(user_value){.string_value = datas[i], .string_size = strlen(datas[i])}, UINT32_MAX);
 
 			success += set_in_array_table(atrl_p, bucket_ids[i], record, transaction_id, &abort_error);
 			if(abort_error)
@@ -336,7 +344,6 @@ int main()
 	delete_unWALed_page_modification_methods(pmm_p);
 
 	// delete the record definition
-	delete_tuple_def(record_def);
 
 	return 0;
 }
