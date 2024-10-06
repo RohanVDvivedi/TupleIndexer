@@ -616,9 +616,24 @@ static int free_page(void* context, const void* transaction_id, uint64_t page_id
 	return is_freed;
 }
 
+#include<page_layout_unaltered.h>
+
+static int is_valid_page_access_specs_as_params(const page_access_specs* pas_p)
+{
+	// bytes required to store page id, must be between 1 and 8 both inclusive
+	if(pas_p->page_id_width == 0 || pas_p->page_id_width > 8)
+		return 0;
+
+	// if the page can not even fit the system header on the page, then fail
+	if(!can_page_header_fit_on_page(pas_p->system_header_size, pas_p->page_size))
+		return 0;
+
+	return 1;
+}
+
 page_access_methods* get_new_unWALed_in_memory_data_store(const page_access_specs* pas_suggested)
 {
-	if(!is_valid_page_access_specs(pas_suggested))
+	if(!is_valid_page_access_specs_as_params(pas_suggested))
 		return 0;
 
 	page_access_methods* pam_p = malloc(sizeof(page_access_methods));
