@@ -97,31 +97,57 @@ void print_record(record* r)
 		r->index, r->name, r->age, r->sex, r->email, r->phone, r->score, r->update);
 }
 
+tuple_def tuple_definition;
+char tuple_type_info_memory[sizeof_tuple_data_type_info(8)];
+data_type_info* tuple_type_info = (data_type_info*)tuple_type_info_memory;
+data_type_info c1_type_info;
+data_type_info c4_type_info;
+data_type_info c5_type_info;
+data_type_info c7_type_info;
+
 tuple_def* get_tuple_definition()
 {
 	// initialize tuple definition and insert element definitions
-	tuple_def* def = get_new_tuple_def("students", 7, PAGE_SIZE);
+	initialize_tuple_data_type_info(tuple_type_info, "students", 1, PAGE_SIZE, 8);
 
-	insert_element_def(def, "index", INT, 4, 0, NULL_USER_VALUE);
-	insert_element_def(def, "name", VAR_STRING, 1, 0, NULL_USER_VALUE);
-	insert_element_def(def, "age", UINT, 1, 0, NULL_USER_VALUE);
-	insert_element_def(def, "sex", BIT_FIELD, 1, 0, NULL_USER_VALUE);
-	insert_element_def(def, "email", VAR_STRING, 1, 0, NULL_USER_VALUE);
-	insert_element_def(def, "phone", STRING, 14, 0, NULL_USER_VALUE);
-	insert_element_def(def, "score", UINT, 1, 0, NULL_USER_VALUE);
-	insert_element_def(def, "update", VAR_STRING, 1, 0, NULL_USER_VALUE);
+	strcpy(tuple_type_info->containees[0].field_name, "index");
+	tuple_type_info->containees[0].type_info = INT_NULLABLE[4];
 
-	finalize_tuple_def(def);
+	c1_type_info = get_variable_length_string_type("STRING", 256);
+	strcpy(tuple_type_info->containees[1].field_name, "name");
+	tuple_type_info->containees[1].type_info = &c1_type_info;
 
-	if(is_empty_tuple_def(def))
+	strcpy(tuple_type_info->containees[2].field_name, "age");
+	tuple_type_info->containees[2].type_info = UINT_NULLABLE[1];
+
+	strcpy(tuple_type_info->containees[3].field_name, "sex");
+	tuple_type_info->containees[3].type_info = BIT_FIELD_NULLABLE[1];
+
+	c4_type_info = get_variable_length_string_type("STRING", 256);
+	strcpy(tuple_type_info->containees[4].field_name, "email");
+	tuple_type_info->containees[4].type_info = &c4_type_info;
+
+	c5_type_info = get_fixed_length_string_type("STRING", 14, 1);
+	strcpy(tuple_type_info->containees[5].field_name, "phone");
+	tuple_type_info->containees[5].type_info = &c5_type_info;
+
+	strcpy(tuple_type_info->containees[6].field_name, "score");
+	tuple_type_info->containees[6].type_info = UINT_NULLABLE[1];
+
+	c7_type_info = get_variable_length_string_type("STRING", 256);
+	strcpy(tuple_type_info->containees[7].field_name, "update");
+	tuple_type_info->containees[7].type_info = &c7_type_info;
+
+	if(!initialize_tuple_def(&tuple_definition, tuple_type_info))
 	{
-		printf("ERROR BUILDING TUPLE DEFINITION\n");
+		printf("failed finalizing tuple definition\n");
 		exit(-1);
 	}
 
-	print_tuple_def(def);
+	print_tuple_def(&tuple_definition);
 	printf("\n\n");
-	return def;
+
+	return &tuple_definition;
 }
 
 void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const record* r)
