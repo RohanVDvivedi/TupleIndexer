@@ -37,7 +37,7 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 		for(uint32_t i = 0; i < key_element_count; i++)
 		{
 			key_type_info->containees[i].field_name[0] = '\0'; // field name here is redundant
-			key_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple(record_def, key_element_ids[i]);
+			key_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple_def(record_def, key_element_ids[i]);
 		}
 
 		httd_p->key_def = malloc(sizeof(tuple_def));

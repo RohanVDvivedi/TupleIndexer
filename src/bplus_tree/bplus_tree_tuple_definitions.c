@@ -51,7 +51,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 		for(uint32_t i = 0; i < key_element_count; i++)
 		{
 			index_type_info->containees[i].field_name[0] = '\0'; // field name here is redundant
-			index_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple(record_def, key_element_ids[i]);
+			index_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple_def(record_def, key_element_ids[i]);
 		}
 
 		strcpy(index_type_info->containees[key_element_count].field_name, "child_page_id");
@@ -79,7 +79,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 		for(uint32_t i = 0; i < key_element_count; i++)
 		{
 			key_type_info->containees[i].field_name[0] = '\0'; // field name here is redundant
-			key_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple(record_def, key_element_ids[i]);
+			key_type_info->containees[i].type_info = (data_type_info*) get_type_info_for_element_from_tuple_def(record_def, key_element_ids[i]);
 		}
 
 		bpttd_p->key_def = malloc(sizeof(tuple_def));
