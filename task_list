@@ -19,12 +19,12 @@
      * walking down after an update/delete using iterator also performs this to go next or prev
  * introduce a new page type, reference page
    * it will be primarily store the reference to the root of the data structure
-   * it's tuple_def in compressed form
+   * it's tuple_definitions in compressed form, i.e. serialized compact representation of parameters that can construct bplus_tree_tuple_defs structure, if it points to the root of bplus_tree
    * its reference counter -> which if reaches 0, then the underlying data structure and the page get destroyed
-   * you may also store statistic information like height, fanout, number of inserts/updates per second
+   * you may also store statistic information like height, fanout, number of inserts/updates per second etc on this page
    * since this page and its underlying root that it points to are both fixed, the referenceed root pointer may never be appointed
    * at times it can try to relocate the root page (needs to be done gracefully in case of linked_page_list, since it is circular and not a tree)
-   * it can also be used to house locking information on the underlying data structure
+   * it can also be used to house locking information for the underlying data structure
  * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
    * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
    * the root page has a reference counter, and the data is all deleted if the reference counter reaches zero
