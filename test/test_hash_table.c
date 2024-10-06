@@ -139,14 +139,14 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 {
 	init_tuple(def, tuple);
 
-	set_element_in_tuple(def, 0, tuple, &((user_value){.int_value = r->index}));
-	set_element_in_tuple(def, 1, tuple, &((user_value){.data = r->name, .data_size = strlen(r->name)}));
-	set_element_in_tuple(def, 2, tuple, &((user_value){.uint_value = r->age}));
-	set_element_in_tuple(def, 3, tuple, &((user_value){.bit_field_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}));
-	set_element_in_tuple(def, 4, tuple, &((user_value){.data = r->email, .data_size = strlen(r->email)}));
-	set_element_in_tuple(def, 5, tuple, &((user_value){.data = r->phone, .data_size = strlen(r->phone)}));
-	set_element_in_tuple(def, 6, tuple, &((user_value){.uint_value = r->score}));
-	set_element_in_tuple(def, 7, tuple, &((user_value){.data = r->update, .data_size = strlen(r->update)}));
+	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((user_value){.int_value = r->index}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = r->name, .string_size = strlen(r->name)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(2), tuple, &((user_value){.uint_value = r->age}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(3), tuple, &((user_value){.bit_field_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(4), tuple, &((user_value){.string_value = r->email, .string_size = strlen(r->email)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(5), tuple, &((user_value){.string_value = r->phone, .string_size = strlen(r->phone)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(6), tuple, &((user_value){.uint_value = r->score}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(7), tuple, &((user_value){.string_value = r->update, .string_size = strlen(r->update)}), UINT32_MAX);
 }
 
 void build_key_tuple_from_record_struct(const hash_table_tuple_defs* httd_p, void* key_tuple, const record* r)
@@ -158,22 +158,22 @@ void build_key_tuple_from_record_struct(const hash_table_tuple_defs* httd_p, voi
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
-	r->index = get_value_from_element_from_tuple(tpl_d, 0, tupl).int_value;
-	user_value name_data = get_value_from_element_from_tuple(tpl_d, 1, tupl);
-	strncpy(r->name, name_data.data, name_data.data_size);
-	r->age = get_value_from_element_from_tuple(tpl_d, 2, tupl).uint_value;
+	r->index = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(0), tupl).int_value;
+	user_value name_data = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(1), tupl);
+	strncpy(r->name, name_data.string_value, name_data.string_size);
+	r->age = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(2), tupl).uint_value;
 	uint8_t sex = 0;
 	strcpy(r->sex, "Female");
-	sex = get_value_from_element_from_tuple(tpl_d, 3, tupl).bit_field_value;
+	sex = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(3), tupl).bit_field_value;
 	if(sex)
 		strcpy(r->sex, "Male");
-	user_value email_data = get_value_from_element_from_tuple(tpl_d, 4, tupl);
-	strncpy(r->email, email_data.data, email_data.data_size);
-	user_value phone_data = get_value_from_element_from_tuple(tpl_d, 5, tupl);
-	strncpy(r->phone, phone_data.data, phone_data.data_size);
-	r->score = get_value_from_element_from_tuple(tpl_d, 6, tupl).uint_value;
-	user_value update_data = get_value_from_element_from_tuple(tpl_d, 7, tupl);
-	strncpy(r->update, update_data.data, update_data.data_size);
+	user_value email_data = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(4), tupl);
+	strncpy(r->email, email_data.string_value, email_data.string_size);
+	user_value phone_data = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(5), tupl);
+	strncpy(r->phone, phone_data.string_value, phone_data.string_size);
+	r->score = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(6), tupl).uint_value;
+	user_value update_data = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(7), tupl);
+	strncpy(r->update, update_data.string_value, update_data.string_size);
 }
 
 uint64_t hash_func(const void* data, uint32_t data_size)
