@@ -21,6 +21,7 @@
 //#define KEY_SEX_EMAIL
 //#define KEY_SCORE_INDEX
 //#define KEY_SCORE_NAME
+//#define KEY_NAME0_EMAIL0_PHONE1 // key is first character of name, frist character of email, second character of phone number
 
 #define TEST_DATA_FILE         "./testdata.csv"
 #define TEST_DATA_RANDOM_FILE  "./testdata_random.csv"
@@ -53,6 +54,10 @@
 	#define KEY_ELEMENTS_COUNT			2
 	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(6), STATIC_POSITION(1)}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
+#elif defined KEY_NAME0_EMAIL0_PHONE1
+	#define KEY_ELEMENTS_COUNT			3
+	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(1,0), STATIC_POSITION(4,0), STATIC_POSITION(5,1)}
+	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC,ASC}
 #endif
 
 // attributes of the page_access_specs suggestions for creating page_access_methods
