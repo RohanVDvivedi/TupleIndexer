@@ -27,31 +27,31 @@
 
 #if defined KEY_NAME_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
-	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){1,4}
+	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(1), STATIC_POSITION(4)}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #elif defined KEY_INDEX_PHONE
 	#define KEY_ELEMENTS_COUNT			2
-	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){0,5}
+	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(0), STATIC_POSITION(5)}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #elif defined KEY_PHONE_SCORE
 	#define KEY_ELEMENTS_COUNT			2
-	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){5,6}
+	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(5), STATIC_POSITION(6)}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #elif defined KEY_EMAIL_AGE_SEX
 	#define KEY_ELEMENTS_COUNT			3
-	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){4,2,3}
+	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(4), STATIC_POSITION(2), STATIC_POSITION(3)}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC,ASC}
 #elif defined KEY_SEX_EMAIL
 	#define KEY_ELEMENTS_COUNT			2
-	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){3,4}
+	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(3), STATIC_POSITION(4)}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #elif defined KEY_SCORE_INDEX
 	#define KEY_ELEMENTS_COUNT			2
-	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){6,0}
+	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(6), STATIC_POSITION(0)}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #elif defined KEY_SCORE_NAME
 	#define KEY_ELEMENTS_COUNT			2
-	#define KEY_ELEMENTS_IN_RECORD 		(uint32_t []){6,1}
+	#define KEY_ELEMENTS_IN_RECORD 		(positional_accessor []){STATIC_POSITION(6), STATIC_POSITION(1)}
 	#define KEY_ELEMENTS_SORT_DIRECTION (compare_direction []){ASC,ASC}
 #endif
 
@@ -1113,7 +1113,6 @@ int main()
 	delete_unWALed_page_modification_methods(pmm_p);
 
 	// delete the record definition
-	delete_tuple_def(record_def);
 
 	return 0;
 }
