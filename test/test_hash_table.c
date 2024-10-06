@@ -481,7 +481,7 @@ result update_non_key_element_in_file(uint64_t root_page_id, char* element, char
 		// go next until you can
 		while(1)
 		{
-			res.operations_succeeded += update_non_key_element_in_place_at_hash_table_iterator(hti_p, 7, &((user_value){.data = element, .data_size = strlen(element)}), transaction_id, &abort_error);
+			res.operations_succeeded += update_non_key_element_in_place_at_hash_table_iterator(hti_p, STATIC_POSITION(7), &((user_value){.string_value = element, .string_size = strlen(element)}), transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -561,7 +561,7 @@ result update_in_file(uint64_t root_page_id, char* element, char* file_name, uin
 		char key_tuple[PAGE_SIZE] = {};
 		build_key_tuple_from_record_struct(httd_p, key_tuple, &r);
 
-		set_element_in_tuple(httd_p->lpltd.record_def, 7, record_tuple, &((user_value){.data = element, .data_size = strlen(element)}));
+		set_element_in_tuple(httd_p->lpltd.record_def, STATIC_POSITION(7), record_tuple, &((user_value){.string_value = element, .string_size = strlen(element)}), UINT32_MAX);
 
 		// printing built tuple
 		//char print_buffer[PAGE_SIZE];
