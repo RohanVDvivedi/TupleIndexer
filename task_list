@@ -23,6 +23,7 @@
    * since this function will also modify the parent page, do relese lock on the parent page also if this operation succeeds
    * these functions will be called inside the merge_and unlock_pages_up right before we attempt to merge
    * if the borrowing succeeds we can directly release locks on all the three pages, pop the parent from the locked pages stack and break out of this loop
+ * an efficient stream based hash function after TupleStore supports it, this must preferably have an interface in Cutlery and be used in TupleStore with a sample implemntation in TupleIndexer
  * implement heap_table (needs to be refined)
    * using array_table as a lookup, bucket_id->(page_id, free_space)
    * free_space will be a hint and may not represent the actual free space on the page
