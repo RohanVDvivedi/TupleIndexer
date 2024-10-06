@@ -20,33 +20,41 @@
 const void* transaction_id = NULL;
 int abort_error = 0;
 
+tuple_def tuple_definition;
+char tuple_type_info_memory[sizeof_tuple_data_type_info(2)];
+data_type_info* tuple_type_info = (data_type_info*)tuple_type_info_memory;
+data_type_info c1_type_info;
+
 tuple_def* get_tuple_definition()
 {
 	// initialize tuple definition and insert element definitions
-	tuple_def* def = get_new_tuple_def("students", 2, PAGE_SIZE);
+	initialize_tuple_data_type_info(tuple_type_info, "students", 1, PAGE_SIZE, 2);
 
-	insert_element_def(def, "index", INT, 4, 0, NULL_USER_VALUE);
-	insert_element_def(def, "name", VAR_STRING, 1, 0, NULL_USER_VALUE);
+	strcpy(tuple_type_info->containees[0].field_name, "index");
+	tuple_type_info->containees[0].type_info = INT_NULLABLE[4];
 
-	finalize_tuple_def(def);
+	c1_type_info = get_variable_length_string_type("STRING", 256);
+	strcpy(tuple_type_info->containees[1].field_name, "name");
+	tuple_type_info->containees[1].type_info = &c1_type_info;
 
-	if(is_empty_tuple_def(def))
+	if(!initialize_tuple_def(&tuple_definition, tuple_type_info))
 	{
-		printf("ERROR BUILDING TUPLE DEFINITION\n");
+		printf("failed finalizing tuple definition\n");
 		exit(-1);
 	}
 
-	print_tuple_def(def);
+	print_tuple_def(&tuple_definition);
 	printf("\n\n");
-	return def;
+
+	return &tuple_definition;
 }
 
-void initialize_tuple(tuple_def* def, char* tuple, int index, const char* name)
+void initialize_tuple(const tuple_def* def, char* tuple, int index, const char* name)
 {
 	init_tuple(def, tuple);
 
-	set_element_in_tuple(def, 0, tuple, &((user_value){.int_value = index}));
-	set_element_in_tuple(def, 1, tuple, &((user_value){.data = name, .data_size = strlen(name)}));
+	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((user_value){.int_value = index}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
 }
 
 int insert_counter = 0;
@@ -326,7 +334,7 @@ int reindex_all(uint64_t head_page_id, int count, char* name, const linked_page_
 			if(count == 0)
 				break;
 
-			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, 0, &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
+			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(0), &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -334,7 +342,7 @@ int reindex_all(uint64_t head_page_id, int count, char* name, const linked_page_
 			}
 			if(name != NULL)
 			{
-				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, 1, &((user_value){.data = name, .data_size = strlen(name)}), transaction_id, &abort_error);
+				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(1), &((user_value){.string_value = name, .string_size = strlen(name)}), transaction_id, &abort_error);
 				if(abort_error)
 				{
 					printf("ABORTED\n");
@@ -394,7 +402,7 @@ int reindex_all_reverse(uint64_t head_page_id, int count, char* name, const link
 			if(count == 0)
 				break;
 
-			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, 0, &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
+			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(0), &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -402,7 +410,7 @@ int reindex_all_reverse(uint64_t head_page_id, int count, char* name, const link
 			}
 			if(name != NULL)
 			{
-				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, 1, &((user_value){.data = name, .data_size = strlen(name)}), transaction_id, &abort_error);
+				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(1), &((user_value){.string_value = name, .string_size = strlen(name)}), transaction_id, &abort_error);
 				if(abort_error)
 				{
 					printf("ABORTED\n");
@@ -836,7 +844,6 @@ int main()
 	delete_unWALed_page_modification_methods(pmm_p);
 
 	// delete the record definition
-	delete_tuple_def(record_def);
 
 	return 0;
 }
