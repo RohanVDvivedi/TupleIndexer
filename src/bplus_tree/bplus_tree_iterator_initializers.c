@@ -160,7 +160,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 
 #include<bplus_tree_walk_down.h>
 
-int initialize_bplus_tree_iterator_stacked(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
@@ -169,7 +169,7 @@ int initialize_bplus_tree_iterator_stacked(bplus_tree_iterator* bpi_p, uint64_t 
 	// TODO
 }
 
-int initialize_bplus_tree_iterator_unstacked(bplus_tree_iterator* bpi_p, uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
