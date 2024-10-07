@@ -1,10 +1,5 @@
 ** PICKED TASKS
 
-  * initialize_bplus_tree_iterator_stacked(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
-    * provide either a valid non empty lps or a root_page_id
-    * all lps pages are transferred to the bpi_p upon success, on failure lps is left untouched, on abort all locks held are released 
-  * initialize_bplus_tree_iterator_unstacked(bplus_tree_iterator* bpi_p, uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
-
  * bplus_tree WRITE_LOCK-ed stacked iterator based update and delete tuple
    * update
      * allowed only if the current tuple is not NULL, and the key of the current record matches with current tuple
