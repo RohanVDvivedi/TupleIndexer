@@ -181,20 +181,18 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	bpi_p->pam_p = pam_p;
 	bpi_p->pmm_p = pmm_p;
 
-	bpi_p->lps = (locked_pages_stack){};
-
 	// if lps is not empty, copy its contents to bpi_p->lps
 	if(get_element_count_locked_pages_stack(&lps) != 0)
 	{
-		bpi_p->lps = lps; // root page is still locked so it is unchanged, so the level must not have changed
+		bpi_p->lps = lps; // root page is still locked so it is unchanged, so the level must not have changed, nor do we have to change it's capacity
 		lps = (locked_pages_stack){}; // lps is safely made empty
 	}
 	else
 	{
-		deinitialize_locked_pages_stack(&lps); // destriy the lps that the user provided and make it empty
+		deinitialize_locked_pages_stack(&lps); // destroy the lps that the user provided and make it empty, since no locked are held by it, it can not cause any abort error
 		lps = (locked_pages_stack){};
 
-		bpi_p->lps = initialize_locked_pages_stack_for_walk_down(root_page_id, lock_type, bpttd_p, pam_p, transaction_id, abort_error);
+		bpi_p->lps = initialize_locked_pages_stack_for_walk_down(root_page_id, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
 	}
@@ -202,16 +200,18 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	// lps does not hold any memory or resources from this point on
 	// if it had any then it has been transferred to the bpi_p->lps
 
-	walk_down_locking_parent_pages_for_stacked_iterator_using_key(&(bpi_p->lps), key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, transaction_id, abort_error);
+	// walk down for the current value of bpi_p->lps
+	walk_down_locking_parent_pages_for_stacked_iterator_using_key(&(bpi_p->lps), key, key_element_count_concerned, find_pos, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
-		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), pam_p, transaction_id, abort_error);
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
 		return 0;
 	}
 
+	// adjust bplus_tree_iterator position
 	if(!adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error))
 	{
-		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), pam_p, transaction_id, abort_error);
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
 		return 0;
 	}
 
@@ -242,9 +242,11 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 	bpi_p->pam_p = pam_p;
 	bpi_p->pmm_p = pmm_p;
 
-	bpi_p->curr_page = walk_down_for_iterator_using_key(root_page_id, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, transaction_id, abort_error);
+	// walk down for the current value of bpi_p->lps
+	bpi_p->curr_page = walk_down_for_iterator_using_key(root_page_id, key, key_element_count_concerned, find_pos, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
+	// adjust bplus_tree_iterator position
 	return adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error);
 }
