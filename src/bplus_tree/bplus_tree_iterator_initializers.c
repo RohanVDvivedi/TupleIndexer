@@ -243,13 +243,15 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 	bpi_p->pmm_p = pmm_p;
 
 	// walk down for the current value of bpi_p->lps
-	bpi_p->curr_page = walk_down_for_iterator_using_key(root_page_id, key, key_element_count_concerned, find_pos, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
+	bpi_p->curr_page = walk_down_for_iterator_using_key(root_page_id, key, key_element_count_concerned, find_pos, lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
 	// adjust bplus_tree_iterator position
 	return adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error);
 }
+
+#include<stdlib.h>
 
 bplus_tree_iterator* get_new_bplus_tree_stacked_iterator(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
