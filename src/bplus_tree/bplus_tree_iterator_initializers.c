@@ -250,3 +250,31 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 	// adjust bplus_tree_iterator position
 	return adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error);
 }
+
+bplus_tree_iterator* get_new_bplus_tree_stacked_iterator(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	bplus_tree_iterator bpi_temp;
+	if(!initialize_bplus_tree_stacked_iterator(&bpi_temp, root_page_id, (locked_pages_stack){}, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error))
+		return NULL;
+
+	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
+	if(bpi_p == NULL)
+		exit(-1);
+	(*bpi_p) = bpi_temp;
+
+	return bpi_p;
+}
+
+bplus_tree_iterator* get_new_bplus_tree_unstacked_iterator(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	bplus_tree_iterator bpi_temp;
+	if(!initialize_bplus_tree_unstacked_iterator(&bpi_temp, root_page_id, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error))
+		return NULL;
+
+	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
+	if(bpi_p == NULL)
+		exit(-1);
+	(*bpi_p) = bpi_temp;
+
+	return bpi_p;
+}
