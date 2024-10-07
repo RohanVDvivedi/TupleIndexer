@@ -166,6 +166,29 @@ int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_p
 	return 0;
 }
 
+uint32_t count_unlockable_parent_pages_for_split_insert(const locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p)
+{
+	uint32_t result = 0;
+
+	// iterate from the bottom of the stack
+	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(locked_pages_stack_p); i++)
+	{
+		const locked_page_info* ppage_to_check = get_from_bottom_of_locked_pages_stack(locked_pages_stack_p, i);
+
+		// leaf pages are not to be considered for this
+		// this must surely be the last iteration of the loop, as top most page must be a leaf page
+		if(is_bplus_tree_leaf_page(&(ppage_to_check->ppage), bpttd_p))
+			break;
+
+		// if you reach here, then ppage_to_check is not a leaf page
+		// if ppage_to_check will not require a split, then we can release locks on all the parent pages of ppage_to_check (whose count is i, as this is the ith page from bottom)
+		if(!may_require_split_for_insert_for_bplus_tree(&(ppage_to_check->ppage), bpttd_p->pas_p->page_size, bpttd_p->index_def))
+			result = i;
+	}
+
+	return result;
+}
+
 int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
@@ -228,6 +251,30 @@ int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_st
 	}
 
 	return 0;
+}
+
+uint32_t count_unlockable_parent_pages_for_merge(const locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p)
+{
+	uint32_t result = 0;
+
+	// iterate from the bottom of the stack
+	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(locked_pages_stack_p); i++)
+	{
+		const locked_page_info* ppage_to_check = get_from_bottom_of_locked_pages_stack(locked_pages_stack_p, i);
+
+		// leaf pages are not to be considered for this
+		// this must surely be the last iteration of the loop, as top most page must be a leaf page
+		if(is_bplus_tree_leaf_page(&(ppage_to_check->ppage), bpttd_p))
+			break;
+
+		// if the interior page index record, at child_index in ppage_to_check if deleted, will the ppage_to_check require merging
+		// if not then release all locks ona all parents above ppage_to_check (whose count is i, as this is the ith page from bottom)
+		// mind well we still need lock on ppage_to_check, as merge on its child will require us to delete corresponding 1 index entry from ppage_to_check
+		if(!may_require_merge_or_redistribution_for_delete_for_bplus_tree_interior_page(&(ppage_to_check->ppage), bpttd_p->pas_p->page_size, bpttd_p->index_def, ppage_to_check->child_index))
+			result = i;
+	}
+
+	return result;
 }
 
 int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, uint32_t* release_for_split, uint32_t* release_for_merge, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
@@ -649,7 +696,7 @@ int can_walk_down_prev_locking_parent_pages_for_stacked_iterator(const locked_pa
 	// iterate from the bottom of the stack
 	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(locked_pages_stack_p); i++)
 	{
-		locked_page_info* ppage_to_check = get_from_bottom_of_locked_pages_stack(locked_pages_stack_p, i);
+		const locked_page_info* ppage_to_check = get_from_bottom_of_locked_pages_stack(locked_pages_stack_p, i);
 
 		// leaf pages are not to be considered for this
 		// this must surely be the last iteration of the loop, as top most page must be a leaf page

@@ -33,9 +33,17 @@ int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_p
 #define walk_down_locking_parent_pages_for_split_insert_using_key(locked_pages_stack_p, key, bpttd_p, pam_p, transaction_id, abort_error)       walk_down_locking_parent_pages_for_split_insert(locked_pages_stack_p, key, 1, bpttd_p, pam_p, transaction_id, abort_error)
 #define walk_down_locking_parent_pages_for_split_insert_using_record(locked_pages_stack_p, record, bpttd_p, pam_p, transaction_id, abort_error) walk_down_locking_parent_pages_for_split_insert(locked_pages_stack_p, record, 0, bpttd_p, pam_p, transaction_id, abort_error)
 
+// get count of parent pages for the locked pages stack, that can be unlocked if we are sure of performing a split_insert in the locked leaf
+// it is agnostic of the tuple to be inserted, it does not check leaf page
+uint32_t count_unlockable_parent_pages_for_split_insert(const locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p);
+
 int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 #define walk_down_locking_parent_pages_for_merge_using_key(locked_pages_stack_p, key, bpttd_p, pam_p, transaction_id, abort_error)       walk_down_locking_parent_pages_for_merge(locked_pages_stack_p, key, 1, bpttd_p, pam_p, transaction_id, abort_error)
 #define walk_down_locking_parent_pages_for_merge_using_record(locked_pages_stack_p, record, bpttd_p, pam_p, transaction_id, abort_error) walk_down_locking_parent_pages_for_merge(locked_pages_stack_p, record, 0, bpttd_p, pam_p, transaction_id, abort_error)
+
+// get count of parent pages for the locked pages stack, that can be unlocked if we are sure of performing a merge in the locked leaf
+// it is agnostic of the tuple to be deleted, it does not check leaf page
+uint32_t count_unlockable_parent_pages_for_merge(const locked_pages_stack* locked_pages_stack_p, const bplus_tree_tuple_defs* bpttd_p);
 
 int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, uint32_t* release_for_split, uint32_t* release_for_merge, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 #define walk_down_locking_parent_pages_for_update_using_key(locked_pages_stack_p, key, release_for_split, release_for_merge, bpttd_p, pam_p, transaction_id, abort_error)       walk_down_locking_parent_pages_for_update(locked_pages_stack_p, key, 1, release_for_split, release_for_merge, bpttd_p, pam_p, transaction_id, abort_error)
