@@ -7,14 +7,13 @@
  * deadlock can also occur in merge_unlock_pages_up, to avoid this we need to prevent merging leaf pages with previous -> need to think if we should do this OR should we leave it onto the MinTxEngine to resolve it
    * many such further cases to be found
  * bplus_tree new features
-   * allow update, delete over a stacked WRITE_LOCK-ed iterator
+   * allow update, delete over a stacked WRITE_LOCK-ed iterator, allowed only if the current tuple is not NULL
    * update only if the keys match
-     * update succeeds even on READ_LOCK_INTERIOR_WRITE_LOCK_LEAF and WRITE_LOCK on the unstacked iterator, if the new record is equal in size to the old record
-   * build logic to use the locked pages stack to figure out how many bottom most parent pages can be discarded for a split_insert or merge, this might help to preemptively release page locks if you plan to delete the iterator right after an update, delete or an insert
-   * store this information in bpttd whether the bplus_tree iterator allows duplicates or not, if it does then do not check for found_index
-   * upon update walk down the tree to the same entry -> think how to do this?, upon delete take a parameter to check whether to go next or previous
-     * if after an update or delete the locked pages stack becomes empty, then deinitialize the stack, initialize it again with the same lock type and walk down again to the right tuple in the write direction
-   * add a non-public utility function called adjust_iterator_position, that will go next or go prev until a desired record is found
+   * update succeeds even on READ_LOCK_INTERIOR_WRITE_LOCK_LEAF and WRITE_LOCK on the unstacked iterator, if the new record is equal in size to the old record
+   * upon update walk down the tree to the same entry
+   * upon delete walk down to next or previous entry
+     * if after an update or delete with stacked WRITE_LOCK-ed iterator if the locked pages stack becomes empty, then deinitialize the stack, initialize it again with the same lock type and walk down again to the right tuple
+   * add a non-public utility function called adjust_iterator_position, that will go next or go prev until a desired record is found after a walk down
      * refactor find function to use this
      * walking down after an update/delete using iterator also performs this to go next or prev
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages
