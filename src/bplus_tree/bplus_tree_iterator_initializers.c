@@ -160,13 +160,62 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 
 #include<bplus_tree_walk_down.h>
 
-int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
 		return 0;
 
-	// TODO
+	// if the lock type is not a read lock, i.e. some pages need to be write locked then pmm_p must not be NULL
+	if(lock_type != READ_LOCK && pmm_p == NULL)
+		return 0;
+
+	// if the user wants to consider all the key elements then
+	// set key_element_count_concerned to bpttd_p->key_element_count
+	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
+		key_element_count_concerned = bpttd_p->key_element_count;
+
+	bpi_p->is_stacked = 1;
+	bpi_p->lock_type = lock_type;
+	bpi_p->bpttd_p = bpttd_p;
+	bpi_p->pam_p = pam_p;
+	bpi_p->pmm_p = pmm_p;
+
+	bpi_p->lps = (locked_pages_stack){};
+
+	// if lps is not empty, copy its contents to bpi_p->lps
+	if(get_element_count_locked_pages_stack(&lps) != 0)
+	{
+		bpi_p->lps = lps; // root page is still locked so it is unchanged, so the level must not have changed
+		lps = (locked_pages_stack){}; // lps is safely made empty
+	}
+	else
+	{
+		deinitialize_locked_pages_stack(&lps); // destriy the lps that the user provided and make it empty
+		lps = (locked_pages_stack){};
+
+		bpi_p->lps = initialize_locked_pages_stack_for_walk_down(root_page_id, lock_type, bpttd_p, pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			return 0;
+	}
+
+	// lps does not hold any memory or resources from this point on
+	// if it had any then it has been transferred to the bpi_p->lps
+
+	walk_down_locking_parent_pages_for_stacked_iterator_using_key(&(bpi_p->lps), key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, transaction_id, abort_error);
+	if(*abort_error)
+	{
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), pam_p, transaction_id, abort_error);
+		return 0;
+	}
+
+	if(!adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error))
+	{
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), pam_p, transaction_id, abort_error);
+		return 0;
+	}
+
+	return 1;
 }
 
 int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
@@ -174,6 +223,19 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
 		return 0;
+
+	// a non stacked iterator can not be a READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
+	if(lock_type == READ_LOCK_INTERIOR_WRITE_LOCK_LEAF)
+		return 0;
+
+	// if the lock type is not a read lock, i.e. some pages need to be write locked then pmm_p must not be NULL
+	if(lock_type != READ_LOCK && pmm_p == NULL)
+		return 0;
+
+	// if the user wants to consider all the key elements then
+	// set key_element_count_concerned to bpttd_p->key_element_count
+	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
+		key_element_count_concerned = bpttd_p->key_element_count;
 
 	bpi_p->is_stacked = 0;
 	bpi_p->bpttd_p = bpttd_p;
