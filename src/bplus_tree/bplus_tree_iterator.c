@@ -9,7 +9,7 @@
 
 #include<stdlib.h>
 
-static persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p)
+persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p)
 {
 	if(bpi_p->is_stacked)
 	{
