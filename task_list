@@ -9,8 +9,6 @@
      * initializes the bplus_tree_iterator
      * walks forward or backward until it reaches the desired tuple that matches the clause
      * we need a function that does different parts of this function to be called over and aver again while initializing the iterator and walking down after an iterator based update and delete
-   * add a function to count the number of pages that can be released from the stack if we are supre for a split or a merge
-     * you may implement this as a simple function
    * update
      * allowed only if the current tuple is not NULL, and the key of the current record matches with current tuple
      * if the iterator is unstacked WRITE_LOCKed or stacked READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, then update only if the records are of same size -> nothing to be done after this
