@@ -473,11 +473,14 @@ int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* 
 	if(0 != compare_tuples(curr_tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, bpi_p->bpttd_p->key_element_count))
 		return 0;
 
+	const uint32_t new_tuple_size = get_tuple_size(bpi_p->bpttd_p->record_def, tuple);
+	const uint32_t old_tuple_size = get_tuple_size(bpi_p->bpttd_p->record_def, curr_tuple);
+
 	// case for unstacked WRITE_LOCKED iterator and stacked READ_LOCK_INTERIOR_WRITE_LOCK_LEAF-locked iterator and the current tuple and the incomming tuple are the same size
 	// if some tuple satisfies this then update inplace
 	if((
 			((!bpi_p->is_stacked) && (bpi_p->pmm_p != NULL)) || (bpi_p->is_stacked && bpi_p->lock_type == READ_LOCK_INTERIOR_WRITE_LOCK_LEAF)
-		) && get_tuple_size(bpi_p->bpttd_p->record_def, tuple) == get_tuple_size(bpi_p->bpttd_p->record_def, curr_tuple))
+		) && new_tuple_size == old_tuple_size)
 	{
 		return update_at_in_sorted_packed_page(
 									get_curr_leaf_page(bpi_p), bpi_p->bpttd_p->pas_p->page_size, 
@@ -510,7 +513,41 @@ int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* 
 
 	// perform the actual update
 	{
+		if(old_tuple_size >= new_tuple_size) // update and merge, here we may not need merge if the tuples are same sized
+		{
+			update_at_in_sorted_packed_page(
+									get_curr_leaf_page(bpi_p), bpi_p->bpttd_p->pas_p->page_size, 
+									bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, bpi_p->bpttd_p->key_element_count,
+									tuple, 
+									bpi_p->curr_tuple_index,
+									bpi_p->pmm_p,
+									transaction_id,
+									abort_error
+								);
+			if(*abort_error)
+				goto ABORT_ERROR;
 
+			merge_and_unlock_pages_up(bpi_p->root_page_id, &(bpi_p->lps), bpi_p->bpttd_p, bpi_p->pam_p, bpi_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+		else // delete and then split insert
+		{
+			delete_in_sorted_packed_page(
+						get_curr_leaf_page(bpi_p), bpi_p->bpttd_p->pas_p->page_size,
+						bpi_p->bpttd_p->record_def,
+						bpi_p->curr_tuple_index,
+						bpi_p->pmm_p,
+						transaction_id,
+						abort_error
+					);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			split_insert_and_unlock_pages_up(bpi_p->root_page_id, &(bpi_p->lps), tuple, bpi_p->curr_tuple_index, bpi_p->bpttd_p, bpi_p->pam_p, bpi_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 	}
 
 	if(prepare_for_delete_iterator_on_success)
