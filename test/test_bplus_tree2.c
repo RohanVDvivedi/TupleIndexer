@@ -350,7 +350,7 @@ int delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first
 		const void* tuple_to_process = get_tuple_bplus_tree_iterator(bpi_p);
 		while(tuple_to_process != NULL && records_deleted < tuples_to_process)
 		{
-			records_deleted += remove_from_linked_page_list_iterator(bpi_p, GO_NEXT_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION, transaction_id, &abort_error);
+			records_deleted += remove_from_bplus_tree_iterator(bpi_p, GO_NEXT_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -414,7 +414,7 @@ int update_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first
 			memory_move(new_tuple, tuple_to_process, get_tuple_size(bpttd_p->record_def, tuple_to_process));
 			set_element_in_tuple(bpttd_p->record_def, STATIC_POSITION(7), new_tuple, &((user_value){.string_value = last_col, .string_size = strlen(last_col)}), UINT32_MAX);
 
-			records_updated += update_at_linked_page_list_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+			records_updated += update_at_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -512,7 +512,7 @@ int main()
 
 	/* TEST ITERATOR BASED UPDATION */
 
-	update_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 233, 15, "VVVVWWWWXXXXYYYYZZZZZZ", &bpttd, pam_p, pmm_p);
+	update_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 233, 15, "VVVVWWWWXXXXYYYYZZZZZZVVVVWWWWXXXXYYYYZZZZZZVVVVWWWWXXXX", &bpttd, pam_p, pmm_p);
 
 	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
 
