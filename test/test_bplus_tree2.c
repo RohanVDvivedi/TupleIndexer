@@ -441,6 +441,44 @@ int update_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first
 	return records_updated;
 }
 
+int delete_all(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	uint32_t records_deleted = 0;
+
+	// open a stacked WRITE_LOCKed iterator at r and delete atleast tuples_to_process number of tuples
+	{
+		printf("deleting all\n");
+		bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, 1, WRITE_LOCK, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		const void* tuple_to_process = get_tuple_bplus_tree_iterator(bpi_p);
+		while(tuple_to_process != NULL)
+		{
+			records_deleted += remove_from_bplus_tree_iterator(bpi_p, GO_NEXT_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			tuple_to_process = get_tuple_bplus_tree_iterator(bpi_p);
+		}
+
+		delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		printf("\n");
+	}
+
+	return records_deleted;
+}
+
 int update_all(uint64_t root_page_id, const char* last_col, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	uint32_t records_updated = 0;
@@ -568,6 +606,23 @@ int main()
 	update_all(root_page_id, "VVVVWWWWXXXXYYYYZZZZZZVVVVWWWWXXXXYYYYZZZZZZVVVVWWWWXXXX", &bpttd, pam_p, pmm_p);
 
 	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
+
+	/* DELETE ALL */
+
+	delete_all(root_page_id, &bpttd, pam_p, pmm_p);
+
+	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
+
+	/* PRINTING EMPTY TREE */
+
+	printf("printing empty tree for you\n");
+	print_bplus_tree(root_page_id, 1, &bpttd, pam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+	printf("\n");
 
 	/* CLEANUP */
 
