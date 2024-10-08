@@ -11,6 +11,7 @@
 
 #include<find_position.h>
 
+// fails only on an abort_error
 static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const void* transaction_id, int* abort_error)
 {
 	// find the leaf_tuple_index for the iterator to start with
@@ -96,10 +97,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 					return 0;
-				}
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
@@ -111,10 +109,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 					return 0;
-				}
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
@@ -126,10 +121,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 					return 0;
-				}
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
@@ -141,10 +133,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
-				{
-					delete_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 					return 0;
-				}
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			}
 			break;
@@ -210,7 +199,8 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	}
 
 	// adjust bplus_tree_iterator position
-	if(!adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error))
+	adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error);
+	if(*abort_error)
 	{
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
 		return 0;
