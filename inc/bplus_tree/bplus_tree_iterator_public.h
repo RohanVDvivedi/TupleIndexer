@@ -81,6 +81,7 @@ int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree
 // works only on a stacked iterator with lock_type = WRITE_LOCK
 // in future it will also work on stacked_iterator with lock_type = READ_LOCK_INTERIOR_WRITE_LOCK_LEAF or a unstacked_iterator with lock_type = WRITE_LOCK, if and only if the tuple to be updated is exactly equal to the new tuple
 // on an abort error, all locks are released, then you only need to call delete_bplus_tree_iterator
+// here the prepare_for_delete_iterator_on_success flag only works for stacked WRITE_LOCKed iterator case
 int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error);
 
 // you can use the below function only to update only a fixed length non-key column
