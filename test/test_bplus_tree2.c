@@ -325,6 +325,7 @@ int delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first
 	{
 		// read a record from the file
 		read_record_from_file(&r, f);
+		records_seen++;
 	}
 
 	// close the file
@@ -418,6 +419,18 @@ int main()
 	/* TEST ITERATOR BASED DELETION */
 
 	delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 15, 15, &bpttd, pam_p, pmm_p);
+
+	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
+
+	/* TEST ITERATOR BASED DELETION */
+
+	delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 19, 15, &bpttd, pam_p, pmm_p);
+
+	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
+
+	/* TEST ITERATOR BASED DELETION */
+
+	delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 40, 15, &bpttd, pam_p, pmm_p);
 
 	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
 
