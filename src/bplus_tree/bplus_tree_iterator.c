@@ -455,8 +455,6 @@ int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree
 
 	return 1;
 
-	// TODO
-
 	ABORT_ERROR:
 	if(curr_key != NULL)
 		free(curr_key);
@@ -466,7 +464,84 @@ int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree
 
 int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// fail if the current tuple is NULL, the iterator is positioned BEYOND ranges or is empty
+	const void* curr_tuple = get_tuple_bplus_tree_iterator(bpi_p);
+	if(curr_tuple == NULL)
+		return 0;
+
+	// if the key of incomming tuple AND the key of curr_tuple does not match fail
+	if(0 != compare_tuples(curr_tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, bpi_p->bpttd_p->key_element_count))
+		return 0;
+
+	// case for unstacked WRITE_LOCKED iterator and stacked READ_LOCK_INTERIOR_WRITE_LOCK_LEAF-locked iterator and the current tuple and the incomming tuple are the same size
+	// if some tuple satisfies this then update inplace
+	if((
+			((!bpi_p->is_stacked) && (bpi_p->pmm_p != NULL)) || (bpi_p->is_stacked && bpi_p->lock_type == READ_LOCK_INTERIOR_WRITE_LOCK_LEAF)
+		) && get_tuple_size(bpi_p->bpttd_p->record_def, tuple) == get_tuple_size(bpi_p->bpttd_p->record_def, curr_tuple))
+	{
+		return update_at_in_sorted_packed_page(
+									get_curr_leaf_page(bpi_p), bpi_p->bpttd_p->pas_p->page_size, 
+									bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, bpi_p->bpttd_p->key_element_count,
+									tuple, 
+									bpi_p->curr_tuple_index,
+									bpi_p->pmm_p,
+									transaction_id,
+									abort_error
+								);
+	}
+
+	// else it must be stacked WRITE_LOCK-ed iterator
+	if(!bpi_p->is_stacked) // not stacked fail
+		return 0;
+	if(bpi_p->lock_type != WRITE_LOCK) // not WRITE_LOCKed fail
+		return 0;
+
+	// extract the key for the curr_tuple, to adjust the bplus_tree_iterator after update operation
+	void* curr_key = NULL;
+	if(!prepare_for_delete_iterator_on_success)
+	{
+		curr_key = malloc(bpi_p->bpttd_p->max_index_record_size); // key would be no bigger than the max_index_record_size
+		if(!extract_key_from_record_tuple_using_bplus_tree_tuple_definitions(bpi_p->bpttd_p, curr_tuple, curr_key))
+		{
+			free(curr_key);
+			return 0;
+		}
+	}
+
+	// perform the actual update
+	{
+
+	}
+
+	if(prepare_for_delete_iterator_on_success)
+	{
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+	else
+	{
+		// transfer ownership of bpi_p to a local variable
+		bplus_tree_iterator bpi_temp = (*bpi_p);
+		(*bpi_p) = (bplus_tree_iterator){};
+
+		// this call also may only fail on an abort error -> which will make the bpi_temp.lps locks released and its memory freed
+		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), curr_key, bpi_temp.bpttd_p->key_element_count, GREATER_THAN_EQUALS, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		free(curr_key);
+		curr_key = NULL;
+	}
+
+	return 1;
+
+	ABORT_ERROR:
+	if(curr_key != NULL)
+		free(curr_key);
+	release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
+	return 0;
 }
 
 int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
