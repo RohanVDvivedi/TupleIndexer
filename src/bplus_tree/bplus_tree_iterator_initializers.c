@@ -14,10 +14,18 @@
 // fails only on an abort_error
 static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const void* transaction_id, int* abort_error)
 {
+	bpi_p->curr_tuple_index = 0;
+
+	// if the bplus_tree is itself empty then nothing needs to be done any further
+	if(is_empty_bplus_tree(bpi_p))
+		return 1;
+
 	// find the leaf_tuple_index for the iterator to start with
 	{
 		const persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
-		bpi_p->curr_tuple_index = 0;
+
+		// since bplus_tree is not empty there is atleast 1 tuple on current leaf page
+		uint32_t tuple_count_on_curr_leaf_page = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
 		switch(find_pos)
 		{
@@ -56,7 +64,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 										key, bpi_p->bpttd_p->key_def, NULL
 									);
 
-				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE;
+				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : (tuple_count_on_curr_leaf_page - 1);
 				break;
 			}
 			case GREATER_THAN :
@@ -67,24 +75,16 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 										key, bpi_p->bpttd_p->key_def, NULL
 									);
 
-				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : LAST_TUPLE_INDEX_BPLUS_TREE_LEAF_PAGE;
+				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : (tuple_count_on_curr_leaf_page - 1);
 				break;
 			}
 			case MAX :
 			{
-				uint32_t tuple_count_on_curr_leaf_page = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
-				if(tuple_count_on_curr_leaf_page == 0)
-					bpi_p->curr_tuple_index = 0;
-				else
-					bpi_p->curr_tuple_index = tuple_count_on_curr_leaf_page - 1;
+				bpi_p->curr_tuple_index = tuple_count_on_curr_leaf_page - 1;
 				break;
 			}
 		}
 	}
-
-	// if the bplus_tree is itself empty then nothing needs to be done any further
-	if(is_empty_bplus_tree(bpi_p))
-		return 1;
 
 	// iterate next or previous in bplus_tree_iterator, based on the find_pos
 	// this is not required for MIN and MAX
