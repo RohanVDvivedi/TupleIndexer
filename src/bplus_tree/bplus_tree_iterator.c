@@ -469,6 +469,10 @@ int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple,
 	if(curr_tuple == NULL)
 		return 0;
 
+	// if the new tuple can not go to this bplus tree then fail
+	if(!check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(bpi_p->bpttd_p, tuple))
+		return 0;
+
 	// if the key of incomming tuple AND the key of curr_tuple does not match fail
 	if(0 != compare_tuples(curr_tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, bpi_p->bpttd_p->key_element_count))
 		return 0;
