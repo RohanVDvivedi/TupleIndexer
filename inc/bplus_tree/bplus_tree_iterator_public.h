@@ -58,7 +58,27 @@ void debug_print_lock_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key1, find_position f_pos1, const void* key2, find_position f_pos2, uint32_t key_element_count_concerned, const void* transaction_id, int* abort_error);
 
 // below functions can be used with only writable iterator
-// you can use it to update only a fixed length non-key column
+
+typedef enum bplus_tree_after_remove_operation bplus_tree_after_remove_operation;
+enum bplus_tree_after_remove_operation
+{
+	GO_NEXT_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION = 0,
+	GO_PREV_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION = 1,
+	DELETE_ITERATOR_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION = 2,
+};
+
+// remove the tuple that the bplus_tree_iterator is currently pointing at
+// works only on a stacked iterator with lock_type = WRITE_LOCK
+// on an abort error, all locks are released, then you only need to call delete_bplus_tree_iterator
+int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after_remove_operation aft_op, const void* transaction_id, int* abort_error);
+
+// update the curr_tuple being pointed at by the bplus_tree_iterator with the parameter tuple
+// works only on a stacked iterator with lock_type = WRITE_LOCK
+// in future it will also work on stacked_iterator with lock_type = READ_LOCK_INTERIOR_WRITE_LOCK_LEAF or a unstacked_iterator with lock_type = WRITE_LOCK, if and only if the tuple to be updated is exactly equal to the new tuple
+// on an abort error, all locks are released, then you only need to call delete_bplus_tree_iterator
+int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int delete_iterator_on_success, const void* transaction_id, int* abort_error);
+
+// you can use the below function only to update only a fixed length non-key column
 
 #include<user_value.h>
 #include<tuple.h>
