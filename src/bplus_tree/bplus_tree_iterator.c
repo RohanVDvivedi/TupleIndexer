@@ -445,12 +445,6 @@ int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree
 
 		// this call also may only fail on an abort error -> which will make the bpi_temp.lps locks released and its memory freed
 		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), curr_key, bpi_temp.bpttd_p->key_element_count, f_pos, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
-		if(*abort_error)
-		{
-			release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
-			goto ABORT_ERROR;
-		}
-
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
