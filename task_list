@@ -7,6 +7,7 @@
      * if the iterator is stacked WRITE_LOCKed then perform an update,this may involve splits or merges and unlocking pages up the tree
      * provide an option to delete the iterator after the update is completed
    * while using stacked iterator if you need to walk down again, then take the old lps and shove it down initialize_bplus_tree_stacked_iterator
+   * test update and delete using iterator
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
