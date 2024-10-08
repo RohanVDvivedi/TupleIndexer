@@ -450,6 +450,7 @@ int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree
 			goto ABORT_ERROR;
 
 		free(curr_key);
+		curr_key = NULL;
 	}
 
 	return 1;
