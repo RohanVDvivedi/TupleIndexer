@@ -54,12 +54,12 @@ bplus_tree_iterator* get_new_bplus_tree_stacked_iterator(uint64_t root_page_id, 
 bplus_tree_iterator* get_new_bplus_tree_unstacked_iterator(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // bpi_p is assumed to be garbage initialized, and is fully initialized only on success
+// lps must not be NULL
 // provide either a valid non empty lps or a root_page_id
-// upon success all lps pages are transferred to the bpi_p and lps is destroyed.
-// on failure lps is left untouched
-// on abort_error all locks held in the lps are released and so on abort error you do not need to deinitialize lps
-// non-abort_error failure happens only if the parameters are invalid, so in normal operation it either succeeds or aborts not needing you to deinitialize the lps provided
-int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+// upon success all lps pages are transferred to the bpi_p
+// on abort_error all locks held in the lps are released
+// lps has to be deinitialized after any call to this function
+int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack* lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // private function to get the current lockd leaf page

@@ -444,7 +444,14 @@ int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree
 		find_position f_pos = ((aft_op == GO_NEXT_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION) ? GREATER_THAN : LESSER_THAN);
 
 		// this call also may only fail on an abort error -> which will make the bpi_temp.lps locks released and its memory freed
-		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, bpi_temp.lps, curr_key, bpi_temp.bpttd_p->key_element_count, f_pos, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
+		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), curr_key, bpi_temp.bpttd_p->key_element_count, f_pos, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+		{
+			release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
+			goto ABORT_ERROR;
+		}
+
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -521,15 +528,15 @@ void debug_print_lock_stack_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p)
 		for(uint32_t i = 0; i < get_element_count_locked_pages_stack(&(bpi_p->lps)); i++)
 		{
 			locked_page_info* t = get_from_bottom_of_locked_pages_stack(&(bpi_p->lps), i);
-			printf("%s(%"PRIu64"), ", (is_persistent_page_write_locked(&(t->ppage)) ? "WRITE_LOCK" : "READ_LOCK"), t->ppage.page_id);
+			printf("%s(%"PRIu64") -> %"PRIu32", ", (is_persistent_page_write_locked(&(t->ppage)) ? "WRITE_LOCK" : "READ_LOCK"), t->ppage.page_id, t->child_index);
 		}
-		printf("\n");
+		printf(" -> %"PRIu32"\n", bpi_p->curr_tuple_index);
 	}
 	else
 	{
 		if(is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->pam_p))
 			printf("UNSTACKED : \n");
 		else
-			printf("UNSTACKED : %s(%"PRIu64")\n", (is_persistent_page_write_locked(&(bpi_p->curr_page)) ? "WRITE_LOCK" : "READ_LOCK"), bpi_p->curr_page.page_id);
+			printf("UNSTACKED : %s(%"PRIu64") -> %"PRIu32"\n", (is_persistent_page_write_locked(&(bpi_p->curr_page)) ? "WRITE_LOCK" : "READ_LOCK"), bpi_p->curr_page.page_id, bpi_p->curr_tuple_index);
 	}
 }

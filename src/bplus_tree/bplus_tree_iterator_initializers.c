@@ -149,7 +149,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 
 #include<bplus_tree_walk_down.h>
 
-int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack* lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
@@ -172,15 +172,15 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	bpi_p->pmm_p = pmm_p;
 
 	// if lps is not empty, copy its contents to bpi_p->lps
-	if(get_element_count_locked_pages_stack(&lps) != 0)
+	if(get_element_count_locked_pages_stack(lps) != 0)
 	{
-		bpi_p->lps = lps; // root page is still locked so it is unchanged, so the level must not have changed, nor do we have to change it's capacity
-		lps = (locked_pages_stack){}; // lps is safely made empty
+		bpi_p->lps = (*lps); // root page is still locked so it is unchanged, so the level must not have changed, nor do we have to change it's capacity
+		(*lps) = (locked_pages_stack){}; // lps is safely made empty
 	}
 	else
 	{
-		deinitialize_locked_pages_stack(&lps); // destroy the lps that the user provided and make it empty, since no locked are held by it, it can not cause any abort error
-		lps = (locked_pages_stack){};
+		deinitialize_locked_pages_stack(lps); // destroy the lps that the user provided and make it empty, since no locked are held by it, it can not cause any abort error
+		(*lps) = (locked_pages_stack){};
 
 		bpi_p->lps = initialize_locked_pages_stack_for_walk_down(root_page_id, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)
@@ -248,7 +248,7 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 bplus_tree_iterator* get_new_bplus_tree_stacked_iterator(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	bplus_tree_iterator bpi_temp;
-	if(!initialize_bplus_tree_stacked_iterator(&bpi_temp, root_page_id, (locked_pages_stack){}, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error))
+	if(!initialize_bplus_tree_stacked_iterator(&bpi_temp, root_page_id, &(locked_pages_stack){}, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error))
 		return NULL;
 
 	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
