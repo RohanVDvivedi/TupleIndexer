@@ -75,14 +75,14 @@ enum bplus_tree_after_remove_operation
 // remove the tuple that the bplus_tree_iterator is currently pointing at
 // works only on a stacked iterator with lock_type = WRITE_LOCK
 // on an abort error, all locks are released, then you only need to call delete_bplus_tree_iterator
-int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after_remove_operation aft_op, const void* transaction_id, int* abort_error);
+int remove_from_bplus_tree_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after_remove_operation aft_op, const void* transaction_id, int* abort_error);
 
 // update the curr_tuple being pointed at by the bplus_tree_iterator with the parameter tuple
 // works only on a stacked iterator with lock_type = WRITE_LOCK
 // in future it will also work on stacked_iterator with lock_type = READ_LOCK_INTERIOR_WRITE_LOCK_LEAF or a unstacked_iterator with lock_type = WRITE_LOCK, if and only if the tuple to be updated is exactly equal to the new tuple
 // on an abort error, all locks are released, then you only need to call delete_bplus_tree_iterator
 // here the prepare_for_delete_iterator_on_success flag only works for stacked WRITE_LOCKed iterator case
-int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error);
+int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error);
 
 // you can use the below function only to update only a fixed length non-key column
 

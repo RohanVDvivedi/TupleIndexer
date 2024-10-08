@@ -365,7 +365,7 @@ int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void
 #include<bplus_tree_split_insert_util.h>
 #include<bplus_tree_merge_util.h>
 
-int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after_remove_operation aft_op, const void* transaction_id, int* abort_error)
+int remove_from_bplus_tree_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after_remove_operation aft_op, const void* transaction_id, int* abort_error)
 {
 	// does not work on unstacked iterator
 	if(!bpi_p->is_stacked)
@@ -462,7 +462,7 @@ int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree
 	return 0;
 }
 
-int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error)
+int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error)
 {
 	// fail if the current tuple is NULL, the iterator is positioned BEYOND ranges or is empty
 	const void* curr_tuple = get_tuple_bplus_tree_iterator(bpi_p);
