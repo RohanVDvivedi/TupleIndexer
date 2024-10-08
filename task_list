@@ -6,9 +6,6 @@
      * if the iterator is unstacked WRITE_LOCKed or stacked READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, then update only if the records are of same size -> nothing to be done after this
      * if the iterator is stacked WRITE_LOCKed then perform an update,this may involve splits or merges and unlocking pages up the tree
      * provide an option to delete the iterator after the update is completed
-   * delete
-     * allowed only if the current tuple is not NULL
-     * provide an option to delete the iterator, GO_NEXT or GO_PREV after the operation
    * while using stacked iterator if you need to walk down again, then take the old lps and shove it down initialize_bplus_tree_stacked_iterator
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
