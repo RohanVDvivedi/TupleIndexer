@@ -15,6 +15,8 @@
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 struct bplus_tree_iterator
 {
+	uint64_t root_page_id;
+
 	// if this attribute is 1, then the iteration occurrs using the parent pages, else it happens through the next and prev page pointers on the leaf page
 	int is_stacked;
 

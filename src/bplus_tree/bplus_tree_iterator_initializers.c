@@ -175,6 +175,7 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
 		key_element_count_concerned = bpttd_p->key_element_count;
 
+	bpi_p->root_page_id = root_page_id;
 	bpi_p->is_stacked = 1;
 	bpi_p->lock_type = lock_type;
 	bpi_p->bpttd_p = bpttd_p;
@@ -237,6 +238,7 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
 		key_element_count_concerned = bpttd_p->key_element_count;
 
+	bpi_p->root_page_id = root_page_id;
 	bpi_p->is_stacked = 0;
 	bpi_p->bpttd_p = bpttd_p;
 	bpi_p->pam_p = pam_p;

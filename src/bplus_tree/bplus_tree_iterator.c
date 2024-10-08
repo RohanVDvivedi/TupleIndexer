@@ -361,12 +361,111 @@ int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void
 	return narrow_down_range_for_stacked_iterator_using_keys(&(bpi_p->lps), key1, f_pos1, key2, f_pos2, key_element_count_concerned, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 }
 
+#include<sorted_packed_page_util.h>
+#include<bplus_tree_split_insert_util.h>
+#include<bplus_tree_merge_util.h>
+
 int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after_remove_operation aft_op, const void* transaction_id, int* abort_error)
 {
+	// does not work on unstacked iterator
+	if(!bpi_p->is_stacked)
+		return 0;
+
+	// works only on stacked write locked iterator
+	if(bpi_p->lock_type != WRITE_LOCK)
+		return 0;
+
+	// fail if the current tuple is NULL, the iterator is positioned BEYOND ranges or is empty
+	const void* curr_tuple = get_tuple_bplus_tree_iterator(bpi_p);
+	if(curr_tuple == NULL)
+		return 0;
+
+	// beyond this point it is either success or an abort_error
+
+	void* curr_key = NULL;
+
+	if(aft_op == PREPARE_FOR_DELETE_ITERATOR_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION)
+	{
+		// count the number of pages that can be unlocked safely and unlock them
+		uint32_t safely_unlockable = count_unlockable_parent_pages_for_merge(&(bpi_p->lps), bpi_p->bpttd_p);
+		while(safely_unlockable > 0)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
+			release_lock_on_persistent_page(bpi_p->pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(&(bpi_p->lps));
+
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			safely_unlockable--;
+		}
+	}
+	else // we will need to reposition the iterator so grab the key for the curr_tuple
+	{
+		curr_key = malloc(bpi_p->bpttd_p->max_index_record_size); // key would be no bigger than the max_index_record_size
+		if(!extract_key_from_record_tuple_using_bplus_tree_tuple_definitions(bpi_p->bpttd_p, curr_tuple, curr_key))
+		{
+			free(curr_key);
+			return 0;
+		}
+	}
+
+	// curr_tuple must not be accessed beyond this point
+
+	// delete the tuple at the curr_tuple_index on the current leaf page
+	// this delete must succeed as we know that the tuple is already present
+	delete_in_sorted_packed_page(
+						get_curr_leaf_page(bpi_p), bpi_p->bpttd_p->pas_p->page_size,
+						bpi_p->bpttd_p->record_def,
+						bpi_p->curr_tuple_index,
+						bpi_p->pmm_p,
+						transaction_id,
+						abort_error
+					);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	merge_and_unlock_pages_up(bpi_p->root_page_id, &(bpi_p->lps), bpi_p->bpttd_p, bpi_p->pam_p, bpi_p->pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	if(aft_op == PREPARE_FOR_DELETE_ITERATOR_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION)
+	{
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+	else
+	{
+		// transfer ownership of bpi_p to a local variable
+		bplus_tree_iterator bpi_temp = (*bpi_p);
+		(*bpi_p) = (bplus_tree_iterator){};
+
+		find_position f_pos = ((aft_op == GO_NEXT_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION) ? GREATER_THAN : LESSER_THAN);
+
+		// this call also may only fail on an abort error -> which will make the bpi_temp.lps locks released
+		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, bpi_temp.lps, curr_key, bpi_temp.bpttd_p->key_element_count, f_pos, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+		{
+			deinitialize_locked_pages_stack(&(bpi_temp.lps));
+			goto ABORT_ERROR;
+		}
+
+		free(curr_key);
+	}
+
+	return 1;
+
 	// TODO
+
+	ABORT_ERROR:
+	if(curr_key != NULL)
+		free(curr_key);
+	release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
+	return 0;
 }
 
-int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int delete_iterator_on_success, const void* transaction_id, int* abort_error)
+int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error)
 {
 	// TODO
 }
