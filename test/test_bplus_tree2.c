@@ -510,6 +510,12 @@ int main()
 
 	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
 
+	/* TEST ITERATOR BASED UPDATION */
+
+	update_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 233, 15, "VVVVWWWWXXXXYYYYZZZZZZ", &bpttd, pam_p, pmm_p);
+
+	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
+
 	/* CLEANUP */
 
 	// destroy bplus tree
