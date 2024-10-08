@@ -361,6 +361,16 @@ int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void
 	return narrow_down_range_for_stacked_iterator_using_keys(&(bpi_p->lps), key1, f_pos1, key2, f_pos2, key_element_count_concerned, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 }
 
+int remove_from_linked_page_list_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after_remove_operation aft_op, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
+
+int update_at_linked_page_list_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int delete_iterator_on_success, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
+
 int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
 	// cannot update non WRITE_LOCKed bplus_tree_iterator
