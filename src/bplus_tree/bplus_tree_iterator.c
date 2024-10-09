@@ -486,7 +486,8 @@ int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple,
 			((!bpi_p->is_stacked) && (bpi_p->pmm_p != NULL)) || (bpi_p->is_stacked && bpi_p->lock_type == READ_LOCK_INTERIOR_WRITE_LOCK_LEAF)
 		) && new_tuple_size == old_tuple_size)
 	{
-		return update_at_in_sorted_packed_page(
+		// this either succeeds or aborts
+		int updated = update_at_in_sorted_packed_page(
 									get_curr_leaf_page(bpi_p), bpi_p->bpttd_p->pas_p->page_size, 
 									bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, bpi_p->bpttd_p->key_element_count,
 									tuple, 
@@ -495,6 +496,18 @@ int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple,
 									transaction_id,
 									abort_error
 								);
+		if(*abort_error)
+			goto ABORT_ERROR_SIMPLE_CASE;
+
+		return updated;
+
+		ABORT_ERROR_SIMPLE_CASE:
+		// release all locks and return 0
+		if(bpi_p->is_stacked)
+			release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
+		else
+			release_lock_on_persistent_page(bpi_p->pam_p, transaction_id, &(bpi_p->curr_page), NONE_OPTION, abort_error);
+		return 0;
 	}
 
 	// else it must be stacked WRITE_LOCK-ed iterator
