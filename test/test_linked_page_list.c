@@ -33,7 +33,7 @@ tuple_def* get_tuple_definition()
 	strcpy(tuple_type_info->containees[0].field_name, "index");
 	tuple_type_info->containees[0].type_info = INT_NULLABLE[4];
 
-	c1_type_info = get_variable_length_string_type("STRING", 256);
+	c1_type_info = get_variable_length_string_type("", 256);
 	strcpy(tuple_type_info->containees[1].field_name, "name");
 	tuple_type_info->containees[1].type_info = &c1_type_info;
 

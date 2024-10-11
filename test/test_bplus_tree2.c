@@ -118,7 +118,7 @@ tuple_def* get_tuple_definition()
 	strcpy(tuple_type_info->containees[0].field_name, "index");
 	tuple_type_info->containees[0].type_info = INT_NULLABLE[4];
 
-	c1_type_info = get_variable_length_string_type("STRING", 256);
+	c1_type_info = get_variable_length_string_type("", 256);
 	strcpy(tuple_type_info->containees[1].field_name, "name");
 	tuple_type_info->containees[1].type_info = &c1_type_info;
 
@@ -128,18 +128,18 @@ tuple_def* get_tuple_definition()
 	strcpy(tuple_type_info->containees[3].field_name, "sex");
 	tuple_type_info->containees[3].type_info = BIT_FIELD_NULLABLE[1];
 
-	c4_type_info = get_variable_length_string_type("STRING", 256);
+	c4_type_info = get_variable_length_string_type("", 256);
 	strcpy(tuple_type_info->containees[4].field_name, "email");
 	tuple_type_info->containees[4].type_info = &c4_type_info;
 
-	c5_type_info = get_fixed_length_string_type("STRING", 14, 1);
+	c5_type_info = get_fixed_length_string_type("", 14, 1);
 	strcpy(tuple_type_info->containees[5].field_name, "phone");
 	tuple_type_info->containees[5].type_info = &c5_type_info;
 
 	strcpy(tuple_type_info->containees[6].field_name, "score");
 	tuple_type_info->containees[6].type_info = UINT_NULLABLE[1];
 
-	c7_type_info = get_variable_length_string_type("STRING", 256);
+	c7_type_info = get_variable_length_string_type("", 256);
 	strcpy(tuple_type_info->containees[7].field_name, "update");
 	tuple_type_info->containees[7].type_info = &c7_type_info;
 
