@@ -16,6 +16,10 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 {
 	bpi_p->curr_tuple_index = 0;
 
+	// if the bplus_tree is itself empty then nothing needs to be done any further
+	if(is_empty_bplus_tree(bpi_p))
+		return 1;
+
 	// find the leaf_tuple_index for the iterator to start with
 	{
 		const persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
@@ -111,6 +115,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 					return 0;
 			}
 
+			tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) >= 0)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -132,6 +137,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 					return 0;
 			}
 
+			tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -153,6 +159,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 					return 0;
 			}
 
+			tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) < 0)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -174,6 +181,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 					return 0;
 			}
 
+			tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) <= 0)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
