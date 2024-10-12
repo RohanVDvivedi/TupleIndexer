@@ -3,6 +3,7 @@
    * there can exist empty pages in bplus tree
    * need to handle this in its iterator
    * bplus tree is empty only if the current page is empty and there is no current or previous page that we can go next
+     * there can never be 2 empty adjacent pages in bplus tree - add this comment
    * after this check the test case of bplus_tree2 with all different key typesand ensure that we reach empty tree at the end
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
