@@ -16,10 +16,6 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 {
 	bpi_p->curr_tuple_index = 0;
 
-	// if the bplus_tree is itself empty then nothing needs to be done any further
-	if(is_empty_bplus_tree(bpi_p))
-		return 1;
-
 	// find the leaf_tuple_index for the iterator to start with
 	{
 		const persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
@@ -89,9 +85,32 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 	// this is not required for MIN and MAX
 	switch(find_pos)
 	{
+		case MIN :
+		{
+			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+
+			// adjustment for when the first tuple we point to is invalid
+			// if null we are possibly pointing to some position beyond MIN tuple
+			if(tuple_to_skip == NULL)
+			{
+				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+					return 0;
+			}
+			break;
+		}
 		case LESSER_THAN :
 		{
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+
+			// adjustment for when the first tuple we point to is invalid
+			if(tuple_to_skip == NULL)
+			{
+				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+					return 0;
+			}
+
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) >= 0)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -104,6 +123,15 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 		case LESSER_THAN_EQUALS :
 		{
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+
+			// adjustment for when the first tuple we point to is invalid
+			if(tuple_to_skip == NULL)
+			{
+				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+					return 0;
+			}
+
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -116,6 +144,15 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 		case GREATER_THAN_EQUALS :
 		{
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+
+			// adjustment for when the first tuple we point to is invalid
+			if(tuple_to_skip == NULL)
+			{
+				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+					return 0;
+			}
+
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) < 0)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
@@ -128,12 +165,35 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 		case GREATER_THAN :
 		{
 			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+
+			// adjustment for when the first tuple we point to is invalid
+			if(tuple_to_skip == NULL)
+			{
+				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+					return 0;
+			}
+
 			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) <= 0)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
 					return 0;
 				tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+			}
+			break;
+		}
+		case MAX :
+		{
+			const void* tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
+
+			// adjustment for when the first tuple we point to is invalid
+			// if null we are possibly pointing to some position beyond MAX tuple
+			if(tuple_to_skip == NULL)
+			{
+				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
+				if(*abort_error)
+					return 0;
 			}
 			break;
 		}
