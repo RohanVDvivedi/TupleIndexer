@@ -71,9 +71,6 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 // returns if the above function will succeed
 static int can_goto_next_leaf_page(const bplus_tree_iterator* bpi_p)
 {
-	if(is_empty_bplus_tree(bpi_p))
-		return 0;
-
 	if(bpi_p->is_stacked == 0)
 	{
 		persistent_page* curr_leaf_page = get_curr_leaf_page((bplus_tree_iterator*)bpi_p);
@@ -128,9 +125,6 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 // returns if the above function will succeed
 static int can_goto_prev_leaf_page(const bplus_tree_iterator* bpi_p)
 {
-	if(is_empty_bplus_tree(bpi_p))
-		return 0;
-
 	if(bpi_p->is_stacked == 0)
 	{
 		persistent_page* curr_leaf_page = get_curr_leaf_page((bplus_tree_iterator*)bpi_p);
