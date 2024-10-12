@@ -443,7 +443,7 @@ int remove_from_bplus_tree_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after
 
 		find_position f_pos = ((aft_op == GO_NEXT_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION) ? GREATER_THAN : LESSER_THAN);
 
-		// this call also may only fail on an abort error -> which will make the bpi_temp.lps locks released and its memory freed
+		// this call may only fail only on an abort error -> which will make the bpi_temp.lps locks released and its memory freed
 		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), curr_key, bpi_temp.bpttd_p->key_element_count, f_pos, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)
@@ -579,7 +579,7 @@ int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple,
 		bplus_tree_iterator bpi_temp = (*bpi_p);
 		(*bpi_p) = (bplus_tree_iterator){};
 
-		// this call also may only fail on an abort error -> which will make the bpi_temp.lps locks released and its memory freed
+		// this call may only fail only on an abort error -> which will make the bpi_temp.lps locks released and its memory freed
 		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), curr_key, bpi_temp.bpttd_p->key_element_count, GREATER_THAN_EQUALS, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)

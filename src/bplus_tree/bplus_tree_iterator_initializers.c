@@ -167,6 +167,8 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	bpi_p->root_page_id = root_page_id;
 	bpi_p->is_stacked = 1;
 	bpi_p->lock_type = lock_type;
+	bpi_p->lps = (locked_pages_stack){};
+	bpi_p->curr_tuple_index = 0;
 	bpi_p->bpttd_p = bpttd_p;
 	bpi_p->pam_p = pam_p;
 	bpi_p->pmm_p = pmm_p;
@@ -230,6 +232,8 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 
 	bpi_p->root_page_id = root_page_id;
 	bpi_p->is_stacked = 0;
+	bpi_p->curr_page = get_NULL_persistent_page(pam_p);
+	bpi_p->curr_tuple_index = 0;
 	bpi_p->bpttd_p = bpttd_p;
 	bpi_p->pam_p = pam_p;
 	bpi_p->pmm_p = pmm_p;
