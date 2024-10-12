@@ -33,10 +33,9 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 
 // returns pointer to the current tuple that the cursor points to
 // it returns NULL,
-// 	* case 1 when the page that it points to is empty (0 tuples),
-//			** this must not happen in a bplus_tree, except when the bplus_tree is empty (contains no records), this will never happen to you, if you are using only the public api functions
+// 	* case 1 when the page that it points to is empty (0 tuples)
 // 	* case 2 when the bplus_tree_iterator has reached the end
-// the pointer to the tuple returned by this function is valid only until next_*, prev_* and delete_* functions are not called
+// the pointer to the tuple returned by this function is valid only until next_*, prev_*, remove_from_*, update_at_* and delete_* functions are not called
 const void* get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
 
 // it moves the cursor backward by a tuple
