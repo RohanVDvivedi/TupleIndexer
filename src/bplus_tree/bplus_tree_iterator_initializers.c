@@ -24,7 +24,6 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 	{
 		const persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
 
-		// since bplus_tree is not empty there is atleast 1 tuple on current leaf page
 		uint32_t tuple_count_on_curr_leaf_page = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
 
 		switch(find_pos)
