@@ -3,9 +3,8 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * spend a day on output of `grep -inr --include "*.c" -A 5 -B 5 ",\sabort_error);" ./src > tb` and ensure that all aborts are handled properly
  * convert malloc calls, where ever possible to stack allocations (with or without alloca calls)
+ * TupleIndexer only ensures that page level latches/locks to the same data structure do not deadlock
  * test narrow_down_range_bplus_tree_iterator functionality() with actual database to ensure that the results are indeed correct
- * deadlock can also occur in merge_unlock_pages_up, to avoid this we need to prevent merging leaf pages with previous -> need to think if we should do this OR should we leave it onto the MinTxEngine to resolve it
-   * many such further cases to be found
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
    * this will be implemented for variable length keys aswell
    * this will take parent page, left page and right page as input and will perform a borrow to make left and right pages balanced if it is possible by the use of borrowing
