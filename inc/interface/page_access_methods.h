@@ -75,16 +75,15 @@ struct page_access_methods
 	void* (*acquire_page_with_writer_lock)(void* context, const void* transaction_id, uint64_t page_id, int* abort_error);
 
 	// downgrade a writer lock to a reader lock
-	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error); // acceptable options : WAS_MODIFIED and FORCE_FLUSH
+	int (*downgrade_writer_lock_to_reader_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error); // acceptable options : WAS_MODIFIED
 	int (*upgrade_reader_lock_to_writer_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int* abort_error);
 
 	// releases lock on the page, accordingly, free_page flag will free the page, after releasing the lock
 	int (*release_reader_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error); // acceptable options : FREE_PAGE
-	int (*release_writer_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error); // acceptable options : WAS_MODIFIED, FORCE_FLUSH and FREE_PAGE
+	int (*release_writer_lock_on_page)(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error); // acceptable options : WAS_MODIFIED and FREE_PAGE
 
 	// the was_modified parameter suggests that the page that we had a writer lock on was modified,
-	// and any disk based system is suppossed to mark this page dirty now and possibly persist this new version of page to disk,
-	// whenever it deems necessary OR try to flush it immediately, if the force_flush param is set
+	// and any disk based system is suppossed to mark this page dirty now and possibly persist this new version of page to disk, whenever it deems necessary
 
 	// make a page free, you may call this function, even if you don't have lock on the page
 	// fails only if the page is already free
