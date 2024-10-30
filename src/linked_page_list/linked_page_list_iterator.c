@@ -224,7 +224,7 @@ int insert_OR_split_insert_on_page_of_linked_page_list(linked_page_list_iterator
 	// split the contents of the curr_page, with the later/tail contents going to new_page
 	persistent_page_reference new_page = {
 		.points_to_iterator_head = 0,
-		.non_head_page = split_insert_bplus_tree_interior_page(get_from_ref(&(lpli_p->curr_page)), tuple, insert_at_pos, SPLIT_LOWER_HALF, split_organization, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error)
+		.non_head_page = split_insert_linked_page_list_page(get_from_ref(&(lpli_p->curr_page)), tuple, insert_at_pos, SPLIT_LOWER_HALF, split_organization, lpli_p->lpltd_p, lpli_p->pam_p, lpli_p->pmm_p, transaction_id, abort_error)
 	};
 	if(*abort_error)
 		goto ABORT_ERROR;
