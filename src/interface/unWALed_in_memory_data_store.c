@@ -640,10 +640,7 @@ page_access_methods* get_new_unWALed_in_memory_data_store(const page_access_spec
 	if(pam_p == NULL)
 		return NULL;
 
-	pam_p->pas = (*pas_suggested);
-	pam_p->pas.NULL_PAGE_ID = UINT64_MAX >> ((sizeof(uint64_t) - pam_p->pas.page_id_width) * CHAR_BIT);
-	pam_p->pas.page_id_type_info = define_uint_non_nullable_type("page_id", pam_p->pas.page_id_width);
-	if(!initialize_tuple_def(&(pam_p->pas.page_id_tuple_def), &(pam_p->pas.page_id_type_info)))
+	if(!initialize_page_access_specs(&(pam_p->pas), pas_suggested->page_id_width, pas_suggested->page_size, UINT64_MAX >> ((sizeof(uint64_t) - pas_suggested->page_id_width) * CHAR_BIT), pas_suggested->system_header_size))
 		return NULL;
 
 	pam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
