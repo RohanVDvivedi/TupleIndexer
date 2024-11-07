@@ -392,6 +392,8 @@ static int merge_dual_nodes_into_only_head(linked_page_list_iterator* lpli_p, co
 	{
 		// if not release lock on the other page and quit with 0
 		release_lock_on_reference_while_holding_head_lock(&other_page, lpli_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
 		return 0;
 	}
 
