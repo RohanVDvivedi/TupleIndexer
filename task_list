@@ -2,7 +2,7 @@
  * spend a day on output of `grep -inr --include "*.c" ",\sabort_error);" ./src > tb`
    * that abort case is explicitly handled and
    * upon abort all latches acquired by the corresponding function are released by that function
-   * this is required only for array_table, linked_page_list, hash_table and bplus_tree
+   * this is required only for array_table, sorter, hash_table and bplus_tree
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
