@@ -152,7 +152,7 @@ static int build_index_entry_from_record_tuples_for_split(const bplus_tree_tuple
 
 // for this function it is assumed, that last_tuple_page1 <= first_tuple_page2, on comparing key elements (at indices key_element_ids) sorted by key_compare_direction
 // This is the suffix_truncated version for the above function
-// At the moment this code is buggy (i.e. has bug), it does not generate correct result if the key_compare_direction has DESC
+// If at any time you feel that there could be issues with thisfunction, just comment the `USE_SUFFIX_TRUNCATION` macro
 static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const bplus_tree_tuple_defs* bpttd_p, const void* last_tuple_page1, const void* first_tuple_page2, uint64_t child_page_id, void* index_entry)
 {
 	// init the index_entry
