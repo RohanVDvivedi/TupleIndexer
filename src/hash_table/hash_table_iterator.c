@@ -48,7 +48,7 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 			hti_p->curr_bucket_id = get_bucket_index_for_key_using_hash_table_tuple_definitions(hti_p->httd_p, hti_p->key, hti_p->bucket_count);
 
 			// once the curr_bucket_id is calculated, we do not need to deal with any other buckets, if we were provided with key
-			minimize_lock_range_for_page_table_range_locker(ptrl_p, (bucket_range){hti_p->curr_bucket_id, hti_p->curr_bucket_id}, transaction_id, abort_error);
+			minimize_lock_range_for_page_table_range_locker(hti_p->ptrl_p, (bucket_range){hti_p->curr_bucket_id, hti_p->curr_bucket_id}, transaction_id, abort_error);
 			if(*abort_error)
 				goto DELETE_EVERYTHING_AND_ABORT;
 
