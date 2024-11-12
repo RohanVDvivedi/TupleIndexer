@@ -107,13 +107,13 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	if(*abort_error)
 		goto ABORT_ERROR;
 
-	// initialize split_content_head_page_id
-	split_content_head_page_id = get_from_page_table(ptrl_p, split_hash_buckets[0].bucket_id, transaction_id, abort_error);
+	// now we only need to work with split_hash_buckets [0] and [1]
+	minimize_lock_range_for_page_table_range_locker(ptrl_p, (bucket_range){split_hash_buckets[0].bucket_id, split_hash_buckets[1].bucket_id}, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
-	// now we only need to work with split_hash_buckets [0] and [1]
-	minimize_lock_range_for_page_table_range_locker(ptrl_p, (bucket_range){split_hash_buckets[0].bucket_id, split_hash_buckets[1].bucket_id}, transaction_id, abort_error);
+	// initialize split_content_head_page_id
+	split_content_head_page_id = get_from_page_table(ptrl_p, split_hash_buckets[0].bucket_id, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
