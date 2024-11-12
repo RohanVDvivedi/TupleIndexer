@@ -2,7 +2,7 @@
 
 #include<stdlib.h>
 
-int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def, const positional_accessor* key_element_ids, uint32_t key_element_count, uint64_t (*hash_func)(const void* data, uint32_t data_size))
+int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def, const positional_accessor* key_element_ids, uint32_t key_element_count, const tuple_hasher* hasher)
 {
 	// zero initialize httd_p
 	(*httd_p) = (hash_table_tuple_defs){};
@@ -19,7 +19,7 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 	if(!are_all_positions_accessible_for_tuple_def(record_def, key_element_ids, key_element_count))
 		return 0;
 
-	httd_p->hash_func = hash_func;
+	httd_p->hasher = (*hasher);
 
 	httd_p->key_element_count = key_element_count;
 
@@ -120,12 +120,14 @@ uint64_t get_hash_table_split_index(uint64_t bucket_count, int64_t* floor_log_2)
 
 uint64_t get_hash_value_for_key_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* key)
 {
-	return hash_tuple(key, httd_p->key_def, NULL, httd_p->hash_func, httd_p->key_element_count);
+	tuple_hasher local_hasher = httd_p->hasher;
+	return hash_tuple(key, httd_p->key_def, NULL, &local_hasher, httd_p->key_element_count);
 }
 
 uint64_t get_hash_value_for_record_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* record_tuple)
 {
-	return hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, httd_p->hash_func, httd_p->key_element_count);
+	tuple_hasher local_hasher = httd_p->hasher;
+	return hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, &local_hasher, httd_p->key_element_count);
 }
 
 uint64_t get_bucket_index_for_key_using_hash_table_tuple_definitions(const hash_table_tuple_defs* httd_p, const void* key, uint64_t bucket_count)
@@ -192,7 +194,6 @@ void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
 	httd_p->key_element_count = 0;
 	httd_p->key_element_ids = NULL;
 	httd_p->key_def = NULL;
-	httd_p->hash_func = NULL;
 }
 
 void print_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
