@@ -180,17 +180,6 @@ void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 	strncpy(r->update, update_data.string_value, update_data.string_size);
 }
 
-uint64_t hash_func(const void* data, uint32_t data_size)
-{
-	uint64_t res = 53815381;
-	for(uint32_t i = 0; i < data_size; i++)
-	{
-		uint64_t d = ((const unsigned char*)(data))[i];
-		res = (res * d) ^ (d);
-	}
-	return res;
-}
-
 typedef struct result result;
 struct result
 {
@@ -912,7 +901,7 @@ int main()
 
 	// construct tuple definitions for hash_table
 	hash_table_tuple_defs httd;
-	init_hash_table_tuple_definitions(&httd, &(pam_p->pas), record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_COUNT, hash_func);
+	init_hash_table_tuple_definitions(&httd, &(pam_p->pas), record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_COUNT, FNV_64_TUPLE_HASHER);
 
 	// print the generated bplus tree tuple defs
 	print_hash_table_tuple_definitions(&httd);
