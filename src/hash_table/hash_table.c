@@ -112,7 +112,12 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	if(*abort_error)
 		goto ABORT_ERROR;
 
-	// set both the page_table buckets to NULL
+	// now we only need to work with split_hash_buckets [0] and [1]
+	minimize_lock_range_for_page_table_range_locker(ptrl_p, (bucket_range){split_hash_buckets[0].bucket_id, split_hash_buckets[1].bucket_id}, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// set both these page_table buckets to NULL
 
 	// page_table[split_hash_buckets[0].bucket_id] = httd_p->pttd.pas_p->NULL_PAGE_ID
 	set_in_page_table(ptrl_p, split_hash_buckets[0].bucket_id, httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
@@ -121,11 +126,6 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 
 	// page_table[split_hash_buckets[1].bucket_id] = httd_p->pttd.pas_p->NULL_PAGE_ID
 	set_in_page_table(ptrl_p, split_hash_buckets[1].bucket_id, httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
-	if(*abort_error)
-		goto ABORT_ERROR;
-
-	// now we only need to work with split_hash_buckets [0] and [1]
-	minimize_lock_range_for_page_table_range_locker(ptrl_p, (bucket_range){split_hash_buckets[0].bucket_id, split_hash_buckets[1].bucket_id}, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -299,7 +299,7 @@ int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		goto ABORT_ERROR;
 
 	// decrement the bucket_count
-	// page_table[--bucket_count] = NULL
+	// page_table[--bucket_count] = root_page_id
 	set_in_page_table(ptrl_p, --bucket_count, root_page_id, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
@@ -314,6 +314,12 @@ int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	// fetch the split_bucket_head_page_id
 	int64_t temp;
 	uint64_t split_index = get_hash_table_split_index(bucket_count, &temp);
+
+	// now we only need to work split_index
+	minimize_lock_range_for_page_table_range_locker(ptrl_p, (bucket_range){split_index, split_index}, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
 	uint64_t split_bucket_head_page_id = get_from_page_table(ptrl_p, split_index, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
