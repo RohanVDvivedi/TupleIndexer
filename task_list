@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
-** MINOR NEEDED OPTIMIZATION
- * minimize lock range on the hash_table's page_table, right after bucket count is read
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
    * this will be implemented for variable length keys aswell
