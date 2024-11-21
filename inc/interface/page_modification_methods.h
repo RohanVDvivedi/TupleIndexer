@@ -4,7 +4,6 @@
 #include<stdint.h>
 
 #include<tuple.h>
-#include<persistent_page.h>
 
 /*
 **	This functions act as a middleware allowing you to intercept the functions that modify the page using TupleStore's methods
