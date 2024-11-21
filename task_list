@@ -54,6 +54,7 @@
    * acquire page lock functions need to also be implemented, they will perform address translation and then acquire the page
    * this structure should be allowed to abort the transaction, reasons being
      * illegal page id provided -> accessing unassigned page id
+     * out of available addresses in address space
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
