@@ -20,7 +20,7 @@ int init_persistent_page(const page_modification_methods* pmm_p, const void* tra
 		exit(-1);
 	}
 
-	int res = pmm_p->init_page(pmm_p->context, transaction_id, *ppage, page_size, page_header_size, tpl_sz_d, abort_error);
+	int res = pmm_p->init_page(pmm_p->context, transaction_id, ppage->page, page_size, page_header_size, tpl_sz_d, abort_error);
 
 	// if the page was inited, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
@@ -49,7 +49,7 @@ void set_persistent_page_header(const page_modification_methods* pmm_p, const vo
 		exit(-1);
 	}
 
-	pmm_p->set_page_header(pmm_p->context, transaction_id, *ppage, page_size, hdr, abort_error);
+	pmm_p->set_page_header(pmm_p->context, transaction_id, ppage->page, page_size, hdr, abort_error);
 
 	// always assumed to be modified
 	if(!(*(abort_error)))
@@ -72,7 +72,7 @@ int append_tuple_on_persistent_page(const page_modification_methods* pmm_p, cons
 		exit(-1);
 	}
 
-	int res = pmm_p->append_tuple_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, external_tuple, abort_error);
+	int res = pmm_p->append_tuple_on_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, external_tuple, abort_error);
 
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
@@ -101,7 +101,7 @@ int insert_tuple_on_persistent_page(const page_modification_methods* pmm_p, cons
 		exit(-1);
 	}
 
-	int res = pmm_p->insert_tuple_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, index, external_tuple, abort_error);
+	int res = pmm_p->insert_tuple_on_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, index, external_tuple, abort_error);
 
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
@@ -130,7 +130,7 @@ int update_tuple_on_persistent_page(const page_modification_methods* pmm_p, cons
 		exit(-1);
 	}
 
-	int res = pmm_p->update_tuple_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, index, external_tuple, abort_error);
+	int res = pmm_p->update_tuple_on_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, index, external_tuple, abort_error);
 
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
@@ -159,7 +159,7 @@ int discard_tuple_on_persistent_page(const page_modification_methods* pmm_p, con
 		exit(-1);
 	}
 
-	int res = pmm_p->discard_tuple_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, index, abort_error);
+	int res = pmm_p->discard_tuple_on_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, index, abort_error);
 
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
@@ -188,7 +188,7 @@ void discard_all_tuples_on_persistent_page(const page_modification_methods* pmm_
 		exit(-1);
 	}
 
-	pmm_p->discard_all_tuples_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, abort_error);
+	pmm_p->discard_all_tuples_on_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, abort_error);
 
 	// always assumed to be modified
 	if(!(*abort_error))
@@ -211,7 +211,7 @@ uint32_t discard_trailing_tomb_stones_on_persistent_page(const page_modification
 		exit(-1);
 	}
 
-	uint32_t res = pmm_p->discard_trailing_tomb_stones_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, abort_error);
+	uint32_t res = pmm_p->discard_trailing_tomb_stones_on_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, abort_error);
 
 	// if the page was updated (is atleast 1 tuple was discarded), then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
@@ -245,7 +245,7 @@ int swap_tuples_on_persistent_page(const page_modification_methods* pmm_p, const
 	if(i1 == i2)
 		return 1;
 
-	int res = pmm_p->swap_tuples_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, i1, i2, abort_error);
+	int res = pmm_p->swap_tuples_on_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, i1, i2, abort_error);
 
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
@@ -274,7 +274,7 @@ int set_element_in_tuple_in_place_on_persistent_page(const page_modification_met
 		exit(-1);
 	}
 
-	int res = pmm_p->set_element_in_tuple_in_place_on_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_d, tuple_index, element_index, value, abort_error);
+	int res = pmm_p->set_element_in_tuple_in_place_on_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_d, tuple_index, element_index, value, abort_error);
 
 	// if the page was updated, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
@@ -303,7 +303,7 @@ void clone_persistent_page(const page_modification_methods* pmm_p, const void* t
 		exit(-1);
 	}
 
-	pmm_p->clone_page(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, *ppage_src, abort_error);
+	pmm_p->clone_page(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, ppage_src->page, abort_error);
 
 	// always assumed to be modified
 	if(!(*abort_error))
@@ -326,7 +326,7 @@ int run_persistent_page_compaction(const page_modification_methods* pmm_p, const
 		exit(-1);
 	}
 
-	int res = pmm_p->run_page_compaction(pmm_p->context, transaction_id, *ppage, page_size, tpl_sz_d, abort_error);
+	int res = pmm_p->run_page_compaction(pmm_p->context, transaction_id, ppage->page, page_size, tpl_sz_d, abort_error);
 
 	// if the page was compacted, then set the WAS_MODIFIED bit of the ppage flag
 	if(res && (!(*abort_error)))
