@@ -11,6 +11,7 @@
 // returns pointer to the root page of the newly created bplus_tree
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
+#include<page_lock_type.h>
 #include<bplus_tree_walk_down_custom_lock_type.h>
 
 // returns a bplus_tree_iterator to read from key 

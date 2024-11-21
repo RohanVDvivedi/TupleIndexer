@@ -2,7 +2,6 @@
 #define PAGE_TABLE_RANGE_LOCKER_PUBLIC_H
 
 #include<bucket_range.h>
-#include<persistent_page.h>
 #include<find_position.h>
 
 typedef struct page_table_range_locker page_table_range_locker;
