@@ -25,7 +25,7 @@ int swap_tuples_on_persistent_page(const page_modification_methods* pmm_p, const
 
 int set_element_in_tuple_in_place_on_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value, int* abort_error);
 
-void clone_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page* ppage_src, int* abort_error);
+void clone_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const persistent_page* ppage_src, int* abort_error);
 
 int run_persistent_page_compaction(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, int* abort_error);
 
