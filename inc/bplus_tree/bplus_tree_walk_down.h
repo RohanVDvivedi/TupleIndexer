@@ -84,6 +84,13 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 #define narrow_down_range_for_stacked_iterator_using_keys(locked_pages_stack_p, key1, f_pos1, key2, f_pos2, key_element_count_concerned, bpttd_p, pam_p, transaction_id, abort_error)          narrow_down_range_for_stacked_iterator(locked_pages_stack_p, key1, f_pos1, key2, f_pos2, 1, key_element_count_concerned, bpttd_p, pam_p, transaction_id, abort_error)
 #define narrow_down_range_for_stacked_iterator_using_records(locked_pages_stack_p, record1, f_pos1, record2, f_pos2, key_element_count_concerned, bpttd_p, pam_p, transaction_id, abort_error) narrow_down_range_for_stacked_iterator(locked_pages_stack_p, record1, f_pos1, record2, f_pos2, 0, key_element_count_concerned, bpttd_p, pam_p, transaction_id, abort_error)
 
+// this below function returns 1 only if your stacked_iterator's position (the locked pages stack) is correct for insertion of the key_OR_record
+// this is a test that must be passed for any locked pages stack for insertion
+// this function only returns conclusive results if the locked_pages_stack holds locks all the way from root to leaf, else the result of this function is not a definite surety
+int check_is_at_rightful_position_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, bplus_tree_tuple_defs* bpttd_p);
+#define check_is_at_rightful_position_for_stacked_iterator_using_key(locked_pages_stack_p, key, bpttd_p) 		check_is_at_rightful_position_for_stacked_iterator(locked_pages_stack_p, key, 1, bpttd_p)
+#define check_is_at_rightful_position_for_stacked_iterator_using_record(locked_pages_stack_p, record, bpttd_p) 	check_is_at_rightful_position_for_stacked_iterator(locked_pages_stack_p, record, 0, bpttd_p)
+
 // below function is to be used when you are done with the locked pages stack
 // it is recallable, it does not fail on abort
 void release_all_locks_and_deinitialize_stack_reenterable(locked_pages_stack* locked_pages_stack_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
