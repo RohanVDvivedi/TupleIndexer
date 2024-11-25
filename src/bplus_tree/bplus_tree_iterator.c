@@ -446,7 +446,7 @@ int remove_from_bplus_tree_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after
 		find_position f_pos = ((aft_op == GO_NEXT_AFTER_BPLUS_TREE_ITERATOR_REMOVE_OPERATION) ? GREATER_THAN : LESSER_THAN);
 
 		// this call may only fail only on an abort error (because the parameters that have been used to initialize it are surely correct) -> which will make the bpi_temp.lps locks released and its memory freed
-		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), curr_key, bpi_temp.bpttd_p->key_element_count, f_pos, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
+		initialize_bplus_tree_stacked_iterator_using_key(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), curr_key, bpi_temp.bpttd_p->key_element_count, f_pos, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
@@ -518,18 +518,6 @@ int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple,
 	if(bpi_p->lock_type != WRITE_LOCK) // not WRITE_LOCKed fail
 		return 0;
 
-	// extract the key for the curr_tuple, to adjust the bplus_tree_iterator after update operation
-	void* curr_key = NULL;
-	if(!prepare_for_delete_iterator_on_success)
-	{
-		curr_key = malloc(bpi_p->bpttd_p->max_index_record_size); // key would be no bigger than the max_index_record_size
-		if(!extract_key_from_record_tuple_using_bplus_tree_tuple_definitions(bpi_p->bpttd_p, curr_tuple, curr_key))
-		{
-			free(curr_key);
-			return 0;
-		}
-	}
-
 	// perform the actual update
 	{
 		if(old_tuple_size >= new_tuple_size) // update and merge, here we may not need merge if the tuples are same sized
@@ -582,20 +570,15 @@ int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple,
 		(*bpi_p) = (bplus_tree_iterator){};
 
 		// this call may only fail only on an abort error (because the parameters that have been used to initialize it are surely correct) -> which will make the bpi_temp.lps locks released and its memory freed
-		initialize_bplus_tree_stacked_iterator(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), curr_key, bpi_temp.bpttd_p->key_element_count, GREATER_THAN_EQUALS, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
+		initialize_bplus_tree_stacked_iterator_using_record(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), tuple, bpi_temp.bpttd_p->key_element_count, GREATER_THAN_EQUALS, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
-
-		free(curr_key);
-		curr_key = NULL;
 	}
 
 	return 1;
 
 	ABORT_ERROR:
-	if(curr_key != NULL)
-		free(curr_key);
 	release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
 	return 0;
 }
