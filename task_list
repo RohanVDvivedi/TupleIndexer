@@ -4,7 +4,7 @@
    * tests being
      * check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions AND
      * check_is_at_rightful_position_for_stacked_iterator
-   * this function also kills has an option to prepare_for_delete
+   * this function also has an option to prepare_for_delete
  * check if you can perform update without coping curr_key, in update using iterator
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
