@@ -1,9 +1,5 @@
 ** PICKED TASKS
 
-  * check if you can perform update without coping curr_key, in update using iterator
-    * use a static fucntion in iterator initializer to compare key or record with the current tuple
-  * test everything all 32 tests for bplus_tree and bplus_tree2 after the above changes
-
   * implement insert for bplus_tree_iterator, succeed only if stacked writable iterator (WRITE_LOCK), and passes tests
    * tests being
      * check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions AND
