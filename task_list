@@ -1,6 +1,5 @@
 ** PICKED TASKS
 
-  * modify all -1's in walk_down to ALL_LEAST_KEYS_CHILD_INDEX
   * check if you can perform update without coping curr_key, in update using iterator
     * use a static fucntion in iterator initializer to compare key or record with the current tuple
   * test everything all 32 tests for bplus_tree and bplus_tree2 after the above changes
