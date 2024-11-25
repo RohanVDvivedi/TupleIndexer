@@ -282,7 +282,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 void print_all_forward(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	printf("printing all tuples\n");
-	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, DEFAULT_FIND_IS_STACKED, DEFAULT_FIND_LOCK_TYPE, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, DEFAULT_FIND_IS_STACKED, DEFAULT_FIND_LOCK_TYPE, bpttd_p, pam_p, ((DEFAULT_FIND_LOCK_TYPE == READ_LOCK) ? NULL : pmm_p), transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
