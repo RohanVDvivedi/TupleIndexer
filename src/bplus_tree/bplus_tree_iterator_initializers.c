@@ -11,7 +11,7 @@
 
 #include<find_position.h>
 
-static int compare_curr_tuple_with_key_OR_record(const bplus_tree_iterator* bpi_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned)
+static int compare_curr_tuple_with_key_OR_record(bplus_tree_iterator* bpi_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned)
 {
 	const void* curr_tuple = get_tuple_bplus_tree_iterator(bpi_p);
 
@@ -254,7 +254,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 
 #include<bplus_tree_walk_down.h>
 
-int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack* lps, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack* lps, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
@@ -298,7 +298,7 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	// if it had any then it has been transferred to the bpi_p->lps
 
 	// walk down for the current value of bpi_p->lps
-	walk_down_locking_parent_pages_for_stacked_iterator_using_key(&(bpi_p->lps), key, key_element_count_concerned, find_pos, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
+	walk_down_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), key_OR_record, is_key, key_element_count_concerned, find_pos, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
@@ -306,7 +306,7 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	}
 
 	// adjust bplus_tree_iterator position
-	adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error);
+	adjust_position_for_bplus_tree_iterator(bpi_p, key_OR_record, is_key, key_element_count_concerned, find_pos, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
@@ -349,7 +349,7 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 		return 0;
 
 	// adjust bplus_tree_iterator position
-	return adjust_position_for_bplus_tree_iterator(bpi_p, key, key_element_count_concerned, find_pos, transaction_id, abort_error);
+	return adjust_position_for_bplus_tree_iterator(bpi_p, key, 1, key_element_count_concerned, find_pos, transaction_id, abort_error);
 }
 
 #include<stdlib.h>
@@ -357,7 +357,7 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 bplus_tree_iterator* get_new_bplus_tree_stacked_iterator(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	bplus_tree_iterator bpi_temp;
-	if(!initialize_bplus_tree_stacked_iterator(&bpi_temp, root_page_id, &(locked_pages_stack){}, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error))
+	if(!initialize_bplus_tree_stacked_iterator_using_key(&bpi_temp, root_page_id, &(locked_pages_stack){}, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error))
 		return NULL;
 
 	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));
