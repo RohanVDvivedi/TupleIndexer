@@ -316,18 +316,10 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	return 1;
 }
 
-int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(bpttd_p == NULL || pam_p == NULL)
-		return 0;
-
-	// a non stacked iterator can not be a READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
-	if(lock_type == READ_LOCK_INTERIOR_WRITE_LOCK_LEAF)
-		return 0;
-
-	// if the lock type is not a read lock, i.e. some pages need to be write locked then pmm_p must not be NULL
-	if(lock_type != READ_LOCK && pmm_p == NULL)
 		return 0;
 
 	// if the user wants to consider all the key elements then
@@ -344,7 +336,7 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 	bpi_p->pmm_p = pmm_p;
 
 	// walk down for the current value of bpi_p->lps
-	bpi_p->curr_page = walk_down_for_iterator_using_key(root_page_id, key, key_element_count_concerned, find_pos, lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
+	bpi_p->curr_page = walk_down_for_iterator_using_key(root_page_id, key, key_element_count_concerned, find_pos, (pmm_p != NULL ? WRITE_LOCK : READ_LOCK), bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -368,10 +360,10 @@ bplus_tree_iterator* get_new_bplus_tree_stacked_iterator(uint64_t root_page_id, 
 	return bpi_p;
 }
 
-bplus_tree_iterator* get_new_bplus_tree_unstacked_iterator(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+bplus_tree_iterator* get_new_bplus_tree_unstacked_iterator(uint64_t root_page_id, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	bplus_tree_iterator bpi_temp;
-	if(!initialize_bplus_tree_unstacked_iterator(&bpi_temp, root_page_id, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error))
+	if(!initialize_bplus_tree_unstacked_iterator(&bpi_temp, root_page_id, key, key_element_count_concerned, find_pos, bpttd_p, pam_p, pmm_p, transaction_id, abort_error))
 		return NULL;
 
 	bplus_tree_iterator* bpi_p = malloc(sizeof(bplus_tree_iterator));

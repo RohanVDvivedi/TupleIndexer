@@ -7,5 +7,5 @@ bplus_tree_iterator* find_in_bplus_tree(uint64_t root_page_id, const void* key, 
 	if(is_stacked)
 		return get_new_bplus_tree_stacked_iterator(root_page_id, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 	else
-		return get_new_bplus_tree_unstacked_iterator(root_page_id, key, key_element_count_concerned, find_pos, lock_type, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
+		return get_new_bplus_tree_unstacked_iterator(root_page_id, key, key_element_count_concerned, find_pos, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 }
