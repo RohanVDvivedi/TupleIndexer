@@ -264,6 +264,10 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	if(lock_type != READ_LOCK && pmm_p == NULL)
 		return 0;
 
+	// if the stacked iterator has to be initialized in read lock mode then force set the pmm_p to NULL
+	if(lock_type == READ_LOCK)
+		pmm_p = NULL;
+
 	// if the user wants to consider all the key elements then
 	// set key_element_count_concerned to bpttd_p->key_element_count
 	if(key_element_count_concerned == KEY_ELEMENT_COUNT)
