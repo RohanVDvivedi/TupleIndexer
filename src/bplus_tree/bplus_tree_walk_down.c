@@ -796,6 +796,38 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 	return 0;
 }
 
+int check_is_at_rightful_position_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, bplus_tree_tuple_defs* bpttd_p)
+{
+	int result = 1;
+
+	// iterate from the bottom of the stack
+	for(uint32_t i = 0; i < get_element_count_locked_pages_stack(locked_pages_stack_p); i++)
+	{
+		const locked_page_info* ppage_to_check = get_from_bottom_of_locked_pages_stack(locked_pages_stack_p, i);
+
+		// leaf pages are not to be considered for this test
+		// this must surely be the last iteration of the loop, as top most page must be a leaf page
+		if(is_bplus_tree_leaf_page(&(ppage_to_check->ppage), bpttd_p))
+			break;
+
+		// figure out the designated_child_index for the provided key_OR_record using the ppage_to_check
+		uint32_t designated_child_index_for_key_OR_record;
+		if(is_key)
+			designated_child_index_for_key_OR_record = find_child_index_for_key(&(ppage_to_check->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
+		else
+			designated_child_index_for_key_OR_record = find_child_index_for_record(&(ppage_to_check->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
+
+		// if the interior page's child_index is not correct for the position of the key_OR_record then fail
+		if(ppage_to_check->child_index != designated_child_index_for_key_OR_record)
+		{
+			result = 0;
+			break;
+		}
+	}
+
+	return result;
+}
+
 void release_all_locks_and_deinitialize_stack_reenterable(locked_pages_stack* locked_pages_stack_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// release locks on all the pages, we had locks on until now
