@@ -11,8 +11,18 @@
 
 #include<find_position.h>
 
+static int compare_curr_tuple_with_key_OR_record(const bplus_tree_iterator* bpi_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned)
+{
+	const void* curr_tuple = get_tuple_bplus_tree_iterator(bpi_p);
+
+	if(is_key)
+		return compare_tuples(curr_tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key_OR_record, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned);
+	else
+		return compare_tuples(curr_tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned);
+}
+
 // fails only on an abort_error
-static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key, uint32_t key_element_count_concerned, find_position find_pos, const void* transaction_id, int* abort_error)
+static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position find_pos, const void* transaction_id, int* abort_error)
 {
 	bpi_p->curr_tuple_index = 0;
 
@@ -35,44 +45,72 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			}
 			case LESSER_THAN :
 			{
-				bpi_p->curr_tuple_index = find_preceding_in_sorted_packed_page(
-										curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-										bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-										key, bpi_p->bpttd_p->key_def, NULL
-									);
+				if(is_key)
+					bpi_p->curr_tuple_index = find_preceding_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
+											key_OR_record, bpi_p->bpttd_p->key_def, NULL
+										);
+				else
+					bpi_p->curr_tuple_index = find_preceding_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
+											key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
+										);
 
 				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : 0;
 				break;
 			}
 			case LESSER_THAN_EQUALS :
 			{
-				bpi_p->curr_tuple_index = find_preceding_equals_in_sorted_packed_page(
-										curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-										bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-										key, bpi_p->bpttd_p->key_def, NULL
-									);
+				if(is_key)
+					bpi_p->curr_tuple_index = find_preceding_equals_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
+											key_OR_record, bpi_p->bpttd_p->key_def, NULL
+										);
+				else
+					bpi_p->curr_tuple_index = find_preceding_equals_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
+											key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
+										);
 
 				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : 0;
 				break;
 			}
 			case GREATER_THAN_EQUALS :
 			{
-				bpi_p->curr_tuple_index = find_succeeding_equals_in_sorted_packed_page(
-										curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-										bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-										key, bpi_p->bpttd_p->key_def, NULL
-									);
+				if(is_key)
+					bpi_p->curr_tuple_index = find_succeeding_equals_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
+											key_OR_record, bpi_p->bpttd_p->key_def, NULL
+										);
+				else
+					bpi_p->curr_tuple_index = find_succeeding_equals_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
+											key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
+										);
 
 				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : (tuple_count_on_curr_leaf_page - 1);
 				break;
 			}
 			case GREATER_THAN :
 			{
-				bpi_p->curr_tuple_index = find_succeeding_in_sorted_packed_page(
-										curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-										bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-										key, bpi_p->bpttd_p->key_def, NULL
-									);
+				if(is_key)
+					bpi_p->curr_tuple_index = find_succeeding_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
+											key_OR_record, bpi_p->bpttd_p->key_def, NULL
+										);
+				else
+					bpi_p->curr_tuple_index = find_succeeding_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
+											key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
+										);
 
 				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : (tuple_count_on_curr_leaf_page - 1);
 				break;
@@ -116,7 +154,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			}
 
 			tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
-			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) >= 0)
+			while(tuple_to_skip != NULL && compare_curr_tuple_with_key_OR_record(bpi_p, key_OR_record, is_key, key_element_count_concerned) >= 0)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -138,7 +176,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			}
 
 			tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
-			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) > 0)
+			while(tuple_to_skip != NULL && compare_curr_tuple_with_key_OR_record(bpi_p, key_OR_record, is_key, key_element_count_concerned) > 0)
 			{
 				prev_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -160,7 +198,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			}
 
 			tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
-			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) < 0)
+			while(tuple_to_skip != NULL && compare_curr_tuple_with_key_OR_record(bpi_p, key_OR_record, is_key, key_element_count_concerned) < 0)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -182,7 +220,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 			}
 
 			tuple_to_skip = get_tuple_bplus_tree_iterator(bpi_p);
-			while(tuple_to_skip != NULL && compare_tuples(tuple_to_skip, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, key, bpi_p->bpttd_p->key_def, NULL, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned) <= 0)
+			while(tuple_to_skip != NULL && compare_curr_tuple_with_key_OR_record(bpi_p, key_OR_record, is_key, key_element_count_concerned) <= 0)
 			{
 				next_bplus_tree_iterator(bpi_p, transaction_id, abort_error);
 				if(*abort_error)
