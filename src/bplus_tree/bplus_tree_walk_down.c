@@ -400,7 +400,7 @@ persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR
 		{
 			case MIN :
 			{
-				child_index = -1;
+				child_index = ALL_LEAST_KEYS_CHILD_INDEX;
 				break;
 			}
 			case LESSER_THAN_EQUALS :
@@ -472,7 +472,7 @@ int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* lock
 		{
 			case MIN :
 			{
-				curr_locked_page->child_index = -1;
+				curr_locked_page->child_index = ALL_LEAST_KEYS_CHILD_INDEX;
 				break;
 			}
 			case LESSER_THAN_EQUALS :
@@ -558,7 +558,7 @@ int walk_down_next_locking_parent_pages_for_stacked_iterator(locked_pages_stack*
 		// increment its child_index
 		curr_locked_page->child_index++;
 
-		if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count) // if child_index is within bounds, push this child_page onto the lps stack
+		if(curr_locked_page->child_index == ALL_LEAST_KEYS_CHILD_INDEX || curr_locked_page->child_index < tuple_count) // if child_index is within bounds, push this child_page onto the lps stack
 		{
 			// then lock the page at child_index, and push it onto the stack
 			uint32_t child_page_level = (curr_page_level - 1);
@@ -630,7 +630,7 @@ int walk_down_prev_locking_parent_pages_for_stacked_iterator(locked_pages_stack*
 		// decrement its child_index
 		curr_locked_page->child_index--;
 
-		if(curr_locked_page->child_index == -1 || curr_locked_page->child_index < tuple_count) // if child_index is within bounds, push this child_page onto the lps stack
+		if(curr_locked_page->child_index == ALL_LEAST_KEYS_CHILD_INDEX || curr_locked_page->child_index < tuple_count) // if child_index is within bounds, push this child_page onto the lps stack
 		{
 			// then lock the page at child_index, and push it onto the stack
 			uint32_t child_page_level = (curr_page_level - 1);
