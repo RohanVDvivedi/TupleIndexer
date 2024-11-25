@@ -88,7 +88,7 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 // this is a test that must be passed for any locked pages stack for insertion
 // this function only returns conclusive results if the locked_pages_stack holds locks all the way from root to leaf, else the result of this function is not a definite surety
 // if you are implementing/attempting an insert using the write-locked stacked iterator, (ofcourse with locks from root to leaf all write locked), then this test must pass, else you will corrupt the tree
-int check_is_at_rightful_position_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, bplus_tree_tuple_defs* bpttd_p);
+int check_is_at_rightful_position_for_stacked_iterator(const locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p);
 #define check_is_at_rightful_position_for_stacked_iterator_using_key(locked_pages_stack_p, key, bpttd_p) 		check_is_at_rightful_position_for_stacked_iterator(locked_pages_stack_p, key, 1, bpttd_p)
 #define check_is_at_rightful_position_for_stacked_iterator_using_record(locked_pages_stack_p, record, bpttd_p) 	check_is_at_rightful_position_for_stacked_iterator(locked_pages_stack_p, record, 0, bpttd_p)
 

@@ -796,7 +796,7 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 	return 0;
 }
 
-int check_is_at_rightful_position_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, bplus_tree_tuple_defs* bpttd_p)
+int check_is_at_rightful_position_for_stacked_iterator(const locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p)
 {
 	int result = 1;
 
