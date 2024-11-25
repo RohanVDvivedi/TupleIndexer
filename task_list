@@ -1,9 +1,9 @@
 ** PICKED TASKS
 
- * implement check_is_rightful_position_in_stacked_iterator -> with key and record in the walk_down sources
+ * check if you can perform update without coping curr_key, in update using iterator
+ * implement check_is_rightful_position_in_bplus_tree_at_stacked_iterator -> with key and record in the walk_down sources
  * implement insert for bplus_Tree_iterator, succeed only if stacked writable iterator (WRITE_LOCK), and passes insertion test and the test of above function
    * this function also kills has an option to prepare_for_delete
- * check if you can perform update without coping curr_key
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
