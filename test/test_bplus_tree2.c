@@ -527,6 +527,135 @@ int update_all(uint64_t root_page_id, const char* last_col, const bplus_tree_tup
 	return records_updated;
 }
 
+// find_pos for this function kust be MIN or MAX
+void insert_at_ends_of_indexed_bplus_tree(uint64_t root_page_id, find_position find_pos, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	#ifndef KEY_INDEX_PHONE
+		return ;
+	#endif
+
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, find_pos, 1, WRITE_LOCK, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	char new_tuple[PAGE_SIZE];
+	record r;
+
+	// insert -1
+	{
+		r.index = -1;
+		sprintf(r.name, "rohan->(%d)", r.index);
+		r.age = 27;
+		sprintf(r.sex, "Male");
+		sprintf(r.email, "rohandvivedi@gmail.com");
+		sprintf(r.phone, "9876543210");
+		r.score = 101;
+		sprintf(r.update, "update->(%d)", r.index);
+
+		build_tuple_from_record_struct(bpttd_p->record_def, new_tuple, &r);
+
+		int inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+
+		inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+	}
+
+	// insert 0
+	{
+		r.index = 0;
+		sprintf(r.name, "rohan->(%d)", r.index);
+		r.age = 27;
+		sprintf(r.sex, "Male");
+		sprintf(r.email, "rohandvivedi@gmail.com");
+		sprintf(r.phone, "9876543210");
+		r.score = 101;
+		sprintf(r.update, "update->(%d)", r.index);
+
+		build_tuple_from_record_struct(bpttd_p->record_def, new_tuple, &r);
+
+		int inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+
+		inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+	}
+
+	// insert 258
+	{
+		r.index = 258;
+		sprintf(r.name, "rohan->(%d)", r.index);
+		r.age = 27;
+		sprintf(r.sex, "Male");
+		sprintf(r.email, "rohandvivedi@gmail.com");
+		sprintf(r.phone, "9876543210");
+		r.score = 101;
+		sprintf(r.update, "update->(%d)", r.index);
+
+		build_tuple_from_record_struct(bpttd_p->record_def, new_tuple, &r);
+
+		int inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+
+		inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+	}
+
+	// insert 257
+	{
+		r.index = 257;
+		sprintf(r.name, "rohan->(%d)", r.index);
+		r.age = 27;
+		sprintf(r.sex, "Male");
+		sprintf(r.email, "rohandvivedi@gmail.com");
+		sprintf(r.phone, "9876543210");
+		r.score = 101;
+		sprintf(r.update, "update->(%d)", r.index);
+
+		build_tuple_from_record_struct(bpttd_p->record_def, new_tuple, &r);
+
+		int inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+
+		inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+	}
+
+	delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -607,11 +736,25 @@ int main()
 
 	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
 
+	/* INSERT AT ENDS*/
+	#ifdef KEY_INDEX_PHONE
+		insert_at_ends_of_indexed_bplus_tree(root_page_id, MIN, &bpttd, pam_p, pmm_p);
+		insert_at_ends_of_indexed_bplus_tree(root_page_id, MAX, &bpttd, pam_p, pmm_p);
+		print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
+	#endif
+
 	/* DELETE ALL */
 
 	delete_all(root_page_id, &bpttd, pam_p, pmm_p);
 
 	print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
+
+	/* INSERT AT ENDS*/
+	#ifdef KEY_INDEX_PHONE
+		insert_at_ends_of_indexed_bplus_tree(root_page_id, MIN, &bpttd, pam_p, pmm_p);
+		insert_at_ends_of_indexed_bplus_tree(root_page_id, MAX, &bpttd, pam_p, pmm_p);
+		print_all_forward(root_page_id, &bpttd, pam_p, pmm_p);
+	#endif
 
 	/* PRINTING EMPTY TREE */
 
