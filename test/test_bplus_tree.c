@@ -501,7 +501,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 
 	printf("printing the first 4 tuples\n");
 
-	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, DEFAULT_FIND_IS_STACKED, DEFAULT_FIND_LOCK_TYPE, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	bplus_tree_iterator* bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, DEFAULT_FIND_IS_STACKED, DEFAULT_FIND_LOCK_TYPE, bpttd_p, pam_p, ((DEFAULT_FIND_LOCK_TYPE == READ_LOCK) ? NULL : pmm_p), transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -537,7 +537,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 
 	printf("printing the last 4 tuples\n");
 
-	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MAX, DEFAULT_FIND_IS_STACKED, DEFAULT_FIND_LOCK_TYPE, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	bpi_p = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MAX, DEFAULT_FIND_IS_STACKED, DEFAULT_FIND_LOCK_TYPE, bpttd_p, pam_p, ((DEFAULT_FIND_LOCK_TYPE == READ_LOCK) ? NULL : pmm_p), transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -623,7 +623,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			}
 		}
 
-		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, DEFAULT_FIND_IS_STACKED, DEFAULT_FIND_LOCK_TYPE, bpttd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		bpi_p = find_in_bplus_tree(root_page_id, key_tuple, key_element_count_concerned, find_pos, DEFAULT_FIND_IS_STACKED, DEFAULT_FIND_LOCK_TYPE, bpttd_p, pam_p, ((DEFAULT_FIND_LOCK_TYPE == READ_LOCK) ? NULL : pmm_p), transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -907,7 +907,7 @@ int main()
 	printf("performing finds in an empty bplus_tree\n\n");
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 10, 5, 8, 16, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p, ((DEFAULT_FIND_LOCK_TYPE == READ_LOCK) ? NULL : pmm_p));
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 10, 5, 8, 16, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p, pmm_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -939,7 +939,7 @@ int main()
 	// perfrom find 12 times on tuples from TEST_DATA_FILE on all tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p, ((DEFAULT_FIND_LOCK_TYPE == READ_LOCK) ? NULL : pmm_p));
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 5, 12, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p, pmm_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -960,7 +960,7 @@ int main()
 	// perfrom find on remaining tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 9, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p, ((DEFAULT_FIND_LOCK_TYPE == READ_LOCK) ? NULL : pmm_p));
+	res = find_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 1, 6, 9, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p, pmm_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
@@ -984,7 +984,7 @@ int main()
 	// perfrom find on remaining tuples
 	/* FIND STARTED */
 
-	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 9, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p, ((DEFAULT_FIND_LOCK_TYPE == READ_LOCK) ? NULL : pmm_p));
+	res = find_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 9, 64, DEFAULT_FIND_KEY_COUNT_CONCERNED, &bpttd, pam_p, pmm_p);
 
 	printf("finds in bplus tree completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
