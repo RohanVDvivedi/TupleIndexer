@@ -1,11 +1,5 @@
 ** PICKED TASKS
 
-  * implement insert for bplus_tree_iterator, succeed only if stacked writable iterator (WRITE_LOCK), and passes tests
-   * tests being
-     * check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions AND
-     * check_is_at_rightful_position_for_stacked_iterator
-   * this function also has an option to prepare_for_delete
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
    * this will be implemented for variable length keys aswell
