@@ -78,10 +78,18 @@ int remove_from_bplus_tree_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after
 
 // update the curr_tuple being pointed at by the bplus_tree_iterator with the parameter tuple
 // works only on a stacked iterator with lock_type = WRITE_LOCK
-// in future it will also work on stacked_iterator with lock_type = READ_LOCK_INTERIOR_WRITE_LOCK_LEAF or a unstacked_iterator with lock_type = WRITE_LOCK, if and only if the tuple to be updated is exactly equal to the new tuple
+// it will also work on stacked_iterator with lock_type = READ_LOCK_INTERIOR_WRITE_LOCK_LEAF or a unstacked_iterator with lock_type = WRITE_LOCK, if and only if the tuple to be updated is exactly equal to the new tuple in size
 // on an abort error, all locks are released, then you only need to call delete_bplus_tree_iterator
-// here the prepare_for_delete_iterator_on_success flag only works for stacked WRITE_LOCKed iterator case
+// here the prepare_for_delete_iterator_on_success flag only works for stacked WRITE_LOCKed iterator case only
 int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error);
+
+// insert in the bplus_tree_iterator with the parameter tuple
+// works only on a stacked iterator with lock_type = WRITE_LOCK
+// on an abort error, all locks are released, then you only need to call delete_bplus_tree_iterator
+// on success, if prepare_for_delete_iterator_on_success = 1, then the all lockes held by the iterator are released, else it is made to point to the tuple inserted
+// this function may fail if the rightful position of the tuple to be inserted is not being pointed at currently by the iterator, i.e. the iterator's position is not correct for the insertion of the given tuple
+// for this reason only use it to insert a new MIN tuple while pointing at MIN or beyond MIN tuples, and like wise for the MAX tuple, i.e. it is designed to work closely with the auto increment provided by most databases
+int insert_using_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error);
 
 // you can use the below function only to update only a fixed length non-key column
 
