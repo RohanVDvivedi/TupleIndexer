@@ -527,6 +527,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	}
 
+	debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
+
 	delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
@@ -562,6 +564,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		}
 		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	}
+
+	debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
 
 	delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -677,6 +681,8 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			}
 			tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 		}
+
+		debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
 
 		delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
 		if(abort_error)
