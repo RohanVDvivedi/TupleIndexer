@@ -583,6 +583,33 @@ int update_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple,
 	return 0;
 }
 
+int insert_using_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tuple, int prepare_for_delete_iterator_on_success, const void* transaction_id, int* abort_error)
+{
+	// does not work on unstacked iterator
+	if(!bpi_p->is_stacked)
+		return 0;
+
+	// works only on stacked write locked iterator
+	if(bpi_p->lock_type != WRITE_LOCK)
+		return 0;
+
+	// if the new tuple can not go to this bplus tree then fail
+	if(!check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(bpi_p->bpttd_p, tuple))
+		return 0;
+
+	// ifthis is not the rightful position of the tuple in the bplus_tree, then fail
+	if(!check_is_at_rightful_position_for_stacked_iterator_using_record(&(bpi_p->lps), tuple, bpi_p->bpttd_p))
+		return 0;
+
+	// TODO perform insert
+
+	return 1;
+
+	ABORT_ERROR:
+	release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
+	return 0;
+}
+
 int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
 {
 	// cannot update non WRITE_LOCKed bplus_tree_iterator
