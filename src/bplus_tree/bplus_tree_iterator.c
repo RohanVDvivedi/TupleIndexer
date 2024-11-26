@@ -618,7 +618,30 @@ int insert_using_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tup
 			return 0;
 	}
 
-	// TODO perform insert
+	// Now we are sure we need to perform an insert
+
+	// if we are going to delete the iterator on success, then attempt to release some locks early
+	if(prepare_for_delete_iterator_on_success)
+	{
+		// count the number of pages that can be unlocked safely and unlock them
+		uint32_t safely_unlockable = count_unlockable_parent_pages_for_split_insert(&(bpi_p->lps), bpi_p->bpttd_p);
+		while(safely_unlockable > 0)
+		{
+			locked_page_info* bottom = get_bottom_of_locked_pages_stack(&(bpi_p->lps));
+			release_lock_on_persistent_page(bpi_p->pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+			pop_bottom_from_locked_pages_stack(&(bpi_p->lps));
+
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			safely_unlockable--;
+		}
+	}
+
+	// perform split insert
+	split_insert_and_unlock_pages_up(bpi_p->root_page_id, &(bpi_p->lps), tuple, INVALID_TUPLE_INDEX, bpi_p->bpttd_p, bpi_p->pam_p, bpi_p->pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
 
 	// exit ceremony
 	if(prepare_for_delete_iterator_on_success)
