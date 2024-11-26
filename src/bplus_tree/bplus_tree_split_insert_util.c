@@ -118,7 +118,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 				// create new locked_page_info for the root_least_keys_child
 				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child, INVALID_TUPLE_INDEX);
 				root_least_keys_child_info.child_index = curr_locked_page.child_index;
-				curr_locked_page.child_index = -1; // the root page only has a single child at the moment
+				curr_locked_page.child_index = ALL_LEAST_KEYS_CHILD_INDEX; // the root page only has a single child at the moment
 
 				push_to_locked_pages_stack(locked_pages_stack_p, &curr_locked_page);
 				curr_locked_page = root_least_keys_child_info;
@@ -209,7 +209,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 				// create new locked_page_info for the root_least_keys_child
 				locked_page_info root_least_keys_child_info = INIT_LOCKED_PAGE_INFO(root_least_keys_child, INVALID_TUPLE_INDEX);
 				root_least_keys_child_info.child_index = curr_locked_page.child_index;
-				curr_locked_page.child_index = -1; // the root page only has a single child at the moment
+				curr_locked_page.child_index = ALL_LEAST_KEYS_CHILD_INDEX; // the root page only has a single child at the moment
 
 				// push curr back on to the stack
 				push_to_locked_pages_stack(locked_pages_stack_p, &curr_locked_page);

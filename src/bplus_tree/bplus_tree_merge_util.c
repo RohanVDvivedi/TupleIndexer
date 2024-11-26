@@ -110,7 +110,7 @@ int merge_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* locked_
 				// we can do this only if the root is an interior page i.e. root_page_level > 0
 				while(root_page_level > 0 && get_tuple_count_on_persistent_page(&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) == 0)
 				{
-					uint64_t only_child_page_id = get_child_page_id_by_child_index(&(curr_locked_page.ppage), -1, bpttd_p);
+					uint64_t only_child_page_id = get_child_page_id_by_child_index(&(curr_locked_page.ppage), ALL_LEAST_KEYS_CHILD_INDEX, bpttd_p);
 					persistent_page only_child_page = acquire_persistent_page_with_lock(pam_p, transaction_id, only_child_page_id, READ_LOCK, abort_error);
 					if(*abort_error)
 						break;
