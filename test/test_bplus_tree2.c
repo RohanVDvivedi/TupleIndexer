@@ -648,6 +648,32 @@ void insert_at_ends_of_indexed_bplus_tree(uint64_t root_page_id, find_position f
 		printf("\n");
 	}
 
+	// insert 259
+	{
+		r.index = 259;
+		sprintf(r.name, "rohan->(%d)", r.index);
+		r.age = 27;
+		sprintf(r.sex, "Male");
+		sprintf(r.email, "rohandvivedi@gmail.com");
+		sprintf(r.phone, "9876543210");
+		r.score = 101;
+		sprintf(r.update, "update->(%d)", r.index);
+
+		build_tuple_from_record_struct(bpttd_p->record_def, new_tuple, &r);
+
+		int inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+
+		inserted = insert_using_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
+
+		printf("result %d of insertion for ", inserted);
+		print_tuple(new_tuple, bpttd_p->record_def);
+		printf("\n");
+	}
+
 	delete_bplus_tree_iterator(bpi_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
