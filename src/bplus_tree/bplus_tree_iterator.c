@@ -601,7 +601,44 @@ int insert_using_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tup
 	if(!check_is_at_rightful_position_for_stacked_iterator_using_record(&(bpi_p->lps), tuple, bpi_p->bpttd_p))
 		return 0;
 
+	// check to ensure that we are not inserting a duplicate
+	{
+		// get current leaf page that the bplus_tree_iterator is pointing to
+		persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
+
+		// find index of last record that has the matching key on the page
+		uint32_t found_index = find_last_in_sorted_packed_page(
+											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size,
+											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, bpi_p->bpttd_p->key_element_count,
+											tuple, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
+										);
+
+		// if such a record is found, we exit with failure
+		if(NO_TUPLE_FOUND != found_index)
+			return 0;
+	}
+
 	// TODO perform insert
+
+	// exit ceremony
+	if(prepare_for_delete_iterator_on_success)
+	{
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+	else
+	{
+		// transfer ownership of bpi_p to a local variable
+		bplus_tree_iterator bpi_temp = (*bpi_p);
+		(*bpi_p) = (bplus_tree_iterator){};
+
+		// this call may only fail only on an abort error (because the parameters that have been used to initialize it are surely correct) -> which will make the bpi_temp.lps locks released and its memory freed
+		initialize_bplus_tree_stacked_iterator_using_record(bpi_p, bpi_temp.root_page_id, &(bpi_temp.lps), tuple, bpi_temp.bpttd_p->key_element_count, GREATER_THAN_EQUALS, bpi_temp.lock_type, bpi_temp.bpttd_p, bpi_temp.pam_p, bpi_temp.pmm_p, transaction_id, abort_error);
+		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_temp.lps), bpi_p->pam_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
 
 	return 1;
 
