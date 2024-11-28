@@ -12,7 +12,7 @@
 **  0 or NULL impiles an abort_error/a failure with the corresponding operation
 **	a failure to page_access_methods function calls must accompany with a non-zero abort_error
 **	this the same error that you should mark the transaction with in your transaction manager
-**	Any error returned, is expected to have aborted the transaction, and its reason must be returned in abort_error
+**	Any failure occurred, is expected to have aborted the transaction, and its reason must be returned in abort_error
 **
 **	In case of a failure to allocate more memory for your needs, do not throw an abort_error, just call exit() and kill the application
 **	Additionally ensure that no new page locks are granted, to any thread working on the transaction, once a transaction is aborted.
@@ -55,6 +55,8 @@
 **	in case when release_*_lock_on_page() function is passed with a FREE_PAGE flag, and if the operation stands aborted, then the latch/lock on the page is not to be released, until later when TupleIndexer calls to release_lock() without the option of FREE_PAGE
 **	an abort on a release_*_lock_on_page(FREE_PAGE), is always followed by a call to release_*_lock_on_page() (called without FREE_PAGE option), so that your page_access_methods will release the acquired latch for an aborted transaction
 */
+
+// ANY FAILURE, IS EXPECTED TO ALWAYS RESULT IN AN ABORT ERROR, i.e.  THE TRANSACTION IS MEANT TO BE ABORTED ON FAILURE FROM THE FOLLOWING FUNCTIONS
 
 // below are the options that can go with the functions below
 //#define NONE_OPTION  0b000	// dummy for setting no options
