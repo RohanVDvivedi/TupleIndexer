@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
- * hashtable
-   * same thing for split, go next for the curr page and remove completed page when need arises
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
    * this will be implemented for variable length keys aswell
