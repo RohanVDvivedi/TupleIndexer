@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
- * sorter
-   * remove tuples page by page, and go only next, only when the complete page is read
  * hashtable
    * same thing for split, go next for the curr page and remove completed page when need arises
 
