@@ -1,6 +1,4 @@
 ** PICKED TASKS
- * linked_page_list
-   * remove_all_in_curr_page_from_linked_page_list_iterator();
 
  * sorter
    * remove tuples page by page, and go only next, only when the complete page is read
