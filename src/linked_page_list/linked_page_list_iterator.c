@@ -1089,6 +1089,36 @@ int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, lin
 	return 0;
 }
 
+int remove_all_in_curr_page_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, linked_page_list_go_after_operation aft_op, const void* transaction_id, int* abort_error)
+{
+	// if not writable, we can not discard the current page
+	if(!is_writable_linked_page_list_iterator(lpli_p))
+		return 0;
+
+	// if the linked_page_list is empty then fail, removal
+	if(is_empty_linked_page_list(lpli_p))
+		return 0;
+
+	// discard all tuples on curr page
+	discard_all_tuples_on_persistent_page(lpli_p->pmm_p, transaction_id, get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// since currently there is no tuple to point to, we will just reset the curr_tuple_index
+	lpli_p->curr_tuple_index = 0;
+	// below function only discards the page, if there are other pages in the linked_page_list
+	// i.e. if the linked_page_list itself became empty, then the below function call is a NOP, returning 0
+	discard_curr_page_if_empty(lpli_p, aft_op, transaction_id, abort_error);
+	if(*abort_error)
+		return 0;
+	return 1;
+
+	ABORT_ERROR:;
+	release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
+	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
+	return 0;
+}
+
 int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, const void* transaction_id, int* abort_error)
 {
 	// fail if this is not a writable iterator
