@@ -44,17 +44,6 @@
    * since this page and its underlying root that it points to are both fixed, the referenceed root pointer may never be appointed
    * at times it can try to relocate the root page (needs to be done gracefully in case of linked_page_list, since it is circular and not a tree)
    * it can also be used to house locking information for the underlying data structure
- * address_space_table
-   * uses page table underneath
-   * gives users/transactions their own address space like the OS does
-   * this can be used for different transactions requesting their own address space in the temporary memory address space, (possibly backed by disk)
-     * to not see other transaction's temporary data and to make it easy to discard all pages in address space after use
-   * need to only implement a page_access_method for every address space with context containing the original page_access_method and the root page id of the page table mapping the address space
-   * only need to separately implement functions that allocate and free pages
-   * acquire page lock functions need to also be implemented, they will perform address translation and then acquire the page
-   * this structure should be allowed to abort the transaction, reasons being
-     * illegal page id provided -> accessing unassigned page id
-     * out of available addresses in address space
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
