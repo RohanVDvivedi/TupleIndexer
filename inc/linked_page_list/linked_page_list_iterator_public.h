@@ -86,6 +86,9 @@ enum linked_page_list_go_after_operation
 // on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
 int remove_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, linked_page_list_go_after_operation aft_op, const void* transaction_id, int* abort_error);
 
+// remove all tuples on the curr page that the linked page list is pointing to
+int remove_all_in_curr_page_from_linked_page_list_iterator(linked_page_list_iterator* lpli_p, linked_page_list_go_after_operation aft_op, const void* transaction_id, int* abort_error);
+
 // update the curr_tuple being pointed at by the linked_page_list_iterator with the parameter tuple
 // on an abort error, lock on the curr_page is also released, then you only need to call delete_linked_page_list_iterator
 int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void* tuple, const void* transaction_id, int* abort_error);
