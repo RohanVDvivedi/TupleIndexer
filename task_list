@@ -1,7 +1,5 @@
 ** PICKED TASKS
  * linked_page_list
-   * is_at_first_tuple_in_curr_page();
-   * is_at_last_tuple_in_curr_page();
    * remove_all_in_curr_page_from_linked_page_list_iterator();
 
  * sorter
