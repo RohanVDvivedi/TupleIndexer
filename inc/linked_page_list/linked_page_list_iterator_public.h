@@ -39,6 +39,12 @@ int is_at_head_tuple_linked_page_list_iterator(const linked_page_list_iterator* 
 // !is_empty && is_at_tail_page && curr_tuple_index == (curr_page.tuple_count - 1)
 int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
 
+// !is_empty && curr_tuple_index == 0
+int is_at_first_tuple_in_curr_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+
+// !is_empty && curr_tuple_index == (curr_page.tuple_count - 1)
+int is_at_last_tuple_in_curr_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+
 // this function returns 1, if the iterator is writable, and the tuple can be inserted onto the page passing the checks laid by check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions
 // and the tuple can be inserted without requiring a split
 int can_insert_without_split_at_linked_page_list_iterator(const linked_page_list_iterator* lpli_p, const void* tuple);
