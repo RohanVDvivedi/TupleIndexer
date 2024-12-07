@@ -273,6 +273,8 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 				goto ABORT_ERROR;
 		}
 
+		int optimization_2_to_be_attempted = 1;
+
 		// iterate while there are still tuples in the runs waiting to be merged into output_run
 		while(!is_empty_active_sorted_run_heap(&input_runs_heap))
 		{
@@ -301,11 +303,23 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 						goto ABORT_ERROR;
 					}
 
-					remove_from_linked_page_list_iterator(e.run_iterator, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
-					if(*abort_error)
+					if(!is_at_last_tuple_in_curr_page_linked_page_list_iterator(e.run_iterator)) // if it is not at the last tuple in curr page, then simply go next
 					{
-						delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
-						goto ABORT_ERROR;
+						next_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+						if(*abort_error)
+						{
+							delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+							goto ABORT_ERROR;
+						}
+					}
+					else // if it is at the last tuple in curr page, then the whole page worth of tuples can be discarded
+					{
+						remove_all_in_curr_page_from_linked_page_list_iterator(e.run_iterator, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
+						if(*abort_error)
+						{
+							delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
+							goto ABORT_ERROR;
+						}
 					}
 				}
 
@@ -333,7 +347,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 			// if there are runs left to be consumed i.e. (consumed_runs < sh_p->sorted_runs_count), then there is a chance for this optimization to kick in
 			// Optimization is to pick new input run, immediately after the first run of the N-way sort is consumed
 			// this happens if the last consumed tuple is NULL or is strictly lesser than or equal to the first tuple of the next incomming run
-			if((runs_consumed < sh_p->sorted_runs_count) && (get_element_count_active_sorted_run_heap(&input_runs_heap) == (N_way - 1)))
+			if((runs_consumed < sh_p->sorted_runs_count) && (get_element_count_active_sorted_run_heap(&input_runs_heap) < N_way) && optimization_2_to_be_attempted)
 			{
 				ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
@@ -363,6 +377,8 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 						set_in_page_table(ptrl_p, runs_consumed++, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
 						if(*abort_error)
 							goto ABORT_ERROR;
+
+						optimization_2_to_be_attempted = 1;
 					}
 					else
 					{
@@ -370,6 +386,9 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 						run_to_consume.run_iterator = NULL;
 						if(*abort_error)
 							goto ABORT_ERROR;
+
+						// upon first failure to run optimization 2, it should not be attempted again
+						optimization_2_to_be_attempted = 0;
 					}
 				}
 
@@ -381,7 +400,8 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 
 			// OPTIMIZATION 1
 			// merge the only remaining run and break out
-			if(get_element_count_active_sorted_run_heap(&input_runs_heap) == 1)
+			// this is to be performed only if we are at the head of the last remaining run, else iterate on the current page tuple by tuple
+			if(get_element_count_active_sorted_run_heap(&input_runs_heap) == 1 && is_at_head_tuple_linked_page_list_iterator(((active_sorted_run*)get_front_of_active_sorted_run_heap(&input_runs_heap))->run_iterator))
 			{
 				active_sorted_run run_to_merge = *get_front_of_active_sorted_run_heap(&input_runs_heap);
 				pop_from_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE);
