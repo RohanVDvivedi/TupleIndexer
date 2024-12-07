@@ -170,6 +170,22 @@ int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* 
 		&& (lpli_p->curr_tuple_index == (get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1));
 }
 
+int is_at_first_tuple_in_curr_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
+{
+	// check that the linked_page_list is not empty
+	// and we must be pointing to the first tuple on the curr page
+	return (!is_empty_linked_page_list(lpli_p))
+		&& (lpli_p->curr_tuple_index == 0);
+}
+
+int is_at_last_tuple_in_curr_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
+{
+	// check that the linked_page_list is not empty
+	// and we must be pointing to the last tuple on the curr page
+	return (!is_empty_linked_page_list(lpli_p))
+		&& (lpli_p->curr_tuple_index == (get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1));
+}
+
 const void* get_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
 {
 	return get_nth_tuple_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def), lpli_p->curr_tuple_index);
