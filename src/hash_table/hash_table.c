@@ -147,14 +147,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 		const void* record_tuple = get_tuple_linked_page_list_iterator(split_content);
 
 		if(record_tuple == NULL)
-		{
-			// discard the processed tuple from split_content
-			remove_from_linked_page_list_iterator(split_content, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-
-			continue;
-		}
+			goto SKIP_TUPLE;
 
 		// calculate the bucket_id for the record_tuple
 		uint64_t bucket_id = get_bucket_index_for_record_using_hash_table_tuple_definitions(httd_p, record_tuple, bucket_count);
@@ -229,10 +222,19 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 			break;
 		}
 
-		// discard the processed tuple from split_content
-		remove_from_linked_page_list_iterator(split_content, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
-		if(*abort_error)
-			goto ABORT_ERROR;
+		SKIP_TUPLE:;
+		if(!is_at_last_tuple_in_curr_page_linked_page_list_iterator(split_content)) // if not the last tuple on the current page, then go next
+		{
+			next_linked_page_list_iterator(split_content, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+		else // else remove current page and go next
+		{
+			remove_all_in_curr_page_from_linked_page_list_iterator(split_content, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 	}
 
 	// now we can delete the iterator
