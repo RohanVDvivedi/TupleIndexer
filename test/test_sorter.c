@@ -109,32 +109,32 @@ tuple_def* get_tuple_definition()
 	initialize_tuple_data_type_info(tuple_type_info, "students", 1, PAGE_SIZE, 8);
 
 	strcpy(tuple_type_info->containees[0].field_name, "index");
-	tuple_type_info->containees[0].type_info = INT_NULLABLE[4];
+	tuple_type_info->containees[0].al.type_info = INT_NULLABLE[4];
 
 	c1_type_info = get_variable_length_string_type("", 256);
 	strcpy(tuple_type_info->containees[1].field_name, "name");
-	tuple_type_info->containees[1].type_info = &c1_type_info;
+	tuple_type_info->containees[1].al.type_info = &c1_type_info;
 
 	strcpy(tuple_type_info->containees[2].field_name, "age");
-	tuple_type_info->containees[2].type_info = UINT_NULLABLE[1];
+	tuple_type_info->containees[2].al.type_info = UINT_NULLABLE[1];
 
 	strcpy(tuple_type_info->containees[3].field_name, "sex");
-	tuple_type_info->containees[3].type_info = BIT_FIELD_NULLABLE[1];
+	tuple_type_info->containees[3].al.type_info = BIT_FIELD_NULLABLE[1];
 
 	c4_type_info = get_variable_length_string_type("", 256);
 	strcpy(tuple_type_info->containees[4].field_name, "email");
-	tuple_type_info->containees[4].type_info = &c4_type_info;
+	tuple_type_info->containees[4].al.type_info = &c4_type_info;
 
 	c5_type_info = get_fixed_length_string_type("", 14, 1);
 	strcpy(tuple_type_info->containees[5].field_name, "phone");
-	tuple_type_info->containees[5].type_info = &c5_type_info;
+	tuple_type_info->containees[5].al.type_info = &c5_type_info;
 
 	strcpy(tuple_type_info->containees[6].field_name, "score");
-	tuple_type_info->containees[6].type_info = UINT_NULLABLE[1];
+	tuple_type_info->containees[6].al.type_info = UINT_NULLABLE[1];
 
 	c7_type_info = get_variable_length_string_type("", 256);
 	strcpy(tuple_type_info->containees[7].field_name, "update");
-	tuple_type_info->containees[7].type_info = &c7_type_info;
+	tuple_type_info->containees[7].al.type_info = &c7_type_info;
 
 	if(!initialize_tuple_def(&tuple_definition, tuple_type_info))
 	{
@@ -164,22 +164,25 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
-	r->index = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(0), tupl).int_value;
-	user_value name_data = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(1), tupl);
-	strncpy(r->name, name_data.string_value, name_data.string_size);
-	r->age = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(2), tupl).uint_value;
-	uint8_t sex = 0;
+	user_value uval;
+	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(0), tupl);
+	r->index = uval.int_value;
+	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(1), tupl);
+	strncpy(r->name, uval.string_value, uval.string_size);
+	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(2), tupl);
+	r->age = uval.uint_value;
 	strcpy(r->sex, "Female");
-	sex = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(3), tupl).bit_field_value;
-	if(sex)
+	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(3), tupl);
+	if(uval.bit_field_value)
 		strcpy(r->sex, "Male");
-	user_value email_data = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(4), tupl);
-	strncpy(r->email, email_data.string_value, email_data.string_size);
-	user_value phone_data = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(5), tupl);
-	strncpy(r->phone, phone_data.string_value, phone_data.string_size);
-	r->score = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(6), tupl).uint_value;
-	user_value update_data = get_value_from_element_from_tuple(tpl_d, STATIC_POSITION(7), tupl);
-	strncpy(r->update, update_data.string_value, update_data.string_size);
+	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(4), tupl);
+	strncpy(r->email, uval.string_value, uval.string_size);
+	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(5), tupl);
+	strncpy(r->phone, uval.string_value, uval.string_size);
+	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(6), tupl);
+	r->score = uval.uint_value;
+	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(7), tupl);
+	strncpy(r->update, uval.string_value, uval.string_size);
 }
 
 typedef struct result result;
