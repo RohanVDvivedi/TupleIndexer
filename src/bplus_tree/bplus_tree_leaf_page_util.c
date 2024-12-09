@@ -202,8 +202,10 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		}
 		else // we can only suffix truncate STRING or BLOB types
 		{
-			const user_value last_tuple_page1_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
-			const user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+			user_value last_tuple_page1_element;
+			get_value_from_element_from_tuple(&last_tuple_page1_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
+			user_value first_tuple_page2_element;
+			get_value_from_element_from_tuple(&first_tuple_page2_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 			switch(bpttd_p->key_compare_direction[i])
 			{
@@ -303,7 +305,8 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				// NULL is the least value of any type
 				// check if index entry element is NULL
 				{
-					const user_value index_entry_element = get_value_from_element_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry);
+					user_value index_entry_element;
+					get_value_from_element_from_tuple(&index_entry_element, bpttd_p->index_def, STATIC_POSITION(i), index_entry);
 					if(is_user_value_NULL(&index_entry_element))
 						break;
 				}
@@ -341,7 +344,8 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				}
 				else if(ele_d->type == STRING || ele_d->type == BLOB) // max values of STRING and BLOB types are difficult to compute
 				{
-					const user_value first_tuple_page2_element = get_value_from_element_from_tuple(bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+					user_value first_tuple_page2_element;
+					get_value_from_element_from_tuple(&first_tuple_page2_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 					if(is_user_value_NULL(&first_tuple_page2_element))
 					{
