@@ -183,7 +183,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	// handle that will be maintained while accessing the runs page_table
 	page_table_range_locker* ptrl_p = NULL;
 	active_sorted_run_heap input_runs_heap;
-	if(0 == initialize_active_sorted_run_heap(&input_runs_heap, N_way))
+	if(0 == initialize_active_sorted_run_heap(&input_runs_heap, min(N_way, sh_p->sorted_runs_count)))
 		exit(-1);
 	#define HEAP_DEGREE 2
 	#define HEAP_INFO &((heap_info){.type = MIN_HEAP, .comparator = contexted_comparator(sh_p, compare_sorted_runs)})
