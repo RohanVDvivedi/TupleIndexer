@@ -145,7 +145,30 @@ struct active_sorted_run
 {
 	uint64_t head_page_id;
 	linked_page_list_iterator* run_iterator;
+
+	user_value* cached_keys_for_curr_tuple;
 };
+
+static void cache_keys_for_active_sorted_run(active_sorted_run* asr_p, const sorter_tuple_defs* std_p)
+{
+	// allocate memory for caches_keys
+	if(asr_p->cached_keys_for_curr_tuple == NULL)
+		asr_p->cached_keys_for_curr_tuple = malloc(sizeof(user_value) * std_p->key_element_count);
+
+	const void* tuple = get_tuple_linked_page_list_iterator(asr_p->run_iterator);
+
+	for(uint32_t i = 0; i < std_p->key_element_count; i++)
+		get_value_from_element_from_tuple(&(asr_p->cached_keys_for_curr_tuple[i]), std_p->record_def, std_p->key_element_ids[i], tuple);
+}
+
+static void destroy_cache_keys_for_active_sorted_run(active_sorted_run* asr_p)
+{
+	if(asr_p->cached_keys_for_curr_tuple != NULL)
+	{
+		free(asr_p->cached_keys_for_curr_tuple);
+		asr_p->cached_keys_for_curr_tuple = NULL;
+	}
+}
 
 #include<value_arraylist.h>
 
