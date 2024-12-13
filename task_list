@@ -5,9 +5,6 @@ SORTER READ OPTIMIZATION
  * every time a sorted run is compared we first compare the cached user values directly, since we are not removing the tuple on the head page upfront this is trivial
  * need special arrangements in TupleStore to sort user_value provided their dti's are given
 
-SORTER OPTIMIZATION
- * for already sorted pages quicksort on the page is O(n^2), instead try to give option to use heap_sort_iai also
-
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
