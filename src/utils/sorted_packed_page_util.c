@@ -528,4 +528,5 @@ void sort_and_convert_to_sorted_packed_page(
 	index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
 	quick_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+	//heap_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), 3);
 }
