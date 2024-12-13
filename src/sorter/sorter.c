@@ -271,6 +271,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 				if(*abort_error)
 					goto ABORT_ERROR;
 
+				cache_keys_for_active_sorted_run(&e, sh_p->std_p);
 				push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &e);
 
 				set_in_page_table(ptrl_p, runs_consumed, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
@@ -315,6 +316,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 					insert_at_linked_page_list_iterator(output_run.run_iterator, record, INSERT_AFTER_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
 					if(*abort_error)
 					{
+						destroy_cache_keys_for_active_sorted_run(&e);
 						delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 						goto ABORT_ERROR;
 					}
@@ -322,6 +324,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 					next_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
 					if(*abort_error)
 					{
+						destroy_cache_keys_for_active_sorted_run(&e);
 						delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 						goto ABORT_ERROR;
 					}
@@ -331,6 +334,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 						next_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 						if(*abort_error)
 						{
+							destroy_cache_keys_for_active_sorted_run(&e);
 							delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 							goto ABORT_ERROR;
 						}
@@ -340,6 +344,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 						remove_all_in_curr_page_from_linked_page_list_iterator(e.run_iterator, GO_NEXT_AFTER_LINKED_PAGE_ITERATOR_OPERATION, transaction_id, abort_error);
 						if(*abort_error)
 						{
+							destroy_cache_keys_for_active_sorted_run(&e);
 							delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 							goto ABORT_ERROR;
 						}
@@ -349,11 +354,15 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 				// if e is not empty, then we need to put it at the back into the heap
 				if(!is_empty_linked_page_list(e.run_iterator))
 				{
+					cache_keys_for_active_sorted_run(&e, sh_p->std_p);
 					push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &e);
 					continue;
 				}
 
+				// e is empty, so it meant to be destroyed
+
 				// else we need to destroy e
+				destroy_cache_keys_for_active_sorted_run(&e);
 				delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 				e.run_iterator = NULL;
 				if(*abort_error)
@@ -394,6 +403,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 					if(get_tuple_linked_page_list_iterator(output_run.run_iterator) == NULL || compare_sorted_runs(sh_p, &output_run, &run_to_consume) <= 0)
 					{
 						// push this new run to the input_runs_heap
+						cache_keys_for_active_sorted_run(&run_to_consume, sh_p->std_p);
 						push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &run_to_consume);
 
 						// mark the run_to_consume as consumed
@@ -429,6 +439,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 				active_sorted_run run_to_merge = *get_front_of_active_sorted_run_heap(&input_runs_heap);
 				pop_from_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE);
 
+				destroy_cache_keys_for_active_sorted_run(&run_to_merge);
 				delete_linked_page_list_iterator(run_to_merge.run_iterator, transaction_id, abort_error);
 				run_to_merge.run_iterator = NULL;
 				if(*abort_error)
@@ -474,6 +485,7 @@ static int merge_sorted_runs_in_sorter(sorter_handle* sh_p, uint64_t N_way, cons
 	{
 		active_sorted_run e = *get_front_of_active_sorted_run_heap(&input_runs_heap);
 		pop_front_from_active_sorted_run_heap(&input_runs_heap);
+		destroy_cache_keys_for_active_sorted_run(&e);
 		delete_linked_page_list_iterator(e.run_iterator, transaction_id, abort_error);
 	}
 	deinitialize_active_sorted_run_heap(&input_runs_heap);
