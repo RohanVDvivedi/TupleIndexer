@@ -153,7 +153,11 @@ static void cache_keys_for_active_sorted_run(active_sorted_run* asr_p, const sor
 {
 	// allocate memory for caches_keys
 	if(asr_p->cached_keys_for_curr_tuple == NULL)
+	{
 		asr_p->cached_keys_for_curr_tuple = malloc(sizeof(user_value) * std_p->key_element_count);
+		if(asr_p->cached_keys_for_curr_tuple == NULL)
+			exit(-1);
+	}
 
 	const void* tuple = get_tuple_linked_page_list_iterator(asr_p->run_iterator);
 
