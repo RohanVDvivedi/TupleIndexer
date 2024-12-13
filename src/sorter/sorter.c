@@ -182,10 +182,17 @@ static int compare_sorted_runs(const void* sh_vp, const void* asr_vp1, const voi
 	const sorter_handle* sh_p = sh_vp;
 	const active_sorted_run* asr_p1 = asr_vp1;
 	const active_sorted_run* asr_p2 = asr_vp2;
-	return compare_tuples(	get_tuple_linked_page_list_iterator(asr_p1->run_iterator), sh_p->std_p->record_def, sh_p->std_p->key_element_ids,
-							get_tuple_linked_page_list_iterator(asr_p2->run_iterator), sh_p->std_p->record_def, sh_p->std_p->key_element_ids,
-							sh_p->std_p->key_compare_direction,
-							sh_p->std_p->key_element_count);
+	if(asr_p1->cached_keys_for_curr_tuple != NULL && asr_p2->cached_keys_for_curr_tuple != NULL)
+		return compare_user_values3(asr_p1->cached_keys_for_curr_tuple,
+									asr_p2->cached_keys_for_curr_tuple,
+									sh_p->std_p->key_type_infos,
+									sh_p->std_p->key_compare_direction,
+									sh_p->std_p->key_element_count);
+	else
+		return compare_tuples(	get_tuple_linked_page_list_iterator(asr_p1->run_iterator), sh_p->std_p->record_def, sh_p->std_p->key_element_ids,
+								get_tuple_linked_page_list_iterator(asr_p2->run_iterator), sh_p->std_p->record_def, sh_p->std_p->key_element_ids,
+								sh_p->std_p->key_compare_direction,
+								sh_p->std_p->key_element_count);
 }
 
 // ------------------------------------------------------------------------
