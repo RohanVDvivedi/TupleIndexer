@@ -27,6 +27,9 @@ struct sorter_tuple_defs
 
 	// tuple_definition for the pointers to the runs of the sorter
 	page_table_tuple_defs pttd;
+
+	// list of data type infos for the keys that are to be sorted
+	data_type_info const ** key_type_infos;
 };
 
 // initializes the attributes in sorter_tuple_defs struct as per the provided parameters

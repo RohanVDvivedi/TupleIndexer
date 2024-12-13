@@ -39,6 +39,10 @@ int init_sorter_tuple_definitions(sorter_tuple_defs* std_p, const page_access_sp
 		return 0;
 	}
 
+	std_p->key_type_infos = malloc(sizeof(data_type_info*) * key_element_count);
+	for(uint32_t i = 0; i < key_element_count; i++)
+		std_p->key_type_infos[i] = get_type_info_for_element_from_tuple_def(record_def, key_element_ids[i]);
+
 	return 1;
 }
 
@@ -64,6 +68,7 @@ void deinit_sorter_tuple_definitions(sorter_tuple_defs* std_p)
 	std_p->key_element_ids = NULL;
 	std_p->key_compare_direction = NULL;
 	std_p->key_element_count = 0;
+	free(std_p->key_type_infos);
 }
 
 void print_sorter_tuple_definitions(const sorter_tuple_defs* std_p)
