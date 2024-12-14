@@ -14,7 +14,6 @@
 // attributes of the page_access_specs suggestions for creating page_access_methods
 #define PAGE_ID_WIDTH        3
 #define PAGE_SIZE          128
-#define SYSTEM_HEADER_SIZE   3
 
 // initialize transaction_id and abort_error
 const void* transaction_id = NULL;
@@ -694,7 +693,7 @@ int main()
 	/* SETUP STARTED */
 
 	// construct an in-memory data store
-	page_access_methods* pam_p = get_new_unWALed_in_memory_data_store(&((page_access_specs){.page_id_width = PAGE_ID_WIDTH, .page_size = PAGE_SIZE, .system_header_size = SYSTEM_HEADER_SIZE}));
+	page_access_methods* pam_p = get_new_unWALed_in_memory_data_store(&((page_access_specs){.page_id_width = PAGE_ID_WIDTH, .page_size = PAGE_SIZE}));
 
 	// construct unWALed page_modification_methods
 	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
