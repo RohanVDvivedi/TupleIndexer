@@ -20,7 +20,7 @@ const char* page_type_string[] = {
 
 uint32_t get_offset_to_end_of_common_page_header(const page_access_specs* pas_p)
 {
-	return pas_p->system_header_size + BYTES_FOR_PAGE_TYPE;
+	return BYTES_FOR_PAGE_TYPE;
 }
 
 page_type get_type_of_page(const persistent_page* ppage, const page_access_specs* pas_p)
@@ -30,7 +30,7 @@ page_type get_type_of_page(const persistent_page* ppage, const page_access_specs
 
 static inline uint32_t get_offset_to_common_page_header_locals(const page_access_specs* pas_p)
 {
-	return pas_p->system_header_size;
+	return 0;
 }
 
 common_page_header get_common_page_header(const persistent_page* ppage, const page_access_specs* pas_p)

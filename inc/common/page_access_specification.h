@@ -17,15 +17,6 @@ struct page_access_specs
 	// NULL_PAGE_ID < (1 << (page_id_width * 8))
 	uint64_t NULL_PAGE_ID;
 
-	// this is the additional page header space left out by the library for your use
-	// any page that will be used by the library for the bplus_tree will have page_header of size system_header_size plus the ones additionally required by the specific page type
-	// this many number of bytes will be left in the preface of the page_header and will be left untouched by TupleIndexer
-	// this part of the header can be used for storing :
-	// * pageLSN (latest log_sequence_number that modified the page, for idempotency of physiological logs)
-	// * write_locked_by_transaction_id (to persistently lock the whole page for writing, while the latch on the page has been released)
-	// * checksum (lets say crc32 of the whole page, for integrity checks by the recovery manager)
-	uint32_t system_header_size;
-
 	// every page access spec defines the page_id type is it a NON NULLABLE unsigned integral type as wide as page_id_width
 
 	// defines a non-nullable unsigned integral type of page_id_width bytes to store page_id-s
@@ -37,7 +28,7 @@ struct page_access_specs
 };
 
 // initialize all attributed of page_access_specs
-int initialize_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width, uint32_t page_size, uint64_t NULL_PAGE_ID, uint32_t system_header_size);
+int initialize_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width, uint32_t page_size, uint64_t NULL_PAGE_ID);
 
 // if this function returns 0, that implies that the pas's passed params are invalid
 int is_valid_page_access_specs(const page_access_specs* pas_p);

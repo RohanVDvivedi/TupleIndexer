@@ -624,10 +624,6 @@ static int is_valid_page_access_specs_as_params(const page_access_specs* pas_p)
 	if(pas_p->page_id_width == 0 || pas_p->page_id_width > 8)
 		return 0;
 
-	// if the page can not even fit the system header on the page, then fail
-	if(!can_page_header_fit_on_page(pas_p->system_header_size, pas_p->page_size))
-		return 0;
-
 	return 1;
 }
 
@@ -640,7 +636,7 @@ page_access_methods* get_new_unWALed_in_memory_data_store(const page_access_spec
 	if(pam_p == NULL)
 		return NULL;
 
-	if(!initialize_page_access_specs(&(pam_p->pas), pas_suggested->page_id_width, pas_suggested->page_size, UINT64_MAX >> ((sizeof(uint64_t) - pas_suggested->page_id_width) * CHAR_BIT), pas_suggested->system_header_size))
+	if(!initialize_page_access_specs(&(pam_p->pas), pas_suggested->page_id_width, pas_suggested->page_size, UINT64_MAX >> ((sizeof(uint64_t) - pas_suggested->page_id_width) * CHAR_BIT)))
 		return NULL;
 
 	pam_p->get_new_page_with_write_lock = get_new_page_with_write_lock;
