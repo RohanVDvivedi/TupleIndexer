@@ -27,8 +27,6 @@ static inline uint32_t get_offset_to_end_of_common_page_header(const page_access
 
 static inline page_type get_type_of_page(const persistent_page* ppage, const page_access_specs* pas_p);
 
-static inline uint32_t get_offset_to_common_page_header_locals(const page_access_specs* pas_p);
-
 static inline common_page_header get_common_page_header(const persistent_page* ppage, const page_access_specs* pas_p);
 
 static inline void serialize_common_page_header(void* hdr_serial, const common_page_header* cph_p, const page_access_specs* pas_p);
@@ -36,6 +34,8 @@ static inline void serialize_common_page_header(void* hdr_serial, const common_p
 static inline void set_common_page_header(persistent_page* ppage, const common_page_header* cph_p, const page_access_specs* pas_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 static inline void print_common_page_header(const persistent_page* ppage, const page_access_specs* pas_p);
+
+// inline implementations
 
 static inline uint32_t get_offset_to_end_of_common_page_header(const page_access_specs* pas_p)
 {
