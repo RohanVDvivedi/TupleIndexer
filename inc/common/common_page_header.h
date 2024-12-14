@@ -20,10 +20,8 @@ struct common_page_header
 	page_type type;
 };
 
-/*
-**		system header is prefix to even the common page header
-**		size of this system header is equal to the what was specified in bplus_tree_tuple_definitions object
-*/
+// allowed values for size for storing page_type = 1 or 2
+#define BYTES_FOR_PAGE_TYPE 2
 
 static inline uint32_t get_offset_to_end_of_common_page_header(const page_access_specs* pas_p);
 
@@ -38,9 +36,6 @@ static inline void serialize_common_page_header(void* hdr_serial, const common_p
 static inline void set_common_page_header(persistent_page* ppage, const common_page_header* cph_p, const page_access_specs* pas_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 static inline void print_common_page_header(const persistent_page* ppage, const page_access_specs* pas_p);
-
-// allowed values for size for storing page_type = 1 or 2
-#define BYTES_FOR_PAGE_TYPE 2
 
 static inline uint32_t get_offset_to_end_of_common_page_header(const page_access_specs* pas_p)
 {
