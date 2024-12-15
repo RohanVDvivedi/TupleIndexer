@@ -530,3 +530,123 @@ void sort_and_convert_to_sorted_packed_page(
 	quick_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
 	//heap_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), 3);
 }
+
+#include<array.h>
+
+#include<stdlib.h>
+
+// structure to hold materialized key for the row
+typedef struct sortable_row sortable_row;
+struct sortable_row
+{
+	// actual content of the row on the page
+	void* row;
+
+	// keys to be sorted, in their materialized form
+	user_value* keys; // points to keyss array, need not be allocated
+};
+
+typedef struct mat_sort_context mat_sort_context;
+struct mat_sort_context
+{
+	uint32_t keys_count;
+
+	const data_type_info** key_dtis;
+
+	const compare_direction* key_cmp_dirs;
+};
+
+int compare_sortable_rows(const void* cntxt, const void* s1, const void* s2)
+{
+	const mat_sort_context* c = cntxt;
+	const sortable_row* sr1 = s1;
+	const sortable_row* sr2 = s2;
+
+	return compare_user_values3(sr1->keys, sr2->keys, c->key_dtis, c->key_cmp_dirs, c->keys_count);
+}
+
+void sort_materialized_and_convert_to_sorted_packed_page(
+									persistent_page* ppage, uint32_t page_size,
+									const tuple_def* tpl_def, const data_type_info** key_dtis, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const page_modification_methods* pmm_p,
+									const void* transaction_id,
+									int* abort_error
+								)
+{
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+
+	// if the page is empty or has only 1 element
+	if(tuple_count <= 1)
+		return ;
+
+	// create all the memory you will need
+
+	user_value* keyss = malloc(sizeof(user_value) * tuple_count * keys_count);
+	if(keyss == NULL)
+		exit(-1);
+
+	void* rows = malloc(page_size);
+	if(rows == NULL)
+		exit(-1);
+
+	sortable_row* sortable_rows = malloc(sizeof(sortable_row) * tuple_count);
+	if(sortable_rows == NULL)
+		exit(-1);
+
+	array sortable_rows_container;
+	if(!initialize_array(&sortable_rows_container, tuple_count))
+		exit(-1);
+
+	// initialize sortable_rows_container
+	{
+	void* row_i = rows;
+	for(uint32_t i = 0; i < tuple_count; i++)
+	{
+		const void* tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), i);
+		uint32_t tuple_size = get_tuple_size(tpl_def, tuple);
+
+		memory_move(row_i, tuple, tuple_size);
+		for(uint32_t k = 0; k < keys_count; k++)
+			get_value_from_element_from_tuple(&(keyss[i * keys_count + k]), tpl_def, tuple_keys_to_compare[k], tuple);
+
+		sortable_rows[i].keys = &(keyss[i * keys_count]);
+		sortable_rows[i].row = row_i;
+
+		set_in_array(&sortable_rows_container, sortable_rows + i, i);
+
+		row_i += tuple_size;
+	}
+	}
+
+	// initialize sort context
+	mat_sort_context c = {
+		.keys_count = keys_count,
+		.key_dtis = key_dtis,
+		.key_cmp_dirs = tuple_keys_compare_direction,
+	};
+
+	// construct index_accessed_interface out of it
+	index_accessed_interface i = get_index_accessed_interface_for_array(&sortable_rows_container);
+
+	// sort the sortable_rows
+	merge_sort_iai(&i, 0, tuple_count - 1, &contexted_comparator(&c, compare_sortable_rows), STD_C_mem_allocator);
+
+	// discard all tuples on the page given
+	discard_all_tuples_on_persistent_page(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), abort_error);
+	if(*abort_error)
+		goto EXIT;
+
+	for(uint32_t i = 0; i < tuple_count; i++)
+	{
+		append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), ((const sortable_row*)get_from_array(&sortable_rows_container, i))->row, abort_error);
+		if(*abort_error)
+			goto EXIT;
+	}
+
+	EXIT:;
+	// free all the allocated resources
+	deinitialize_array(&sortable_rows_container);
+	free(sortable_rows);
+	free(keyss);
+	free(rows);
+}

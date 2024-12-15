@@ -196,7 +196,7 @@ void sort_and_convert_to_sorted_packed_page(
 // it performs a materialized sorting of the page, key_dtis can be NULL
 void sort_materialized_and_convert_to_sorted_packed_page(
 									persistent_page* ppage, uint32_t page_size,
-									const tuple_def* tpl_def, const data_type_info* key_dtis, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const tuple_def* tpl_def, const data_type_info** key_dtis, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
 									const page_modification_methods* pmm_p,
 									const void* transaction_id,
 									int* abort_error
