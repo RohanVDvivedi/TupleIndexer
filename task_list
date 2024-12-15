@@ -1,5 +1,16 @@
 ** PICKED TASKS
 
+ * implement materialized sort, to sort tuples after reading them all into user value
+   * you will need to allocate a consecutive array of user_values, sortable_rows with index and user_value pointers, and lastly copy of the page in memory
+   * if any allocation fails exit -1
+   * first make a sortable array list of the contents of the page, each consisting of index and user_value pointer (pointing to the one inside the big contiguous array)
+   * sort the array using merge sort, with a conparator context consisting of the key_dtis and key_element_count
+   * once sorted free the user values array
+   * allocate a copy of the page caling it page_copy
+   * discard all tuples on the page
+   * for each element in array list append tuple at index in page_copy to the page
+   * free array_list and page_copy
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
    * this will be implemented for variable length keys aswell
