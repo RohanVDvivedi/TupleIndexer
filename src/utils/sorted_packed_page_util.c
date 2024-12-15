@@ -638,7 +638,8 @@ void sort_materialized_and_convert_to_sorted_packed_page(
 
 	for(uint32_t i = 0; i < tuple_count; i++)
 	{
-		append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), ((const sortable_row*)get_from_array(&sortable_rows_container, i))->row, abort_error);
+		// all tuples on the page were discarded prior to this call, hence a resilient function is not needed even for a variable sized tuple
+		append_tuple_on_persistent_page(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), ((const sortable_row*)get_from_array(&sortable_rows_container, i))->row, abort_error);
 		if(*abort_error)
 			goto EXIT;
 	}
