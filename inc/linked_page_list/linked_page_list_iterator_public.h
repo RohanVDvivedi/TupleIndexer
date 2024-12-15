@@ -102,5 +102,6 @@ int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterat
 // sort all tuple on only the curr_page in linked_page_list_iterator
 // fails only if any of your key_element_ids does not have a corresponding type_info in the tuple_def of the tuples existing on the page
 int sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error);
+int sort_materialized_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const data_type_info** key_dtis, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error);
 
 #endif

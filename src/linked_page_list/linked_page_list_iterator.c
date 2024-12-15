@@ -1207,3 +1207,23 @@ int sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_i
 	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
 	return 0;
 }
+
+int sort_materialized_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const data_type_info** key_dtis, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error)
+{
+	sort_materialized_and_convert_to_sorted_packed_page(
+									get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, 
+									lpli_p->lpltd_p->record_def, key_dtis, key_element_ids, key_compare_direction, key_element_count,
+									lpli_p->pmm_p,
+									transaction_id,
+									abort_error
+								);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	return 1;
+
+	ABORT_ERROR:;
+	release_lock_on_reference_while_holding_head_lock(&(lpli_p->curr_page), lpli_p, transaction_id, abort_error);
+	release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, &(lpli_p->head_page), NONE_OPTION, abort_error);
+	return 0;
+}
