@@ -42,7 +42,7 @@ The tuple is laid out as per specifications of TupleStore library.
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-ltupleindexer -ltuplestore -lrwlock -lserint -lcutlery -lpthread` linker flag, while compiling your application
+ * add `-ltupleindexer -ltuplestore -lrwlock -lcutlery -lpthread` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `#include<bplus_tree.h>`
    * `#include<array_table.h>`
