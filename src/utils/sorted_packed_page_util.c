@@ -52,7 +52,7 @@ struct tuple_on_page_compare_context2
 	// keys of the tuple on the page to compare on
 	const positional_accessor* tuple_keys_to_compare;
 
-	// data_type infos of the user values to the compared with tupes on the page
+	// data_type infos of the user_values of the keys to be compared with tuples on the page
 	data_type_info const * const * const key_dtis;
 
 	// direction to compare keys, array of ASC/DESC
