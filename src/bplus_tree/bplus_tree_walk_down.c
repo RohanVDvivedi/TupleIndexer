@@ -398,6 +398,17 @@ persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR
 	if(root_page_level == 0) // if root is the leaf page, then return it
 		return curr_page;
 
+	materialized_key mat_key;
+	if(key_OR_record != NULL)
+	{
+		if(is_key)
+			mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->key_def, NULL, key_element_count_concerned);
+		else
+			mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned);
+	}
+	else // else 0 initialize it
+		mat_key = (materialized_key){};
+
 	// perform a downward pass until you reach the leaf
 	while(1)
 	{
@@ -421,19 +432,13 @@ persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR
 			case LESSER_THAN_EQUALS :
 			case GREATER_THAN :
 			{
-				if(is_key)
-					child_index = find_child_index_for_key(&curr_page, key_OR_record, key_element_count_concerned, bpttd_p);
-				else
-					child_index = find_child_index_for_record(&curr_page, key_OR_record, key_element_count_concerned, bpttd_p);
+				child_index = find_child_index_for_mat_key(&curr_page, &mat_key, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case LESSER_THAN :
 			case GREATER_THAN_EQUALS :
 			{
-				if(is_key)
-					child_index = find_child_index_for_key_s_predecessor(&curr_page, key_OR_record, key_element_count_concerned, bpttd_p);
-				else
-					child_index = find_child_index_for_record_s_predecessor(&curr_page, key_OR_record, key_element_count_concerned, bpttd_p);
+				child_index = find_child_index_for_mat_key_s_predecessor(&curr_page, &mat_key, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case MAX :
@@ -452,6 +457,7 @@ persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR
 		if(*abort_error)
 		{
 			release_lock_on_persistent_page(pam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+			destroy_materialized_key(&mat_key);
 			return get_NULL_persistent_page(pam_p);
 		}
 
@@ -459,17 +465,30 @@ persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR
 		if(*abort_error)
 		{
 			release_lock_on_persistent_page(pam_p, transaction_id, &child_page, NONE_OPTION, abort_error);
+			destroy_materialized_key(&mat_key);
 			return get_NULL_persistent_page(pam_p);
 		}
 
 		curr_page = child_page;
 	}
 
+	destroy_materialized_key(&mat_key);
 	return curr_page;
 }
 
 int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	materialized_key mat_key;
+	if(key_OR_record != NULL)
+	{
+		if(is_key)
+			mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->key_def, NULL, key_element_count_concerned);
+		else
+			mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned);
+	}
+	else // else 0 initialize it
+		mat_key = (materialized_key){};
+
 	// perform a downward pass until you reach the leaf locking all the pages
 	while(1)
 	{
@@ -493,19 +512,13 @@ int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* lock
 			case LESSER_THAN_EQUALS :
 			case GREATER_THAN :
 			{
-				if(is_key)
-					curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key_OR_record, key_element_count_concerned, bpttd_p);
-				else
-					curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), key_OR_record, key_element_count_concerned, bpttd_p);
+				curr_locked_page->child_index = find_child_index_for_mat_key(&(curr_locked_page->ppage), &mat_key, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case LESSER_THAN :
 			case GREATER_THAN_EQUALS :
 			{
-				if(is_key)
-					curr_locked_page->child_index = find_child_index_for_key_s_predecessor(&(curr_locked_page->ppage), key_OR_record, key_element_count_concerned, bpttd_p);
-				else
-					curr_locked_page->child_index = find_child_index_for_record_s_predecessor(&(curr_locked_page->ppage), key_OR_record, key_element_count_concerned, bpttd_p);
+				curr_locked_page->child_index = find_child_index_for_key_s_predecessor(&(curr_locked_page->ppage), &mat_key, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case MAX :
@@ -529,6 +542,7 @@ int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* lock
 	}
 
 	// on success return 1
+	destroy_materialized_key(&mat_key);
 	return 1;
 
 	ABORT_ERROR :;
@@ -539,6 +553,8 @@ int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* lock
 		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
+
+	destroy_materialized_key(&mat_key);
 	return 0;
 }
 
