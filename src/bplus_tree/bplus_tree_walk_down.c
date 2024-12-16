@@ -844,6 +844,12 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 
 int check_is_at_rightful_position_for_stacked_iterator(const locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p)
 {
+	materialized_key mat_key;
+	if(is_key)
+		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->key_def, NULL, bpttd_p->key_element_count);
+	else
+		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count);
+
 	int result = 1;
 
 	// iterate from the bottom of the stack
@@ -857,11 +863,7 @@ int check_is_at_rightful_position_for_stacked_iterator(const locked_pages_stack*
 			break;
 
 		// figure out the designated_child_index for the provided key_OR_record using the ppage_to_check
-		uint32_t designated_child_index_for_key_OR_record;
-		if(is_key)
-			designated_child_index_for_key_OR_record = find_child_index_for_key(&(ppage_to_check->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
-		else
-			designated_child_index_for_key_OR_record = find_child_index_for_record(&(ppage_to_check->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
+		uint32_t designated_child_index_for_key_OR_record = find_child_index_for_key(&(ppage_to_check->ppage), &mat_key, bpttd_p->key_element_count, bpttd_p);
 
 		// if the interior page's child_index is not correct for the position of the key_OR_record then fail
 		if(ppage_to_check->child_index != designated_child_index_for_key_OR_record)
@@ -871,6 +873,7 @@ int check_is_at_rightful_position_for_stacked_iterator(const locked_pages_stack*
 		}
 	}
 
+	destroy_materialized_key(&mat_key);
 	return result;
 }
 
