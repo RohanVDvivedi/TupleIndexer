@@ -518,7 +518,7 @@ int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* lock
 			case LESSER_THAN :
 			case GREATER_THAN_EQUALS :
 			{
-				curr_locked_page->child_index = find_child_index_for_key_s_predecessor(&(curr_locked_page->ppage), &mat_key, key_element_count_concerned, bpttd_p);
+				curr_locked_page->child_index = find_child_index_for_mat_key_s_predecessor(&(curr_locked_page->ppage), &mat_key, key_element_count_concerned, bpttd_p);
 				break;
 			}
 			case MAX :
@@ -795,21 +795,21 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 		uint32_t child_index1 = ALL_LEAST_KEYS_CHILD_INDEX;
 		if(f_pos1 == GREATER_THAN)
 		{
-			child_index1 = find_child_index_for_key(&(bottom->ppage), &mat_key1, key_element_count_concerned, bpttd_p);
+			child_index1 = find_child_index_for_mat_key(&(bottom->ppage), &mat_key1, key_element_count_concerned, bpttd_p);
 		}
 		else if(f_pos1 == GREATER_THAN_EQUALS)
 		{
-			child_index1 = find_child_index_for_key_s_predecessor(&(bottom->ppage), &mat_key1, key_element_count_concerned, bpttd_p);
+			child_index1 = find_child_index_for_mat_key_s_predecessor(&(bottom->ppage), &mat_key1, key_element_count_concerned, bpttd_p);
 		}
 
 		uint32_t child_index2 = get_tuple_count_on_persistent_page(&(bottom->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
 		if(f_pos2 == LESSER_THAN_EQUALS)
 		{
-			child_index2 = find_child_index_for_key(&(bottom->ppage), &mat_key2, key_element_count_concerned, bpttd_p);
+			child_index2 = find_child_index_for_mat_key(&(bottom->ppage), &mat_key2, key_element_count_concerned, bpttd_p);
 		}
 		else if(f_pos2 == LESSER_THAN)
 		{
-			child_index2 = find_child_index_for_key_s_predecessor(&(bottom->ppage), &mat_key2, key_element_count_concerned, bpttd_p);
+			child_index2 = find_child_index_for_mat_key_s_predecessor(&(bottom->ppage), &mat_key2, key_element_count_concerned, bpttd_p);
 		}
 
 		// child_index1, child_index2 and bottom->child_index all three must match
@@ -863,7 +863,7 @@ int check_is_at_rightful_position_for_stacked_iterator(const locked_pages_stack*
 			break;
 
 		// figure out the designated_child_index for the provided key_OR_record using the ppage_to_check
-		uint32_t designated_child_index_for_key_OR_record = find_child_index_for_key(&(ppage_to_check->ppage), &mat_key, bpttd_p->key_element_count, bpttd_p);
+		uint32_t designated_child_index_for_key_OR_record = find_child_index_for_mat_key(&(ppage_to_check->ppage), &mat_key, bpttd_p->key_element_count, bpttd_p);
 
 		// if the interior page's child_index is not correct for the position of the key_OR_record then fail
 		if(ppage_to_check->child_index != designated_child_index_for_key_OR_record)
