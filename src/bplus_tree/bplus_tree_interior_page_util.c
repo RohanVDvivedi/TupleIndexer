@@ -58,6 +58,18 @@ uint32_t find_child_index_for_record(const persistent_page* ppage, const void* r
 	return (child_index == NO_TUPLE_FOUND) ? ALL_LEAST_KEYS_CHILD_INDEX : child_index;
 }
 
+uint32_t find_child_index_for_mat_key(const persistent_page* ppage, const materialized_key* mat_key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// find preceding equals in the interior pages, by comparing against all index entries
+	uint32_t child_index = find_preceding_equals_in_sorted_packed_page2(
+										ppage, bpttd_p->pas_p->page_size,
+										bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned,
+										mat_key
+									);
+
+	return (child_index == NO_TUPLE_FOUND) ? ALL_LEAST_KEYS_CHILD_INDEX : child_index;
+}
+
 uint32_t find_child_index_for_key_s_predecessor(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p)
 {
 	// find preceding in the interior pages, by comparing against all index entries
@@ -77,6 +89,18 @@ uint32_t find_child_index_for_record_s_predecessor(const persistent_page* ppage,
 										ppage, bpttd_p->pas_p->page_size,
 										bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned,
 										record, bpttd_p->record_def, bpttd_p->key_element_ids
+									);
+
+	return (child_index == NO_TUPLE_FOUND) ? ALL_LEAST_KEYS_CHILD_INDEX : child_index;
+}
+
+uint32_t find_child_index_for_mat_key_s_predecessor(const persistent_page* ppage, const materialized_key* mat_key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p)
+{
+	// find preceding in the interior pages, by comparing against all index entries
+	uint32_t child_index = find_preceding_in_sorted_packed_page2(
+										ppage, bpttd_p->pas_p->page_size,
+										bpttd_p->index_def, NULL, bpttd_p->key_compare_direction, key_element_count_concerned,
+										mat_key
 									);
 
 	return (child_index == NO_TUPLE_FOUND) ? ALL_LEAST_KEYS_CHILD_INDEX : child_index;

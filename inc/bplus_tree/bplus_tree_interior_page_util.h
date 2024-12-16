@@ -8,6 +8,7 @@
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
 #include<invalid_tuple_indices.h>
+#include<materialized_key.h>
 
 /*
 *	child index start from (-1) and end at (tuple_count - 1)
@@ -37,12 +38,15 @@ uint32_t find_child_index_for_key(const persistent_page* ppage, const void* key,
 // allows you to consider lesser number of key columns for your operation
 uint32_t find_child_index_for_record(const persistent_page* ppage, const void* record, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
 
+uint32_t find_child_index_for_mat_key(const persistent_page* ppage, const materialized_key* mat_key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
+
 // this the index of the tuple in the interior page that you should follow to reach the predecessor of the key
 // the constrained parameter key_element_count_concerned <= bpttd_p->bpttd_p->key_element_count
 // allows you to consider lesser number of key columns for your operation
 // THIS FUNCTION IS PROVIDED TO BE ONLY USED WITH FIND LESSER_THAN AND GREATER_THAN_EQUALS
 uint32_t find_child_index_for_key_s_predecessor(const persistent_page* ppage, const void* key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
 uint32_t find_child_index_for_record_s_predecessor(const persistent_page* ppage, const void* record, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
+uint32_t find_child_index_for_mat_key_s_predecessor(const persistent_page* ppage, const materialized_key* mat_key, uint32_t key_element_count_concerned, const bplus_tree_tuple_defs* bpttd_p);
 
 // returns the page_id stored with the corresponding tuple at index, in its attribute "child_page_id" 
 uint64_t get_child_page_id_by_child_index(const persistent_page* ppage, uint32_t index, const bplus_tree_tuple_defs* bpttd_p);
