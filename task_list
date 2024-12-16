@@ -1,5 +1,7 @@
 ** PICKED TASKS
 
+ * use materialized comparison for comparing the key in hash_table iterator with on page tuples
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
    * this will be implemented for variable length keys aswell
