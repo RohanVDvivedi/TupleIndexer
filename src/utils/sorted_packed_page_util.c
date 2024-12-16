@@ -518,6 +518,156 @@ uint32_t find_succeeding_in_sorted_packed_page(
 	return result;
 }
 
+uint32_t find_first_in_sorted_packed_page2(
+									const persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const materialized_key* mat_key
+								)
+{
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+
+	// if the page is empty
+	if(tuple_count == 0)
+		return NO_TUPLE_FOUND;
+
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL, NULL, NULL);
+	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, tuple_keys_compare_direction, keys_count);
+	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
+
+	cy_uint result = binary_search_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), FIRST_OCCURENCE);
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
+}
+
+uint32_t find_last_in_sorted_packed_page2(
+									const persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const materialized_key* mat_key
+								)
+{
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+
+	// if the page is empty
+	if(tuple_count == 0)
+		return NO_TUPLE_FOUND;
+
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL, NULL, NULL);
+	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, tuple_keys_compare_direction, keys_count);
+	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
+
+	cy_uint result = binary_search_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), LAST_OCCURENCE);
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
+}
+
+uint32_t find_preceding_in_sorted_packed_page2(
+									const persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const materialized_key* mat_key
+								)
+{
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+
+	// if the page is empty
+	if(tuple_count == 0)
+		return NO_TUPLE_FOUND;
+
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL, NULL, NULL);
+	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, tuple_keys_compare_direction, keys_count);
+	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
+
+	cy_uint result = find_preceding_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
+}
+
+uint32_t find_preceding_equals_in_sorted_packed_page2(
+									const persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const materialized_key* mat_key
+								)
+{
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+
+	// if the page is empty
+	if(tuple_count == 0)
+		return NO_TUPLE_FOUND;
+
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL, NULL, NULL);
+	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, tuple_keys_compare_direction, keys_count);
+	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
+
+	cy_uint result = find_preceding_or_equals_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
+}
+
+uint32_t find_succeeding_equals_in_sorted_packed_page2(
+									const persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const materialized_key* mat_key
+								)
+{
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+
+	// if the page is empty
+	if(tuple_count == 0)
+		return NO_TUPLE_FOUND;
+
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL, NULL, NULL);
+	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, tuple_keys_compare_direction, keys_count);
+	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
+
+	cy_uint result = find_succeeding_or_equals_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
+}
+
+uint32_t find_succeeding_in_sorted_packed_page2(
+									const persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const materialized_key* mat_key
+								)
+{
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+
+	// if the page is empty
+	if(tuple_count == 0)
+		return NO_TUPLE_FOUND;
+
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL, NULL, NULL);
+	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, key_def, key_elements_to_compare, tuple_keys_compare_direction, keys_count);
+	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
+
+	cy_uint result = find_succeeding_in_sorted_iai(&iai, 0, tuple_count - 1, key, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
+
+	// NO_TUPLE_FOUND case
+	if(result == INVALID_INDEX)
+		return NO_TUPLE_FOUND;
+
+	return result;
+}
+
 void reverse_sort_order_on_sorted_packed_page(
 									persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def,
