@@ -761,6 +761,28 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 			return 0;
 	}
 
+	materialized_key mat_key1;
+	if(key_OR_record1 != NULL)
+	{
+		if(is_key)
+			mat_key1 = materialize_key_from_tuple(key_OR_record1, bpttd_p->key_def, NULL, key_element_count_concerned);
+		else
+			mat_key1 = materialize_key_from_tuple(key_OR_record1, bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned);
+	}
+	else // else 0 initialize it
+		mat_key1 = (materialized_key){};
+
+	materialized_key mat_key2;
+	if(key_OR_record2 != NULL)
+	{
+		if(is_key)
+			mat_key2 = materialize_key_from_tuple(key_OR_record2, bpttd_p->key_def, NULL, key_element_count_concerned);
+		else
+			mat_key2 = materialize_key_from_tuple(key_OR_record2, bpttd_p->record_def, bpttd_p->key_element_ids, key_element_count_concerned);
+	}
+	else // else 0 initialize it
+		mat_key2 = (materialized_key){};
+
 	// iterate on all pages, to analyze if we could free them
 	while(get_element_count_locked_pages_stack(locked_pages_stack_p) > 0)
 	{
@@ -773,33 +795,21 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 		uint32_t child_index1 = ALL_LEAST_KEYS_CHILD_INDEX;
 		if(f_pos1 == GREATER_THAN)
 		{
-			if(is_key)
-				child_index1 = find_child_index_for_key(&(bottom->ppage), key_OR_record1, key_element_count_concerned, bpttd_p);
-			else
-				child_index1 = find_child_index_for_record(&(bottom->ppage), key_OR_record1, key_element_count_concerned, bpttd_p);
+			child_index1 = find_child_index_for_key(&(bottom->ppage), &mat_key1, key_element_count_concerned, bpttd_p);
 		}
 		else if(f_pos1 == GREATER_THAN_EQUALS)
 		{
-			if(is_key)
-				child_index1 = find_child_index_for_key_s_predecessor(&(bottom->ppage), key_OR_record1, key_element_count_concerned, bpttd_p);
-			else
-				child_index1 = find_child_index_for_record_s_predecessor(&(bottom->ppage), key_OR_record1, key_element_count_concerned, bpttd_p);
+			child_index1 = find_child_index_for_key_s_predecessor(&(bottom->ppage), &mat_key1, key_element_count_concerned, bpttd_p);
 		}
 
 		uint32_t child_index2 = get_tuple_count_on_persistent_page(&(bottom->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) - 1;
 		if(f_pos2 == LESSER_THAN_EQUALS)
 		{
-			if(is_key)
-				child_index2 = find_child_index_for_key(&(bottom->ppage), key_OR_record2, key_element_count_concerned, bpttd_p);
-			else
-				child_index2 = find_child_index_for_record(&(bottom->ppage), key_OR_record2, key_element_count_concerned, bpttd_p);
+			child_index2 = find_child_index_for_key(&(bottom->ppage), &mat_key2, key_element_count_concerned, bpttd_p);
 		}
 		else if(f_pos2 == LESSER_THAN)
 		{
-			if(is_key)
-				child_index2 = find_child_index_for_key_s_predecessor(&(bottom->ppage), key_OR_record2, key_element_count_concerned, bpttd_p);
-			else
-				child_index2 = find_child_index_for_record_s_predecessor(&(bottom->ppage), key_OR_record2, key_element_count_concerned, bpttd_p);
+			child_index2 = find_child_index_for_key_s_predecessor(&(bottom->ppage), &mat_key2, key_element_count_concerned, bpttd_p);
 		}
 
 		// child_index1, child_index2 and bottom->child_index all three must match
@@ -814,6 +824,8 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 			goto ABORT_ERROR;
 	}
 
+	destroy_materialized_key(&mat_key1);
+	destroy_materialized_key(&mat_key2);
 	return 1;
 
 	ABORT_ERROR:;
@@ -824,6 +836,9 @@ int narrow_down_range_for_stacked_iterator(locked_pages_stack* locked_pages_stac
 		release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
+
+	destroy_materialized_key(&mat_key1);
+	destroy_materialized_key(&mat_key2);
 	return 0;
 }
 
