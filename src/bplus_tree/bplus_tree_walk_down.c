@@ -5,7 +5,7 @@
 #include<bplus_tree_interior_page_util.h>
 #include<bplus_tree_leaf_page_util.h>
 #include<storage_capacity_page_util.h>
-
+#include<materialized_key.h>
 
 #include<invalid_tuple_indices.h>
 
@@ -89,6 +89,12 @@ locked_pages_stack initialize_locked_pages_stack_for_walk_down(uint64_t root_pag
 
 int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	materialized_key mat_key;
+	if(is_key)
+		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->key_def, NULL, bpttd_p->key_element_count);
+	else
+		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count);
+
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no split requiring) in the interim
 	while(1)
 	{
@@ -99,10 +105,7 @@ int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_p
 			break;
 
 		// figure out which child page to go to next
-		if(is_key)
-			curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
-		else
-			curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
+		curr_locked_page->child_index = find_child_index_for_mat_key(&(curr_locked_page->ppage), &mat_key, bpttd_p->key_element_count, bpttd_p);
 
 		// if you reach here, then curr_locked_page is not a leaf page
 		// if curr_locked_page will not require a split, then release locks on all the parent pages of curr_locked_page
@@ -152,6 +155,7 @@ int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_p
 		}
 	}
 
+	destroy_materialized_key(&mat_key);
 	return 1;
 
 	ABORT_ERROR:;
@@ -163,6 +167,7 @@ int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_p
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 
+	destroy_materialized_key(&mat_key);
 	return 0;
 }
 
@@ -191,6 +196,12 @@ uint32_t count_unlockable_parent_pages_for_split_insert(const locked_pages_stack
 
 int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	materialized_key mat_key;
+	if(is_key)
+		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->key_def, NULL, bpttd_p->key_element_count);
+	else
+		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count);
+
 	// perform a downward pass until you reach the leaf locking all the pages, unlocking all the safe pages (no merge requiring) in the interim
 	while(1)
 	{
@@ -201,10 +212,7 @@ int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_st
 			break;
 
 		// figure out which child page to go to next
-		if(is_key)
-			curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
-		else
-			curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
+		curr_locked_page->child_index = find_child_index_for_mat_key(&(curr_locked_page->ppage), &mat_key, bpttd_p->key_element_count, bpttd_p);
 
 		// if the interior page index record, at child_index in curr_locked_page if deleted, will the curr_locked_page require merging
 		// if not then release all locks above curr_locked_page
@@ -239,6 +247,7 @@ int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_st
 	// here, we can still perform a find to locate the leaf record that we might be delete (given the key) and check if leaf page then will require merging,
 	// but I suspect that is just an overkill, instead let the caller to just perform the delete and run the merge_and_unlock_pages_up
 
+	destroy_materialized_key(&mat_key);
 	return 1;
 
 	ABORT_ERROR :;
@@ -250,6 +259,7 @@ int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_st
 		pop_bottom_from_locked_pages_stack(locked_pages_stack_p);
 	}
 
+	destroy_materialized_key(&mat_key);
 	return 0;
 }
 
@@ -279,6 +289,12 @@ uint32_t count_unlockable_parent_pages_for_merge(const locked_pages_stack* locke
 
 int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, uint32_t* release_for_split, uint32_t* release_for_merge, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	materialized_key mat_key;
+	if(is_key)
+		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->key_def, NULL, bpttd_p->key_element_count);
+	else
+		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_element_count);
+
 	// initialize relase_for_* to zeros
 	(*release_for_merge) = 0;
 	(*release_for_split) = 0;
@@ -293,10 +309,7 @@ int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_s
 			break;
 
 		// figure out which child page to go to next
-		if(is_key)
-			curr_locked_page->child_index = find_child_index_for_key(&(curr_locked_page->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
-		else
-			curr_locked_page->child_index = find_child_index_for_record(&(curr_locked_page->ppage), key_OR_record, bpttd_p->key_element_count, bpttd_p);
+		curr_locked_page->child_index = find_child_index_for_mat_key(&(curr_locked_page->ppage), &mat_key, bpttd_p->key_element_count, bpttd_p);
 
 		// if you reach here, then curr_locked_page is not a leaf page
 		// if curr_locked_page will not require a split, then we can release locks on all the parent pages of curr_locked_page
@@ -346,6 +359,7 @@ int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_s
 
 	// but since record may not be the actual record that gets inserted, deleted or updated, we can no longer infer anything about what to do further
 
+	destroy_materialized_key(&mat_key);
 	return 1;
 
 	ABORT_ERROR:;
@@ -361,6 +375,7 @@ int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_s
 	(*release_for_merge) = 0;
 	(*release_for_split) = 0;
 
+	destroy_materialized_key(&mat_key);
 	return 0;
 }
 

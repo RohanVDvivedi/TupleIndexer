@@ -22,6 +22,6 @@ struct materialized_key
 
 materialized_key materialize_key_from_tuple(const void* tuple, const tuple_def* tpl_d, const positional_accessor* key_columns_to_materialize, uint32_t key_element_count);
 
-void destroy_materialized_tuple(materialized_key* mat_key);
+void destroy_materialized_key(materialized_key* mat_key);
 
 #endif
