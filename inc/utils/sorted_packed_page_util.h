@@ -178,25 +178,27 @@ uint32_t find_succeeding_in_sorted_packed_page(
 
 // comparison of tuple on the page with a materialized key functions
 
+#include<materialized_key.h>
+
 // returns index of the tuple found
 uint32_t find_first_in_sorted_packed_page2(
 									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, const positional_accessor* key_elements_to_compare
+									const materialized_key* mat_key
 								);
 
 // returns index of the tuple found
 uint32_t find_last_in_sorted_packed_page2(
 									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, const positional_accessor* key_elements_to_compare
+									const materialized_key* mat_key
 								);
 
 // returns index of the tuple found at the greatest index that is lesser than the key
 uint32_t find_preceding_in_sorted_packed_page2(
 									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, const positional_accessor* key_elements_to_compare
+									const materialized_key* mat_key
 								);
 
 // returns index of the tuple found at the greatest index that is lesser than or equal to the key
@@ -204,7 +206,7 @@ uint32_t find_preceding_in_sorted_packed_page2(
 uint32_t find_preceding_equals_in_sorted_packed_page2(
 									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, const positional_accessor* key_elements_to_compare
+									const materialized_key* mat_key
 								);
 
 // returns index of the tuple found at the least index that is greater than or equal to the key
@@ -212,14 +214,14 @@ uint32_t find_preceding_equals_in_sorted_packed_page2(
 uint32_t find_succeeding_equals_in_sorted_packed_page2(
 									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, const positional_accessor* key_elements_to_compare
+									const materialized_key* mat_key
 								);
 
 // returns index of the tuple found at the least index that is greater than the key
 uint32_t find_succeeding_in_sorted_packed_page2(
 									const persistent_page* ppage, uint32_t page_size, 
 									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
-									const void* key, const tuple_def* key_def, const positional_accessor* key_elements_to_compare
+									const materialized_key* mat_key
 								);
 
 // reverses the sort order on the sorted packed page
