@@ -9,6 +9,8 @@
 
 // ---------------- UTILTY CODE FOR SORTED PACKED PAGE BEGIN -------------------------------------------------
 
+// compare context to compare a tuple with an external tuple OR on page tuple
+
 typedef struct tuple_on_page_compare_context tuple_on_page_compare_context;
 struct tuple_on_page_compare_context
 {
@@ -37,6 +39,35 @@ int compare_tuples_using_comparator_context(const void* context, const void* tup
 {
 	const tuple_on_page_compare_context* context_p = context;
 	return compare_tuples(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, tuple2, context_p->key_def, context_p->key_elements_to_compare, context_p->key_compare_direction, context_p->keys_count);
+}
+
+// compare context to compare a tuple with (must) an external materialized key tuple
+
+typedef struct tuple_on_page_compare_context2 tuple_on_page_compare_context2;
+struct tuple_on_page_compare_context2
+{
+	// tuple_def for all tuples to be compared that are on the page
+	const tuple_def* tpl_def;
+
+	// keys of the tuple on the page to compare on
+	const positional_accessor* tuple_keys_to_compare;
+
+	// data_type infos of the user values to the compared with tupes on the page
+	data_type_info const * const * const key_dtis;
+
+	// direction to compare keys, array of ASC/DESC
+	const compare_direction* key_compare_direction;
+
+	// number of elements in tuple_keys_to_compare and key_elements_to_compare
+	uint32_t keys_count;
+};
+
+#define get_tuple_on_page_compare_context2(tpl_def_v, tuple_keys_to_compare_v, key_dtis_v, key_compare_direction_v, keys_count_v) ((const tuple_on_page_compare_context2){.tpl_def = tpl_def_v, .tuple_keys_to_compare = tuple_keys_to_compare_v, .key_dtis = key_dtis_v, .key_compare_direction = key_compare_direction_v, .keys_count = keys_count_v})
+
+int compare_tuples_using_comparator_context2(const void* context, const void* tuple1, const void* uvals2)
+{
+	const tuple_on_page_compare_context2* context_p = context;
+	return compare_tuple_with_user_value(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, uvals2, context_p->key_dtis, context_p->key_compare_direction, context_p->keys_count);
 }
 
 typedef struct tuple_accessed_page tuple_accessed_page;
