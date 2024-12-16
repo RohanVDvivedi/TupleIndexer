@@ -1,5 +1,11 @@
 ** PICKED TASKS
 
+ * implement compare with materialized keys in binary searches in sorted packed page
+ * add header and source to materialize_elements_tuple(tuple, tuple_def, positional_accessor) -> materialized_tuple {,dtis, user_values}
+   * and also a destructor for this type
+ * add function to get child key to follow in interior node to also work with materialized_tuple call it materialied_key_tuple
+ * modify walk_down functions to work with them instead of key and values, doing multiple binary searches
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
    * this will be implemented for variable length keys aswell
