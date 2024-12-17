@@ -227,7 +227,7 @@ const void* get_tuple_hash_table_iterator(const hash_table_iterator* hti_p)
 		return NULL;
 
 	// if the key is provided, and the key does not match for this record then wew return NULL
-	if(hti_p->key != NULL && 0 != compare_tuples(record, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, hti_p->key, hti_p->httd_p->key_def, NULL, NULL, hti_p->httd_p->key_element_count))
+	if(hti_p->key != NULL && 0 != compare_tuple_with_user_value(record, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, hti_p->mat_key.keys, hti_p->mat_key.key_dtis, NULL, hti_p->httd_p->key_element_count))
 		return NULL;
 
 	return record;
@@ -360,7 +360,7 @@ int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 		return 0;
 
 	// if the key doesn't match the tuple, then fail
-	if(0 != compare_tuples(tuple, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, hti_p->key, hti_p->httd_p->key_def, NULL, NULL, hti_p->httd_p->key_element_count))
+	if(0 != compare_tuple_with_user_value(tuple, hti_p->httd_p->lpltd.record_def, hti_p->httd_p->key_element_ids, hti_p->mat_key.keys, hti_p->mat_key.key_dtis, NULL, hti_p->httd_p->key_element_count))
 		return 0;
 
 	// if a linked_page_list at the curr_bucket_id does not exist then create one
