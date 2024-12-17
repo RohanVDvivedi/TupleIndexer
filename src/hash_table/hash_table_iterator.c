@@ -28,6 +28,12 @@ hash_table_iterator* get_new_hash_table_iterator(uint64_t root_page_id, bucket_r
 	hti_p->ptrl_p = NULL;
 	hti_p->lpli_p = NULL;
 
+	// initialize mat_key
+	if(hti_p->key == NULL)
+		hti_p->mat_key = (materialized_key){};
+	else
+		hti_p->mat_key = materialize_key_from_tuple(hti_p->key, hti_p->httd_p->key_def, NULL, hti_p->httd_p->key_element_count);
+
 	if(hti_p->key != NULL)
 	{
 		const page_modification_methods* curr_pmm_p = NULL; // first attempt with a read lock then if necessary attempt with a write lock
@@ -540,6 +546,8 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 
 void delete_hash_table_iterator(hash_table_iterator* hti_p, hash_table_vaccum_params* htvp, const void* transaction_id, int* abort_error)
 {
+	destroy_materialized_key(&(hti_p->mat_key));
+
 	htvp->page_table_vaccum_needed = 0;
 	htvp->hash_table_vaccum_needed = 0;
 	htvp->hash_table_vaccum_key = NULL;
