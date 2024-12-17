@@ -53,24 +53,6 @@ int has_prev_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs
 	return hdr.prev_page_id != bpttd_p->pas_p->NULL_PAGE_ID;
 }
 
-uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const persistent_page* ppage, const void* key, const bplus_tree_tuple_defs* bpttd_p)
-{
-	return find_succeeding_equals_in_sorted_packed_page(
-									ppage, bpttd_p->pas_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
-									key, bpttd_p->key_def, NULL
-								);
-}
-
-uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const persistent_page* ppage, const void* key, const bplus_tree_tuple_defs* bpttd_p)
-{
-	return find_preceding_equals_in_sorted_packed_page(
-									ppage, bpttd_p->pas_p->page_size, 
-									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
-									key, bpttd_p->key_def, NULL
-								);
-}
-
 // this will the tuples that will remain in the page_info after after the complete split operation
 static uint32_t calculate_final_tuple_count_of_page_to_be_split(const persistent_page* page1, const void* tuple_to_insert, uint32_t tuple_to_insert_at, const bplus_tree_tuple_defs* bpttd_p)
 {

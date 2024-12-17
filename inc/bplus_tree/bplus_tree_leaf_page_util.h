@@ -17,12 +17,6 @@ void print_bplus_tree_leaf_page(const persistent_page* ppage, const bplus_tree_t
 int has_next_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 int has_prev_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p);
 
-// when you want tuples in descending order from the key
-uint32_t find_greater_equals_for_key_bplus_tree_leaf_page(const persistent_page* ppage, const void* key, const bplus_tree_tuple_defs* bpttd_p);
-
-// when you want tuples in ascending order from the key
-uint32_t find_lesser_equals_for_key_bplus_tree_leaf_page(const persistent_page* ppage, const void* key, const bplus_tree_tuple_defs* bpttd_p);
-
 // check if a bplus tree leaf page must split for an insertion of a tuple
 int must_split_for_insert_bplus_tree_leaf_page(const persistent_page* page1, const void* tuple_to_insert, const bplus_tree_tuple_defs* bpttd_p);
 
