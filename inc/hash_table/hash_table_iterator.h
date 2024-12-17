@@ -7,6 +7,7 @@
 #include<hash_table_tuple_definitions.h>
 #include<opaque_page_access_methods.h>
 #include<opaque_page_modification_methods.h>
+#include<materialized_key.h>
 
 typedef struct hash_table_iterator hash_table_iterator;
 struct hash_table_iterator
@@ -15,6 +16,7 @@ struct hash_table_iterator
 
 	// the key you should be looking for
 	const void* key;
+	materialized_key mat_key; // this is the materialized version of the key (in the previous line), it is valid only if key is provided, else it must be initialized to empty struct
 
 	// range for locking the ptrl_p, only used when key == NULL
 	bucket_range lock_range;
