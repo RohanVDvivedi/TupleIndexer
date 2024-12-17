@@ -154,6 +154,7 @@ hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p,
 
 	clone_p->root_page_id = hti_p->root_page_id;
 	clone_p->key = hti_p->key;
+	clone_p->mat_key = hti_p->mat_key; // key remains the same, so mat_key can also be copied, possibly pointing to contents in the same key
 	clone_p->lock_range = hti_p->lock_range;
 	clone_p->curr_bucket_id = hti_p->curr_bucket_id;
 	clone_p->ptrl_p = NULL;
