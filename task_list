@@ -20,14 +20,20 @@
      * is_tail_worm_page -> next_page_id is NULL_PAGE_ID
    * each page contains only 1 tuple of a variable length BLOB type, packing the page to the fullest
   * api
-    * uint64_t get_new_worm(uint64_t dependent_root, int* abort_error); -> creates a new worm, initializing the head page, with reference_count of 1
-    * int increment_reference_count_for_worm(uint64_t head_page_id, int* abort_error);
-    * int decrement_reference_count_for_worm(uint64_t head_page_id, int* abort_error); // destroyes the whole worm datastructure and the datastructure at dependent root if the reference_count reaches 0, hence no destroy function
-    * worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, int* abort_error);
-    * int append_to_worm(worm_append_iterator* wai, const char* data, uint32_t data_size, int* abort_error); // you can append at most 4GB at once
-    * worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, int* abort_error);
-    * uint64_t seek_relative_in_worm(worm_read_iterator* wri, uint64_t bytes_to_skip, int* abort_error); // you can only go forward, returns bytes seeked
-    * uint32_t read_from_worm(worm_read_iterator* wri, int seek_forward, char* data, uint32_t data_size, int* abort_error); // if the seek_forward flag is set, bytes_read are seeked forward
+   * worm.c/.h
+    * uint64_t get_new_worm(uint64_t dependent_root, const void* transaction_id, int* abort_error); -> creates a new worm, initializing the head page, with reference_count of 1
+    * int increment_reference_count_for_worm(uint64_t head_page_id, const void* transaction_id, int* abort_error);
+    * int decrement_reference_count_for_worm(uint64_t head_page_id, const void* transaction_id, int* abort_error); // destroyes the whole worm datastructure and the datastructure at dependent root if the reference_count reaches 0, hence no destroy function
+   * worm_append_iterator.c/.h
+    * worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const void* transaction_id, int* abort_error);
+    * int append_to_worm(worm_append_iterator* wai, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error); // you can append at most 4GB at once
+    * worm_append_iterator* delete_worm_append_iterator((worm_append_iterator* wai, const void* transaction_id, int* abort_error);
+   * worm_read_iterator.c/.h
+    * worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const void* transaction_id, int* abort_error);
+    * worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri, const void* transaction_id, int* abort_error);
+    * uint64_t seek_relative_in_worm(worm_read_iterator* wri, uint64_t bytes_to_skip, const void* transaction_id, int* abort_error); // you can only go forward, returns bytes seeked
+    * uint32_t read_from_worm(worm_read_iterator* wri, int seek_forward, char* data, uint32_t data_size, const void* transaction_id, int* abort_error); // if the seek_forward flag is set, bytes_read are seeked forward
+    * worm_read_iterator* delete_worm_read_iterator(worm_read_iterator* wri, const void* transaction_id, int* abort_error);
       * the append and read functions deal with uint32_t data_size, to force the user to pursue small sized buffers and rely more on streaming algorithms
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
