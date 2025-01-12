@@ -1,12 +1,6 @@
 ** PICKED TASKS
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
-   * this will be implemented for variable length keys aswell
-   * this will take parent page, left page and right page as input and will perform a borrow to make left and right pages balanced if it is possible by the use of borrowing
-   * since this function will also modify the parent page, do relese lock on the parent page also if this operation succeeds
-   * these functions will be called inside the merge_and unlock_pages_up right before we attempt to merge
-   * if the borrowing succeeds we can directly release locks on all the three pages, pop the parent from the locked pages stack and break out of this loop
  * implement heap_table (needs to be refined)
    * using array_table as a lookup, bucket_id->(page_id, free_space)
    * free_space will be a hint and may not represent the actual free space on the page
@@ -61,4 +55,10 @@
    * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
 
 FAR FUTURE TASKS AND CONCEPTS
+  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
+   * this will be implemented for variable length keys aswell
+   * this will take parent page, left page and right page as input and will perform a borrow to make left and right pages balanced if it is possible by the use of borrowing
+   * since this function will also modify the parent page, do relese lock on the parent page also if this operation succeeds
+   * these functions will be called inside the merge_and unlock_pages_up right before we attempt to merge
+   * if the borrowing succeeds we can directly release locks on all the three pages, pop the parent from the locked pages stack and break out of this loop
  * OPTIMIZATION in suffix truncation :: handle cases if INT, UINT, LARGE_UINT, BIT_FIELD, in loop 1, if unequal on ASC-> then set element to last_tuple_page1 element + 1 (to min element if NULL), if unequal on DESC-> then set element to last_tuple_page1 element - 1, if the last_tuple_page1_element is not the min value, else set it to NULL
