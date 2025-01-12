@@ -1,19 +1,34 @@
 ** PICKED TASKS
 
- * implement a LARGE_BLOB/LARGE_STRING a read-only datastructure
-   * that will be a singly linked list of unmodifiable pages containing only a single non-nullable fixed length STRING or BLOB element
-   * the root page has a reference counter, and the data is all deleted if the reference counter reaches zero
-   * this tuple_def will be precomputed and put inside the tuple_definitions
-   * implement compare function on them, and a read only byte stream to iterate over it character by character
-   * check if you could allow this complex type to be part of hash_table and bplus_tree (My answer would be no, as keys must fit on the page to be searchable)
- * introduce a new page type, reference page
-   * it will be primarily store the reference to the root of the data structure
-   * it's tuple_definitions in compressed form, i.e. serialized compact representation of parameters that can construct bplus_tree_tuple_defs structure, if it points to the root of bplus_tree
-   * its reference counter -> which if reaches 0, then the underlying data structure and this page get destroyed
-   * you may also store statistic information like height, fanout, number of inserts/updates per second etc on this page
-   * since this page and its underlying root that it points to are both fixed, the referenceed root pointer may never be appointed
-   * at times it can try to relocate the root page (needs to be done gracefully in case of linked_page_list, since it is circular and not a tree)
-   * it can also be used to house locking information for the underlying data structure
+ * WORM data structure
+   * calling this worm because it will primarily be Write-Once-Read-Multiple-times data structure
+   * it will primarily be used to store the data type infos of the records of the underlying data structure possibly one of linked_page_list, hash_table, b_plus_tree or array_table
+   * it can also be used to store statistic information of the data structure like height of trees, fanout, insert/update/delete-s per second
+   * it will also be used for storing out-of page toast tuples for data types like Numeric, Text, Json etc, which may require storing them out of page
+   * you may put compressed contents in worm
+  * structure
+   * worm_head_page_header -> atmost (4 * 8) 32 bytes
+     * uint64_t reference_counter -> reference counting for both the dependent_root and the worm contents
+     * uint64_t dependent_root -> can be NULL_PAGE_ID
+     * uint64_t tail_page_id
+     * uint64_t next_page_id -> NULL_PAGE_ID if it is a tail page
+   * worm_any_page_header (for any other page) -> atmost 8 bytes
+     * uint64_t next_page_id
+   * build a source file for worm_page_header for the below functions
+     * is_head_worm_page -> check page header size
+     * get_next_worm_page_id -> figure out what page header to use, and get the next_page_id
+     * is_tail_worm_page -> next_page_id is NULL_PAGE_ID
+   * each page contains only 1 tuple of a variable length BLOB type, packing the page to the fullest
+  * api
+    * uint64_t get_new_worm(uint64_t dependent_root, int* abort_error); -> creates a new worm, initializing the head page, with reference_count of 1
+    * int increment_reference_count_for_worm(uint64_t head_page_id, int* abort_error);
+    * int decrement_reference_count_for_worm(uint64_t head_page_id, int* abort_error); // destroyes the whole worm datastructure and the datastructure at dependent root if the reference_count reaches 0, hence no destroy function
+    * worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, int* abort_error);
+    * int append_to_worm(worm_append_iterator* wai, const char* data, uint32_t data_size, int* abort_error); // you can append at most 4GB at once
+    * worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, int* abort_error);
+    * uint64_t seek_relative_in_worm(worm_read_iterator* wri, uint64_t bytes_to_skip, int* abort_error); // you can only go forward, returns bytes seeked
+    * uint32_t read_from_worm(worm_read_iterator* wri, int seek_forward, char* data, uint32_t data_size, int* abort_error); // if the seek_forward flag is set, bytes_read are seeked forward
+      * the append and read functions deal with uint32_t data_size, to force the user to pursue small sized buffers and rely more on streaming algorithms
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * implement heap_table (needs to be refined)
@@ -54,6 +69,7 @@
    * inserts and deletes can release page locks if it is deemed that split and merge would not propogate up the tree
    * accomodate any tuple that is atleast half the size of the leaf page, and interior page tuples would be fixed width with non NULL elements
    * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
+ * build functions to relocate root of the datastructures to lower page ids
 
 FAR FUTURE TASKS AND CONCEPTS
   * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
