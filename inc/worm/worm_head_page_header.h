@@ -40,7 +40,7 @@ static inline worm_head_page_header get_worm_head_page_header(const persistent_p
 
 static inline void serialize_worm_head_page_header(void* hdr_serial, const worm_head_page_header* whph_p, const worm_tuple_defs* wtd_p);
 
-static inline void set_bplus_tree_leaf_page_header(persistent_page* ppage, const worm_head_page_header* whph_p, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+static inline void set_worm_head_page_header(persistent_page* ppage, const worm_head_page_header* whph_p, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // prints header of worm head page
 static inline void print_worm_head_page_header(const persistent_page* ppage, const worm_tuple_defs* wtd_p);
@@ -90,7 +90,7 @@ static inline void serialize_worm_head_page_header(void* hdr_serial, const worm_
 	serialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + 2 * wtd_p->pas_p->page_id_width, wtd_p->pas_p->page_id_width, whph_p->next_page_id);
 }
 
-static inline void set_bplus_tree_leaf_page_header(persistent_page* ppage, const worm_head_page_header* whph_p, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+static inline void set_worm_head_page_header(persistent_page* ppage, const worm_head_page_header* whph_p, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	uint32_t page_header_size = get_page_header_size_persistent_page(ppage, wtd_p->pas_p->page_size);
 
