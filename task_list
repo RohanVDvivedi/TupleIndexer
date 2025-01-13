@@ -1,5 +1,11 @@
 ** PICKED TASKS
 
+ * implement worm_page_header functions
+ * implement worm_tuple_def functions
+ * implement worm.c/.h functions
+ * implement worm_read_iterator
+ * implement work_append_iterator
+
  * WORM data structure
    * calling this worm because it will primarily be Write-Once-Read-Multiple-times data structure
    * it will primarily be used to store the data type infos of the records of the underlying data structure possibly one of linked_page_list, hash_table, b_plus_tree or array_table
