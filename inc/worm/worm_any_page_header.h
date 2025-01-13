@@ -1,0 +1,4 @@
+#ifndef WORM_ANY_PAGE_HEADER_H
+#define WORM_ANY_PAGE_HEADER_H
+
+#endif
