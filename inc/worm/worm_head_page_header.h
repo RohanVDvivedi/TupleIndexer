@@ -127,5 +127,4 @@ static inline void print_worm_head_page_header(const persistent_page* ppage, con
 	printf("next_page_id : %"PRIu64"\n", whph.next_page_id);
 }
 
-
 #endif
