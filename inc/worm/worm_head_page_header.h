@@ -54,17 +54,12 @@ static inline uint32_t get_offset_to_end_of_worm_head_page_header(const worm_tup
 
 static inline uint64_t get_tail_page_id_of_worm_head_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p)
 {
-	return get_bplus_tree_leaf_page_header(ppage, bpttd_p).tail_page_id;
+	return get_worm_head_page_header(ppage, wtd_p).tail_page_id;
 }
 
 static inline uint64_t get_next_page_id_of_worm_head_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p)
 {
-	return get_bplus_tree_leaf_page_header(ppage, bpttd_p).next_page_id;
-}
-
-static inline uint64_t get_prev_page_id_of_bplus_tree_leaf_page(const persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p)
-{
-	return get_bplus_tree_leaf_page_header(ppage, bpttd_p).prev_page_id;
+	return get_worm_head_page_header(ppage, wtd_p).next_page_id;
 }
 
 static inline uint32_t get_offset_to_worm_head_page_header_locals(const worm_tuple_defs* wtd_p)
@@ -74,25 +69,25 @@ static inline uint32_t get_offset_to_worm_head_page_header_locals(const worm_tup
 
 static inline worm_head_page_header get_worm_head_page_header(const persistent_page* ppage, const worm_tuple_defs* wtd_p)
 {
-	const void* worm_head_page_header_serial = get_page_header_ua_persistent_page(ppage, wtd_p->pas_p->page_size) + get_offset_to_worm_head_page_header_locals(bpttd_p);
+	const void* worm_head_page_header_serial = get_page_header_ua_persistent_page(ppage, wtd_p->pas_p->page_size) + get_offset_to_worm_head_page_header_locals(wtd_p);
 	return (worm_head_page_header){
-		.parent = get_common_page_header(ppage, bpttd_p->pas_p),
+		.parent = get_common_page_header(ppage, wtd_p->pas_p),
 		.reference_counter =      deserialize_uint64(worm_head_page_header_serial, sizeof(uint64_t)),
-		.dependent_root_page_id = deserialize_uint64(worm_head_page_header_serial + sizeof(uint64_t), bpttd_p->pas_p->page_id_width),
-		.tail_page_id =           deserialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + bpttd_p->pas_p->page_id_width, bpttd_p->pas_p->page_id_width),
-		.next_page_id =           deserialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + 2 * bpttd_p->pas_p->page_id_width, bpttd_p->pas_p->page_id_width),
+		.dependent_root_page_id = deserialize_uint64(worm_head_page_header_serial + sizeof(uint64_t), wtd_p->pas_p->page_id_width),
+		.tail_page_id =           deserialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + wtd_p->pas_p->page_id_width, wtd_p->pas_p->page_id_width),
+		.next_page_id =           deserialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + 2 * wtd_p->pas_p->page_id_width, wtd_p->pas_p->page_id_width),
 	};
 }
 
-static inline void serialize_worm_head_page_header(void* hdr_serial, const worm_head_page_header* whph_p, const bplus_tree_tuple_defs* bpttd_p)
+static inline void serialize_worm_head_page_header(void* hdr_serial, const worm_head_page_header* whph_p, const worm_tuple_defs* wtd_p)
 {
-	serialize_common_page_header(hdr_serial, &(whph_p->parent), bpttd_p->pas_p);
+	serialize_common_page_header(hdr_serial, &(whph_p->parent), wtd_p->pas_p);
 
-	void* worm_head_page_header_serial = hdr_serial + get_offset_to_worm_head_page_header_locals(bpttd_p);
+	void* worm_head_page_header_serial = hdr_serial + get_offset_to_worm_head_page_header_locals(wtd_p);
 	serialize_uint64(worm_head_page_header_serial, sizeof(uint64_t), whph_p->reference_counter);
-	serialize_uint64(worm_head_page_header_serial + sizeof(uint64_t), bpttd_p->pas_p->page_id_width, whph_p->dependent_root_page_id);
-	serialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + bpttd_p->pas_p->page_id_width, bpttd_p->pas_p->page_id_width, whph_p->tail_page_id);
-	serialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + 2 * bpttd_p->pas_p->page_id_width, bpttd_p->pas_p->page_id_width, whph_p->next_page_id);
+	serialize_uint64(worm_head_page_header_serial + sizeof(uint64_t), wtd_p->pas_p->page_id_width, whph_p->dependent_root_page_id);
+	serialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + wtd_p->pas_p->page_id_width, wtd_p->pas_p->page_id_width, whph_p->tail_page_id);
+	serialize_uint64(worm_head_page_header_serial + sizeof(uint64_t) + 2 * wtd_p->pas_p->page_id_width, wtd_p->pas_p->page_id_width, whph_p->next_page_id);
 }
 
 static inline void set_bplus_tree_leaf_page_header(persistent_page* ppage, const worm_head_page_header* whph_p, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
@@ -119,7 +114,7 @@ static inline void set_bplus_tree_leaf_page_header(persistent_page* ppage, const
 
 static inline void print_worm_head_page_header(const persistent_page* ppage, const worm_tuple_defs* wtd_p)
 {
-	print_common_page_header(ppage, bpttd_p->pas_p);
+	print_common_page_header(ppage, wtd_p->pas_p);
 	const worm_head_page_header whph = get_worm_head_page_header(ppage, wtd_p);
 	printf("reference_counter : %"PRIu64"\n", whph.reference_counter);
 	printf("dependent_root_page_id : %"PRIu64"\n", whph.dependent_root_page_id);
