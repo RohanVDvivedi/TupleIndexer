@@ -31,6 +31,7 @@
       * the append and read functions deal with uint32_t data_size, to force the user to pursue small sized buffers and rely more on streaming algorithms
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * memory_move for the set_*_page_header call is surely useless, removing it may reduce latency
  * implement heap_table (needs to be refined)
    * using array_table as a lookup, bucket_id->(page_id, free_space)
    * free_space will be a hint and may not represent the actual free space on the page
