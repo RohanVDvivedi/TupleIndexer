@@ -1,6 +1,5 @@
 ** PICKED TASKS
 
- * implement worm_page_header functions
  * implement worm_tuple_def functions
  * implement worm.c/.h functions
  * implement worm_read_iterator
@@ -13,17 +12,6 @@
    * it will also be used for storing out-of page toast tuples for data types like Numeric, Text, Json etc, which may require storing them out of page
    * you may put compressed contents in worm
   * structure
-   * worm_head_page_header -> atmost (4 * 8) 32 bytes
-     * uint64_t reference_counter -> reference counting for both the dependent_root and the worm contents
-     * uint64_t dependent_root -> can be NULL_PAGE_ID
-     * uint64_t tail_page_id
-     * uint64_t next_page_id -> NULL_PAGE_ID if it is a tail page
-   * worm_any_page_header (for any other page) -> atmost 8 bytes
-     * uint64_t next_page_id
-   * build a source file for worm_page_header for the below functions
-     * is_head_worm_page -> check page header size
-     * get_next_worm_page_id -> figure out what page header to use, and get the next_page_id
-     * is_tail_worm_page -> next_page_id is NULL_PAGE_ID
    * each page contains only 1 tuple of a variable length BLOB type, packing the page to the fullest
   * api
    * worm.c/.h
