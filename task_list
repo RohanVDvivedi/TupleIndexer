@@ -6,11 +6,6 @@
  * implement work_append_iterator
 
  * WORM data structure
-   * calling this worm because it will primarily be Write-Once-Read-Multiple-times data structure
-   * it will primarily be used to store the data type infos of the records of the underlying data structure possibly one of linked_page_list, hash_table, b_plus_tree or array_table
-   * it can also be used to store statistic information of the data structure like height of trees, fanout, insert/update/delete-s per second
-   * it will also be used for storing out-of page toast tuples for data types like Numeric, Text, Json etc, which may require storing them out of page
-   * you may put compressed contents in worm
   * structure
    * each page contains only 1 tuple of a variable length BLOB type, packing the page to the fullest
   * api
