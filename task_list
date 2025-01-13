@@ -25,11 +25,11 @@
     * int increment_reference_count_for_worm(uint64_t head_page_id, const void* transaction_id, int* abort_error);
     * int decrement_reference_count_for_worm(uint64_t head_page_id, const void* transaction_id, int* abort_error); // destroyes the whole worm datastructure and the datastructure at dependent root if the reference_count reaches 0, hence no destroy function
    * worm_append_iterator.c/.h
-    * worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const void* transaction_id, int* abort_error); / keeps head page only locked and takes lock on tail page only on append call
+    * worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const void* transaction_id, int* abort_error); // keeps head page only locked and takes lock on tail page only on append call
     * int append_to_worm(worm_append_iterator* wai, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error); // you can append at most 4GB at once
     * worm_append_iterator* delete_worm_append_iterator((worm_append_iterator* wai, const void* transaction_id, int* abort_error);
    * worm_read_iterator.c/.h
-    * worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const void* transaction_id, int* abort_error);
+    * worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const void* transaction_id, int* abort_error); // keeps only the current page locked
     * worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri, const void* transaction_id, int* abort_error);
     * uint64_t seek_relative_in_worm(worm_read_iterator* wri, uint64_t bytes_to_skip, const void* transaction_id, int* abort_error); // you can only go forward, returns bytes seeked
     * uint32_t read_from_worm(worm_read_iterator* wri, int seek_forward, char* data, uint32_t data_size, const void* transaction_id, int* abort_error); // if the seek_forward flag is set, bytes_read are seeked forward
