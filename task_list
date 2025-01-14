@@ -6,10 +6,10 @@
 
  * WORM data structure
    * worm.c/.h
-    * uint64_t get_new_worm(uint64_t dependent_root, const void* transaction_id, int* abort_error); -> creates a new worm, initializing the head page, with reference_count of 1
+    * uint64_t get_new_worm(uint64_t reference_counter = 1, uint64_t dependent_root, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error); -> creates a new worm, initializing the head page, with reference_count of 1
     * void print_worm(uint64_t root_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
-    * int increment_reference_counter_for_worm(uint64_t head_page_id, const void* transaction_id, int* abort_error);
-    * int decrement_reference_counter_for_worm(uint64_t head_page_id, const void* transaction_id, int* abort_error); // destroyes the whole worm datastructure and the datastructure at dependent root if the reference_count reaches 0, hence no destroy function
+    * int increment_reference_counter_for_worm(uint64_t head_page_id, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+    * int decrement_reference_counter_for_worm(uint64_t head_page_id, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error); // destroys the whole worm datastructure and the datastructure at dependent root if the reference_count reaches 0, hence no destroy function
    * worm_append_iterator.c/.h
     * structure
       {
@@ -19,7 +19,7 @@
         page_access_methods* pam_p;
         page_modification_methods* pmm_p;
       }
-    * worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const void* transaction_id, int* abort_error); // keeps head page only locked and takes lock on tail page only on append call
+    * worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error); // keeps head page only locked and takes lock on tail page only on append call
     * int append_to_worm(worm_append_iterator* wai, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error); // you can append at most 4GB at once
     * worm_append_iterator* delete_worm_append_iterator((worm_append_iterator* wai, const void* transaction_id, int* abort_error);
    * worm_read_iterator.c/.h
@@ -33,7 +33,7 @@
         worm_tuple_defs* wtd_p ;
         page_access_methods* pam_p;
       }
-    * worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const void* transaction_id, int* abort_error); // keeps only the current page locked
+    * worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const page_access_methods* pam_p, const void* transaction_id, int* abort_error); // keeps only the current page locked
     * worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri, const void* transaction_id, int* abort_error);
     * int is_at_end_of_worm(worm_read_iterator* wri); // if the blob_index is equal to tuple index on the curr_page, blob_offset is 0, and there is no next page to go to
     * uint64_t seek_relative_in_worm(worm_read_iterator* wri, uint64_t bytes_to_skip, const void* transaction_id, int* abort_error); // you can only go forward, returns bytes seeked
