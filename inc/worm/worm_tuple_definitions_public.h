@@ -17,13 +17,11 @@ struct worm_tuple_defs
 
 	// individual type for the partial_blob_tuple_def
 	data_type_info partial_blob_type;
-
-	// maximum record size of the only record on head page
-	uint32_t worm_head_max_record_size;
-
-	// maximum record size of the only record on any oter page
-	uint32_t worm_any_max_record_size;
 };
+
+/*
+	The maximum blob type's bytes that fit on a worm page is equal to the space allotted to all tuples on the page - additional space - min size of the blob type
+*/
 
 // initializes the attributes in worm_tuple_defs struct as per the provided parameters
 // the parameter pas_p must point to the pas attribute of the data_access_method that you are using it with

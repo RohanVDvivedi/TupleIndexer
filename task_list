@@ -7,7 +7,7 @@
 
  * WORM data structure
   * structure
-   * each page contains only 1 tuple of a variable length BLOB type, packing the page to the fullest
+   * each page contains atleast 1 tuple of a variable length BLOB type, packing the page to the fullest
   * api
    * worm.c/.h
     * uint64_t get_new_worm(uint64_t dependent_root, const void* transaction_id, int* abort_error); -> creates a new worm, initializing the head page, with reference_count of 1
