@@ -1,11 +1,11 @@
 ** PICKED TASKS
 
+ * add functions to initialize/create a worm_head AND any_page
+ * function to return the next largest blob bytes that can be appended to the page, left over space (free_space + fragmented space OR allotted space - occupied space) - additional space per tuple - min blob size -> if this goes negative, return 0
+
  * implement worm.c/.h functions
  * implement worm_read_iterator
  * implement work_append_iterator
-
- * add functions to initialize/create a worm_head AND any_page
- * function to return the next largest blob bytes that can be appended to the page, left over space (free_space + fragmented space OR allotted space - occupied space) - additional space per tuple - min blob size -> if this goes negative, return 0
 
  * WORM data structure
   * api
