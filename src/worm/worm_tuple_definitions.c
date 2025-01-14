@@ -39,6 +39,7 @@ int init_worm_tuple_definitions(worm_tuple_defs* wtd_p, const page_access_specs*
 		{
 			free(partial_blob_type_info);
 			free(wtd_p->partial_blob_tuple_def);
+			wtd_p->partial_blob_tuple_def = NULL; // avoid double free due to below call
 			deinit_worm_tuple_definitions(wtd_p);
 			return 0;
 		}

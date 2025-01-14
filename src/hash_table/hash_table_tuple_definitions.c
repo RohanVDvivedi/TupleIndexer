@@ -47,6 +47,7 @@ int init_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p, const page_
 		{
 			free(httd_p->key_def);
 			free(key_type_info);
+			httd_p->key_def = NULL; // avoid double free due to below call
 			deinit_hash_table_tuple_definitions(httd_p);
 			return 0;
 		}

@@ -40,6 +40,8 @@ int init_sorter_tuple_definitions(sorter_tuple_defs* std_p, const page_access_sp
 	}
 
 	std_p->key_type_infos = malloc(sizeof(data_type_info*) * key_element_count);
+	if(std_p->key_type_infos == NULL)
+		exit(-1);
 	for(uint32_t i = 0; i < key_element_count; i++)
 		std_p->key_type_infos[i] = get_type_info_for_element_from_tuple_def(record_def, key_element_ids[i]);
 

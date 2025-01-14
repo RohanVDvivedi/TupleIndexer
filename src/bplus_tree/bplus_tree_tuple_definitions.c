@@ -64,6 +64,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 		{
 			free(bpttd_p->index_def);
 			free(index_type_info);
+			bpttd_p->index_def = NULL; // avoid double free due to below call
 			deinit_bplus_tree_tuple_definitions(bpttd_p);
 			return 0;
 		}
@@ -89,6 +90,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 		{
 			free(bpttd_p->key_def);
 			free(key_type_info);
+			bpttd_p->key_def = NULL; // avoid double free due to below call
 			deinit_bplus_tree_tuple_definitions(bpttd_p);
 			return 0;
 		}
