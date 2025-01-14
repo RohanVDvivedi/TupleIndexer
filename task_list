@@ -5,6 +5,9 @@
  * implement worm_read_iterator
  * implement work_append_iterator
 
+ * add functions to initialize/create a worm_head AND any_page
+ * function to return the next largest blob bytes that can be appended to the page, left over space (free_space + fragmented space OR allotted space - occupied space) - additional space per tuple - min blob size -> if this goes negative, return 0
+
  * WORM data structure
   * structure
    * each page contains atleast 1 tuple of a variable length BLOB type, packing the page to the fullest
