@@ -48,6 +48,9 @@
       * the append and read functions deal with uint32_t data_size, to force the user to pursue small sized buffers and rely more on streaming algorithms
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * fix possible double free in all *_tuple_defs
+   * caused due to failure to initialize the tuple_def-s owned by these *_tuple_defs
+   * identified for key_def and index_def in bplus_tree and hash_table and partial_blob_tuple_def in worm -> find other such instances
  * memory_move for the set_*_page_header call is surely useless, removing it may reduce latency
    * this further must be done with not allowing any inheritence/compositions of the page_header-s
    * you must also remove the set from the common page header so it is never called again by any one, corrupting the header
