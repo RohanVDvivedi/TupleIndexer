@@ -22,12 +22,12 @@ static inline uint64_t get_next_page_id_of_worm_page(const persistent_page* ppag
 
 static inline int is_worm_head_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p)
 {
-	return get_common_page_header(ppage, bpttd_p->pas_p).type == WORM_HEAD_PAGE;
+	return get_common_page_header(ppage, wtd_p->pas_p).type == WORM_HEAD_PAGE;
 }
 
 static inline uint64_t get_next_page_id_of_worm_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p)
 {
-	if(get_common_page_header(ppage, bpttd_p->pas_p).type == WORM_HEAD_PAGE)
+	if(is_worm_head_page(ppage, wtd_p))
 		return get_next_page_id_of_worm_head_page(ppage, wtd_p);
 	else
 		return get_next_page_id_of_worm_any_page(ppage, wtd_p);
