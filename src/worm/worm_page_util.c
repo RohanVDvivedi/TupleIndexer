@@ -14,7 +14,7 @@ int init_worm_head_page(persistent_page* ppage, uint32_t reference_counter, uint
 	hdr.parent.type = WORM_HEAD_PAGE;
 	hdr.reference_counter = reference_counter;
 	hdr.dependent_root_page_id = dependent_root_page_id;
-	hdr.tail_page_id = wtd_p->pas_p->NULL_PAGE_ID;
+	hdr.tail_page_id = ppage->page_id;
 	hdr.next_page_id = wtd_p->pas_p->NULL_PAGE_ID;
 	set_worm_head_page_header(ppage, &hdr, wtd_p, pmm_p, transaction_id, abort_error);
 	if((*abort_error))
@@ -42,8 +42,10 @@ int init_worm_any_page(persistent_page* ppage, const worm_tuple_defs* wtd_p, con
 
 uint32_t blob_bytes_appendable_on_worm_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p)
 {
+	// space_unused = space_allotted - space_occupied
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, wtd_p->pas_p->page_size, &(wtd_p->partial_blob_tuple_def->size_def)) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, wtd_p->pas_p->page_size, &(wtd_p->partial_blob_tuple_def->size_def));
 
+	// additional_space_per_tuple_on_page + minimum_size_of_tuple
 	uint32_t management_space_to_be_used_for_any_number_of_blob_bytes = get_additional_space_overhead_per_tuple_on_persistent_page(wtd_p->pas_p->page_size, &(wtd_p->partial_blob_tuple_def->size_def)) + get_minimum_tuple_size(wtd_p->partial_blob_tuple_def);
 
 	// to fit a non empty blob,
