@@ -12,11 +12,8 @@ struct worm_tuple_defs
 	// specification of all the pages in the bplus_tree
 	const page_access_specs* pas_p;
 
-	// tuple_def for all types
-	tuple_def partial_blob_tuple_def;
-
-	// individual type for the partial_blob_tuple_def
-	data_type_info partial_blob_type;
+	// tuple_def for all blobs in the worm
+	tuple_def* partial_blob_tuple_def;
 };
 
 /*

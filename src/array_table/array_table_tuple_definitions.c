@@ -17,7 +17,7 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 	if(!is_valid_page_access_specs(pas_p))
 		return 0;
 
-	// initialize page_access_specs fo the bpttd
+	// initialize page_access_specs for the attd
 	attd_p->pas_p = pas_p;
 
 	// this can only be done after setting the pas_p attribute of attd
