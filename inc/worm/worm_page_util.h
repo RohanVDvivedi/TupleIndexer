@@ -9,8 +9,8 @@
 #include<opaque_page_modification_methods.h>
 
 // initializes a new worm head page, with tail_page_id and next_page_id = NULL_PAGE_ID
-// reference_count (must be non zero), dependent_root
-int init_worm_head_page(persistent_page* ppage, uint32_t reference_count, uint64_t dependent_root_page_id, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+// reference_counter (logically must be non zero, initially), dependent_root (may be NULL_PAGE_ID)
+int init_worm_head_page(persistent_page* ppage, uint32_t reference_counter, uint64_t dependent_root_page_id, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // initializes a new any worm page, with next_page_id = NULL_PAGE_ID
 int init_worm_any_page(persistent_page* ppage, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
