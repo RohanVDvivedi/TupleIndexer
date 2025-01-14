@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
- * review worm_tuple_def functions
-
  * implement worm.c/.h functions
  * implement worm_read_iterator
  * implement work_append_iterator
