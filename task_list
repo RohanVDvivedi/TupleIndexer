@@ -2,7 +2,7 @@
 
  * review worm.c functions
 
- * implement work_append_iterator
+ * implement worm_append_iterator
  * implement worm_read_iterator
 
  * simple function to get dependent_root_page_id of the worm
