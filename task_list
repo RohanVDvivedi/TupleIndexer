@@ -44,6 +44,11 @@
    * this further must be done with not allowing any inheritence/compositions of the page_header-s
    * you must also remove the set from the common page header so it is never called again by any one, corrupting the header
    * think if this (non extensibility/hardcoding) is what you want
+   * benchmark performance
+ * for resiliently append/insert/update optimize out the redundant calls
+   * using first performing the simple direct call, then check to see if a can_resilient says it will succeed, then try resiliently
+   * make can_resiliently? functions not call the actual can_insert/append/update functions- it is waste full, directly test if there is enough unused_space
+   * benchmark performance
  * implement heap_table (needs to be refined)
    * using array_table as a lookup, bucket_id->(page_id, free_space)
    * free_space will be a hint and may not represent the actual free space on the page
