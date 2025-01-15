@@ -2,6 +2,7 @@
 
 #include<worm_head_page_header.h>
 #include<worm_any_page_header.h>
+#include<worm_page_header.h>
 
 int init_worm_head_page(persistent_page* ppage, uint32_t reference_counter, uint64_t dependent_root_page_id, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
@@ -38,6 +39,15 @@ int init_worm_any_page(persistent_page* ppage, const worm_tuple_defs* wtd_p, con
 		return 0;
 
 	return 1;
+}
+
+void print_worm_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p)
+{
+	if(is_worm_head_page(ppage, wtd_p))
+		print_worm_head_page_header(ppage, wtd_p);
+	else
+		print_worm_any_page_header(ppage, wtd_p);
+	print_persistent_page(ppage, wtd_p->pas_p->page_size, wtd_p->partial_blob_tuple_def);
 }
 
 uint32_t blob_bytes_appendable_on_worm_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p)

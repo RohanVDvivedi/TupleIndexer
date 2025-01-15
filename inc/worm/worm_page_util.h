@@ -16,6 +16,8 @@ int init_worm_head_page(persistent_page* ppage, uint32_t reference_counter, uint
 // initializes a new any worm page, with next_page_id = NULL_PAGE_ID
 int init_worm_any_page(persistent_page* ppage, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
+void print_worm_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p);
+
 // if this function returns 0, there is no more any space on this page, try adding a new tail page
 // else attempt to insert a blob with at most this size and it will succeed in being appended on the worm page
 uint32_t blob_bytes_appendable_on_worm_page(const persistent_page* ppage, const worm_tuple_defs* wtd_p);
