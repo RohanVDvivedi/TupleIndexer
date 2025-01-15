@@ -9,6 +9,9 @@
 
 uint64_t get_new_worm(uint64_t reference_counter, uint64_t dependent_root_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	if(reference_counter == 0)
+		reference_counter = 1;
+
 	persistent_page head_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
 
 	// failure to acquire a new page
