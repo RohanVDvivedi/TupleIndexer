@@ -110,7 +110,49 @@ int decrement_reference_counter_for_worm(uint64_t head_page_id, const worm_tuple
 	return 1;
 }
 
-void print_worm(uint64_t root_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+void print_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// print the head page id of the worm
+	printf("\n\nWorm @ head_page_id = %"PRIu64"\n\n", head_page_id);
+
+	// start with acquiring lock on the head page
+	persistent_page curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, READ_LOCK, abort_error);
+	if(*abort_error)
+		return;
+
+	// loop until the curr_page is not NULL
+	while(!is_persistent_page_NULL(&curr_page, pam_p))
+	{
+		// print the curr_page
+		printf("page_id : %"PRIu64"\n\n", curr_page.page_id);
+		print_worm_page(&curr_page, wtd_p);
+		printf("xxxxxxxxxxxxx\n");
+
+		// get the next page_id
+		uint64_t next_page_id = get_next_page_id_of_worm_page(&curr_page, wtd_p);
+
+		// if there is next page, acquire lock on it
+		persistent_page next_page = get_NULL_persistent_page(pam_p);
+		if(next_page_id != wtd_p->pas_p->NULL_PAGE_ID)
+		{
+			next_page = acquire_persistent_page_with_lock(pam_p, transaction_id, next_page_id, READ_LOCK, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(pam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+				return;
+			}
+		}
+
+		// release lock on the curr_page
+		release_lock_on_persistent_page(pam_p, transaction_id, &curr_page, NONE_OPTION, abort_error);
+		if(*abort_error)
+		{
+			if(!is_persistent_page_NULL(&next_page, pam_p))
+				release_lock_on_persistent_page(pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+			return;
+		}
+
+		// next_page becomes the curr_page
+		curr_page = next_page;
+	}
 }
