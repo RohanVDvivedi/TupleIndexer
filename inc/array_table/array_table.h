@@ -7,7 +7,7 @@
 #include<opaque_page_modification_methods.h>
 
 /*
-	Array table is nothing but a look-up-table from uint64_t to record_def ofyour choosing
+	Array table is nothing but a look-up-table from uint64_t to record_def of your choosing
 */
 
 // returns pointer to the root page of the newly created array_table
