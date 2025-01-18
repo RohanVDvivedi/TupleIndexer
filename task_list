@@ -85,3 +85,19 @@ FAR FUTURE TASKS AND CONCEPTS
    * these functions will be called inside the merge_and unlock_pages_up right before we attempt to merge
    * if the borrowing succeeds we can directly release locks on all the three pages, pop the parent from the locked pages stack and break out of this loop
  * OPTIMIZATION in suffix truncation :: handle cases if INT, UINT, LARGE_UINT, BIT_FIELD, in loop 1, if unequal on ASC-> then set element to last_tuple_page1 element + 1 (to min element if NULL), if unequal on DESC-> then set element to last_tuple_page1 element - 1, if the last_tuple_page1_element is not the min value, else set it to NULL
+
+
+NEW PROJECT
+* start a new project to store and manage larger than page data types
+ like LARGE_TEXT, LARGE_BLOB, LARGE_JSON and LARGE_NUMBER, storing them in worm
+ * and tuple types for their inline storage prefixes, such that they are easy for comparison
+ * you might think a large number akin to numeric can not be compare with prefixes
+ * for instance 645780623465123456.6876458076456345655946595
+ * if so why not store it as
+   sign_bits - 2, exponent - 64 bit signed atmost, mantissa variable number of decimal bytes at most 32
+   sign bits 00 = -infinity, 01 - negative, 10 - positive, 11 - +infinity
+   so this becomes
+   sign bits = 0b10, exponent 17, mantissa = 6.457806234651234566876458076456345655946595
+   now you can easily truncate byte, giving us approximation, to upto some number of significant digits
+   sign bits = 0b10, exponent 17, mantissa = 6.45780623
+   comparison goes like first compare sign bits in binary unsigned, then exponent in signed, and then mantissa
