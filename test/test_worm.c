@@ -21,10 +21,10 @@ void prepare_buffer(uint8_t id)
 {
 	for(uint32_t i = 0; i < BUFFER_APPEND_SIZE; i++)
 	{
-		if((i % 2) == 0)
+		if((i%2) == 0)
 			buffer[i/2] = id;
 		else
-			buffer[i/2+1] = (i / 2);
+			buffer[i/2+1] = (i/2);
 	}
 }
 
