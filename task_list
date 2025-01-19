@@ -20,11 +20,12 @@
       }
     * worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const page_access_methods* pam_p, const void* transaction_id, int* abort_error); // keeps only the current page locked
     * worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri, const void* transaction_id, int* abort_error);
-    * int is_at_end_of_worm(worm_read_iterator* wri); // if the blob_index is equal to tuple index on the curr_page, blob_offset is 0, and there is no next page to go to
-    * uint64_t seek_relative_in_worm(worm_read_iterator* wri, uint64_t bytes_to_skip, const void* transaction_id, int* abort_error); // you can only go forward, returns bytes seeked
-    * uint32_t read_from_worm(worm_read_iterator* wri, int seek_forward, char* data, uint32_t data_size, const void* transaction_id, int* abort_error); // if the seek_forward flag is set, bytes_read are seeked forward
+    * uint32_t read_from_worm(worm_read_iterator* wri, char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
+      // if data_size == 0, 0 is returned back rght away
+      // if data == NULL, it will only perform seek relative
+      // api allows it to read/seek lesser than data_size number of bytes, but it will not happen
+      // on an abort error, 0 will be returned
     * worm_read_iterator* delete_worm_read_iterator(worm_read_iterator* wri, const void* transaction_id, int* abort_error);
-      * the append and read functions deal with uint32_t data_size, to force the user to pursue small sized buffers and rely more on streaming algorithms
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * memory_move for the set_*_page_header call is surely useless, removing it may reduce latency
