@@ -61,6 +61,73 @@ int main()
 		exit(-1);
 	}
 
+	uint32_t id = 0;
+
+	// APPEND WORM
+	{
+		worm_append_iterator* wai_p = get_new_worm_append_iterator(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		int t = BUFFER_APPEND_COUNT;
+		while(t > 0)
+		{
+			prepare_buffer(id++);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, BUFFER_APPEND_SIZE, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			printf("bytes_appended = %"PRIu32"\n", bytes_appended);
+			t--;
+		}
+
+		delete_worm_append_iterator(wai_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
+
+	/* PRINT WORM */
+	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
+
+	// APPEND WORM
+	{
+		worm_append_iterator* wai_p = get_new_worm_append_iterator(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		int t = BUFFER_APPEND_COUNT;
+		while(t > 0)
+		{
+			prepare_buffer(id++);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, BUFFER_APPEND_SIZE, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			printf("bytes_appended = %"PRIu32"\n", bytes_appended);
+			t--;
+		}
+
+		delete_worm_append_iterator(wai_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
+
 	/* PRINT WORM */
 	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
 
