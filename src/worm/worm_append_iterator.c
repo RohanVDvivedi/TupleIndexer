@@ -66,7 +66,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 	while(data_size > 0)
 	{
 		uint32_t bytes_appendable = 0;
-		while((bytes_appendable = blob_bytes_appendable_on_worm_page(tail_page_p, wai_p->wtd_p)) == 0) // keep on appending new tail pages, where are not appendable bytes on that page, ideally this lopp should run just once
+		while((bytes_appendable = blob_bytes_appendable_on_worm_page(tail_page_p, wai_p->wtd_p)) == 0) // keep on appending new tail pages, while there are no appendable bytes on that page, ideally this loop should run just once
 		{
 			// create a new tail page
 			persistent_page new_page = get_new_persistent_page_with_write_lock(wai_p->pam_p, transaction_id, abort_error);
@@ -118,6 +118,9 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 			tail_page_p = &tail_page; // new_page is surely not a head page so use the tail_page local variable
 			(*tail_page_p) = new_page;
 		}
+
+		// you can not append more bytes than what the data currently points to
+		bytes_appendable = min(bytes_appendable, data_size);
 
 		// build user value for the blob
 		user_value uval = {.blob_value = data, .blob_size = bytes_appendable};
