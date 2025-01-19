@@ -54,9 +54,9 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 	else // else we need to lock the tail
 	{
 		tail_page_p = &tail_page;
-		(*tail_page_p) = acquire_persistent_page_with_lock(pam_p, transaction_id, tail_page_id, WRITE_LOCK, abort_error);
+		(*tail_page_p) = acquire_persistent_page_with_lock(wai_p->pam_p, transaction_id, tail_page_id, WRITE_LOCK, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR
+			goto ABORT_ERROR;
 	}
 
 	// now we can directly use the tail_page_p to access tail
@@ -79,7 +79,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 		set_element_in_tuple(wai_p->wtd_p->partial_blob_tuple_def, SELF, blob_tuple_buffer, &uval, UINT32_MAX);
 
 		// append blob_tuple_buffer onto the page
-		append_tuple_on_persistent_page_resiliently(wai_p->pmm_p, transaction_id, tail_page_p, wai_p->wtd_p->pas_p->page_size, &(wai_p->wtd_p->partial_blob_tuple_def.size_def), blob_tuple_buffer, abort_error);
+		append_tuple_on_persistent_page_resiliently(wai_p->pmm_p, transaction_id, tail_page_p, wai_p->wtd_p->pas_p->page_size, &(wai_p->wtd_p->partial_blob_tuple_def->size_def), blob_tuple_buffer, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
