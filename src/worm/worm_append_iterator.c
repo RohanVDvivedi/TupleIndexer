@@ -91,18 +91,6 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 				}
 			}
 
-			// make tail_page_id of head_page point to new_page
-			{
-				worm_head_page_header hdr = get_worm_head_page_header(&(wai_p->head_page), wai_p->wtd_p);
-				hdr.tail_page_id = new_page.page_id;
-				set_worm_head_page_header(&(wai_p->head_page), &hdr, wai_p->wtd_p, wai_p->pmm_p, transaction_id, abort_error);
-				if(*abort_error)
-				{
-					release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
-					goto ABORT_ERROR;
-				}
-			}
-
 			// make new_page the new tail_page in the local context
 
 			// for this release any lock on the tail_page if any is held
@@ -137,6 +125,18 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 		bytes_appended += bytes_appendable;
 		data += bytes_appendable;
 		data_size -= bytes_appendable;
+	}
+
+	// make tail_page_id of head_page point to tail_page_p's page_id, if not so
+	{
+		worm_head_page_header hdr = get_worm_head_page_header(&(wai_p->head_page), wai_p->wtd_p);
+		if(hdr.tail_page_id != tail_page_p->page_id)
+		{
+			hdr.tail_page_id = tail_page_p->page_id;
+			set_worm_head_page_header(&(wai_p->head_page), &hdr, wai_p->wtd_p, wai_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 	}
 
 	// only tail_page could be locked, in thelocal scope, if you read here
