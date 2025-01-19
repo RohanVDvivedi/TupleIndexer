@@ -30,16 +30,20 @@ worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const 
 	return wai_p;
 }
 
-int append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
+uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
 {
 	// no data to append is always a success
 	if(data_size == 0)
-		return 1;
+		return 0;
 
 	// TODO
 }
 
-int delete_worm_append_iterator(worm_append_iterator* wai_p, const void* transaction_id, int* abort_error)
+void delete_worm_append_iterator(worm_append_iterator* wai_p, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// if head_page is still locked, then release this lock
+	// it may not be locked, if we encountered an abort error
+	if(!is_persistent_page_NULL(&(wai_p->head_page), wai_p->pam_p))
+		release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &(wai_p->head_page), NONE_OPTION, abort_error);
+	free(wai_p);
 }
