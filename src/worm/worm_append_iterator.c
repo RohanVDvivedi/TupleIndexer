@@ -106,7 +106,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 			// make new_page the new tail_page in the local context
 
 			// for this release any lock on the tail_page if any is held
-			if(is_persistent_page_NULL(&tail_page, wai_p->pam_p))
+			if(!is_persistent_page_NULL(&tail_page, wai_p->pam_p))
 			{
 				release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
 				if(*abort_error)
@@ -141,7 +141,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 
 	// only tail_page could be locked, in thelocal scope, if you read here
 	// if it is locked release it
-	if(is_persistent_page_NULL(&tail_page, wai_p->pam_p))
+	if(!is_persistent_page_NULL(&tail_page, wai_p->pam_p))
 	{
 		release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
 		if(*abort_error)
@@ -154,7 +154,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 
 	ABORT_ERROR:;
 	// in case of abort, release lock on head_page and tail_page (if tail_page is not NULL)
-	if(is_persistent_page_NULL(&tail_page, wai_p->pam_p))
+	if(!is_persistent_page_NULL(&tail_page, wai_p->pam_p))
 		release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
 	free(blob_tuple_buffer);
 	release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &(wai_p->head_page), NONE_OPTION, abort_error);
