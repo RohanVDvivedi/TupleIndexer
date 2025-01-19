@@ -75,7 +75,7 @@ int main()
 		while(t > 0)
 		{
 			prepare_buffer(id++);
-			uint32_t bytes_appended = append_to_worm(wai_p, buffer, BUFFER_APPEND_SIZE, transaction_id, &abort_error);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 0 && BUFFER_APPEND_SIZE == 245) ? 230 : BUFFER_APPEND_SIZE, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -109,7 +109,7 @@ int main()
 		while(t > 0)
 		{
 			prepare_buffer(id++);
-			uint32_t bytes_appended = append_to_worm(wai_p, buffer, BUFFER_APPEND_SIZE, transaction_id, &abort_error);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 0 && BUFFER_APPEND_SIZE == 245) ? 230 : BUFFER_APPEND_SIZE, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
