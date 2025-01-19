@@ -32,6 +32,10 @@ worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const 
 
 int append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
 {
+	// no data to append is always a success
+	if(data_size == 0)
+		return 1;
+
 	// TODO
 }
 
