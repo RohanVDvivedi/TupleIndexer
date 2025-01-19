@@ -50,21 +50,24 @@ int main()
 	worm_tuple_defs wtd;
 	init_worm_tuple_definitions(&wtd, &(pam_p->pas));
 
-	// print the generated bplus tree tuple defs
-	print_bplus_tree_tuple_definitions(&bpttd);
+	// print the generated worm tuple defs
+	print_worm_tuple_definitions(&wtd);
 
 	// create a worm and get its head
-	uint64_t head_page_id = get_new_worm(&wtd, pam_p, pmm_p, transaction_id, &abort_error);
+	uint64_t head_page_id = get_new_worm(1, pam_p->pas.NULL_PAGE_ID, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
 
+	/* PRINT WORM */
+	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
+
 	/* CLEANUP */
 
 	// destroy bplus tree
-	destroy_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
+	decrement_reference_counter_for_worm(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
