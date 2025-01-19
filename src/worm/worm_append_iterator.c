@@ -68,7 +68,55 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 		uint32_t bytes_appendable = 0;
 		while((bytes_appendable = blob_bytes_appendable_on_worm_page(tail_page_p, wai_p->wtd_p)) == 0) // keep on appending new tail pages, where are not appendable bytes on that page, ideally this lopp should run just once
 		{
-			// TODO :: append a new tail page
+			// create a new tail page
+			persistent_page new_page = get_new_persistent_page_with_write_lock(wai_p->pam_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			// init it as any other page, it is surely not the head page
+			init_worm_any_page(&new_page, wai_p->wtd_p, wai_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+			{
+				release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+				goto ABORT_ERROR;
+			}
+
+			// make next_page_id of tail_p point to new_page
+			{
+				update_next_page_id_on_worm_page(tail_page_p, new_page.page_id, wai_p->wtd_p, wai_p->pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+					goto ABORT_ERROR;
+				}
+			}
+
+			// make tail_page_id of head_page point to new_page
+			{
+				worm_head_page_header hdr = get_worm_head_page_header(&(wai_p->head_page), wai_p->wtd_p);
+				hdr.tail_page_id = new_page.page_id;
+				set_worm_head_page_header(&(wai_p->head_page), &hdr, wai_p->wtd_p, wai_p->pmm_p, transaction_id, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+					goto ABORT_ERROR;
+				}
+			}
+
+			// make new_page the new tail_page in the local context
+
+			// for this release any lock on the tail_page if any is held
+			if(is_persistent_page_NULL(&tail_page, wai_p->pam_p))
+			{
+				release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
+				if(*abort_error)
+				{
+					release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &new_page, NONE_OPTION, abort_error);
+					goto ABORT_ERROR;
+				}
+			}
+			tail_page_p = &tail_page; // new_page is surely not a head page so use the tail_page local variable
+			(*tail_page_p) = new_page;
 		}
 
 		// build user value for the blob

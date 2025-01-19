@@ -66,3 +66,27 @@ uint32_t blob_bytes_appendable_on_worm_page(const persistent_page* ppage, const 
 	// return non zero number of raw blob bytes that can be appended to this page
 	return unused_space_on_page - management_space_to_be_used_for_any_number_of_blob_bytes;
 }
+
+int update_next_page_id_on_worm_page(persistent_page* ppage, uint64_t next_page_id, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	if(is_worm_head_page(ppage, wtd_p))
+	{
+		worm_head_page_header hdr = get_worm_head_page_header(ppage, wtd_p);
+		hdr.next_page_id = next_page_id;
+		set_worm_head_page_header(ppage, &hdr, wtd_p, pmm_p, transaction_id, abort_error);
+	}
+	else
+	{
+		worm_any_page_header hdr = get_worm_any_page_header(ppage, wtd_p);
+		hdr.next_page_id = next_page_id;
+		set_worm_any_page_header(ppage, &hdr, wtd_p, pmm_p, transaction_id, abort_error);
+	}
+
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	return 1;
+
+	ABORT_ERROR:;
+	return 0;
+}
