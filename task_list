@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
- * implement worm_append_iterator
+ * review worm_append_iterator
+ * test worm current functionality, append small, large and equal to page size chunks in a loop
  * implement worm_read_iterator
 
  * simple function to get dependent_root_page_id of the worm
