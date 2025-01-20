@@ -30,7 +30,23 @@ worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const worm
 
 worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error)
 {
-	// TODO
+	// allocate enough memory
+	worm_read_iterator* clone_p = malloc(sizeof(worm_read_iterator));
+	if(clone_p == NULL)
+		exit(-1);
+
+	clone_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, wri_p->curr_page.page_id, READ_LOCK, abort_error);
+	if(*abort_error)
+	{
+		free(clone_p);
+		return NULL;
+	}
+	clone_p->curr_blob_index = wri_p->curr_blob_index;
+	clone_p->curr_byte_index = wri_p->curr_byte_index;
+	clone_p->wtd_p = wri_p->wtd_p;
+	clone_p->pam_p = wri_p->pam_p;
+
+	return clone_p;
 }
 
 uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
