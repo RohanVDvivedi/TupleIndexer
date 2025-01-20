@@ -5,8 +5,8 @@
 #include<worm_tuple_definitions.h>
 #include<opaque_page_access_methods.h>
 
-typedef struct worm_append_iterator worm_append_iterator;
-struct worm_append_iterator
+typedef struct worm_read_iterator worm_read_iterator;
+struct worm_read_iterator
 {
 	// curr_page that we are looking at
 	persistent_page curr_page;
