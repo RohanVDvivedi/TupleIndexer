@@ -35,7 +35,7 @@ worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri_p, const vo
 	if(clone_p == NULL)
 		exit(-1);
 
-	clone_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, wri_p->curr_page.page_id, READ_LOCK, abort_error);
+	clone_p->curr_page = acquire_persistent_page_with_lock(wri_p->pam_p, transaction_id, wri_p->curr_page.page_id, READ_LOCK, abort_error);
 	if(*abort_error)
 	{
 		free(clone_p);
