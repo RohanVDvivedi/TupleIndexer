@@ -98,7 +98,58 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 	if(data_size == 0)
 		return 0;
 
-	// TODO
+	uint32_t bytes_read = 0;
+
+	while(data_size > 0)
+	{
+		// if you are blob_index is out of bounds, then change the page
+		if(wri_p->curr_blob_index >= get_tuple_count_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_blob_tuple_def->size_def)))
+		{
+			// if there is no next page to go to, then break out of the loop
+			if(!can_goto_next_page(wri_p))
+				break;
+
+			// goto the next page
+			goto_next_page(wri_p, transaction_id, abort_error);
+			if(*abort_error)
+				return 0;
+
+			wri_p->curr_blob_index = 0;
+			wri_p->curr_byte_index = 0;
+		}
+
+		// get the curr_blob, the tuple at curr_blob_index
+		user_value curr_blob;
+		{
+			const void* blob_tuple = get_nth_tuple_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_blob_tuple_def->size_def), wri_p->curr_blob_index);
+			get_value_from_element_from_tuple(&curr_blob, wri_p->wtd_p->partial_blob_tuple_def, SELF, blob_tuple);
+		}
+
+		// compute bytes_readable
+		uint32_t bytes_readable = min(data_size, curr_blob.blob_size - wri_p->curr_byte_index);
+
+		// move the data and data_size buffer references forward by bytes_readable
+		// and read respective data if data != NULL
+		if(data != NULL)
+		{
+			memory_move(data, curr_blob.blob_value + wri_p->curr_byte_index, bytes_readable);
+			data += bytes_readable;
+		}
+		data_size -= bytes_readable;
+
+		// update the return value
+		bytes_read += bytes_readable;
+
+		// move forward the iterator by bytes_readable bytes
+		wri_p->curr_byte_index += bytes_readable;
+		if(wri_p->curr_byte_index == curr_blob.blob_size)
+		{
+			wri_p->curr_blob_index++;
+			wri_p->curr_byte_index = 0;
+		}
+	}
+
+	return bytes_read;
 }
 
 void delete_worm_read_iterator(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error)
