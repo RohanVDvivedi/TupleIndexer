@@ -137,7 +137,7 @@ int main()
 	/* PRINT WORM */
 	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
 
-	print_worm_as_bytes(head_page_id, 1000, &wtd, pam_p);
+	print_worm_as_bytes(head_page_id, 600, &wtd, pam_p);
 
 	// APPEND WORM
 	{
