@@ -47,10 +47,11 @@ void print_worm_as_bytes(uint64_t head_page_id, uint32_t buffer_size, const worm
 	void* buffer = malloc(buffer_size);
 	uint32_t bytes_read = 0;
 
+	printf("WORM PRINT AS BYTES :: \n");
 	while((bytes_read = read_from_worm(wri_p, buffer, buffer_size, transaction_id, &abort_error)) > 0 && (!abort_error))
 	{
 		for(uint32_t i = 0; i < bytes_read; i++)
-			printf("%02x ", *(uint8_t*)(buffer + i));
+			printf("0x%02x ", *(uint8_t*)(buffer + i));
 		printf("\n");
 	}
 
@@ -98,6 +99,8 @@ int main()
 	/* PRINT WORM */
 	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
 
+	print_worm_as_bytes(head_page_id, 8, &wtd, pam_p);
+
 	uint32_t id = 0;
 
 	// APPEND WORM
@@ -134,6 +137,8 @@ int main()
 	/* PRINT WORM */
 	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
 
+	print_worm_as_bytes(head_page_id, 1000, &wtd, pam_p);
+
 	// APPEND WORM
 	{
 		worm_append_iterator* wai_p = get_new_worm_append_iterator(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
@@ -167,6 +172,8 @@ int main()
 
 	/* PRINT WORM */
 	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
+
+	print_worm_as_bytes(head_page_id, 16, &wtd, pam_p);
 
 	/* CLEANUP */
 
