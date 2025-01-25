@@ -1,6 +1,6 @@
 ** PICKED TASKS
 
- * test and review worm_read_iterator read function
+ * test worm_read_iterator read function
 
  * simple function to get dependent_root_page_id of the worm
  * devise logic and api to destroy the dependent root of the worm, upon calling the decrement reference counter function
