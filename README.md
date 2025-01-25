@@ -15,7 +15,7 @@ A c library that enables you to build database index structures a bplus_tree, a 
 
 All the above data structures for your data, work over a data store accessible in fixed sized pages (either persistent or non-persistent store) using your own page_access_methods (a struct of functions). It also allows you to implement your own page_modification_methods (again a struct of functions) to intercept calls to page modifications in case if you would like to log the changes to pages, to make them redo-able and undo-able.
 
-Additionally all the above data structures are implemented with complete concurrency in mind, and are multi threaded (except the the sorter, and only the destroy datastructure calls are not thread safe and needs external locking). They are also designed in a way to always store the root page of the data structure at a fixed pre initilized page_id (determined at the creation of that datastructure).
+Additionally all the above data structures are implemented with complete concurrency in mind, and are multi threaded (except the the sorter, and only the destroy datastructure calls are not thread safe and needs external locking). They are also designed in a way to always store the root page/head page of the data structure at a fixed page_id (determined at the creation of that datastructure), this allows you to not have to modify the catalog tables (or any other reference store to the root and head page ids), when there are modifications to the referenced data structures.
 
 Sample implementations of page_access_methods (unWALed_in_memory_data_store.c) and page_modification_methods (unWALed_page_modification_methods.c) have been provided for reference in src/interface directory.
 
