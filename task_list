@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
- * test worm_read_iterator read function
-
  * simple function to get dependent_root_page_id of the worm
  * devise logic and api to destroy the dependent root of the worm, upon calling the decrement reference counter function
  * devise logic and api to return some value that suggests if whether reference count was decremented OR the whole worm was destroyed
