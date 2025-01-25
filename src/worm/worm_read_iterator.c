@@ -49,8 +49,55 @@ worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri_p, const vo
 	return clone_p;
 }
 
+// makes the iterator point to next page of the curr_page
+// this function releases all locks on an abort_error
+// on abort_error OR on reaching end, all page locks are released, and return value is 0
+static int goto_next_page(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error)
+{
+	// get the next_page_id
+	uint64_t next_page_id = get_next_page_id_of_worm_page(&(wri_p->curr_page), wri_p->wtd_p);
+
+	// attempt to lock the next_page
+	persistent_page next_page = get_NULL_persistent_page(wri_p->pam_p);
+	if(next_page_id != wri_p->wtd_p->pas_p->NULL_PAGE_ID)
+	{
+		next_page = acquire_persistent_page_with_lock(wri_p->pam_p, transaction_id, next_page_id, READ_LOCK, abort_error);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(wri_p->pam_p, transaction_id, &(wri_p->curr_page), NONE_OPTION, abort_error);
+			return 0;
+		}
+	}
+
+	// release lock on the curr_page
+	release_lock_on_persistent_page(wri_p->pam_p, transaction_id, &(wri_p->curr_page), NONE_OPTION, abort_error);
+	if(*abort_error)
+	{
+		// on an abort error release lock on next_page if it is not NULL
+		if(!is_persistent_page_NULL(&next_page, wri_p->pam_p))
+			release_lock_on_persistent_page(wri_p->pam_p, transaction_id, &next_page, NONE_OPTION, abort_error);
+		return 0;
+	}
+
+	// update the curr_page
+	wri_p->curr_page = next_page;
+
+	// goto_next was a success if next_leaf_page is not null
+	return !is_persistent_page_NULL(&(wri_p->curr_page), wri_p->pam_p);
+}
+
+// returns if the above function will succeed
+static int can_goto_next_page(const worm_read_iterator* wri_p)
+{
+	//can go next only if the next_page_id of the curr_page is not NULL_PAGE_ID
+	return (get_next_page_id_of_worm_page(&(wri_p->curr_page), wri_p->wtd_p) != wri_p->wtd_p->pas_p->NULL_PAGE_ID);
+}
+
 uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
 {
+	if(data_size == 0)
+		return 0;
+
 	// TODO
 }
 
