@@ -95,6 +95,9 @@ int main()
 		exit(-1);
 	}
 
+	/* PRINT WORM */
+	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
+
 	uint32_t id = 0;
 
 	// APPEND WORM
