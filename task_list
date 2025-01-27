@@ -1,6 +1,5 @@
 ** PICKED TASKS
 
-  * get_dependent_root_page_id_worm_read_iterator -> works only if you are at the head page, else returns NULL_PAGE_ID
   * decrement_reference_counter_for_worm -> add parameters uint64_t* dependent_root_page_id and int* vaccum_needed
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
