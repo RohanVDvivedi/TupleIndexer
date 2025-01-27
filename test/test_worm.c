@@ -219,7 +219,7 @@ int main()
 	/* CLEANUP */
 
 	// destroy bplus tree
-	int vaccum_needed;
+	int vaccum_needed = 0;
 	uint64_t dependent_root_page_id = 0;
 
 	decrement_reference_counter_for_worm(head_page_id, &dependent_root_page_id, &vaccum_needed, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
