@@ -49,6 +49,15 @@ worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri_p, const vo
 	return clone_p;
 }
 
+uint64_t get_dependent_root_page_id_worm_read_iterator(const worm_read_iterator* wri_p)
+{
+	// it is not the head page fail silently
+	if(!is_worm_head_page(&(wri_p->curr_page), wri_p->wtd_p))
+		return wri_p->wtd_p->pas_p->NULL_PAGE_ID;
+
+	return get_worm_head_page_header(&(wri_p->curr_page), wri_p->wtd_p).dependent_root_page_id;
+}
+
 // makes the iterator point to next page of the curr_page
 // this function releases all locks on an abort_error
 // on abort_error OR on reaching end, all page locks are released, and return value is 0
