@@ -106,6 +106,7 @@ int main()
 	/* make some initial get set calls */
 	increment_reference_counter_for_worm(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
 	set_dependent_root_page_id_for_worm(head_page_id, 12, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+	printf("setting dependent_root_page_id = %"PRIu64"\n", get_dependent_root_page_id_for_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error));
 
 	/* PRINT WORM */
 	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
