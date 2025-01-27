@@ -1,10 +1,11 @@
 ** PICKED TASKS
 
-** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * for resiliently append/insert/update optimize out the redundant calls
    * using first performing the simple direct call, then check to see if a can_resilient says it will succeed, then try resiliently
    * make can_resiliently? functions not call the actual can_insert/append/update functions- it is waste full, directly test if there is enough unused_space
    * benchmark performance
+
+** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * memory_move for the set_*_page_header call is surely useless, removing it may reduce latency
    * this further must be done with not allowing any inheritence/compositions of the page_header-s
    * you must also remove the set from the common page header so it is never called again by any one, corrupting the header
