@@ -44,6 +44,8 @@ void print_worm_as_bytes(uint64_t head_page_id, uint32_t buffer_size, const worm
 		exit(-1);
 	}
 
+	printf("WORM DEPENDENT_ROOT : %"PRIu64"\n", get_dependent_root_page_id_worm_read_iterator(wri_p));
+
 	void* buffer = malloc(buffer_size);
 	uint32_t bytes_read = 0;
 
@@ -101,11 +103,35 @@ int main()
 
 	print_worm_as_bytes(head_page_id, 8, &wtd, pam_p);
 
+	/* make some initial get set calls */
+	increment_reference_counter_for_worm(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+	set_dependent_root_page_id_for_worm(head_page_id, 12, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+
+	/* PRINT WORM */
+	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
+
+	print_worm_as_bytes(head_page_id, 8, &wtd, pam_p);
+
 	uint32_t id = 0;
 
 	// APPEND WORM
 	{
 		worm_append_iterator* wai_p = get_new_worm_append_iterator(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		uint64_t dependent_root_page_id = get_dependent_root_page_id_worm_append_iterator(wai_p);
+		set_dependent_root_page_id_worm_append_iterator(wai_p, dependent_root_page_id + 1, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		increment_reference_counter_worm_append_iterator(wai_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -148,6 +174,21 @@ int main()
 			exit(-1);
 		}
 
+		uint64_t dependent_root_page_id = get_dependent_root_page_id_worm_append_iterator(wai_p);
+		set_dependent_root_page_id_worm_append_iterator(wai_p, dependent_root_page_id + 1, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		increment_reference_counter_worm_append_iterator(wai_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
 		int t = BUFFER_APPEND_COUNT;
 		while(t > 0)
 		{
@@ -178,7 +219,35 @@ int main()
 	/* CLEANUP */
 
 	// destroy bplus tree
-	decrement_reference_counter_for_worm(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+	int vaccum_needed;
+	uint64_t dependent_root_page_id = 0;
+
+	decrement_reference_counter_for_worm(head_page_id, &dependent_root_page_id, &vaccum_needed, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+	printf("decrementing reference counter => vaccum = %d %"PRIu64"\n", vaccum_needed, dependent_root_page_id);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	decrement_reference_counter_for_worm(head_page_id, &dependent_root_page_id, &vaccum_needed, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+	printf("decrementing reference counter => vaccum = %d %"PRIu64"\n", vaccum_needed, dependent_root_page_id);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	decrement_reference_counter_for_worm(head_page_id, &dependent_root_page_id, &vaccum_needed, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+	printf("decrementing reference counter => vaccum = %d %"PRIu64"\n", vaccum_needed, dependent_root_page_id);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	decrement_reference_counter_for_worm(head_page_id, &dependent_root_page_id, &vaccum_needed, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
+	printf("decrementing reference counter => vaccum = %d %"PRIu64"\n", vaccum_needed, dependent_root_page_id);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
