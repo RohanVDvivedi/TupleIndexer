@@ -7,6 +7,11 @@
 ** each page has atleast 1 partial_blob_type's tuple on it
 */
 
+/*
+**	This data type could possibly used as a reference page for storing the root_page_id and the tuple_defs of lets say a bplus_tree
+**	This allows reference counting for the data structure at the dependent_root_page_id and the worm's binary data (possibly tuple definition and descriptions, of lets say a bplus_tree)
+*/
+
 #include<worm_tuple_definitions_public.h>
 
 #include<opaque_page_access_methods.h>
@@ -21,6 +26,8 @@ int increment_reference_counter_for_worm(uint64_t head_page_id, const worm_tuple
 int decrement_reference_counter_for_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // getter and setter for the dependent_root_page_id for the worm
+// in an ideal situation you may not want to set the dependent_root_page_id, because this would mean you are de-attaching the reference counter from its dependent_root_page_id, which is not the intended way worm is meant to be used
+// but this function is provided for convinience and completeness of this data structure
 uint64_t get_dependent_root_page_id_for_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 int set_dependent_root_page_id_for_worm(uint64_t head_page_id, uint64_t dependent_root_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
