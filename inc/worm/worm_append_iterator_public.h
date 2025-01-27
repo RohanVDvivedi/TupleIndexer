@@ -12,7 +12,7 @@ worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const 
 // worm_append_iterator always keeps the head_page write locked
 // hence below two functions are easily implementable and hence provided for completeness
 // on an abort_error, all the pages will be unlocked by the worm_append_iterator
-uint64_t get_dependent_root_page_id_worm_append_iterator(worm_append_iterator* wai_p, const void* transaction_id, int* abort_error);
+uint64_t get_dependent_root_page_id_worm_append_iterator(worm_append_iterator* wai_p);
 int set_dependent_root_page_id_worm_append_iterator(worm_append_iterator* wai_p, uint64_t dependent_root_page_id, const void* transaction_id, int* abort_error);
 
 // you are allowed to increment worm's reference counter

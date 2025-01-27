@@ -30,6 +30,39 @@ worm_append_iterator* get_new_worm_append_iterator(uint64_t head_page_id, const 
 	return wai_p;
 }
 
+uint64_t get_dependent_root_page_id_worm_append_iterator(worm_append_iterator* wai_p)
+{
+	return get_worm_head_page_header(&(wai_p->head_page), wai_p->wtd_p).dependent_root_page_id;
+}
+
+int set_dependent_root_page_id_worm_append_iterator(worm_append_iterator* wai_p, uint64_t dependent_root_page_id, const void* transaction_id, int* abort_error)
+{
+	worm_head_page_header hdr = get_worm_head_page_header(&(wai_p->head_page), wai_p->wtd_p);
+	hdr.dependent_root_page_id = dependent_root_page_id;
+	set_worm_head_page_header(&(wai_p->head_page), &hdr, wai_p->wtd_p, wai_p->pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+	return 1;
+
+	ABORT_ERROR:;
+	release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &(wai_p->head_page), NONE_OPTION, abort_error);
+	return 0;
+}
+
+int increment_reference_counter_worm_append_iterator(worm_append_iterator* wai_p, const void* transaction_id, int* abort_error)
+{
+	worm_head_page_header hdr = get_worm_head_page_header(&(wai_p->head_page), wai_p->wtd_p);
+	hdr.reference_counter++;
+	set_worm_head_page_header(&(wai_p->head_page), &hdr, wai_p->wtd_p, wai_p->pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+	return 1;
+
+	ABORT_ERROR:;
+	release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &(wai_p->head_page), NONE_OPTION, abort_error);
+	return 0;
+}
+
 uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
 {
 	// no data to append is always a success
