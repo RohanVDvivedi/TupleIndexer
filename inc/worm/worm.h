@@ -23,7 +23,9 @@ uint64_t get_new_worm(uint64_t reference_counter, uint64_t dependent_root_page_i
 int increment_reference_counter_for_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // performs a decrement on the worm's reference_counter, and if it reaches 0, then the worm is destroyed
-int decrement_reference_counter_for_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+// the return value suggests if the reference counter was decremented OR not, and to know if the worm was destroyed, check the vaccum_needed pointer (if you passed any)
+// if vaccum_needed is set, then the worm was destroyed with all its pages freed, and dependent_root_page_id would be correctly set, and the datastructure (pointed at, by the dependent_root_page_id) should be destroyed
+int decrement_reference_counter_for_worm(uint64_t head_page_id, uint64_t* dependent_root_page_id, int* vaccum_needed, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // getter and setter for the dependent_root_page_id for the worm
 // in an ideal situation you may not want to set the dependent_root_page_id, because this would mean you are de-attaching the reference counter from its dependent_root_page_id, which is not the intended way worm is meant to be used
