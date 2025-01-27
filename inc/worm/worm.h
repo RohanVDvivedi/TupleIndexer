@@ -20,6 +20,10 @@ int increment_reference_counter_for_worm(uint64_t head_page_id, const worm_tuple
 // performs a decrement on the worm's reference_counter, and if it reaches 0, then the worm is destroyed
 int decrement_reference_counter_for_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
+// getter and setter for the dependent_root_page_id for the worm
+uint64_t get_dependent_root_page_id_for_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+int set_dependent_root_page_id_for_worm(uint64_t head_page_id, uint64_t dependent_root_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+
 void print_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 #include<worm_append_iterator_public.h>
