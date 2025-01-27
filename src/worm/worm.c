@@ -64,8 +64,7 @@ int decrement_reference_counter_for_worm(uint64_t head_page_id, uint64_t* depend
 
 	worm_head_page_header hdr = get_worm_head_page_header(&head_page, wtd_p);
 	hdr.reference_counter--;
-	if(dependent_root_page_id != NULL)
-		(*dependent_root_page_id) = hdr.dependent_root_page_id;
+	uint64_t dependent_root_page_id_val = hdr.dependent_root_page_id;
 	set_worm_head_page_header(&head_page, &hdr, wtd_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
@@ -112,7 +111,13 @@ int decrement_reference_counter_for_worm(uint64_t head_page_id, uint64_t* depend
 			return 0;
 	}
 
-	(*vaccum_needed) = 1;
+	// if vaccum_needed is passed, set appropriate return values
+	if(vaccum_needed != NULL)
+	{
+		(*vaccum_needed) = 1;
+		if(dependent_root_page_id != NULL)
+			(*dependent_root_page_id) = dependent_root_page_id_val;
+	}
 
 	return 1;
 }

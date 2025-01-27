@@ -12,6 +12,11 @@
 **	This allows reference counting for the data structure at the dependent_root_page_id and the worm's binary data (possibly tuple definition and descriptions, of lets say a bplus_tree)
 */
 
+/*
+**	upon decrementing the reference counter using the api below, you can know if the worm was destroyed by checking the (*vaccum_needed) output parameter
+**	if set you must destroy the data structure at (*dependent_root_page_id)
+*/
+
 #include<worm_tuple_definitions_public.h>
 
 #include<opaque_page_access_methods.h>
