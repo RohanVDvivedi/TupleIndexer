@@ -6,7 +6,7 @@
 */
 
 /*
-	It will only keep the current page that we re looking at locked, and always latch crab forward
+	It will only keep the current page that we are looking-at read-locked, and always latch crab forward
 */
 
 typedef struct worm_read_iterator worm_read_iterator;
