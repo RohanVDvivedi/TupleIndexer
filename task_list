@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
- * for resiliently append/insert/update optimize out the redundant calls
-   * benchmark performance
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * memory_move for the set_*_page_header call is surely useless, removing it MAY reduce latency and give a few microsecons of performance
    * this further must be done with not allowing any inheritence/compositions of the page_header-s (except for the common_page_header being used as parent)
