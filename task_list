@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
  * for resiliently append/insert/update optimize out the redundant calls
-   * using first performing the simple direct call, then check to see if a can_resilient says it will succeed, then try resiliently
    * benchmark performance
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
