@@ -1,11 +1,6 @@
 ** PICKED TASKS
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * memory_move for the set_*_page_header call is surely useless, removing it MAY reduce latency and give a few microsecons of performance
-   * this further must be done with not allowing any inheritence/compositions of the page_header-s (except for the common_page_header being used as parent)
-   * you must also remove the set function from the common page header so it is never called again by any one, corrupting the header
-   * think if this (non extensibility/hardcoding) is what you want, think if this sacrifice is legit for a few microseconds of performance?
-   * benchmark performance, do it only if it is better, never otherwise
  * implement heap_table (needs to be refined)
    * using array_table as a lookup, bucket_id->(page_id, free_space)
    * free_space will be a hint and may not represent the actual free space on the page
