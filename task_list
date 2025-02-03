@@ -22,6 +22,12 @@
          * get_curr_bucket_id -> returns the current bucket_id that the iterator points to
          * get_curr_page -> returns persistent page to work with
      * vaccum a range of bucket_ids, take a flag that instructs if the bucket_range is strict (if flexible vaccum any super set of the buckets containing the provided bucket range), fix the free_space and discard entries pointing to empty pages, use this after a bulk insert/delete operations
+ * alternate heap tale implementation
+   * use a bplus_tree (call it free space tree) to store keys for free_space in bytes, page_id
+   * allocate a page and then update it in this free_space_tree
+   * insert/delete of tuples will cause the heap page to have a different amount of free space and may need reinserting the modified heap page in the free space tree
+   * we will need shared/exclusive lock on the heap table to perform inserts/deletes and table scan, as intermitent changes to the heap table's free space tree may revisit already seen tuples OR skip some tuple entirely (in case of leaf only scans)
+   * think about lazily updating the free space tree
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
