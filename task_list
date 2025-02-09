@@ -1,34 +1,6 @@
 ** PICKED TASKS
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * implement heap_table (needs to be refined)
-   * using array_table as a lookup, bucket_id->(page_id, free_space)
-   * free_space will be a hint and may not represent the actual free space on the page
-   * access methods
-     * insert a tuple and get a (bucket_id, slot_id), you may provide a (bucket_id, slot_id) as hint
-       * get read lock on the array_table and check if hint has enough space, by fetching a write lock on the page_id
-       * then search for a entry with a read lock on the whole range, that has enough free space for this tuple, if found insert there
-       * then take a write lock on the first unallotted bucket_id and insert a new (page_id, free_space), with the new tuple contained in there
-         * with this write lock also update free space of all pages in that bucket range, also delete any entries that point to empty pages
-     * delete a tuple for the given (bucket_id, slot_id)
-       * returns 0, for failure, 1 for success, 2 if the page became empty
-     * open a read/write iterator on the bucket_id or range of bucket_ids, do as we did with the hash_table, only keep the reader lock on the 
-       * only get a reader lock on the array_table
-       * if it is a single bucket, then array_table_range_locked is not even needed
-       * you can do anything with the page that the iterator points to (if it is a write iterator), but not update insert, delete or update any entries
-       * API
-         * next_heap_table_iterator -> goes to next page
-         * prev_heap_table_iterator -> goes to prev page
-         * get_curr_bucket_id -> returns the current bucket_id that the iterator points to
-         * get_curr_page -> returns persistent page to work with
-     * vaccum a range of bucket_ids, take a flag that instructs if the bucket_range is strict (if flexible vaccum any super set of the buckets containing the provided bucket range), fix the free_space and discard entries pointing to empty pages, use this after a bulk insert/delete operations
- * alternate heap table implementation
-   * use a bplus_tree (call it free space tree) to store keys for free_space in bytes, page_id
-   * allocate a page and then update it in this free_space_tree
-   * insert/delete of tuples will cause the heap page to have a different amount of free space and may need reinserting the modified heap page in the free space tree
-   * we will need shared/exclusive lock on the heap table to perform inserts/deletes and table scan, as intermitent changes to the heap table's free space tree may revisit already seen tuples OR skip some tuple entirely (in case of leaf only scans)
-   * think about lazily updating the free space tree
-   * since this needs external global locking we can leave this to be done by user and not implement such a think in TupleIndexer, as this is not an index, we can not remove/find the tuple in the free space tree, directly by anything not even with tuple pointer like page_id and tuple_index, so we can not restore the structural consistency of the free space tree after an insert/delete or update
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
