@@ -1,6 +1,13 @@
 ** PICKED TASKS
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
+ * bitmap_index
+   * has to be modeled with array_table (with each tuple full of bits) or page_table (with page full of bits)
+   * store a bit or a set of bits
+   * think if they could be NULL or not?
+   * should we model them as a single tuple with array of bits or a tuple with single bit field with n bits
+   * or all bits in a single 64-bit address space, composed of a single tuple
+   * should we have a bitmap page (in TupleStore), where you can only set and reset and swap bits?
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
