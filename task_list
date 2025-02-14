@@ -1,20 +1,9 @@
 ** PICKED TASKS
 
- * bitmap_index
-   * has to be modeled with array_table (with each tuple full of bits) or page_table (with page full of bits)
-   * store a bit or a set of bits
-   * think if they could be NULL or not?
-   * should we model them as a single tuple with array of bits or a tuple with single bit field with n bits
-   * or all bits in a single 64-bit address space, composed of a single tuple
-   * should we have a bitmap page (in TupleStore), where you can only set and reset and swap bits?
-   * possible solution
-     * make an array_table using array of bit_field values
-     * give users allow 3 level indexing uint64_t (tuple_index), uint32_t (index in tuple), and lastly uint32_t (index in the bitfield)
-     * this allows abstraction and reuse of code
-     * this solution effectively makes writing code for bitmap indexes redundant
-     * finally the task is to just providing a maximum tuple size to record_def of array_table
-       * implement get_maximum_tuple_size_for_fixed_array/slotted_page(uint32_t page_header_size, uint32_t page_size) functions in TupleStore
-       * use/implement the corresponding function in array_table page
+ * conclusion
+   * bitmap indexes will not be supported
+   * use array_table instead with record_def = array of bit_fields
+   * use get_maximum_array_table_record_size, to calculate maximum bits/bytes you can fit inside a single tuple of array table's record and build record def as per your requirement
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
