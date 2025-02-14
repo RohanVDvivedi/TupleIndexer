@@ -13,6 +13,7 @@
      * give users allow 3 level indexing uint64_t (tuple_index), uint32_t (index in tuple), and lastly uint32_t (index in the bitfield)
      * this allows abstraction and reuse of code
      * this solution effectively makes writing code for bitmap indexes redundant
+     * finally the task is to just providing a maximum tuple size to record_def of array_table
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
