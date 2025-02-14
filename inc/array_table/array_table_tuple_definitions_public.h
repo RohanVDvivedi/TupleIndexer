@@ -35,7 +35,7 @@ struct array_table_tuple_defs
 };
 
 // returns the maximum size of the fixed sized record of the fixed sized record_def that you can initialize the array_table for
-uint32_t maximum_array_table_record_size(const page_access_specs* pas_p);
+uint32_t get_maximum_array_table_record_size(const page_access_specs* pas_p);
 
 // initializes the attributes in array_table_tuple_defs struct as per the provided parameters
 // the parameter pas_p must point to the pas attribute of the data_access_method that you are using it with

@@ -8,7 +8,7 @@
 
 #include<stdlib.h>
 
-uint32_t maximum_array_table_record_size(const page_access_specs* pas_p)
+uint32_t get_maximum_array_table_record_size(const page_access_specs* pas_p)
 {
 	array_table_tuple_defs attd = {.pas_p = pas_p};
 	return get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_ARRAY_TABLE_PAGE_HEADER((&attd)), pas_p->page_size, &((tuple_size_def){.is_variable_sized = 0}));
