@@ -246,7 +246,11 @@ int main()
 
 	// construct tuple definitions for page_table
 	array_table_tuple_defs attd;
-	init_array_table_tuple_definitions(&attd, &(pam_p->pas), record_def);
+	if(!init_array_table_tuple_definitions(&attd, &(pam_p->pas), record_def))
+	{
+		printf("could not initialize the tuple_defs\n");
+		exit(-1);
+	}
 
 	// print the generated page_table tuple defs
 	print_array_table_tuple_definitions(&attd);
