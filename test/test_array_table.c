@@ -239,6 +239,8 @@ int main()
 	// construct unWALed page_modification_methods
 	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
 
+	printf("maximum record size allowable = %"PRIu32"\n\n", get_maximum_array_table_record_size(&(pam_p->pas)));
+
 	// allocate record tuple definition and initialize it
 	tuple_def* record_def = get_tuple_definition();
 
