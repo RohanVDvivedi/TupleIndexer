@@ -1,6 +1,5 @@
 ** PICKED TASKS
 
-** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * bitmap_index
    * has to be modeled with array_table (with each tuple full of bits) or page_table (with page full of bits)
    * store a bit or a set of bits
@@ -14,7 +13,10 @@
      * this allows abstraction and reuse of code
      * this solution effectively makes writing code for bitmap indexes redundant
      * finally the task is to just providing a maximum tuple size to record_def of array_table
-       * implement get_maximum_tuple_size_for_fixed_array/slotted_page(uint32_t page_header_size, uint32_t page_size) functions
+       * implement get_maximum_tuple_size_for_fixed_array/slotted_page(uint32_t page_header_size, uint32_t page_size) functions in TupleStore
+       * use/implement the corresponding function in array_table page
+
+** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
