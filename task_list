@@ -8,6 +8,11 @@
    * should we model them as a single tuple with array of bits or a tuple with single bit field with n bits
    * or all bits in a single 64-bit address space, composed of a single tuple
    * should we have a bitmap page (in TupleStore), where you can only set and reset and swap bits?
+   * possible solution
+     * make an array_table using array of bit_field values
+     * give users allow 3 level indexing uint64_t (tuple_index), uint32_t (index in tuple), and lastly uint32_t (index in the bitfield)
+     * this allows abstraction and reuse of code
+     * this solution effectively makes writing code for bitmap indexes redundant
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
    * splits and merges happen according to the minimal increase in interior node areas
