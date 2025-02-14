@@ -27,6 +27,11 @@ uint32_t get_maximum_tuple_count_on_persistent_page(uint32_t page_header_size, u
 	return get_maximum_tuple_count_on_page(page_header_size, page_size, tpl_sz_d);
 }
 
+uint32_t get_maximum_tuple_size_accomodatable_on_persistent_page(uint32_t page_header_size, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+{
+	return get_maximum_tuple_size_accomodatable_on_page(page_header_size, page_size, tpl_sz_d);
+}
+
 uint32_t get_tuple_count_on_persistent_page(const persistent_page* ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d)
 {
 	return get_tuple_count_on_page(ppage->page, page_size, tpl_sz_d);

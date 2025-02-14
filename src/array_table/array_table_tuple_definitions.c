@@ -8,6 +8,12 @@
 
 #include<stdlib.h>
 
+uint32_t maximum_array_table_record_size(const page_access_specs* pas_p)
+{
+	array_table_tuple_defs attd = {.pas_p = pas_p};
+	return get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_ARRAY_TABLE_PAGE_HEADER((&attd)), pas_p->page_size, &((tuple_size_def){.is_variable_sized = 0}));
+}
+
 int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const page_access_specs* pas_p, const tuple_def* record_def)
 {
 	// zero initialize attd_p
