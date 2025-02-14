@@ -100,7 +100,7 @@ int update_in_array_table(uint64_t root_page_id, bucket_range lock_range, uint32
 		}
 		else
 		{
-			char record[64];
+			char record[PAGE_SIZE];
 			init_tuple(attd_p->record_def, record);
 			set_element_in_tuple(attd_p->record_def, STATIC_POSITION(0), record, &(user_value){.uint_value = access_counter}, UINT32_MAX);
 			set_element_in_tuple(attd_p->record_def, STATIC_POSITION(1), record, &(user_value){.string_value = datas[i], .string_size = strlen(datas[i])}, UINT32_MAX);
@@ -140,7 +140,7 @@ void print_from_array_table(uint64_t root_page_id, bucket_range lock_range, uint
 
 	for(uint32_t i = 0; i < ops; i++)
 	{
-		char memory[64];
+		char memory[PAGE_SIZE];
 		const void* record = get_from_array_table(atrl_p, bucket_ids[i], memory, transaction_id, &abort_error);
 		if(abort_error)
 		{
@@ -176,7 +176,7 @@ void print_all_from_array_table(uint64_t root_page_id, bucket_range lock_range, 
 
 	if(!backward)
 	{
-		char memory[64];
+		char memory[PAGE_SIZE];
 		uint64_t bucket_id;
 		const void* record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, MIN, transaction_id, &abort_error);
 		if(abort_error)
@@ -199,7 +199,7 @@ void print_all_from_array_table(uint64_t root_page_id, bucket_range lock_range, 
 	}
 	else
 	{
-		char memory[64];
+		char memory[PAGE_SIZE];
 		uint64_t bucket_id;
 		const void* record = find_non_NULL_entry_in_array_table(atrl_p, &bucket_id, memory, MAX, transaction_id, &abort_error);
 		if(abort_error)
