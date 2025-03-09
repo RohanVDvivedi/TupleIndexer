@@ -178,9 +178,9 @@ static void destroy_cache_keys_for_active_sorted_run(active_sorted_run* asr_p)
 #include<value_arraylist.h>
 
 data_definitions_value_arraylist(active_sorted_run_heap, active_sorted_run)
-declarations_value_arraylist(active_sorted_run_heap, active_sorted_run)
+declarations_value_arraylist(active_sorted_run_heap, active_sorted_run, static inline)
 #define EXPANSION_FACTOR 1.5
-function_definitions_value_arraylist(active_sorted_run_heap, active_sorted_run)
+function_definitions_value_arraylist(active_sorted_run_heap, active_sorted_run, static inline)
 
 static int compare_sorted_runs(const void* sh_vp, const void* asr_vp1, const void* asr_vp2)
 {
