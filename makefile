@@ -34,7 +34,7 @@ BIN_DIR:=./bin
 # compiler
 CC:=gcc
 # compiler flags
-CFLAGS:=-Wall -O3 $(addprefix -I,$(sort $(dir $(shell find ${INC_DIR} -name '*.h'))))
+CFLAGS:=-Wall -O3 -I${INC_DIR}
 # linker flags, this will used to compile the binary
 LFLAGS:=-L${LIB_DIR} -l${PROJECT_NAME} -ltuplestore -lrwlock -lcutlery -lpthread
 # Archiver
