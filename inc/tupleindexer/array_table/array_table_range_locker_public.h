@@ -1,8 +1,8 @@
 #ifndef ARRAY_TABLE_RANGE_LOCKER_PUBLIC_H
 #define ARRAY_TABLE_RANGE_LOCKER_PUBLIC_H
 
-#include<bucket_range.h>
-#include<find_position.h>
+#include<tupleindexer/utils/bucket_range.h>
+#include<tupleindexer/common/find_position.h>
 
 typedef struct array_table_range_locker array_table_range_locker;
 

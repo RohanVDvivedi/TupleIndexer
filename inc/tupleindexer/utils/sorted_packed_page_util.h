@@ -8,9 +8,9 @@
 *	3. page may or may not be fragmented
 */
 
-#include<tuple.h>
-#include<persistent_page.h>
-#include<opaque_page_modification_methods.h>
+#include<tuplestore/tuple.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 /*
 ** Generic definitions of the parameter to be passed to the functions in sorted packed page
@@ -128,7 +128,7 @@ int delete_all_in_sorted_packed_page(
 								);
 
 // all the find functions returns NO_TUPLE_FOUND, when they fail for find a desired match on the page
-#include<invalid_tuple_indices.h>
+#include<tupleindexer/common/invalid_tuple_indices.h>
 
 // direct tuple comparison functions
 
@@ -178,7 +178,7 @@ uint32_t find_succeeding_in_sorted_packed_page(
 
 // comparison of tuple on the page with a materialized key functions
 
-#include<materialized_key.h>
+#include<tupleindexer/common/materialized_key.h>
 
 // returns index of the tuple found
 uint32_t find_first_in_sorted_packed_page2(

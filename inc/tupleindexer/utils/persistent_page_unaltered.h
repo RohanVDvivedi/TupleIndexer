@@ -1,9 +1,9 @@
 #ifndef PERSISTENT_PAGE_UNALTERED_H
 #define PERSISTENT_PAGE_UNALTERED_H
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<tuple_def.h>
+#include<tuplestore/tuple_def.h>
 
 // provides same functionality as page_layout_unaltered, but on a persistent_page
 

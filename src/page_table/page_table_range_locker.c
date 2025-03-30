@@ -1,9 +1,9 @@
-#include<page_table_range_locker.h>
+#include<tupleindexer/page_table/page_table_range_locker.h>
 
-#include<persistent_page_functions.h>
-#include<locked_pages_stack.h>
-#include<invalid_tuple_indices.h>
-#include<tuple_for_page_id.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
+#include<tupleindexer/common/invalid_tuple_indices.h>
+#include<tupleindexer/utils/tuple_for_page_id.h>
 
 #include<stdlib.h>
 

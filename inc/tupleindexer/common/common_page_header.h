@@ -1,15 +1,15 @@
 #ifndef COMMON_PAGE_HEADER_H
 #define COMMON_PAGE_HEADER_H
 
-#include<page_access_specification.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/common/page_access_specification.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
-#include<persistent_page_functions.h>
-#include<page_type.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/common/page_type.h>
 
-#include<serial_int.h>
+#include<serint/serial_int.h>
 
-#include<cutlery_stds.h>
+#include<cutlery/cutlery_stds.h>
 
 #include<stdlib.h>
 #include<stdint.h>

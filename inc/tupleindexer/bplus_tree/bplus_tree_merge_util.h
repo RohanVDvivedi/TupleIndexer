@@ -1,10 +1,10 @@
 #ifndef BPLUS_TREE_MERGE_UTIL_H
 #define BPLUS_TREE_MERGE_UTIL_H
 
-#include<locked_pages_stack.h>
-#include<bplus_tree_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 // the locked_pages_stack may contain only the pages in the chain that will participate in the merge
 // i.e. the root_page may not be in the locked pages stack

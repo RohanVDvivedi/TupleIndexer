@@ -1,8 +1,8 @@
-#include<page_table_tuple_definitions.h>
+#include<tupleindexer/page_table/page_table_tuple_definitions.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<cutlery_math.h>
+#include<cutlery/cutlery_math.h>
 
 #include<stdlib.h>
 

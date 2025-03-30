@@ -1,4 +1,4 @@
-#include<page_type.h>
+#include<tupleindexer/common/page_type.h>
 
 const char* page_type_string[] = {
 	"BPLUS_TREE_LEAF_PAGE",

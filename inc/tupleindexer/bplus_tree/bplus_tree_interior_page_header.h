@@ -1,12 +1,12 @@
 #ifndef BPLUS_TREE_INTERIOR_PAGE_HEADER_H
 #define BPLUS_TREE_INTERIOR_PAGE_HEADER_H
 
-#include<common_page_header.h>
-#include<bplus_tree_tuple_definitions.h>
-#include<opaque_page_modification_methods.h>
-#include<persistent_page_functions.h>
+#include<tupleindexer/common/common_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<serial_int.h>
+#include<serint/serial_int.h>
 
 #include<stdlib.h>
 

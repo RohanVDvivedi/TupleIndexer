@@ -1,11 +1,11 @@
-#include<bplus_tree_iterator.h>
+#include<tupleindexer/bplus_tree/bplus_tree_iterator.h>
 
-#include<persistent_page_functions.h>
-#include<bplus_tree_page_header.h>
-#include<bplus_tree_leaf_page_header.h>
-#include<bplus_tree_leaf_page_util.h>
-#include<bplus_tree_interior_page_util.h>
-#include<bplus_tree_walk_down.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/bplus_tree/bplus_tree_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_leaf_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_leaf_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_walk_down.h>
 
 #include<stdlib.h>
 
@@ -363,9 +363,9 @@ int narrow_down_range_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void
 	return narrow_down_range_for_stacked_iterator_using_keys(&(bpi_p->lps), key1, f_pos1, key2, f_pos2, key_element_count_concerned, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 }
 
-#include<sorted_packed_page_util.h>
-#include<bplus_tree_split_insert_util.h>
-#include<bplus_tree_merge_util.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_split_insert_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_merge_util.h>
 
 int remove_from_bplus_tree_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after_remove_operation aft_op, const void* transaction_id, int* abort_error)
 {

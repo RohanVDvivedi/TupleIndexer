@@ -1,9 +1,9 @@
-#include<bplus_tree.h>
+#include<tupleindexer/bplus_tree/bplus_tree.h>
 
-#include<bplus_tree_walk_down.h>
-#include<sorted_packed_page_util.h>
-#include<bplus_tree_merge_util.h>
-#include<persistent_page_functions.h>
+#include<tupleindexer/bplus_tree/bplus_tree_walk_down.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_merge_util.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
 int delete_from_bplus_tree(uint64_t root_page_id, const void* key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {

@@ -1,8 +1,8 @@
-#include<worm_page_util.h>
+#include<tupleindexer/worm/worm_page_util.h>
 
-#include<worm_head_page_header.h>
-#include<worm_any_page_header.h>
-#include<worm_page_header.h>
+#include<tupleindexer/worm/worm_head_page_header.h>
+#include<tupleindexer/worm/worm_any_page_header.h>
+#include<tupleindexer/worm/worm_page_header.h>
 
 int init_worm_head_page(persistent_page* ppage, uint32_t reference_counter, uint64_t dependent_root_page_id, const worm_tuple_defs* wtd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {

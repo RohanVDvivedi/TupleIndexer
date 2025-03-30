@@ -6,10 +6,10 @@
 **	while the linked_page_list_page_tuples_util handles managing tuples (splits/merges) on the page of a linked_page_list
 */
 
-#include<persistent_page.h>
-#include<linked_page_list_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/linked_page_list/linked_page_list_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 // initialize linked_page_list page, with next_page and prev_page pointing to NULL_PAGE_IDs (is_self_referencing == 0)
 // if is_self_referencing == 1, then the next_page and prev_page, points to the page itself

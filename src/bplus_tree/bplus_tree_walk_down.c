@@ -1,13 +1,12 @@
-#include<bplus_tree_walk_down.h>
+#include<tupleindexer/bplus_tree/bplus_tree_walk_down.h>
 
-#include<page_access_methods.h>
-#include<bplus_tree_page_header.h>
-#include<bplus_tree_interior_page_util.h>
-#include<bplus_tree_leaf_page_util.h>
-#include<storage_capacity_page_util.h>
-#include<materialized_key.h>
+#include<tupleindexer/bplus_tree/bplus_tree_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_leaf_page_util.h>
+#include<tupleindexer/bplus_tree/storage_capacity_page_util.h>
+#include<tupleindexer/common/materialized_key.h>
 
-#include<invalid_tuple_indices.h>
+#include<tupleindexer/common/invalid_tuple_indices.h>
 
 #include<stdlib.h>
 

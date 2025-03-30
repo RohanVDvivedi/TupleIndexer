@@ -1,9 +1,9 @@
-#include<linked_page_list_iterator.h>
+#include<tupleindexer/linked_page_list/linked_page_list_iterator.h>
 
-#include<persistent_page_functions.h>
-#include<linked_page_list_page_header.h>
-#include<linked_page_list_node_util.h>
-#include<linked_page_list_page_tuples_util.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/linked_page_list/linked_page_list_page_header.h>
+#include<tupleindexer/linked_page_list/linked_page_list_node_util.h>
+#include<tupleindexer/linked_page_list/linked_page_list_page_tuples_util.h>
 
 #include<stdlib.h>
 
@@ -1183,7 +1183,7 @@ int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterat
 	return 0;
 }
 
-#include<sorted_packed_page_util.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
 
 int sort_all_tuples_on_curr_page_in_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const positional_accessor* key_element_ids, const compare_direction* key_compare_direction, uint32_t key_element_count, const void* transaction_id, int* abort_error)
 {

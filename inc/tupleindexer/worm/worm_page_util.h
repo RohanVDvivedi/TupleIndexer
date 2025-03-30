@@ -3,10 +3,10 @@
 
 #include<stdint.h>
 
-#include<persistent_page.h>
-#include<worm_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/worm/worm_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 // initializes a new worm head page, with tail_page_id = ppage.page_id (we assume this is the first page being initialized for creation of a worm, so it itself is tha tail)
 // and next_page_id = NULL_PAGE_ID

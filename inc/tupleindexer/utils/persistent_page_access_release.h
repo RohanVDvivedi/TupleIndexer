@@ -1,9 +1,9 @@
 #ifndef PERSISTENT_PAGE_ACCESS_RELEASE_H
 #define PERSISTENT_PAGE_ACCESS_RELEASE_H
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<page_access_methods_options.h>
+#include<tupleindexer/interface/page_access_methods_options.h>
 
 #define WRITE_LOCK 1
 #define READ_LOCK  0

@@ -1,11 +1,11 @@
 #ifndef ARRAY_TABLE_RANGE_LOCKER_H
 #define ARRAY_TABLE_RANGE_LOCKER_H
 
-#include<array_table.h>
-#include<persistent_page.h>
-#include<array_table_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/array_table/array_table.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/array_table/array_table_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 typedef struct array_table_range_locker array_table_range_locker;
 struct array_table_range_locker
@@ -36,6 +36,6 @@ struct array_table_range_locker
 };
 
 // all functions on array_table_range_locker are declared here, in this header file
-#include<array_table_range_locker_public.h>
+#include<tupleindexer/array_table/array_table_range_locker_public.h>
 
 #endif

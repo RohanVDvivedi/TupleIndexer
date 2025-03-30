@@ -1,8 +1,8 @@
 #ifndef IN_MEMORY_DATA_STORE_H
 #define IN_MEMORY_DATA_STORE_H
 
-#include<page_access_specification.h>
-#include<page_access_methods.h>
+#include<tupleindexer/common/page_access_specification.h>
+#include<tupleindexer/interface/page_access_methods.h>
 
 /*
 **	Constructs you a simple in memory, unWALed data store

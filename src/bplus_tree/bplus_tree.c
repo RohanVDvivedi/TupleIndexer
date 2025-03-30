@@ -1,16 +1,16 @@
-#include<bplus_tree.h>
+#include<tupleindexer/bplus_tree/bplus_tree.h>
 
-#include<locked_pages_stack.h>
-#include<storage_capacity_page_util.h>
-#include<bplus_tree_leaf_page_util.h>
-#include<bplus_tree_interior_page_util.h>
-#include<bplus_tree_page_header.h>
-#include<bplus_tree_leaf_page_header.h>
-#include<bplus_tree_interior_page_header.h>
-#include<sorted_packed_page_util.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
+#include<tupleindexer/bplus_tree/storage_capacity_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_leaf_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_leaf_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_header.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
 
-#include<persistent_page_functions.h>
-#include<tuple.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tuplestore/tuple.h>
 
 #include<stdlib.h>
 

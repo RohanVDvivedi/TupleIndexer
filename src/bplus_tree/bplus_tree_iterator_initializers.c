@@ -1,15 +1,15 @@
-#include<bplus_tree_iterator.h>
+#include<tupleindexer/bplus_tree/bplus_tree_iterator.h>
 
-#include<locked_pages_stack.h>
-#include<bplus_tree_leaf_page_util.h>
-#include<bplus_tree_interior_page_util.h>
-#include<bplus_tree_walk_down.h>
-#include<sorted_packed_page_util.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
+#include<tupleindexer/bplus_tree/bplus_tree_leaf_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_walk_down.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
 
-#include<persistent_page_functions.h>
-#include<tuple.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tuplestore/tuple.h>
 
-#include<find_position.h>
+#include<tupleindexer/common/find_position.h>
 
 static int compare_curr_tuple_with_key_OR_record(bplus_tree_iterator* bpi_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned)
 {
@@ -252,7 +252,7 @@ static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, c
 	return 1;
 }
 
-#include<bplus_tree_walk_down.h>
+#include<tupleindexer/bplus_tree/bplus_tree_walk_down.h>
 
 int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t root_page_id, locked_pages_stack* lps, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position find_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {

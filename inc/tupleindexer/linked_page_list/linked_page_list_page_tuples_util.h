@@ -8,10 +8,10 @@
 
 //#include<stdint.h>
 
-#include<persistent_page.h>
-#include<linked_page_list_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/linked_page_list/linked_page_list_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 // check if a linked_page_list page must split for an insertion of a tuple on the page
 int must_split_for_insert_linked_page_list_page(const persistent_page* page1, const void* tuple_to_insert, const linked_page_list_tuple_defs* lpltd_p);

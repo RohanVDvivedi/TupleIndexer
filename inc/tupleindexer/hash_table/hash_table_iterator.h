@@ -1,13 +1,13 @@
 #ifndef HASH_TABLE_ITERATOR_H
 #define HASH_TABLE_ITERATOR_H
 
-#include<page_table_range_locker.h>
-#include<linked_page_list_iterator.h>
+#include<tupleindexer/page_table/page_table_range_locker.h>
+#include<tupleindexer/linked_page_list/linked_page_list_iterator.h>
 
-#include<hash_table_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
-#include<materialized_key.h>
+#include<tupleindexer/hash_table/hash_table_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
+#include<tupleindexer/common/materialized_key.h>
 
 typedef struct hash_table_iterator hash_table_iterator;
 struct hash_table_iterator
@@ -44,6 +44,6 @@ struct hash_table_iterator
 };
 
 // all functions on hash_table_iterator are declared here, in this header file
-#include<hash_table_iterator_public.h>
+#include<tupleindexer/hash_table/hash_table_iterator_public.h>
 
 #endif

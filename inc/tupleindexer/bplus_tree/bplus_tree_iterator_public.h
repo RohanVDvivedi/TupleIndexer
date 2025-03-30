@@ -4,8 +4,8 @@
 // this iterator can only be used to reading leaf tuples of the b+tree
 
 // custom stacked iterator locking type, to only lock leaf pages with write lock, while lock interior pages with read locks
-#include<bplus_tree_walk_down_custom_lock_type.h>
-#include<find_position.h>
+#include<tupleindexer/bplus_tree/bplus_tree_walk_down_custom_lock_type.h>
+#include<tupleindexer/common/find_position.h>
 
 typedef struct bplus_tree_iterator bplus_tree_iterator;
 
@@ -93,8 +93,8 @@ int insert_using_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tup
 
 // you can use the below function only to update only a fixed length non-key column
 
-#include<user_value.h>
-#include<tuple.h>
+#include<tuplestore/user_value.h>
+#include<tuplestore/tuple.h>
 
 // update a non_key column inplace at the place that the bplus_tree_iterator is pointing to
 // ADVISED 	:: only update columns that do not change the tuple size on the page, else the page may become less than half full and this can not be fixed without a merge, and you can not mrege with an iterator

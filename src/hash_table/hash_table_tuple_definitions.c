@@ -1,4 +1,4 @@
-#include<hash_table_tuple_definitions.h>
+#include<tupleindexer/hash_table/hash_table_tuple_definitions.h>
 
 #include<stdlib.h>
 

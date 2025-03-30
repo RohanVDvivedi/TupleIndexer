@@ -1,11 +1,11 @@
 #ifndef BPLUS_TREE_PAGE_HEADER_H
 #define BPLUS_TREE_PAGE_HEADER_H
 
-#include<persistent_page.h>
-#include<bplus_tree_tuple_definitions.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
 
-#include<common_page_header.h>
-#include<bplus_tree_interior_page_header.h>
+#include<tupleindexer/common/common_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_header.h>
 
 /*
 **	utility functions for bplus_tree pages

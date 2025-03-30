@@ -1,7 +1,7 @@
 #ifndef UNWALED_PAGE_MODIFICATION_METHODS_H
 #define UNWALED_PAGE_MODIFICATION_METHODS_H
 
-#include<page_modification_methods.h>
+#include<tupleindexer/interface/page_modification_methods.h>
 
 page_modification_methods* get_new_unWALed_page_modification_methods();
 

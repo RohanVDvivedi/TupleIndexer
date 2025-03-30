@@ -1,11 +1,11 @@
 #ifndef ARRAY_TABLE_PAGE_UTIL_H
 #define ARRAY_TABLE_PAGE_UTIL_H
 
-#include<array_table_tuple_definitions.h>
-#include<opaque_page_modification_methods.h>
-#include<opaque_page_access_methods.h>
-#include<persistent_page.h>
-#include<bucket_range.h>
+#include<tupleindexer/array_table/array_table_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/utils/bucket_range.h>
 
 // initialize array table page
 int init_array_table_page(persistent_page* ppage, uint32_t level, uint64_t first_bucket_id, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);

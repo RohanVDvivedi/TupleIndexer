@@ -1,6 +1,6 @@
-#include<persistent_page.h>
+#include<tupleindexer/utils/persistent_page.h>
 
-#include<page_layout_unaltered.h>
+#include<tuplestore/page_layout_unaltered.h>
 
 const void* get_page_header_ua_persistent_page(const persistent_page* ppage, uint32_t page_size)
 {

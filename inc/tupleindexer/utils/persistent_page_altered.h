@@ -1,9 +1,9 @@
 #ifndef PERSISTENT_PAGE_ALTERED_H
 #define PERSISTENT_PAGE_ALTERED_H
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 
 int init_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d, int* abort_error);
 

@@ -1,10 +1,10 @@
-#include<linked_page_list_page_tuples_util.h>
+#include<tupleindexer/linked_page_list/linked_page_list_page_tuples_util.h>
 
-#include<linked_page_list_page_header.h>
-#include<linked_page_list_node_util.h>
+#include<tupleindexer/linked_page_list/linked_page_list_page_header.h>
+#include<tupleindexer/linked_page_list/linked_page_list_node_util.h>
 
-#include<persistent_page_functions.h>
-#include<virtual_unsplitted_persistent_page.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/utils/virtual_unsplitted_persistent_page.h>
 
 int must_split_for_insert_linked_page_list_page(const persistent_page* page1, const void* tuple_to_insert, const linked_page_list_tuple_defs* lpltd_p)
 {

@@ -3,12 +3,12 @@
 
 #include<stdint.h>
 
-#include<locked_pages_stack.h>
-#include<persistent_page.h>
-#include<bplus_tree_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
-#include<find_position.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
+#include<tupleindexer/common/find_position.h>
 
 // this iterator can only be used to reading leaf tuples of the b+tree
 
@@ -65,6 +65,6 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 // private function to get the current lockd leaf page
 persistent_page* get_curr_leaf_page(bplus_tree_iterator* bpi_p);
 
-#include<bplus_tree_iterator_public.h>
+#include<tupleindexer/bplus_tree/bplus_tree_iterator_public.h>
 
 #endif

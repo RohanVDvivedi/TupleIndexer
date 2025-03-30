@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_INDEX_TUPLE_FUNCTIONS_UTIL_H
 #define BPLUS_TREE_INDEX_TUPLE_FUNCTIONS_UTIL_H
 
-#include<bplus_tree_tuple_definitions.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
 
 // get child_page_id from the index_tuple
 uint64_t get_child_page_id_from_index_tuple(const void* index_tuple, const bplus_tree_tuple_defs* bpttd_p);

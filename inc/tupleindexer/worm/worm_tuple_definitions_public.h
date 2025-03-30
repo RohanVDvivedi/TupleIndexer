@@ -1,10 +1,10 @@
 #ifndef WORM_TUPLE_DEFINITIONS_PUBLIC_H
 #define WORM_TUPLE_DEFINITIONS_PUBLIC_H
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 #include<inttypes.h>
 
-#include<page_access_specification.h>
+#include<tupleindexer/common/page_access_specification.h>
 
 typedef struct worm_tuple_defs worm_tuple_defs;
 struct worm_tuple_defs

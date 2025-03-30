@@ -1,10 +1,10 @@
-#include<unWALed_in_memory_data_store.h>
+#include<tupleindexer/interface/unWALed_in_memory_data_store.h>
 
-#include<hashmap.h>
-#include<bst.h>
-#include<linkedlist.h>
+#include<cutlery/hashmap.h>
+#include<cutlery/bst.h>
+#include<cutlery/linkedlist.h>
 
-#include<rwlock.h>
+#include<rwlock/rwlock.h>
 
 #include<stddef.h>
 #include<stdlib.h>
@@ -615,8 +615,6 @@ static int free_page(void* context, const void* transaction_id, uint64_t page_id
 
 	return is_freed;
 }
-
-#include<page_layout_unaltered.h>
 
 static int is_valid_page_access_specs_as_params(const page_access_specs* pas_p)
 {

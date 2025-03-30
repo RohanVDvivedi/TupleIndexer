@@ -1,13 +1,13 @@
-#include<bplus_tree_interior_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_util.h>
 
-#include<sorted_packed_page_util.h>
-#include<bplus_tree_interior_page_header.h>
-#include<bplus_tree_index_tuple_functions_util.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_index_tuple_functions_util.h>
 
-#include<persistent_page_functions.h>
-#include<virtual_unsplitted_persistent_page.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/utils/virtual_unsplitted_persistent_page.h>
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 
 int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {

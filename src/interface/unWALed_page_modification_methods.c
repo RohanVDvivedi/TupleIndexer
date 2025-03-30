@@ -1,6 +1,6 @@
-#include<unWALed_page_modification_methods.h>
+#include<tupleindexer/interface/unWALed_page_modification_methods.h>
 
-#include<page_layout.h>
+#include<tuplestore/page_layout.h>
 
 #include<stdlib.h>
 

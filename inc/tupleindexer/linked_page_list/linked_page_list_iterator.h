@@ -1,10 +1,10 @@
 #ifndef LINKED_PAGE_LIST_ITERATOR_H
 #define LINKED_PAGE_LIST_ITERATOR_H
 
-#include<persistent_page.h>
-#include<linked_page_list_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/linked_page_list/linked_page_list_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 typedef struct persistent_page_reference persistent_page_reference;
 struct persistent_page_reference
@@ -33,6 +33,6 @@ struct linked_page_list_iterator
 	// for a read-only linked_page_list_iterator, pmm_p = NULL
 };
 
-#include<linked_page_list_iterator_public.h>
+#include<tupleindexer/linked_page_list/linked_page_list_iterator_public.h>
 
 #endif

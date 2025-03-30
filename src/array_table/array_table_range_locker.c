@@ -1,10 +1,10 @@
-#include<array_table_range_locker.h>
+#include<tupleindexer/array_table/array_table_range_locker.h>
 
-#include<persistent_page_functions.h>
-#include<array_table_page_util.h>
-#include<array_table_page_header.h>
-#include<locked_pages_stack.h>
-#include<invalid_tuple_indices.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/array_table/array_table_page_util.h>
+#include<tupleindexer/array_table/array_table_page_header.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
+#include<tupleindexer/common/invalid_tuple_indices.h>
 
 #include<stdlib.h>
 

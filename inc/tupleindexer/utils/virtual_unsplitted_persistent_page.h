@@ -9,8 +9,8 @@
 **	This struct is not a substitute for persistent_page
 */
 
-#include<persistent_page_functions.h>
-#include<tuple.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tuplestore/tuple.h>
 
 typedef struct virtual_unsplitted_persistent_page virtual_unsplitted_persistent_page;
 struct virtual_unsplitted_persistent_page

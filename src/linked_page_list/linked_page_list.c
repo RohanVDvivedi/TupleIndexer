@@ -1,9 +1,9 @@
-#include<linked_page_list.h>
+#include<tupleindexer/linked_page_list/linked_page_list.h>
 
-#include<linked_page_list_page_header.h>
-#include<linked_page_list_node_util.h>
+#include<tupleindexer/linked_page_list/linked_page_list_page_header.h>
+#include<tupleindexer/linked_page_list/linked_page_list_node_util.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
 uint64_t get_new_linked_page_list(const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {

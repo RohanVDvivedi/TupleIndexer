@@ -1,9 +1,9 @@
-#include<bplus_tree_tuple_definitions.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<bplus_tree_leaf_page_header.h>
-#include<bplus_tree_interior_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_leaf_page_header.h>
+#include<tupleindexer/bplus_tree/bplus_tree_interior_page_header.h>
 
 #include<stdlib.h>
 #include<string.h>

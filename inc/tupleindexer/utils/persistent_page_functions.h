@@ -1,11 +1,11 @@
 #ifndef PERSISTENT_PAGE_FUNCTIONS_H
 #define PERSISTENT_PAGE_FUNCTIONS_H
 
-#include<opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
 
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
-#include<persistent_page.h>
+#include<tupleindexer/utils/persistent_page.h>
 
 // we need pam_p here, because that's what gives us NULL_PAGE_ID
 // a persistent_page is NULL, if it's page = NULL and page_id == NULL_PAGE_ID
@@ -21,14 +21,14 @@ int is_persistent_page_write_locked(const persistent_page* ppage);
 // returns 1, if the WAS_MODIFIED bit in the flags of persistent_page is set
 int was_persistent_page_modified(const persistent_page* ppage);
 
-#include<persistent_page_unaltered.h>
+#include<tupleindexer/utils/persistent_page_unaltered.h>
 
-#include<persistent_page_unaltered_util.h>
+#include<tupleindexer/utils/persistent_page_unaltered_util.h>
 
-#include<persistent_page_altered.h>
+#include<tupleindexer/utils/persistent_page_altered.h>
 
-#include<persistent_page_altered_util.h>
+#include<tupleindexer/utils/persistent_page_altered_util.h>
 
-#include<persistent_page_access_release.h>
+#include<tupleindexer/utils/persistent_page_access_release.h>
 
 #endif

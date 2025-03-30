@@ -1,7 +1,7 @@
 #ifndef BPLUS_TREE_TUPLE_DEFINITIONS_H
 #define BPLUS_TREE_TUPLE_DEFINITIONS_H
 
-#include<bplus_tree_tuple_definitions_public.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions_public.h>
 
 // copy all the key elements from the index_entry to make the key
 int extract_key_from_index_entry_using_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key);

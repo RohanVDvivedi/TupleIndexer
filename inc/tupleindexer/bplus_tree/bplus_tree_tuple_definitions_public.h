@@ -1,10 +1,10 @@
 #ifndef BPLUS_TREE_TUPLE_DEFINITIONS_PUBLIC_H
 #define BPLUS_TREE_TUPLE_DEFINITIONS_PUBLIC_H
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 #include<inttypes.h>
 
-#include<page_access_specification.h>
+#include<tupleindexer/common/page_access_specification.h>
 
 typedef struct bplus_tree_tuple_defs bplus_tree_tuple_defs;
 struct bplus_tree_tuple_defs

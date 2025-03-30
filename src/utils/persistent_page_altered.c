@@ -1,6 +1,6 @@
-#include<persistent_page_altered.h>
+#include<tupleindexer/utils/persistent_page_altered.h>
 
-#include<page_modification_methods.h>
+#include<tupleindexer/interface/page_modification_methods.h>
 
 #include<stdlib.h>
 

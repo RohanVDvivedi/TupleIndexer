@@ -5,18 +5,18 @@
 **	This file provides different utility functions to walk down a bplus tree and initialize the locked_pages_stack for a walk down
 */
 
-#include<locked_pages_stack.h>
-#include<bplus_tree_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
 /*
 ** 	the initialize_locked_pages_stack_for_walk_down function and the walk_down_for_stacked_iterator, walk_next_for_stacked_iterator and walk_next_for_stacked_iterator
 **	does support the lock_type READ_LOCK_INTERIOR_WRITE_LOCK_LEAF
 */
 
-#include<bplus_tree_walk_down_custom_lock_type.h>
+#include<tupleindexer/bplus_tree/bplus_tree_walk_down_custom_lock_type.h>
 
 // the capacity of the stack will be same as the height of the tree i.e. the number of nodes from root to leaf
 // only lock to the root page will be acquired with the given lock type
@@ -49,7 +49,7 @@ int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_s
 #define walk_down_locking_parent_pages_for_update_using_key(locked_pages_stack_p, key, release_for_split, release_for_merge, bpttd_p, pam_p, transaction_id, abort_error)       walk_down_locking_parent_pages_for_update(locked_pages_stack_p, key, 1, release_for_split, release_for_merge, bpttd_p, pam_p, transaction_id, abort_error)
 #define walk_down_locking_parent_pages_for_update_using_record(locked_pages_stack_p, record, release_for_split, release_for_merge, bpttd_p, pam_p, transaction_id, abort_error) walk_down_locking_parent_pages_for_update(locked_pages_stack_p, record, 0, release_for_split, release_for_merge, bpttd_p, pam_p, transaction_id, abort_error)
 
-#include<find_position.h>
+#include<tupleindexer/common/find_position.h>
 
 // in any lock_type, the interior pages are always locked with read locks and the locks on interior pages are not held any more than it could be required for latch crabbing
 // you are returned a leaf page with the provided lock_type

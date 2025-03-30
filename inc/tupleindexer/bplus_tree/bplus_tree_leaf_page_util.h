@@ -3,10 +3,10 @@
 
 #include<stdint.h>
 
-#include<persistent_page.h>
-#include<bplus_tree_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 int init_bplus_tree_leaf_page(persistent_page* ppage, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 

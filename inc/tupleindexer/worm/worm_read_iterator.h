@@ -1,9 +1,9 @@
 #ifndef WORM_READ_ITERATOR_H
 #define WORM_READ_ITERATOR_H
 
-#include<persistent_page.h>
-#include<worm_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/worm/worm_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
 
 typedef struct worm_read_iterator worm_read_iterator;
 struct worm_read_iterator
@@ -23,6 +23,6 @@ struct worm_read_iterator
 };
 
 // all functions on worm_read_iterator are declared here, in this header file
-#include<worm_read_iterator_public.h>
+#include<tupleindexer/worm/worm_read_iterator_public.h>
 
 #endif

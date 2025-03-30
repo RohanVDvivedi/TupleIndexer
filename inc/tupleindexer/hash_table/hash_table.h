@@ -1,10 +1,10 @@
 #ifndef HASH_TABLE_H
 #define HASH_TABLE_H
 
-#include<hash_table_tuple_definitions_public.h>
+#include<tupleindexer/hash_table/hash_table_tuple_definitions_public.h>
 
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
 /*
 	A hash_table is just a page_table where each of its buckets point to a head page of a linked_page_list OR a NULL_PAGE_ID if it is empty.
@@ -43,9 +43,9 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 // it may return an abort_error, unable to print all of the hash_table pages
 void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-#include<hash_table_iterator_public.h>
+#include<tupleindexer/hash_table/hash_table_iterator_public.h>
 
-#include<hash_table_vaccum_params.h>
+#include<tupleindexer/hash_table/hash_table_vaccum_params.h>
 
 // performs hash_table vaccum
 // returns 1 on success

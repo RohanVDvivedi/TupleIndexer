@@ -1,7 +1,7 @@
 #ifndef MATERIALIZED_KEY_H
 #define MATERIALIZED_KEY_H
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 
 /*
 	You mught encounter cases where you need to compare the same key with a large number of tuples on the data structure like bplus_tree and hash_table

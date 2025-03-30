@@ -1,6 +1,6 @@
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<page_access_methods.h>
+#include<tupleindexer/interface/page_access_methods.h>
 
 #include<stddef.h>
 

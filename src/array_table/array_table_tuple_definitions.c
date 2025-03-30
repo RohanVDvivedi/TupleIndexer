@@ -1,10 +1,10 @@
-#include<array_table_tuple_definitions.h>
+#include<tupleindexer/array_table/array_table_tuple_definitions.h>
 
-#include<array_table_page_header.h>
+#include<tupleindexer/array_table/array_table_page_header.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<cutlery_math.h>
+#include<cutlery/cutlery_math.h>
 
 #include<stdlib.h>
 

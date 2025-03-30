@@ -1,8 +1,8 @@
-#include<page_table.h>
+#include<tupleindexer/page_table/page_table.h>
 
-#include<array_table.h>
-#include<persistent_page_functions.h>
-#include<locked_pages_stack.h>
+#include<tupleindexer/array_table/array_table.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
 
 #include<stdlib.h>
 

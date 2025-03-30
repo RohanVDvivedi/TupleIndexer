@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_ITERATOR_PUBLIC_H
 #define HASH_TABLE_ITERATOR_PUBLIC_H
 
-#include<bucket_range.h>
+#include<tupleindexer/utils/bucket_range.h>
 
 typedef struct hash_table_iterator hash_table_iterator;
 
@@ -65,7 +65,7 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 // on an ABORT_ERROR, all iterators that hash_table_iterator points to are deleted
 int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
 
-#include<hash_table_vaccum_params.h>
+#include<tupleindexer/hash_table/hash_table_vaccum_params.h>
 
 void delete_hash_table_iterator(hash_table_iterator* hti_p, hash_table_vaccum_params* htvp, const void* transaction_id, int* abort_error);
 

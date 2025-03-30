@@ -1,6 +1,6 @@
-#include<power_table.h>
+#include<tupleindexer/utils/power_table.h>
 
-#include<cutlery_math.h>
+#include<cutlery/cutlery_math.h>
 
 int initialize_power_table(power_table* pt_p, uint64_t N)
 {

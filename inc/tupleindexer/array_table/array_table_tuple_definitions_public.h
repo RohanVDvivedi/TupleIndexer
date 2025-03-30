@@ -1,12 +1,12 @@
 #ifndef ARRAY_TABLE_TUPLE_DEFINITIONS_PUBLIC_H
 #define ARRAY_TABLE_TUPLE_DEFINITIONS_PUBLIC_H
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 #include<inttypes.h>
 
-#include<power_table.h>
+#include<tupleindexer/utils/power_table.h>
 
-#include<page_access_specification.h>
+#include<tupleindexer/common/page_access_specification.h>
 
 // The function (find_non_NULL_PAGE_ID_in_array_table) makes use of the fact that (leaf_ or index_)entries_per_page != INVALID_TUPLE_INDEX (UINT32_MAX)
 // i.e. entries_per_page < INVALID_TUPLE_INDEX (UINT32_MAX)

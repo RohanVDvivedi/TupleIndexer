@@ -1,6 +1,6 @@
-#include<hash_table_iterator.h>
+#include<tupleindexer/hash_table/hash_table_iterator.h>
 
-#include<linked_page_list.h>
+#include<tupleindexer/linked_page_list/linked_page_list.h>
 
 #include<stdlib.h>
 

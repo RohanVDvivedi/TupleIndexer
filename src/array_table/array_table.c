@@ -1,9 +1,9 @@
-#include<array_table.h>
+#include<tupleindexer/array_table/array_table.h>
 
-#include<array_table_page_util.h>
-#include<array_table_page_header.h>
-#include<persistent_page_functions.h>
-#include<locked_pages_stack.h>
+#include<tupleindexer/array_table/array_table_page_util.h>
+#include<tupleindexer/array_table/array_table_page_header.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
 
 #include<stdlib.h>
 

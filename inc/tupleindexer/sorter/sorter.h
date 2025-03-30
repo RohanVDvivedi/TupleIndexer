@@ -1,12 +1,12 @@
 #ifndef SORTER_H
 #define SORTER_H
 
-#include<sorter_tuple_definitions_public.h>
+#include<tupleindexer/sorter/sorter_tuple_definitions_public.h>
 
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
 
-#include<linked_page_list_iterator_public.h>
+#include<tupleindexer/linked_page_list/linked_page_list_iterator_public.h>
 
 /*
 	Note: The sorter is a single threaded structure, i.e. is thread unsafe by design and only 1 thread must be accessing it at a time, hence an external lock is necesary to use it, for concurrent accesses.

@@ -1,6 +1,6 @@
-#include<page_access_specification.h>
+#include<tupleindexer/common/page_access_specification.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
 int initialize_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width, uint32_t page_size, uint64_t NULL_PAGE_ID)
 {

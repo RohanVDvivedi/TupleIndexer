@@ -1,7 +1,7 @@
 #ifndef PERSISTENT_PAGE_ALTERED_UTIL_H
 #define PERSISTENT_PAGE_ALTERED_UTIL_H
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
 // resiliently here implies forcefully
 // below functions will ensure that if the operation could succeed after a compaction, then they will succeed

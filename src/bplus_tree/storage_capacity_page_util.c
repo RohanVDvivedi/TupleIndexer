@@ -1,8 +1,8 @@
-#include<storage_capacity_page_util.h>
+#include<tupleindexer/bplus_tree/storage_capacity_page_util.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 
 int is_page_lesser_than_half_full(const persistent_page* ppage, uint32_t page_size, const tuple_def* def)
 {

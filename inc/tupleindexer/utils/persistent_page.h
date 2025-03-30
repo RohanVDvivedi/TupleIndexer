@@ -19,6 +19,6 @@ struct persistent_page
 	int is_write_locked;
 };
 
-#include<page_lock_type.h>
+#include<tupleindexer/utils/page_lock_type.h>
 
 #endif

@@ -1,10 +1,10 @@
-#include<bplus_tree.h>
+#include<tupleindexer/bplus_tree/bplus_tree.h>
 
-#include<bplus_tree_walk_down.h>
-#include<bplus_tree_split_insert_util.h>
-#include<bplus_tree_merge_util.h>
-#include<sorted_packed_page_util.h>
-#include<persistent_page_functions.h>
+#include<tupleindexer/bplus_tree/bplus_tree_walk_down.h>
+#include<tupleindexer/bplus_tree/bplus_tree_split_insert_util.h>
+#include<tupleindexer/bplus_tree/bplus_tree_merge_util.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
 #include<stdlib.h>
 

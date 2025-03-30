@@ -1,11 +1,11 @@
-#include<sorted_packed_page_util.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<index_accessed_interface.h>
-#include<index_accessed_search_sort.h>
+#include<cutlery/index_accessed_interface.h>
+#include<cutlery/index_accessed_search_sort.h>
 
 // ---------------- UTILTY CODE FOR SORTED PACKED PAGE BEGIN -------------------------------------------------
 
@@ -712,7 +712,7 @@ void sort_and_convert_to_sorted_packed_page(
 	//heap_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), 3);
 }
 
-#include<array.h>
+#include<cutlery/array.h>
 
 #include<stdlib.h>
 

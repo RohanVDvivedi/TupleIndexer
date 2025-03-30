@@ -1,8 +1,8 @@
-#include<linked_page_list_node_util.h>
+#include<tupleindexer/linked_page_list/linked_page_list_node_util.h>
 
-#include<linked_page_list_page_header.h>
+#include<tupleindexer/linked_page_list/linked_page_list_page_header.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
 int init_linked_page_list_page(persistent_page* ppage, int is_self_referencing, const linked_page_list_tuple_defs* lpltd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {

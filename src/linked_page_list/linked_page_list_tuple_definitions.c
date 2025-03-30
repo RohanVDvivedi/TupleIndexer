@@ -1,8 +1,8 @@
-#include<linked_page_list_tuple_definitions.h>
+#include<tupleindexer/linked_page_list/linked_page_list_tuple_definitions.h>
 
-#include<linked_page_list_page_header.h>
+#include<tupleindexer/linked_page_list/linked_page_list_page_header.h>
 
-#include<persistent_page_functions.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
 #include<stdlib.h>
 

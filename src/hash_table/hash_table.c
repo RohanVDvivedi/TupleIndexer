@@ -1,9 +1,9 @@
-#include<hash_table.h>
+#include<tupleindexer/hash_table/hash_table.h>
 
-#include<hash_table_tuple_definitions.h>
+#include<tupleindexer/hash_table/hash_table_tuple_definitions.h>
 
-#include<page_table.h>
-#include<linked_page_list.h>
+#include<tupleindexer/page_table/page_table.h>
+#include<tupleindexer/linked_page_list/linked_page_list.h>
 
 uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {

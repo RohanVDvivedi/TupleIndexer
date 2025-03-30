@@ -1,12 +1,12 @@
 #ifndef ARRAY_TABLE_PAGE_HEADER_H
 #define ARRAY_TABLE_PAGE_HEADER_H
 
-#include<common_page_header.h>
-#include<array_table_tuple_definitions.h>
-#include<opaque_page_modification_methods.h>
-#include<persistent_page_functions.h>
+#include<tupleindexer/common/common_page_header.h>
+#include<tupleindexer/array_table/array_table_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
+#include<tupleindexer/utils/persistent_page_functions.h>
 
-#include<serial_int.h>
+#include<serint/serial_int.h>
 
 #include<stdlib.h>
 

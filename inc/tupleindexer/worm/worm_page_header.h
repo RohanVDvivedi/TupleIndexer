@@ -1,12 +1,12 @@
 #ifndef WORM_PAGE_HEADER_H
 #define WORM_PAGE_HEADER_H
 
-#include<persistent_page.h>
-#include<worm_tuple_definitions.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/worm/worm_tuple_definitions.h>
 
-#include<common_page_header.h>
-#include<worm_head_page_header.h>
-#include<worm_any_page_header.h>
+#include<tupleindexer/common/common_page_header.h>
+#include<tupleindexer/worm/worm_head_page_header.h>
+#include<tupleindexer/worm/worm_any_page_header.h>
 
 
 /*

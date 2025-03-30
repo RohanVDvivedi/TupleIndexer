@@ -1,7 +1,7 @@
-#include<sorter.h>
+#include<tupleindexer/sorter/sorter.h>
 
-#include<page_table.h>
-#include<linked_page_list.h>
+#include<tupleindexer/page_table/page_table.h>
+#include<tupleindexer/linked_page_list/linked_page_list.h>
 
 #include<stdlib.h>
 
@@ -175,7 +175,7 @@ static void destroy_cache_keys_for_active_sorted_run(active_sorted_run* asr_p)
 	}
 }
 
-#include<value_arraylist.h>
+#include<cutlery/value_arraylist.h>
 
 data_definitions_value_arraylist(active_sorted_run_heap, active_sorted_run)
 declarations_value_arraylist(active_sorted_run_heap, active_sorted_run, static inline)

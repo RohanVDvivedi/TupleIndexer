@@ -2,7 +2,7 @@
 #define PAGE_ACCESS_SPECIFICATION_H
 
 #include<inttypes.h>
-#include<tuple_def.h>
+#include<tuplestore/tuple_def.h>
 
 typedef struct page_access_specs page_access_specs;
 struct page_access_specs

@@ -1,10 +1,10 @@
 #ifndef LINKED_PAGE_LIST_TUPLE_DEFINITIONS_PUBLIC_H
 #define LINKED_PAGE_LIST_TUPLE_DEFINITIONS_PUBLIC_H
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 #include<inttypes.h>
 
-#include<page_access_specification.h>
+#include<tupleindexer/common/page_access_specification.h>
 
 typedef struct linked_page_list_tuple_defs linked_page_list_tuple_defs;
 struct linked_page_list_tuple_defs

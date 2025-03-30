@@ -3,7 +3,7 @@
 
 #include<stdint.h>
 
-#include<page_access_specification.h>
+#include<tupleindexer/common/page_access_specification.h>
 
 /*
 **	This structure defines functions that provide page level access methods to the storage model to access the database in pages of fixed size
@@ -63,7 +63,7 @@
 //#define FREE_PAGE    0b001	// will be used only while releasing the page lock
 //#define WAS_MODIFIED 0b010	// this suggests that the page has been modified, allowing you bitwise OR it with your dirty bit
 // moved to page_access_methods_options.h
-#include<page_access_methods_options.h>
+#include<tupleindexer/interface/page_access_methods_options.h>
 
 typedef struct page_access_methods page_access_methods;
 struct page_access_methods

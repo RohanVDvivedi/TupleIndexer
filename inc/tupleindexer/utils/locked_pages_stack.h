@@ -2,9 +2,9 @@
 #define LOCKED_PAGES_STACK_H
 
 #include<stdint.h>
-#include<persistent_page.h>
+#include<tupleindexer/utils/persistent_page.h>
 
-#include<value_arraylist.h>
+#include<cutlery/value_arraylist.h>
 
 typedef struct locked_page_info locked_page_info;
 struct locked_page_info

@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_TUPLE_DEFINITIONS_H
 #define HASH_TABLE_TUPLE_DEFINITIONS_H
 
-#include<hash_table_tuple_definitions_public.h>
+#include<tupleindexer/hash_table/hash_table_tuple_definitions_public.h>
 
 // returns floor(log(x)/log(2)) = floor(log(x) base 2)
 // uses binary searchover sample space of 0 to 63

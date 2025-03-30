@@ -3,12 +3,12 @@
 
 #include<stdint.h>
 
-#include<persistent_page.h>
-#include<bplus_tree_tuple_definitions.h>
-#include<opaque_page_access_methods.h>
-#include<opaque_page_modification_methods.h>
-#include<invalid_tuple_indices.h>
-#include<materialized_key.h>
+#include<tupleindexer/utils/persistent_page.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
+#include<tupleindexer/interface/opaque_page_access_methods.h>
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
+#include<tupleindexer/common/invalid_tuple_indices.h>
+#include<tupleindexer/common/materialized_key.h>
 
 /*
 *	child index start from (-1) and end at (tuple_count - 1)

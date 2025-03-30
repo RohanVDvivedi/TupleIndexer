@@ -1,4 +1,4 @@
-#include<locked_pages_stack.h>
+#include<tupleindexer/utils/locked_pages_stack.h>
 
 data_definitions_value_arraylist(locked_pages_stack_INTERNAL, locked_page_info)
 declarations_value_arraylist(locked_pages_stack_INTERNAL, locked_page_info, static inline)
