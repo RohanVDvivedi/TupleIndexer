@@ -3,10 +3,10 @@
 #include<stdint.h>
 #include<string.h>
 
-#include<worm.h>
+#include<tupleindexer/worm/worm.h>
 
-#include<unWALed_in_memory_data_store.h>
-#include<unWALed_page_modification_methods.h>
+#include<tupleindexer/interface/unWALed_in_memory_data_store.h>
+#include<tupleindexer/interface/unWALed_page_modification_methods.h>
 
 #define BUFFER_APPEND_COUNT 10
 

@@ -3,13 +3,13 @@
 #include<stdint.h>
 #include<string.h>
 
-#include<tuple.h>
-#include<tuple_def.h>
+#include<tuplestore/tuple.h>
+#include<tuplestore/tuple_def.h>
 
-#include<hash_table.h>
+#include<tupleindexer/hash_table/hash_table.h>
 
-#include<unWALed_in_memory_data_store.h>
-#include<unWALed_page_modification_methods.h>
+#include<tupleindexer/interface/unWALed_in_memory_data_store.h>
+#include<tupleindexer/interface/unWALed_page_modification_methods.h>
 
 #define INITIAL_BUCKET_COUNT 19
 

@@ -3,15 +3,15 @@
 #include<stdint.h>
 #include<string.h>
 
-#include<tuple.h>
-#include<tuple_def.h>
+#include<tuplestore/tuple.h>
+#include<tuplestore/tuple_def.h>
 
-#include<bplus_tree.h>
+#include<tupleindexer/bplus_tree/bplus_tree.h>
 
-#include<unWALed_in_memory_data_store.h>
-#include<unWALed_page_modification_methods.h>
+#include<tupleindexer/interface/unWALed_in_memory_data_store.h>
+#include<tupleindexer/interface/unWALed_page_modification_methods.h>
 
-#include<executor.h>
+#include<boompar/executor.h>
 
 // uncomment based on the keys that you want to test with
 #define KEY_NAME_EMAIL
