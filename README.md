@@ -44,18 +44,18 @@ The tuples on pages and the page headers, are laid out on the page, as per speci
 ## Using The library
  * add `-ltupleindexer -ltuplestore -lrwlock -lcutlery -lpthread` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
-   * `#include<bplus_tree.h>`
-   * `#include<array_table.h>`
-   * `#include<page_table.h>`
-   * `#include<linked_page_list.h>`
-   * `#include<hash_table.h>`
-   * `#include<sorter.h>`
-   * `#include<worm.h>`
-   * `#include<page_access_methods.h>`
-   * `#include<page_modification_methods.h>`
+   * `#include<tupleindexer/bplus_tree/bplus_tree.h>`
+   * `#include<tupleindexer/array_table/array_table.h>`
+   * `#include<tupleindexer/page_table/page_table.h>`
+   * `#include<tupleindexer/linked_page_list/linked_page_list.h>`
+   * `#include<tupleindexer/hash_table/hash_table.h>`
+   * `#include<tupleindexer/sorter/sorter.h>`
+   * `#include<tupleindexer/worm/worm.h>`
+   * `#include<tupleindexer/interface/page_access_methods.h>`
+   * `#include<tupleindexer/interface/page_modification_methods.h>`
  * for testing you may need :
-   * `#include<unWALed_in_memory_data_store.h>`
-   * `#include<unWALed_page_modification_methods.h>`
+   * `#include<tupleindexer/interface/unWALed_in_memory_data_store.h>`
+   * `#include<tupleindexer/interface/unWALed_page_modification_methods.h>`
 
 ## Instructions for uninstalling library
 
