@@ -172,7 +172,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 		}
 	}
 
-	// only tail_page could be locked, in thelocal scope, if you read here
+	// only tail_page could be locked, in the local scope, if you reach here
 	// if it is locked release it
 	if(!is_persistent_page_NULL(&tail_page, wai_p->pam_p))
 	{
