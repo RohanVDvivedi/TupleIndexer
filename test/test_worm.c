@@ -11,7 +11,7 @@
 #define BUFFER_APPEND_COUNT 10
 
 #define BUFFER_APPEND_SIZE 100
-//#define BUFFER_APPEND_SIZE 244 // equal to wha can ft on page
+//#define BUFFER_APPEND_SIZE 244 // equal to what can fit on page
 //#define BUFFER_APPEND_SIZE 1000 // much larger than what could fit on page
 
 char buffer[BUFFER_APPEND_SIZE];
