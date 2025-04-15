@@ -152,6 +152,8 @@ int main()
 
 	print_worm_as_bytes(head_page_id, 8, &wtd, pam_p);
 
+	print_worm_as_bytes2(head_page_id, 8, &wtd, pam_p);
+
 	/* make some initial get set calls */
 	increment_reference_counter_for_worm(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
 	set_dependent_root_page_id_for_worm(head_page_id, 12, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
@@ -161,6 +163,8 @@ int main()
 	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
 
 	print_worm_as_bytes(head_page_id, 8, &wtd, pam_p);
+
+	print_worm_as_bytes2(head_page_id, 8, &wtd, pam_p);
 
 	uint32_t id = 0;
 
@@ -215,6 +219,8 @@ int main()
 
 	print_worm_as_bytes(head_page_id, 600, &wtd, pam_p);
 
+	print_worm_as_bytes2(head_page_id, 600, &wtd, pam_p);
+
 	// APPEND WORM
 	{
 		worm_append_iterator* wai_p = get_new_worm_append_iterator(head_page_id, &wtd, pam_p, pmm_p, transaction_id, &abort_error);
@@ -265,6 +271,8 @@ int main()
 	print_worm(head_page_id, &wtd, pam_p, transaction_id, &abort_error);
 
 	print_worm_as_bytes(head_page_id, 16, &wtd, pam_p);
+
+	print_worm_as_bytes2(head_page_id, 16, &wtd, pam_p);
 
 	/* CLEANUP */
 
