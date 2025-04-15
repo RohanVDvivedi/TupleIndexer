@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
- * test worm peek
-
  * worm append iterator OPTIMIZATION
    * This is not high priority task, this optimization allows us to club multiple writes to worm into one and relieve us from excessive meta data usage, caused due to small multiple writes
    * we will need an internal page-sized buffer to hold large enough blob that could fit on any worm page
