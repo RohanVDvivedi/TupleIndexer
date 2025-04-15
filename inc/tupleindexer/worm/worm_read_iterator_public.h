@@ -25,9 +25,15 @@ uint64_t get_dependent_root_page_id_worm_read_iterator(const worm_read_iterator*
 // if data_size == 0, then 0 is returned right away
 // if data == NULL, then a forward relative seek is performed for data_size bytes
 // if data_size > 0, then a 0 is returned only if there are no more bytes in worm to be read
-// lesser than data_size bytes are read, possibly because of you reaching the endof the worm
+// lesser than data_size bytes are read, possibly because of you reaching the end of the worm
 // on an abort_error all locks are released and 0 is returned
 uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
+
+// this function can be used to directly peek the next available consecutive bytes from worm
+// this function allows peeking directly into the page, by returning the memory pointer on the page, pointing to data_size number of bytes
+// returns NULL and 0, if there are no more bytes/blobs in the worm, this implies end of worm
+// on an abort_error all locks are released and NULL and 0 is returned
+const char* peek_worm_read_iterator(worm_read_iterator* wri_p, uint32_t* data_size, const void* transaction_id, int* abort_error);
 
 void delete_worm_read_iterator(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error);
 
