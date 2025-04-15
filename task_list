@@ -1,5 +1,7 @@
 ** PICKED TASKS
 
+ * test worm peek
+
  * worm append iterator OPTIMIZATION
    * This is not high priority task, this optimization allows us to club multiple writes to worm into one and relieve us from excessive meta data usage, caused due to small multiple writes
    * we will need an internal page-sized buffer to hold large enough blob that could fit on any worm page
@@ -10,11 +12,6 @@
      * get_appendable_bytes_worm_append_iterator
      * consume_internal_buffer_worm_append_iterator
      * update_tail_page_id_worm_append_iterator
-
- * worm read iterator OPTIMIZATION
-   * build a function to peek_worm_append_iterator to peen into the largest on-page contiguous bytes
-   * const char* peek_worm_read_iterator(worm_read_iterator* wri_p, uint32_t* data_size, const void* transaction_id, int* abort_error);
-     * returns the next consecutive bytes readable from the blob you are pointing to
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
