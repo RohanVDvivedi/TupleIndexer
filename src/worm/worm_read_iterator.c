@@ -161,6 +161,11 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 	return bytes_read;
 }
 
+const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const void* transaction_id, int* abort_error)
+{
+	// TODO
+}
+
 void delete_worm_read_iterator(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error)
 {
 	// if curr_page is still locked, then release this lock
