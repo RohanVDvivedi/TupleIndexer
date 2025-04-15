@@ -73,6 +73,55 @@ void print_worm_as_bytes(uint64_t head_page_id, uint32_t buffer_size, const worm
 	}
 }
 
+void print_worm_as_bytes2(uint64_t head_page_id, uint32_t buffer_size, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p)
+{
+	worm_read_iterator* wri_p = get_new_worm_read_iterator(head_page_id, wtd_p, pam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	printf("WORM DEPENDENT_ROOT : %"PRIu64"\n", get_dependent_root_page_id_worm_read_iterator(wri_p));
+
+	const void* buffer = NULL;
+	uint32_t bytes_read = 0;
+
+	printf("WORM PRINT AS BYTES :: \n");
+	while(1)
+	{
+		buffer = peek_in_worm(wri_p, &bytes_read, transaction_id, &abort_error);
+		if(bytes_read == 0)
+			break;
+
+		bytes_read = min(bytes_read, buffer_size);
+
+		if(abort_error)
+			break;
+
+		for(uint32_t i = 0; i < bytes_read; i++)
+			printf("0x%02x ", *(uint8_t*)(buffer + i));
+		printf("\n");
+
+		read_from_worm(wri_p, NULL, bytes_read, transaction_id, &abort_error);
+		if(abort_error)
+			break;
+	}
+
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	delete_worm_read_iterator(wri_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
 int main()
 {
 	/* SETUP STARTED */
