@@ -204,6 +204,9 @@ const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const v
 
 		data = curr_blob.blob_value + wri_p->curr_byte_index;
 		(*data_size) = bytes_readable; // we can break out of the loop here, only if the data_size is non-zero
+
+		// bytes_readable != 0, so even data_size > 0, hence some bytes were peeked, hence break out of the loop
+		break;
 	}
 
 	return data;
