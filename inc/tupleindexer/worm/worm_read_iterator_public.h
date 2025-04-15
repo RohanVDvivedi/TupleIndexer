@@ -32,6 +32,7 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 // this function can be used to directly peek the next available consecutive bytes from worm
 // this function allows peeking directly into the page, by returning the memory pointer on the page, pointing to data_size number of bytes
 // returns NULL and 0, if there are no more bytes/blobs in the worm, this implies end of worm
+// peek will not move the iterator forward, you will need to call read_from_worm(wri_p, NULL, data_size, transaction_id, &abort_error); to make it move forward by that many bytes
 // on an abort_error all locks are released and NULL and 0 is returned
 const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const void* transaction_id, int* abort_error);
 
