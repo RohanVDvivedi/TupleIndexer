@@ -11,7 +11,7 @@ A c library that enables you to build database index structures a bplus_tree, a 
 
 5. Together (the page_table and linked_page_list), provides a persistent hash_table data structure.
 
-6. There is a worm (Write Once, Read Multiple) datastructure, allowing you to read/append streams of bytes OR (a more specific usacase of) serialized tuple_def with reference counting. It can allow you to reference count the on-disk references of other on-disk data structures, with the worm itself storing its root page id and information to initialize its tuple definitions.
+6. There is a worm (Write Once, Read Multiple) datastructure, allowing you to read/append streams of bytes OR (a more specific usacase of) serialized tuple_def with reference counting. It can allow you to reference-count the on-disk references to other on-disk data structures, with the worm itself storing its root page id and information to initialize its tuple definitions. (Here, user provided data boundaires are preserved (upto atmost page size), so make larger writes by bufferring them externally, to reduce internal on-disk metadata usage).
 
 7. Finally, there is a sorter, that implements an external merge sort to sort all the tuples, it has optimizations to merge with atmost N runs at a time. It returns a linked page page list of the sorted tuples.
 
