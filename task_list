@@ -1,16 +1,5 @@
 ** PICKED TASKS
 
- * worm append iterator OPTIMIZATION
-   * This is not high priority task, this optimization allows us to club multiple writes to worm into one and relieve us from excessive meta data usage, caused due to small multiple writes
-   * we will need an internal page-sized buffer to hold large enough blob that could fit on any worm page
-   * we will fill this buffer to only as much content as may fit on the remaining bytes on the tail page
-   * we will need to maintain the lock on the tail page in the iterator, or point it to the head page if it is itself the tail page
-   * flush_worm_append_iterator call will be required to be called after subsequent calls to append_to_worm_append_iterator
-   * we will need 2 functions
-     * get_appendable_bytes_worm_append_iterator
-     * consume_internal_buffer_worm_append_iterator
-     * update_tail_page_id_worm_append_iterator
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
