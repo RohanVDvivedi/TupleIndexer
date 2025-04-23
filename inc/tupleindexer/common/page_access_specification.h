@@ -17,14 +17,33 @@ struct page_access_specs
 	// NULL_PAGE_ID < (1 << (page_id_width * 8))
 	uint64_t NULL_PAGE_ID;
 
-	// every page access spec defines the page_id type is it a NON NULLABLE unsigned integral type as wide as page_id_width
+	// every page access spec defines the page_id type, it is a NON NULLABLE unsigned integral type as wide as page_id_width
 
 	// defines a non-nullable unsigned integral type of page_id_width bytes to store page_id-s
 	data_type_info page_id_type_info;
 
-	// helps in working with pages composed on only page_ids
-	// the type_info of this tuple_Def must be the attribute above
+	// helps in working with pages composed of only page_ids
+	// the type_info of this tuple_def must be the attribute above
 	tuple_def page_id_tuple_def;
+
+	// every page access spec defines the page_offset type, it is a NON NULLABLE unsigned integral type wide enough to hold page_offset and tuple_index (every unsigned integer < PAGE_SIZE)
+	// this type_info can be used to store on-page-sizes also, as long as they are < PAGE_SIZE
+	// this includes free_space_on_page
+
+	// defines a non-nullable unsigned integral type, to store page_offset-s and tuple_index-s
+	union
+	{
+		data_type_info page_offset_type_info;
+		data_type_info tuple_index_type_info;
+	};
+
+	// helps in working with pages composed of only page_offset-s
+	// the type_info of this tuple_def must be the attribute above
+	union
+	{
+		tuple_def page_offset_tuple_def;
+		tuple_def tuple_index_tuple_def;
+	};
 };
 
 // initialize all attributed of page_access_specs

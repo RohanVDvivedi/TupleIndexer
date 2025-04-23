@@ -20,6 +20,10 @@ int initialize_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width
 	if(!initialize_tuple_def(&(pas_p->page_id_tuple_def), &(pas_p->page_id_type_info)))
 		return 0;
 
+	pas_p->page_offset_type_info = define_uint_non_nullable_type("page_offset/tuple_index", get_value_size_on_page(page_size));
+	if(!initialize_tuple_def(&(pas_p->page_offset_tuple_def), &(pas_p->page_offset_type_info)))
+		return 0;
+
 	return 1;
 }
 
@@ -36,6 +40,9 @@ int is_valid_page_access_specs(const page_access_specs* pas_p)
 	if(pas_p->page_id_tuple_def.type_info == NULL || pas_p->page_id_tuple_def.type_info != &(pas_p->page_id_type_info) || pas_p->page_id_type_info.is_finalized == 0)
 		return 0;
 
+	if(pas_p->page_offset_tuple_def.type_info == NULL || pas_p->page_offset_tuple_def.type_info != &(pas_p->page_offset_type_info) || pas_p->page_offset_type_info.is_finalized == 0)
+		return 0;
+
 	return 1;
 }
 
@@ -46,5 +53,7 @@ void print_page_access_specs(const page_access_specs* pas_p)
 	printf("NULL_PAGE_ID = %"PRIu64"\n", pas_p->NULL_PAGE_ID);
 	printf("page_id_type_info = \n");
 	print_tuple_def(&(pas_p->page_id_tuple_def));
+	printf("page_offset_type_info = \n");
+	print_tuple_def(&(pas_p->page_offset_tuple_def));
 	printf("\n");
 }
