@@ -28,7 +28,7 @@ worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const worm
 	return wri_p;
 }
 
-worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error)
+worm_read_iterator* clone_worm_read_iterator(const worm_read_iterator* wri_p, const void* transaction_id, int* abort_error)
 {
 	// allocate enough memory
 	worm_read_iterator* clone_p = malloc(sizeof(worm_read_iterator));

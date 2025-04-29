@@ -13,7 +13,7 @@ typedef struct worm_read_iterator worm_read_iterator;
 
 worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-worm_read_iterator* clone_worm_read_iterator(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error);
+worm_read_iterator* clone_worm_read_iterator(const worm_read_iterator* wri_p, const void* transaction_id, int* abort_error);
 
 // since worm_read_iterator only keeps the curr_page that it is looking at read locked
 // you can only use this function if the worm_read_iterator is at the head page (not necessarily at it's first byte)
