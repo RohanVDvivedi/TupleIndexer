@@ -1,6 +1,6 @@
 #include<tupleindexer/common/page_type.h>
 
-const char* page_type_string[] = {
+char const * const page_type_string[] = {
 	"BPLUS_TREE_LEAF_PAGE",
 	"BPLUS_TREE_INTERIOR_PAGE",
 	"ARRAY_TABLE_PAGE",

@@ -13,6 +13,6 @@ enum page_type
 	// add more page_types as you wish at most ((2^16) - 1) page_types can be supported
 };
 
-extern const char* page_type_string[];
+extern char const * const page_type_string[];
 
 #endif
