@@ -26,6 +26,7 @@
    * get_new_free_space_iterator(uint64_t root_page_id, uint32_t free_space_required => 0, if you want to iterate and grab all the page_ids)
    * uint64_t get_next_page_id_with_free_space() -> returns NULL_PAGE_ID if no page has enough free_space
    * delete_free_space_iterator()
+   * this api is provided so that you could attempt to insert to a partial page before allocating a new one, it also allows you to be sure that you don't attempt to already lock a page locked by you, for this insert
    * no page locks on any of the allocator pages to be acquired while you have the free_space_iterator open, this rule is devised to avoid deadlocks
    * i.e. we ensure that we always take page_locks first and then modify anything in the free_space_tree
    * remember if you do not have any page_id returned by this function you still have get_new_page_with_write_lock() function
