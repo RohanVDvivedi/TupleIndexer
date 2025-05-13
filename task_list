@@ -1,5 +1,36 @@
 ** PICKED TASKS
 
+* allocator_table
+ * this table will be built to provide a means to build radix_tree and (postgresql like) heap_table on top of this
+ * the root_page_id of this datastructure will be a bplus_tree root pointing to a bplus_tree of {free_space, page_id}, from here on which will be called as free_space_tree
+ * here the free_space is referred to as the unused_space on the page (i.e. free_space + fragmented_space)
+ * allocator_table_page{persistent_page-like-object, original_free_space-> free space of the page as per the free_space_tree}
+ * get_new_page_with_write_lock(uint64_t root_page_id)
+   * allocate a new allocator_table_page, and initialize it to an empty_page
+   * insert the corresponding entry for {free_space, page_id} in free_space_tree
+   * return allocator_table_page{persistent_page-like-object, original_free_space} keeping the page locked
+ * get_page_with_read/write_lock(uint64_t page_id)
+   * get lock on the page, and the free space on it
+   * return allocator_table_page{persistent_page-like-object, original_free_space}
+ * release_lock_on_page(allocator_table_page) -> return value
+   * if the page has same free_space on it as it originally started with (refer to its original_free_space)
+     * release lock and return 0
+   * else if page became empty
+     * remove free_space_tree_entry {original_free_space, page_id}, free the page and return 1
+   * else
+     * remove free_space_tree_entry {original_free_space, page_id}
+     * insert free_space_tree_entry {new_free_space, page_id}
+     * release lock and return 0
+ * all other pam and pmm functions will just pass the input params as is, they will not modify the original_free_space on the allocator_table_page
+ * free_space_iterator (a read-only leaf-only forward iterator over the free_space_tree)
+   * get_new_free_space_iterator(uint64_t root_page_id, uint32_t free_space_required => 0, if you want to iterate and grab all the page_ids)
+   * uint64_t get_next_page_id_with_free_space() -> returns NULL_PAGE_ID if no page has enough free_space
+   * delete_free_space_iterator()
+   * no page locks on any of the allocator pages to be acquired while you have the free_space_iterator open, this rule is devised to avoid deadlocks
+   * i.e. we ensure that we always take page_locks first and then modify anything in the free_space_tree
+   * remember if you do not have any page_id returned by this function you still have get_new_page_with_write_lock() function
+
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
