@@ -4,7 +4,7 @@
 #include<cutlery/bst.h>
 #include<cutlery/linkedlist.h>
 
-#include<rwlock/rwlock.h>
+#include<lockking/rwlock.h>
 
 #include<stddef.h>
 #include<stdlib.h>

@@ -31,7 +31,7 @@ The tuples on pages and the page headers, are laid out on the page, as per speci
  * [Cutlery](https://github.com/RohanVDvivedi/Cutlery)
  * [SerializableInteger](https://github.com/RohanVDvivedi/SerializableInteger)
  * [TupleStore](https://github.com/RohanVDvivedi/TupleStore)
- * [ReaderWriterLock](https://github.com/RohanVDvivedi/ReaderWriterLock)
+ * [LockKing](https://github.com/RohanVDvivedi/LockKing)
 
 **Download source code :**
  * `git clone https://github.com/RohanVDvivedi/TupleIndexer.git`
@@ -45,7 +45,7 @@ The tuples on pages and the page headers, are laid out on the page, as per speci
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-ltupleindexer -ltuplestore -lrwlock -lcutlery -lpthread` linker flag, while compiling your application
+ * add `-ltupleindexer -ltuplestore -llockking -lcutlery -lpthread` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `#include<tupleindexer/bplus_tree/bplus_tree.h>`
    * `#include<tupleindexer/array_table/array_table.h>`

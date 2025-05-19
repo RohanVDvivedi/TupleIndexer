@@ -1,4 +1,4 @@
-gcc -Wall ./test_$1.c -o test_$1.out -ltupleindexer -ltuplestore -lrwlock -lboompar -lcutlery -lpthread
+gcc -Wall ./test_$1.c -o test_$1.out -ltupleindexer -ltuplestore -llockking -lboompar -lcutlery -lpthread
 if [ $? -eq 0 ]
 then
 	if [ "$2" = "vald" ]
