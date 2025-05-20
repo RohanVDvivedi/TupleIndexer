@@ -4,7 +4,7 @@
 typedef enum page_type page_type;
 enum page_type
 {
-	BPLUS_TREE_LEAF_PAGE,
+	BPLUS_TREE_LEAF_PAGE = 0, // values will 0 and so on
 	BPLUS_TREE_INTERIOR_PAGE,
 	ARRAY_TABLE_PAGE,
 	LINKED_PAGE_LIST_PAGE,
