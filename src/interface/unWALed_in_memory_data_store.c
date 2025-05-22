@@ -229,7 +229,7 @@ static int run_free_page_management_unsafe(memory_store_context* cntxt, page_des
 	// then you may add it to the free_page_descs bst, so that it can be allocated again
 	// we can not re-allocate the page while there are threads waiting on acquiring lock on it
 	// and if there are any waiters, then it is their responsibility to insert the free page into free_pag_descs
-	if(is_free_floating_bstnode(&(page_desc->free_page_descs_node)) && !has_waiters(&(page_desc->page_lock)))
+	if(is_free_floating_bstnode(&(page_desc->free_page_descs_node)) && !has_rwlock_waiters(&(page_desc->page_lock)))
 	{
 		// insert it into the free_page_descs, this ensures, that this page_desc can be reused by a get_new_page_with_write_lock call
 		cntxt->free_pages_count += insert_in_bst(&(cntxt->free_page_descs), page_desc);
