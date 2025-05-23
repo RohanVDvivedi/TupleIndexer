@@ -862,8 +862,8 @@ void run_concurrent_writable_scan_forward_and_backward(uint64_t root_page_id, co
 
 	executor* thread_pool = new_executor(FIXED_THREAD_COUNT_EXECUTOR, 2, 2, 0, NULL, NULL, NULL);
 
-	submit_job_executor(thread_pool, (void*(*)(void*))update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER, &p1, NULL, NULL, 0);
-	submit_job_executor(thread_pool, (void*(*)(void*))update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER, &p2, NULL, NULL, 0);
+	submit_job_executor(thread_pool, (void*(*)(void*))update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER, &p1, NULL, NULL, BLOCKING);
+	submit_job_executor(thread_pool, (void*(*)(void*))update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER, &p2, NULL, NULL, BLOCKING);
 
 	shutdown_executor(thread_pool, 0);
 	wait_for_all_executor_workers_to_complete(thread_pool);
