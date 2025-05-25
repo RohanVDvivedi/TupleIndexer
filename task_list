@@ -1,35 +1,31 @@
 ** PICKED TASKS
 
-* allocator_table
- * this table will be built to provide a means to build radix_tree and (postgresql like) heap_table on top of this
- * the root_page_id of this datastructure will be a bplus_tree root pointing to a bplus_tree of {free_space, page_id}, from here on which will be called as free_space_tree
- * here the free_space is referred to as the unused_space on the page (i.e. free_space + fragmented_space)
- * allocator_table_page{persistent_page-like-object, original_free_space-> free space of the page as per the free_space_tree}
- * get_new_page_with_write_lock(uint64_t root_page_id)
-   * allocate a new allocator_table_page, and initialize it to an empty_page
-   * insert the corresponding entry for {free_space, page_id} in free_space_tree
-   * return allocator_table_page{persistent_page-like-object, original_free_space} keeping the page locked
- * get_page_with_read/write_lock(uint64_t page_id)
-   * get lock on the page, and the free space on it
-   * return allocator_table_page{persistent_page-like-object, original_free_space}
- * release_lock_on_page(allocator_table_page) -> return value
-   * if the page has same free_space on it as it originally started with (refer to its original_free_space)
-     * release lock and return 0
-   * else if page became empty
-     * remove free_space_tree_entry {original_free_space, page_id}, free the page and return 1
-   * else
-     * remove free_space_tree_entry {original_free_space, page_id}
-     * insert free_space_tree_entry {new_free_space, page_id}
-     * release lock and return 0
- * all other pam and pmm functions will just pass the input params as is, they will not modify the original_free_space on the allocator_table_page
- * free_space_iterator (a read-only leaf-only forward iterator over the free_space_tree)
-   * get_new_free_space_iterator(uint64_t root_page_id, uint32_t free_space_required => 0, if you want to iterate and grab all the page_ids)
-   * uint64_t get_next_page_id_with_free_space() -> returns NULL_PAGE_ID if no page has enough free_space
-   * delete_free_space_iterator()
-   * this api is provided so that you could attempt to insert to a partial page before allocating a new one, it also allows you to be sure that you don't attempt to already lock a page locked by you, for this insert
-   * no page locks on any of the allocator pages to be acquired while you have the free_space_iterator open, this rule is devised to avoid deadlocks
-   * i.e. we ensure that we always take page_locks first and then modify anything in the free_space_tree
-   * remember if you do not have any page_id returned by this function you still have get_new_page_with_write_lock() function
+* heap_table
+ * this module will provides api to work with heap_pages
+ * it is essentially a bplus_tree of all the heap pages for a particular table
+ * does not keep track of wha pages have free space in them, you need to keep external data structures for that
+ * simple api as below
+   * persistent_page acquire_heap_page(uint64_t root_page_id, int check_presence, int lock_type, uint64_t page_id ... );
+     * if check_presence == 1, then the function would ensure that it exists in the heap_table's bplus_tree, returns NULL if it does not exists
+     * if page_id == NULL_PAGE_ID, then a new page is allocated and that is inserted in the heap_table's bplus_tree and is returned
+     * else the exact same page_id is locked and returned
+   * int release_heap_page(uint64_t root_page_id, int lock_type, persistent_page ppage ... );
+     * if pmm is NULL, release lock and exit, else
+     * check if the page is empty, and set an is_empty flag
+     * release lock on the page
+     * scan the heap_table's bplus_tree to see that it exists
+     * make sure it is still empty,
+     * if empty, free the page, and remove its entry from the heap_table's bplus_tree and exit
+     * returns 1 if the page was freed and its entry removed
+ * api of persistent page has to be exposed
+ * need scan, an iterator over the heap_table's bplus_tree
+   * start at or after a predefined page_id
+   * every next call returns a page_id
+   * get_curr_page_id -> returns current page id
+   * persistent_page acquire_heap_page(int lock_type) -> acquires page with the current page id -> very simple logic
+   * release_heap_page(persistent_page ppage) -> does the same logic as discussed above but with the iterator locked on the corresponding page, must ensure that ppage is the current page
+ * scan can be used for vaccumming, sequential scan of the table or to precompute a free space map of the table
+ * how much free space each page has is not maintained by the data structure and you need to maintain that for efficient rows layout
 
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
