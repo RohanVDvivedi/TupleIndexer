@@ -27,6 +27,7 @@
  * scan can be used for vaccumming, sequential scan of the table or to precompute a free space map of the table
  * how much free space each page has is not maintained by the data structure and you need to maintain that for efficient rows layout
  * since all pages are maintained as a sorted set of pages, scanning them will never reseult in double encounter with a page
+ ** DO WE NEED THIS HERE? IT SEEMS JUST LIKE A GLORIFIED SPECIALIZED IMPLEMENTATION OF A INDEXON PAGES, WHY NOT KEEP IT OUTSIDE? LIKE IN A NEW PROJECT OR IN BEEDB? ALL TUPLE INDEXER NEEDS TO DO IS PROVIDE A PAGE TYPE LIKE HEAP_PAGE IN page_type AND MAKE PERSISTENT PAGE FUNCTIONS PUBLIC
 
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
