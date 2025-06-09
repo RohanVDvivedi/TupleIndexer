@@ -1,10 +1,5 @@
 ** PICKED TASKS
 
-* bplus tree can deadlock if there are leaf only traversals in opposite directions with atleast 1 traversal being write lock on the leaf
- * build a deadlock avoider glock table for all 13 operations, clubbing POINT_OPERATIONS and STACKED_IETRATOR_OPERATIONS into one
- * test it using a powerfull concurrent implementation of multiple threads doing all tasks/types of operations concurrently
- * compare it against simple read write lock implementation
-
 * heap_table
  * this module will provides api to work with heap_pages
  * it is essentially a bplus_tree of all the heap pages for a particular table
