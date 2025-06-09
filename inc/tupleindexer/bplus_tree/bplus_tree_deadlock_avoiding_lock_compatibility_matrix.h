@@ -29,4 +29,8 @@
 // they limit concurrency compared to leaf only traversals, but do not suffer from deadlock, due to varied reason explained above
 #define BPLUS_TREE_STACKED_ITERATOR_OPERATIONS 5
 
+#include<lockking/glock.h>
+
+extern const glock_matrix bplus_tree_deadlock_avoidance_lock_matrix;
+
 #endif
