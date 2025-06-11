@@ -1,34 +1,10 @@
 ** PICKED TASKS
 
-* heap_table
- * this module will provides api to work with heap_pages
- * it is essentially a bplus_tree of all the heap pages for a particular table
- * does not keep track of wha pages have free space in them, you need to keep external data structures for that
- * simple api as below
-   * persistent_page acquire_heap_page(uint64_t root_page_id, int check_presence, int lock_type, uint64_t page_id ... );
-     * if check_presence == 1, then the function would ensure that it exists in the heap_table's bplus_tree, returns NULL if it does not exists
-     * if page_id == NULL_PAGE_ID, then a new page is allocated and that is inserted in the heap_table's bplus_tree and is returned
-     * else the exact same page_id is locked and returned
-   * int release_heap_page(uint64_t root_page_id, int lock_type, persistent_page ppage ... );
-     * if pmm is NULL, release lock and exit, else
-     * check if the page is empty, and set an is_empty flag
-     * release lock on the page
-     * scan the heap_table's bplus_tree to see that it exists
-     * make sure it is still empty,
-     * if empty, free the page, and remove its entry from the heap_table's bplus_tree and exit
-     * returns 1 if the page was freed and its entry removed
- * api of persistent page has to be exposed
- * need scan, an iterator over the heap_table's bplus_tree
-   * start at or after a predefined page_id
-   * every next call returns a page_id
-   * get_curr_page_id -> returns current page id
-   * persistent_page acquire_heap_page(int lock_type) -> acquires page with the current page id -> very simple logic
-   * release_heap_page(persistent_page ppage) -> does the same logic as discussed above but with the iterator locked on the corresponding page, must ensure that ppage is the current page
- * scan can be used for vaccumming, sequential scan of the table or to precompute a free space map of the table
- * how much free space each page has is not maintained by the data structure and you need to maintain that for efficient rows layout
- * since all pages are maintained as a sorted set of pages, scanning them will never reseult in double encounter with a page
- ** DO WE NEED THIS HERE? IT SEEMS JUST LIKE A GLORIFIED SPECIALIZED IMPLEMENTATION OF A INDEXON PAGES, WHY NOT KEEP IT OUTSIDE? LIKE IN A NEW PROJECT OR IN BEEDB? ALL TUPLE INDEXER NEEDS TO DO IS PROVIDE A PAGE TYPE LIKE HEAP_PAGE IN page_type AND MAKE PERSISTENT PAGE FUNCTIONS PUBLIC
-
+* heap_table_page
+  * make all persistent_page functions and the struct public
+  * make a heap_page module, and following public functions
+    * persistent_page get_new_heap_page_with_write_lock()
+  * add header struct with just a page_type for heap_page, and a util function to initialze it
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
