@@ -1,10 +1,9 @@
 ** PICKED TASKS
 
 * heap_table_page
-  * make all persistent_page functions and the struct public
-  * make a heap_page module, and following public functions
-    * persistent_page get_new_heap_page_with_write_lock()
+  * add page type for heap page
   * add header struct with just a page_type for heap_page, and a util function to initialze it
+  * persistent_page get_new_heap_page_with_write_lock() // intializes and returns aheap page
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
