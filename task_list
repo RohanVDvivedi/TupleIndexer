@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
 * heap_table_page
-  * add page type for heap page
   * add header struct with just a page_type for heap_page, and a util function to initialze it
   * persistent_page get_new_heap_page_with_write_lock() // intializes and returns aheap page
 
