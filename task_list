@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
 * heap_table_page
-  * persistent_page get_new_heap_page_with_write_lock() // intializes and returns a heap page
+  * add small tests for appending resiliently a few tuples, then printing it
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
