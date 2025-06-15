@@ -76,6 +76,18 @@ int main()
 
 	print_heap_page(&heap_page, &(pam_p->pas), record_def);
 
+	char temp_tuple[PAGE_SIZE];
+	initialize_tuple(record_def, temp_tuple, 7, "Rohan Vipulkumar Dvivedi");
+	append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, &heap_page, PAGE_SIZE, &(record_def->size_def), temp_tuple, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+
 	/* CLEANUP */
 
 	// destroy bplus tree
