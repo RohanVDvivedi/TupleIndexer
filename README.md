@@ -54,6 +54,8 @@ The tuples on pages and the page headers, are laid out on the page, as per speci
    * `#include<tupleindexer/hash_table/hash_table.h>`
    * `#include<tupleindexer/sorter/sorter.h>`
    * `#include<tupleindexer/worm/worm.h>`
+   * `#include<tupleindexer/heap_page/heap_page.h>`
+   * `#include<tupleindexer/bitmap_page/bitmap_page.h>`
    * `#include<tupleindexer/interface/page_access_methods.h>`
    * `#include<tupleindexer/interface/page_modification_methods.h>`
  * for testing you may need :
