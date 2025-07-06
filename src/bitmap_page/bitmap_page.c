@@ -34,3 +34,35 @@ tuple_def* get_tuple_definition_for_bitmap_page(const page_access_specs* pas_p, 
 
 	return bitmap_page_def;
 }
+
+persistent_page get_new_bitmap_page_with_write_lock(const page_access_specs* pas_p, const tuple_def* tpl_d, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	persistent_page bitmap_page = get_new_persistent_page_with_write_lock(pam_p, transaction_id, abort_error);
+	if(*abort_error)
+		return bitmap_page;
+
+	int inited = init_persistent_page(pmm_p, transaction_id, &bitmap_page, pas_p->page_size, sizeof_BITMAP_PAGE_HEADER(pas_p), &(tpl_d->size_def), abort_error);
+	if((*abort_error) || !inited)
+	{
+		release_lock_on_persistent_page(pam_p, transaction_id, &bitmap_page, NONE_OPTION, abort_error);
+		return bitmap_page;
+	}
+
+	// get the header, initialize it and set it back on to the page
+	bitmap_page_header hdr = get_bitmap_page_header(&bitmap_page, pas_p);
+	hdr.parent.type = BITMAP_PAGE; // always a heap page
+	set_bitmap_page_header(&bitmap_page, &hdr, pas_p, pmm_p, transaction_id, abort_error);
+	if(*abort_error)
+	{
+		release_lock_on_persistent_page(pam_p, transaction_id, &bitmap_page, NONE_OPTION, abort_error);
+		return bitmap_page;
+	}
+
+	return bitmap_page;
+}
+
+void print_bitmap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d)
+{
+	print_bitmap_page_header(ppage, pas_p);
+	print_persistent_page(ppage, pas_p->page_size, tpl_d);
+}
