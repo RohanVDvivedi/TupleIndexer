@@ -1,4 +1,12 @@
 ** PICKED TASKS
+ * bitmap_page
+   * a fixed array page consisting of only 1 tuple, it's tuple def being a fixed length array of maximum possible size of non-nullable bit_fields of varied lengths (1 to 64 allowed)
+   * api
+     * init_bitmap_page
+       * initializes a bitmap page with all bits 0s
+       * set_bit_field_in_bitmap_page(persistent_page* ppage, uint64_t value, uint32_t start_index, uint32_t bit_field_count)
+       * uint64_t get_bit_field_from_bitmap_page(const persistent_page* ppage, uint32_t bit_index)
+     * utility function to generate a tuple_def that goes on this page
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
