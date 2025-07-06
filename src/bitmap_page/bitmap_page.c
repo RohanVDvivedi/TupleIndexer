@@ -1,6 +1,7 @@
 #include<tupleindexer/bitmap_page/bitmap_page.h>
 
 #include<tupleindexer/utils/persistent_page_functions.h>
+#include<tupleindexer/bitmap_page/bitmap_page_header.h>
 
 #include<stdlib.h>
 
@@ -14,7 +15,7 @@ tuple_def* get_tuple_definition_for_bitmap_page(const page_access_specs* pas_p, 
 		exit(-1);
 
 	// calculate total number of bytes and bits that can fit on this page
-	uint32_t bytes_count = get_maximum_tuple_size_accomodatable_on_persistent_page(uint32_t page_header_size, pas_p->page_size, const tuple_size_def* tpl_sz_d);
+	uint32_t bytes_count = get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_BITMAP_PAGE_HEADER(pas_p), pas_p->page_size, &((tuple_size_def){.is_variable_sized = 0}));
 	uint64_t bits_count = (bytes_count * 8);
 
 	(*elements_per_page) = bits_count / bits_per_field;
