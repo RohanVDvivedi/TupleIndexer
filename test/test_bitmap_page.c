@@ -21,6 +21,18 @@ int abort_error = 0;
 
 int main()
 {
+	// oversized page check
+	{
+		page_access_specs temp = {.page_size = (UINT32_C(1)<<30)};
+		uint32_t temp;
+		if(NULL = get_tuple_definition_for_bitmap_page(&(pam_p->pas), 13, &temp))
+			printf("OVERSIZED PAGE FAILED AS EXPECTED SO CONTINUING\n");
+		else
+		{
+			printf("USING OVERSIZED PAGE DID NOT FAIL AS EXPECTED\n");
+			exit(-1);
+		}
+	}
 	/* SETUP STARTED */
 
 	// construct an in-memory data store
