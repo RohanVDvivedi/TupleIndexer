@@ -11,6 +11,7 @@ enum page_type
 	WORM_HEAD_PAGE,
 	WORM_ANY_PAGE, // for any page other than the head of the worm
 	HEAP_PAGE,
+	BITMAP_PAGE,
 	// add more page_types as you wish at most ((2^16) - 1) page_types can be supported
 };
 

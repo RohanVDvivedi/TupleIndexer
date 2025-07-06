@@ -8,4 +8,5 @@ char const * const page_type_string[] = {
 	[WORM_HEAD_PAGE]           = "WORM_HEAD_PAGE",
 	[WORM_ANY_PAGE]            = "WORM_ANY_PAGE",
 	[HEAP_PAGE]                = "HEAP_PAGE",
+	[BITMAP_PAGE]              = "BITMAP_PAGE",
 };
