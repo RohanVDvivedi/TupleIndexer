@@ -12,15 +12,14 @@ tuple_def* get_tuple_definition_for_bitmap_page(const page_access_specs* pas_p, 
 
 	// calculate total number of bytes and bits that can fit on this page
 	uint32_t bytes_count = get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_BITMAP_PAGE_HEADER(pas_p), pas_p->page_size, &((tuple_size_def){.is_variable_sized = 0}));
-	uint64_t bits_count = (((uint64_t)bytes_count) * UINT64_C(8));
 
-	// make sure that elements_per_page fits 32 bit integer
-	{
-		uint64_t elements_per_page_temp = bits_count / bits_per_field;
-		if(elements_per_page_temp > UINT32_MAX)
-			return NULL;
-		(*elements_per_page) = elements_per_page_temp;
-	}
+	// make sure that the number of bits to be used on the page fit on 32 bit integer
+	if(will_unsigned_mul_overflow(uint32_t, bytes_count, UINT32_C(8)))
+		return NULL;
+
+	uint32_t bits_count = bytes_count * UINT32_C(8);
+
+	(*elements_per_page) = bits_count / bits_per_field;
 
 	// make sure that atleast 1 element can fit on the page, else fail this call
 	if((*elements_per_page) == 0)
