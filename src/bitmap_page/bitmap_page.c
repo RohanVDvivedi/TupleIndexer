@@ -58,6 +58,25 @@ persistent_page get_new_bitmap_page_with_write_lock(const page_access_specs* pas
 		return bitmap_page;
 	}
 
+	// insert a tuple on the page consisting of all 0 bit fields
+	{
+		char* zero_bits_tuple = malloc(tpl_d->size_def.size);
+		init_tuple(tpl_d, zero_bits_tuple);
+
+		uint32_t element_count = get_element_count_for_element_from_tuple(tpl_d, SELF, zero_bits_tuple);
+
+		for(uint32_t i = 0; i < element_count; i++)
+			set_element_in_tuple(tpl_d, STATIC_POSITION(i), zero_bits_tuple, ZERO_USER_VALUE, 0);
+
+		append_tuple_on_persistent_page(pmm_p, transaction_id, &bitmap_page, pas_p->page_size, &(tpl_d->size_def), zero_bits_tuple, abort_error);
+		free(zero_bits_tuple);
+		if(*abort_error)
+		{
+			release_lock_on_persistent_page(pam_p, transaction_id, &bitmap_page, NONE_OPTION, abort_error);
+			return bitmap_page;
+		}
+	}
+
 	return bitmap_page;
 }
 
