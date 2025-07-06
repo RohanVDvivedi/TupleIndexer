@@ -44,7 +44,7 @@ int main()
 
 	for(uint32_t i = 0; i < bit_field_count; i++)
 	{
-		set_bit_field_on_bitmap_page(&bitmap_page, i, i + 100, &(pam_p->pas), bitfield_def, pmm_p, transaction_id, &abort_error);
+		set_bit_field_on_bitmap_page(&bitmap_page, i, i + 100, &(pam_p->pas), bit_fields_def, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -55,7 +55,7 @@ int main()
 	printf("\n\n");
 	for(uint32_t i = 0; i < bit_field_count; i++)
 	{
-		printf("%"PRIu32" -> %"PRIu64"\n", i, get_bit_field_on_bitmap_page(bitmap_page, i, &(pam_p->pas), bitfield_def, transaction_id, &abort_error));
+		printf("%"PRIu32" -> %"PRIu64"\n", i, get_bit_field_on_bitmap_page(bitmap_page, i, &(pam_p->pas), bit_fields_def, transaction_id, &abort_error));
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -66,7 +66,7 @@ int main()
 
 	for(uint32_t i = bit_field_count - 1; i != -1; i--)
 	{
-		set_bit_field_on_bitmap_page(&bitmap_page, i, i + 200, &(pam_p->pas), bitfield_def, pmm_p, transaction_id, &abort_error);
+		set_bit_field_on_bitmap_page(&bitmap_page, i, i + 200, &(pam_p->pas), bit_fields_def, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -77,7 +77,7 @@ int main()
 	printf("\n\n");
 	for(uint32_t i = 0; i < bit_field_count; i++)
 	{
-		printf("%"PRIu32" -> %"PRIu64"\n", i, get_bit_field_on_bitmap_page(bitmap_page, i, &(pam_p->pas), bitfield_def, transaction_id, &abort_error));
+		printf("%"PRIu32" -> %"PRIu64"\n", i, get_bit_field_on_bitmap_page(bitmap_page, i, &(pam_p->pas), bit_fields_def, transaction_id, &abort_error));
 		if(abort_error)
 		{
 			printf("ABORTED\n");
