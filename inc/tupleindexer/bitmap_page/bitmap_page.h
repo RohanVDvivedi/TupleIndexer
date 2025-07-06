@@ -20,7 +20,7 @@ int set_bit_field_on_bitmap_page(persistent_page* ppage, uint32_t index, uint64_
 
 // on the bit_field page gets value at the given index
 // returns 0 on out of bounds access OR on an abort error
-uint64_t get_bit_field_on_bitmap_page(const persistent_page* ppage, uint32_t index, const page_access_specs* pas_p, const tuple_def* tpl_d, const void* transaction_id, int* abort_error);
+uint64_t get_bit_field_on_bitmap_page(const persistent_page* ppage, uint32_t index, const page_access_specs* pas_p, const tuple_def* tpl_d);
 
 void print_bitmap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
 

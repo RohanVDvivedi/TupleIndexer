@@ -88,7 +88,7 @@ int set_bit_field_on_bitmap_page(persistent_page* ppage, uint32_t index, uint64_
 	return res;
 }
 
-uint64_t get_bit_field_on_bitmap_page(const persistent_page* ppage, uint32_t index, const page_access_specs* pas_p, const tuple_def* tpl_d, const void* transaction_id, int* abort_error)
+uint64_t get_bit_field_on_bitmap_page(const persistent_page* ppage, uint32_t index, const page_access_specs* pas_p, const tuple_def* tpl_d)
 {
 	// get the one and only tuple on the page
 	const void* bitmap_page_only_tuple = get_nth_tuple_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def), 0);
@@ -96,10 +96,10 @@ uint64_t get_bit_field_on_bitmap_page(const persistent_page* ppage, uint32_t ind
 		return 0;
 
 	user_value uval;
-	if(!get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(index), bitmap_page_only_tuple) == 0)
+	if(!get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(index), bitmap_page_only_tuple))
 		return 0;
 
-	// his shall never happen
+	// this shall never happen
 	if(is_user_value_NULL(&uval))
 		return 0;
 
