@@ -5,16 +5,22 @@
 
 #include<stdlib.h>
 
-tuple_def* get_tuple_definition_for_bitmap_page(const page_access_specs* pas_p, uint8_t bits_per_field, uint64_t* elements_per_page)
+tuple_def* get_tuple_definition_for_bitmap_page(const page_access_specs* pas_p, uint8_t bits_per_field, uint32_t* elements_per_page)
 {
 	if(bits_per_field == 0 || bits_per_field > 64)
 		return NULL;
 
 	// calculate total number of bytes and bits that can fit on this page
 	uint32_t bytes_count = get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_BITMAP_PAGE_HEADER(pas_p), pas_p->page_size, &((tuple_size_def){.is_variable_sized = 0}));
-	uint64_t bits_count = (bytes_count * 8);
+	uint64_t bits_count = (((uint64_t)bytes_count) * UINT64_C(8));
 
-	(*elements_per_page) = bits_count / bits_per_field;
+	// make sure that elements_per_page fits 32 bit integer
+	{
+		uint64_t elements_per_page_temp = bits_count / bits_per_field;
+		if(elements_per_page_temp > UINT32_MAX)
+			return NULL;
+		(*elements_per_page) = elements_per_page_temp;
+	}
 
 	// make sure that atleast 1 element can fit on the page, else fail this call
 	if((*elements_per_page) == 0)
