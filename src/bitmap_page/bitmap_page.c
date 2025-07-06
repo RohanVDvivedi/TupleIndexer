@@ -80,6 +80,16 @@ persistent_page get_new_bitmap_page_with_write_lock(const page_access_specs* pas
 	return bitmap_page;
 }
 
+int set_bit_field_on_bitmap_page(persistent_page* ppage, uint32_t index, uint64_t value, const page_access_specs* pas_p, const tuple_def* tpl_d, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	int res = set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, ppage, pas_p->page_size, tpl_d, 0, STATIC_POSITION(index), &((user_value){.bit_field_value = value}), abort_error);
+	if(*abort_error)
+		return 0;
+	return res;
+}
+
+uint64_t get_bit_field_on_bitmap_page(const persistent_page* ppage, uint32_t index, const page_access_specs* pas_p, const tuple_def* tpl_d, const void* transaction_id, int* abort_error);
+
 void print_bitmap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d)
 {
 	print_bitmap_page_header(ppage, pas_p);
