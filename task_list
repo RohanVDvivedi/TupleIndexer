@@ -1,7 +1,6 @@
 ** PICKED TASKS
  * bitmap_page
-    * int set_bit_field_in_bitmap_page(persistent_page* ppage, uint64_t value, uint32_t start_index, uint32_t bit_field_count)
-    * uint64_t get_bit_field_from_bitmap_page(const persistent_page* ppage, uint32_t bit_index)
+    * test getter and setter for bit fields
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
