@@ -32,7 +32,7 @@ int main()
 	// allocate record tuple definition and initialize it
 	uint64_t bit_field_count;
 	tuple_def* bit_field_def = get_tuple_definition_for_bitmap_page(&(pam_p->pas), 5, &bit_field_count);
-	print_tuple_def(&bit_field_def);
+	print_tuple_def(bit_field_def);
 	printf("\n\n");
 
 	// get a new persistent page to work with
