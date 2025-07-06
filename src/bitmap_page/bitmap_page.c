@@ -10,15 +10,19 @@ tuple_def* get_tuple_definition_for_bitmap_page(const page_access_specs* pas_p, 
 	if(bits_per_field == 0 || bits_per_field > 64)
 		return NULL;
 
-	data_type_info* array_of_bit_fields_type = malloc(sizeof(data_type_info));
-	if(array_of_bit_fields_type == NULL)
-		exit(-1);
-
 	// calculate total number of bytes and bits that can fit on this page
 	uint32_t bytes_count = get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_BITMAP_PAGE_HEADER(pas_p), pas_p->page_size, &((tuple_size_def){.is_variable_sized = 0}));
 	uint64_t bits_count = (bytes_count * 8);
 
 	(*elements_per_page) = bits_count / bits_per_field;
+
+	// make sure that atleast 1 element can fit on the page, else fail this call
+	if((*elements_per_page) == 0)
+		return NULL;
+
+	data_type_info* array_of_bit_fields_type = malloc(sizeof(data_type_info));
+	if(array_of_bit_fields_type == NULL)
+		exit(-1);
 
 	(*array_of_bit_fields_type) = get_fixed_element_count_array_type("BIT_FIELD_ARRAY", (*elements_per_page), 0, 0, BIT_FIELD_NON_NULLABLE[bits_per_field]);
 
