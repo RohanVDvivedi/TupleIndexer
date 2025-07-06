@@ -32,6 +32,8 @@ int main()
 	// allocate record tuple definition and initialize it
 	uint64_t bit_field_count;
 	tuple_def* bit_field_def = get_tuple_definition_for_bitmap_page(&(pam_p->pas), 5, &bit_field_count);
+	print_tuple_def(&bit_field_def);
+	printf("\n\n");
 
 	// get a new persistent page to work with
 	persistent_page bitmap_page = get_new_bitmap_page_with_write_lock(&(pam_p->pas), bit_field_def, pam_p, pmm_p, transaction_id, &abort_error);
