@@ -30,7 +30,7 @@ int main()
 	page_modification_methods* pmm_p = get_new_unWALed_page_modification_methods();
 
 	// allocate record tuple definition and initialize it
-	uint64_t bit_field_count;
+	uint32_t bit_field_count;
 	tuple_def* bit_fields_def = get_tuple_definition_for_bitmap_page(&(pam_p->pas), 13, &bit_field_count);
 	print_tuple_def(bit_fields_def);
 	printf("\n\n");
