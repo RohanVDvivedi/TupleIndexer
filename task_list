@@ -1,6 +1,4 @@
 ** PICKED TASKS
- * bitmap_page
-    * test getter and setter for bit fields
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
