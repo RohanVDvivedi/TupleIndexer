@@ -31,16 +31,16 @@ int main()
 
 	// allocate record tuple definition and initialize it
 	uint64_t bit_field_count;
-	tuple_def* bit_field_def = get_tuple_definition_for_bitmap_page(&(pam_p->pas), 13, &bit_field_count);
-	print_tuple_def(bit_field_def);
+	tuple_def* bit_fields_def = get_tuple_definition_for_bitmap_page(&(pam_p->pas), 13, &bit_field_count);
+	print_tuple_def(bit_fields_def);
 	printf("\n\n");
 
 	// get a new persistent page to work with
-	persistent_page bitmap_page = get_new_bitmap_page_with_write_lock(&(pam_p->pas), bit_field_def, pam_p, pmm_p, transaction_id, &abort_error);
+	persistent_page bitmap_page = get_new_bitmap_page_with_write_lock(&(pam_p->pas), bit_fields_def, pam_p, pmm_p, transaction_id, &abort_error);
 
 	/* TESTS STARTED */
 
-	print_bitmap_page(&bitmap_page, &(pam_p->pas), bit_field_def);
+	print_bitmap_page(&bitmap_page, &(pam_p->pas), bit_fields_def);
 
 	for(uint32_t i = 0; i < bit_field_count; i++)
 	{
@@ -55,7 +55,7 @@ int main()
 	printf("\n\n");
 	for(uint32_t i = 0; i < bit_field_count; i++)
 	{
-		printf("%"PRIu32" -> %"PRIu64"\n", i, get_bit_field_on_bitmap_page(bitmap_page, i, &(pam_p->pas), bit_fields_def, transaction_id, &abort_error));
+		printf("%"PRIu32" -> %"PRIu64"\n", i, get_bit_field_on_bitmap_page(&bitmap_page, i, &(pam_p->pas), bit_fields_def, transaction_id, &abort_error));
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -77,7 +77,7 @@ int main()
 	printf("\n\n");
 	for(uint32_t i = 0; i < bit_field_count; i++)
 	{
-		printf("%"PRIu32" -> %"PRIu64"\n", i, get_bit_field_on_bitmap_page(bitmap_page, i, &(pam_p->pas), bit_fields_def, transaction_id, &abort_error));
+		printf("%"PRIu32" -> %"PRIu64"\n", i, get_bit_field_on_bitmap_page(&bitmap_page, i, &(pam_p->pas), bit_fields_def, transaction_id, &abort_error));
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -86,7 +86,7 @@ int main()
 	}
 	printf("\n\n");
 
-	print_bitmap_page(&bitmap_page, &(pam_p->pas), bit_field_def);
+	print_bitmap_page(&bitmap_page, &(pam_p->pas), bit_fields_def);
 
 	/* CLEANUP */
 
@@ -98,8 +98,8 @@ int main()
 		exit(-1);
 	}
 
-	destroy_non_static_type_info_recursively(bit_field_def->type_info);
-	free(bit_field_def);
+	destroy_non_static_type_info_recursively(bit_fields_def->type_info);
+	free(bit_fields_def);
 
 	// close the in-memory data store
 	close_and_destroy_unWALed_in_memory_data_store(pam_p);
