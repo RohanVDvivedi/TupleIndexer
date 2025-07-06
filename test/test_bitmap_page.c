@@ -23,9 +23,9 @@ int main()
 {
 	// oversized page check
 	{
-		page_access_specs temp = {.page_size = (UINT32_C(1)<<30)};
-		uint32_t temp;
-		if(NULL = get_tuple_definition_for_bitmap_page(&(pam_p->pas), 13, &temp))
+		page_access_specs temp1 = {.page_size = (UINT32_C(1)<<30)};
+		uint32_t temp2;
+		if(NULL == get_tuple_definition_for_bitmap_page(&temp1, 13, &temp2))
 			printf("OVERSIZED PAGE FAILED AS EXPECTED SO CONTINUING\n");
 		else
 		{
