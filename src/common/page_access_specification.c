@@ -2,6 +2,11 @@
 
 #include<tupleindexer/utils/persistent_page_functions.h>
 
+fail_build_on((CHAR_BIT != 8))
+
+// additional checks for using 8 as the number of bytes in a uint64_t each with CHAR_BIT bits
+fail_build_on((sizeof(uint64_t) != 8))
+
 int initialize_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width, uint32_t page_size, uint64_t NULL_PAGE_ID)
 {
 	// bytes required to store page id, must be between 1 and 8 both inclusive
@@ -9,7 +14,7 @@ int initialize_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width
 		return 0;
 
 	// NULL_PAGE_ID must fit in page_id_width number of bytes
-	if(page_id_width < 8 && NULL_PAGE_ID >= ( ((uint64_t)(1)) << (page_id_width * 8) ) )
+	if(page_id_width < 8 && NULL_PAGE_ID >= ( ((uint64_t)(1)) << (page_id_width * CHAR_BIT) ) )
 		return 0;
 
 	pas_p->page_id_width = page_id_width;
@@ -34,7 +39,7 @@ int is_valid_page_access_specs(const page_access_specs* pas_p)
 		return 0;
 
 	// NULL_PAGE_ID must fit in page_id_width number of bytes
-	if(pas_p->page_id_width < 8 && pas_p->NULL_PAGE_ID >= ( ((uint64_t)(1)) << (pas_p->page_id_width * 8) ) )
+	if(pas_p->page_id_width < 8 && pas_p->NULL_PAGE_ID >= ( ((uint64_t)(1)) << (pas_p->page_id_width * CHAR_BIT) ) )
 		return 0;
 
 	if(pas_p->page_id_tuple_def.type_info == NULL || pas_p->page_id_tuple_def.type_info != &(pas_p->page_id_type_info) || pas_p->page_id_type_info.is_finalized == 0)

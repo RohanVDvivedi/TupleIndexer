@@ -14,7 +14,7 @@ struct page_access_specs
 	uint32_t page_size;
 
 	// this is what is considered as a NULL pointer for TupleStore
-	// NULL_PAGE_ID < (1 << (page_id_width * 8))
+	// NULL_PAGE_ID < (1 << (page_id_width * CHAR_BIT))
 	uint64_t NULL_PAGE_ID;
 
 	// every page access spec defines the page_id type, it is a NON NULLABLE unsigned integral type as wide as page_id_width

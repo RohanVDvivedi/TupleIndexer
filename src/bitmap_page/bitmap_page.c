@@ -14,10 +14,10 @@ tuple_def* get_tuple_definition_for_bitmap_page(const page_access_specs* pas_p, 
 	uint32_t bytes_count = get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_BITMAP_PAGE_HEADER(pas_p), pas_p->page_size, &((tuple_size_def){.is_variable_sized = 0}));
 
 	// make sure that the number of bits to be used on the page fit on 32 bit integer
-	if(will_unsigned_mul_overflow(uint32_t, bytes_count, UINT32_C(8)))
+	if(will_unsigned_mul_overflow(uint32_t, bytes_count, CHAR_BIT))
 		return NULL;
 
-	uint32_t bits_count = bytes_count * UINT32_C(8);
+	uint32_t bits_count = bytes_count * CHAR_BIT;
 
 	(*elements_per_page) = bits_count / bits_per_field;
 
