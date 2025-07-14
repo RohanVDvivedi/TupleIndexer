@@ -2,7 +2,7 @@
 
 #include<tupleindexer/utils/persistent_page_functions.h>
 
-int initialize_page_access_specs(page_access_specs* pas_p, uint8_t page_id_width, uint32_t page_size, uint64_t NULL_PAGE_ID)
+int initialize_page_access_specs(page_access_specs* pas_p, uint32_t page_id_width, uint32_t page_size, uint64_t NULL_PAGE_ID)
 {
 	// bytes required to store page id, must be between 1 and 8 both inclusive
 	if(page_id_width == 0 || page_id_width > sizeof(uint64_t))
