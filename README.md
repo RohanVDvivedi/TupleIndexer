@@ -5,7 +5,7 @@ A c library that enables you to build database index structures, thar includes b
 
 2. I have come up with another data structure that works like an array, it is very similar to Operating System's page tables, but it is optimized to have a compact height and width, by using some clever modifications. It essentially, is a look-up-table from uint64_t (referred to as bucket_id) to your fixed sized tuples (using a modified radix tree-like structure), I am calling this an array_table.
 
-3. Similarly a page_table (derived uaing the above mentioned array_table) structure that provides a dynamic mapping between a 64-bit bucket_id to a page_id. It will be further used to support a hash index (a hash_table) on top of it.
+3. Similarly a page_table (derived using the above mentioned array_table) structure that provides a dynamic mapping between a 64-bit bucket_id to a page_id (1 to 8 bytes). It will be further used to support a hash index (a hash_table) on top of it.
 
 4. There is also an implementation of a linked_page_list, this data structure is a doubly-circular linked list of pages, containing tuples.
 
