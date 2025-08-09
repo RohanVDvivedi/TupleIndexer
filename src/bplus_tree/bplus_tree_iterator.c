@@ -269,7 +269,7 @@ int next_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	// else we keep visiting the next pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
-		// if there is no where else to go, then we are beyong max_tuple
+		// if there is no where else to go, then we are beyond max_tuple
 		if(!can_goto_next_leaf_page(bpi_p))
 			break;
 
@@ -325,7 +325,7 @@ int prev_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* transaction
 	// else we keep visiting the previous pages until we reach a page that has atleast a tuple or if the page is a NULL page
 	while(1)
 	{
-		// if there is no where else to go, then we are beyong min_tuple
+		// if there is no where else to go, then we are beyond min_tuple
 		if(!can_goto_prev_leaf_page(bpi_p))
 			break;
 
