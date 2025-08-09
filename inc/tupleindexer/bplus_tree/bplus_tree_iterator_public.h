@@ -26,6 +26,10 @@ int is_empty_bplus_tree(const bplus_tree_iterator* bpi_p);
 int is_beyond_min_tuple_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
 int is_beyond_max_tuple_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
 
+// below function can be used to test if you are exactly at the minimum or maximum tuple in the bplus_tree_iterator
+int is_at_min_tuple_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
+int is_at_max_tuple_bplus_tree_iterator(const bplus_tree_iterator* bpi_p);
+
 // it moves the cursor forward by a tuple
 // returns 1 for success, it returns 0, if there are no records to move to
 // on an abort_error, all the lps pages will be unlocked by the bplus_tree_iterator
