@@ -667,7 +667,7 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			print_tuple(tuple_to_print, bpttd_p->record_def);
 			if(is_at_min_tuple_bplus_tree_iterator(bpi_p))
 				printf("MIN_TUPLE\n");
-			if(is_at_min_tuple_bplus_tree_iterator(bpi_p))
+			if(is_at_max_tuple_bplus_tree_iterator(bpi_p))
 				printf("MAX_TUPLE\n");
 			tuples_to_print++;
 			if(tuples_to_print == 4)
