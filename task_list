@@ -17,7 +17,7 @@
       * fix_heap_page_entry_in_heap_table(uint32_t unused_space, uint64_t heap_page_id) -> fixes the unused_space for the passed entry, removes the entry and reinserts if necessary
       * track_heap_page_in_heap_table(persistent_page heap_page); -> inserts the heap_page's entry in heap_table (for the first time) and releases lock on the page
     * iterator functions
-      * this will be a leaf-only read-only scan, no pmm_p to be provided here, but you can lock heap_page itself in write_locked mode if you intend to modify it
+      * this will be a leaf-only read-only forward-only scan, no pmm_p to be provided here, but you can lock heap_page itself in write_locked mode if you intend to modify it
       * you may want to acquire a shared ordering lock, if you plan to access tuples in their fixed existing order, desirable by MVCC databases to void reading duplicates and missing some tuples altogether, for this you also need to take exclusive ordering lock while performing fix_heap_page_entry_in_heap_table -> add this information as a comment
       * get_new_heap_table_iterator(uint32_t unused_space, uint64_t heap_page_id) -> starts from a desired entry to search for, can also be used for a finding a enough space containing page for a new tuple
       * get_curr_unused_space_heap_table_iterator();
