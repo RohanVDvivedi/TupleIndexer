@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
- * bplus_tree (BUG)
-  * make is_beyind_min/max_tuple execute using the curr_tuple_index instead of getting pointer to the curr_tuple
-
  * heap_table
   * a b+tree storing only (unused_space, page_id)
   * allows to easily find a heap_page that has enough unused_space on some heap_page that can accomodate an incomming tuple
