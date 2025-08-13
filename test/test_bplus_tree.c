@@ -517,7 +517,11 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	uint32_t tuples_to_print = 0;
 	while(tuple_to_print != NULL && tuples_to_print < max_scan_length)
 	{
-		print_tuple(tuple_to_print, bpttd_p->record_def);/* printf("is_min = %d, is_max = %d\n", is_at_min_tuple_bplus_tree_iterator(bpi_p), is_at_max_tuple_bplus_tree_iterator(bpi_p));*/
+		print_tuple(tuple_to_print, bpttd_p->record_def);
+		if(is_at_min_tuple_bplus_tree_iterator(bpi_p))
+			printf("MIN_TUPLE\n");
+		if(is_at_max_tuple_bplus_tree_iterator(bpi_p))
+			printf("MAX_TUPLE\n");
 		tuples_to_print++;
 		if(tuples_to_print == 4)
 			debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
@@ -529,6 +533,10 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		}
 		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	}
+	if(is_beyond_min_tuple_bplus_tree_iterator(bpi_p))
+		printf("BEYOND_MIN_TUPLE\n");
+	if(is_beyond_max_tuple_bplus_tree_iterator(bpi_p))
+		printf("BEYOND_MAX_TUPLE\n");
 
 	debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
 
@@ -555,7 +563,11 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 	tuples_to_print = 0;
 	while(tuple_to_print != NULL && tuples_to_print < max_scan_length)
 	{
-		print_tuple(tuple_to_print, bpttd_p->record_def);/* printf("is_min = %d, is_max = %d\n", is_at_min_tuple_bplus_tree_iterator(bpi_p), is_at_max_tuple_bplus_tree_iterator(bpi_p));*/
+		print_tuple(tuple_to_print, bpttd_p->record_def);
+		if(is_at_min_tuple_bplus_tree_iterator(bpi_p))
+			printf("MIN_TUPLE\n");
+		if(is_at_max_tuple_bplus_tree_iterator(bpi_p))
+			printf("MAX_TUPLE\n");
 		tuples_to_print++;
 		if(tuples_to_print == 4)
 			debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
@@ -567,6 +579,10 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		}
 		tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 	}
+	if(is_beyond_min_tuple_bplus_tree_iterator(bpi_p))
+		printf("BEYOND_MIN_TUPLE\n");
+	if(is_beyond_max_tuple_bplus_tree_iterator(bpi_p))
+		printf("BEYOND_MAX_TUPLE\n");
 
 	debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
 
@@ -648,7 +664,11 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 		uint32_t tuples_to_print = 0;
 		while(tuple_to_print != NULL && tuples_to_print < max_scan_length)
 		{
-			print_tuple(tuple_to_print, bpttd_p->record_def);/* printf("is_min = %d, is_max = %d\n", is_at_min_tuple_bplus_tree_iterator(bpi_p), is_at_max_tuple_bplus_tree_iterator(bpi_p));*/
+			print_tuple(tuple_to_print, bpttd_p->record_def);
+			if(is_at_min_tuple_bplus_tree_iterator(bpi_p))
+				printf("MIN_TUPLE\n");
+			if(is_at_min_tuple_bplus_tree_iterator(bpi_p))
+				printf("MAX_TUPLE\n");
 			tuples_to_print++;
 			if(tuples_to_print == 4)
 				debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
@@ -684,6 +704,10 @@ result find_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_firs
 			}
 			tuple_to_print = get_tuple_bplus_tree_iterator(bpi_p);
 		}
+		if(is_beyond_min_tuple_bplus_tree_iterator(bpi_p))
+			printf("BEYOND_MIN_TUPLE\n");
+		if(is_beyond_max_tuple_bplus_tree_iterator(bpi_p))
+			printf("BEYOND_MAX_TUPLE\n");
 
 		debug_print_lock_stack_for_bplus_tree_iterator(bpi_p);
 
