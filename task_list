@@ -1,5 +1,9 @@
 ** PICKED TASKS
 
+* bplus_tree (BUG)
+ * make is_beyind_min/max_tuple execute using the curr_tuple_index instead of getting pointer to the curr_tuple
+
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
