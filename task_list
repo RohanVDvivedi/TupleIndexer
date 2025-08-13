@@ -1,8 +1,9 @@
 ** PICKED TASKS
 
-* bplus_tree (BUG)
- * make is_beyind_min/max_tuple execute using the curr_tuple_index instead of getting pointer to the curr_tuple
+ * bplus_tree (BUG)
+  * make is_beyind_min/max_tuple execute using the curr_tuple_index instead of getting pointer to the curr_tuple
 
+ * heap_table
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
