@@ -12,7 +12,7 @@ void print_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
 		print_page_access_specs(httd_p->pas_p);
 
 	printf("record_def = ");
-	if(bpttd_p->record_def)
+	if(httd_p->record_def)
 		print_tuple_def(httd_p->record_def);
 	else
 		printf("NULL\n");
