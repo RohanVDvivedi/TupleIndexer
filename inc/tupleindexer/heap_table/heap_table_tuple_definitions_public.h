@@ -12,7 +12,7 @@ struct heap_table_tuple_defs
 	const page_access_specs* pas_p;
 
 	// tuple definition of the record on the heap_page-s of this heap_table
-	tuple_def* record_def;
+	const tuple_def* record_def;
 
 	// tuple_definiton for the bplus_tree of the heap_table
 	bplus_tree_tuple_defs bpttd;
@@ -26,7 +26,7 @@ struct heap_table_tuple_defs
 // it relies on bpttd for most of its fnctionality
 // returns 1 for success, it fails with 0
 // it also fails if the pas_p does not pass is_valid_page_access_specs(pas_p)
-int init_hash_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def);
+int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def);
 
 // then resets all the heap_table_tuple_defs struct attributes to NULL or 0
 void deinit_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p);

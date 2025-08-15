@@ -2,7 +2,63 @@
 
 #include<stdlib.h>
 
-int init_hash_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def);
+positional_accessor entry_key_element_ids = {2, (uint32_t[]){0, 1}}; // entry's key is itself, i.e. this must contain {0,1}
+compare_direction entry_key_compare_direction[2] = {ASC, ASC};
+
+int init_hash_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def)
+{
+	// zero initialize httd_p
+	(*httd_p) = (heap_table_tuple_defs){};
+
+	// basic parameter check
+	if(record_def == NULL)
+		return 0;
+
+	// check id page_access_specs struct is valid
+	if(!is_valid_page_access_specs(pas_p))
+		return 0;
+
+	// initialize page_access_specs fo the bpttd
+	httd_p->pas_p = pas_p;
+
+	httd_p->record_def = record_def;
+
+	// initialize entry def
+
+	// allocate memory for key_def and initialize it
+	{
+		data_type_info* entry_type_info = malloc(sizeof_tuple_data_type_info(2));
+		if(entry_type_info == NULL)
+			exit(-1);
+		initialize_tuple_data_type_info(entry_type_info, "temp_heap_table_entry_def", 1, pas_p->page_size, 2);
+
+		strcpy(entry_type_info->containees[0].field_name, "unused_space");
+		entry_type_info->containees[0].al.type_info = (data_type_info*)(&(pas_p->page_offset_type_info));
+
+		strcpy(entry_type_info->containees[1].field_name, "page_id");
+		entry_type_info->containees[1].al.type_info = (data_type_info*)(&(pas_p->page_id_type_info));
+
+		httd_p->entry_def = malloc(sizeof(tuple_def));
+		if(httd_p->entry_def == NULL)
+			exit(-1);
+		if(!initialize_tuple_def(httd_p->entry_def, entry_type_info))
+		{
+			free(httd_p->entry_def);
+			free(entry_type_info);
+			httd_p->entry_def = NULL; // avoid double free due to below call
+			deinit_heap_table_tuple_definitions(httd_p);
+			return 0;
+		}
+	}
+
+	if(!init_bplus_tree_tuple_definitions(&(httd_p->bpttd), pas_p, httd_p->entry_def, &entry_key_element_ids, entry_key_compare_direction, 2))
+	{
+		deinit_heap_table_tuple_definitions(httd_p);
+		return 0;
+	}
+
+	return 1;
+}
 
 void deinit_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
 {
