@@ -1,8 +1,6 @@
 ** PICKED TASKS
 
  * heap_table
-  * implement get_unused_space_on_heap_page function for heap_page
-  * unused_space = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
   * api
     * implement heap_table_tuple_defs functions
     * implement heap_table.c functions
