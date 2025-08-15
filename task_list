@@ -1,31 +1,17 @@
 ** PICKED TASKS
 
  * heap_table
-  * a b+tree storing only (unused_space, page_id)
-  * allows to easily find a heap_page that has enough unused_space on some heap_page that can accomodate an incomming tuple
-  * for regular operation you may also use unused_space in the heap_table as a hint and update it less frequently and in bursts at regular intervals
+  * implement get_unused_space_on_heap_page function for heap_page
   * unused_space = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
   * api
-    * no new page header files necessary
-    * heap_table_tuple_defs
-      * stores in a pas_p and a bplus_tree_tuple_defs for (unused_space -> pas_p->page_offset_type_info, page_id -> pas_p->page_id_type_info)
-      * and finally tuple_def for the heap_page tuples
-    * static functions
-      * get_new_heap_table() -> return a bplus_tree
-      * delete_heap_table() -> delete all the heap_pages and then the bplus_tree
-      * print_heap_table() -> iterate over all entries, print all entries and heap_pages
-      * fix_heap_page_entry_in_heap_table(uint32_t unused_space, uint64_t heap_page_id) -> fixes the unused_space for the passed entry, removes the entry and reinserts if necessary
-      * track_heap_page_in_heap_table(persistent_page heap_page); -> inserts the heap_page's entry in heap_table (for the first time) and releases lock on the page
-    * iterator functions
-      * this will be a leaf-only read-only forward-only scan, no pmm_p to be provided here, but you can lock heap_page itself in write_locked mode if you intend to modify it
-      * you may want to acquire a shared ordering lock, if you plan to access tuples in their fixed existing order, desirable by MVCC databases to void reading duplicates and missing some tuples altogether, for this you also need to take exclusive ordering lock while performing fix_heap_page_entry_in_heap_table -> add this information as a comment
-      * get_new_heap_table_iterator(uint32_t unused_space, uint64_t heap_page_id) -> starts from a desired entry to search for, can also be used for a finding a enough space containing page for a new tuple
-      * get_curr_unused_space_heap_table_iterator();
-      * get_curr_heap_page_id_heap_table_iterator();
-      * persistent_page lock_and_get_curr_heap_page_heap_table_iterator(int write_locked);
-      * next_heap_table_iterator(); -> goes to the next entry
-      * clone_heap_table_iterator();
-      * delete_heap_table_iterator();
+    * implement heap_table_tuple_defs functions
+    * implement heap_table.c functions
+    * implement heap_table_iterator functions
+  * checkpoint
+    * heap_table_tuple_def functions
+    * simple direct bplus_tree call functions (next_, clone_, delete_, get_new_heap_table)
+    * functions that use the iterator functions (print and destroy)
+    * rest of the functions
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
