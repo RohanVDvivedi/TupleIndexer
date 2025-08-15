@@ -15,7 +15,7 @@ struct heap_table_tuple_defs
 	tuple_def* record_def;
 
 	// tuple_definiton for the bplus_tree of the heap_table
-	bplus_tree_tuple_defs bpttd;
+	bplus_tree_tuple_defs bpttd_p;
 };
 
 // initializes the attributes in heap_table_tuple_defs struct as per the provided parameters
