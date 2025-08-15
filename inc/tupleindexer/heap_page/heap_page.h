@@ -4,9 +4,23 @@
 #include<tupleindexer/common/page_access_specification.h>
 #include<tupleindexer/utils/persistent_page_functions.h>
 
+/*
+	rules for using a heap_page
+
+	* never insert_* or discard_* at a random index in the heap_page
+	* you only append_* or update_* in the heap_page
+	  because you do not to mess up (page_id, tuple_index) of other tuples while you modify the page
+	  and this help keeps the (page_id, tuple_index) i.e. the tuple pointer constant
+*/
+
 // the below function returns a is_persistent_page_NULL(), only on an error
 // if the error is not an abort_error, then it is just impossible to create a heap_page out of a database page, which is only possible for very small page sizes
 persistent_page get_new_heap_page_with_write_lock(const page_access_specs* pas_p, const tuple_def* tpl_d, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+
+// your tuple should occupy lesser amount of space on the page then this value, to easily fit on the page
+// this is the value that goes inside the heap_table's unused_space, it is a rough estimate of what maximum sized append (not an update) can this page survive
+// it is literally is space_allotted_to_all_tuples - space_occupied_by_all_tuples OR more likely free_space_on_page + fragmented_space_on_page
+uint32_t get_unused_space_on_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
 
 void print_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
 
