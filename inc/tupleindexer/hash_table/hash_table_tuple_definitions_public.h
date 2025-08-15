@@ -16,7 +16,7 @@ struct hash_table_tuple_defs
 	// element ids of the keys (as per their element_ids in lpltd.record_def)
 	const positional_accessor* key_element_ids;
 
-	// tuple definition of the key to be used with this bplus_tree
+	// tuple definition of the key to be used with this hash_table
 	// for all of find, insert, update and delete functionalities
 	// shallow tuple_def with containees from the record_def
 	tuple_def* key_def;
@@ -31,7 +31,7 @@ struct hash_table_tuple_defs
 	page_table_tuple_defs pttd;
 };
 
-// initializes the attributes in bplus_tree_tuple_defs struct as per the provided parameters
+// initializes the attributes in hash_table_tuple_defs struct as per the provided parameters
 // the parameter pas_p must point to the pas attribute of the data_access_method that you are using it with
 // it allocates memory only for key_element_ids and key_def
 // it relies on lpltd and pttd for most of its fnctionality

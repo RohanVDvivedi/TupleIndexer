@@ -30,7 +30,7 @@ struct hash_table_iterator
 	// linked_page_list_iterator pointing to the curr_bucket_id
 	linked_page_list_iterator* lpli_p;
 
-	// any of ptrl_p and lpli_p can be NULL during the lifetime of the 
+	// any of ptrl_p and lpli_p can be NULL during the lifetime of the hash_table_iterator
 
 	const hash_table_tuple_defs* httd_p;
 
