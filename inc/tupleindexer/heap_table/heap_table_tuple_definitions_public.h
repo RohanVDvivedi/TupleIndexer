@@ -16,6 +16,9 @@ struct heap_table_tuple_defs
 
 	// tuple_definiton for the bplus_tree of the heap_table
 	bplus_tree_tuple_defs bpttd;
+
+	// tuple_def for the (unused_space, page_id) records of the heap_table's bplus_tree
+	tuple_def* entry_def;
 };
 
 // initializes the attributes in heap_table_tuple_defs struct as per the provided parameters
