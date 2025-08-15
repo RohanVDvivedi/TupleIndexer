@@ -4,6 +4,10 @@
 #include<inttypes.h>
 #include<tuplestore/tuple_def.h>
 
+/*
+	This is a self refrential struct do not copy it, instead pass it around as pointers keeping only a single instance around
+*/
+
 typedef struct page_access_specs page_access_specs;
 struct page_access_specs
 {
