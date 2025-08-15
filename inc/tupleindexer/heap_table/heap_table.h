@@ -15,6 +15,8 @@
 
 	additionally you can also use the heap_table_iterator to iterate over all the heap_page-s and scan all the tuples, but please be sure that fix_* and track_* functions may reorder heap_pages
 	requiring you to take a lock in shared mode for a complete scan and in exclusive mode to fix_* unused_space entries
+
+	it is basically a big-bad-wrapper over the bplus_tree to manage unused space and best-fit allocation in a heap_table, (like the FSM used in )
 */
 
 #include<tupleindexer/heap_table/heap_table_tuple_definitions_public.h>
@@ -22,15 +24,19 @@
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
 
+#include<tupleindexer/utils/persistent_page_functions.h>
+
 // returns pointer to the root page of the newly created heap_table
 uint64_t get_new_heap_table(const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // fix and correct an entry (unused_space, page_id) in the heap_table, by removing that entry itself and reinserting with the correct unused_space
 // if the page in context is identified to be empty, then a removal is performed instead of a reinsert
+// this function is a NO-OP if page_id == NULL_PAGE_ID
 void fix_unused_space_in_heap_table(uint32_t unused_space, uint64_t page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
-// to be called after you allocate and insert all tuple in a heap_page and then you want it to be tracked by this heap_table
+// to be called after you allocate and insert all tuples in a heap_page and then you want it to be tracked by this heap_table
 // the ppage is only read by this function to decipher its unused_space, you have to release lock on it, in any possible case (cases being abort_error or not)
+// this function is a NO-OP if page_id == NULL_PAGE_ID
 void track_unused_space_in_heap_table(const persistent_page* ppage, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // frees all the pages occupied by the heap_table and the tracked heap_page-s
