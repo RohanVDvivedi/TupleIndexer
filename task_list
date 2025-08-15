@@ -1,12 +1,10 @@
 ** PICKED TASKS
 
  * heap_table
-  * api
-    * implement heap_table_tuple_defs functions
-    * implement heap_table.c functions
-    * implement heap_table_iterator functions
+  * implement
+    * heap_table.c functions
+    * heap_table_iterator functions
   * checkpoint
-    * heap_table_tuple_def functions
     * simple direct bplus_tree call functions (next_, clone_, delete_, get_new_heap_table)
     * functions that use the iterator functions (print and destroy)
     * rest of the functions
