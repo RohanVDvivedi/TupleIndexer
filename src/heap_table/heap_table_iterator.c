@@ -44,7 +44,6 @@ heap_table_iterator* clone_heap_table_iterator(const heap_table_iterator* hti_p,
 	return clone_p;
 }
 
-// returns NULL_PAGE_ID if you are at the end of the scan OR if the heap_table is empty
 uint64_t get_curr_heap_page_id_heap_table_iterator(const heap_table_iterator* hti_p, uint32_t* unused_space)
 {
 	if(is_empty_bplus_tree(hti_p->bpi_p))
@@ -56,8 +55,16 @@ uint64_t get_curr_heap_page_id_heap_table_iterator(const heap_table_iterator* ht
 	return decompose_heap_table_entry_tuple(hti_p->httd_p, get_tuple_bplus_tree_iterator(hti_p->bpi_p), unused_space);
 }
 
-// returns get_NULL_persistent_page() if you are at the end of the scan OR if the heap_table is empty
-persistent_page lock_and_get_curr_heap_page_heap_table_iterator(const heap_table_iterator* hti_p, int write_locked);
+persistent_page lock_and_get_curr_heap_page_heap_table_iterator(const heap_table_iterator* hti_p, int write_locked)
+{
+	uint32_t _unused_space;
+	uint64_t page_id = get_curr_heap_page_id_heap_table_iterator(hti_p, &_unused_space);
+
+	if(page_id == hti_p->httd_p->pas_p->NULL_PAGE_ID)
+		return get_NULL_persistent_page(hti_p->pam_p);
+
+	return acquire_persistent_page_with_lock(hti_p->pam_p, transaction_id, page_id, ((write_locked) ? WRITE_LOCK : READ_LOCK), abort_error);
+}
 
 int next_heap_table_iterator(heap_table_iterator* hti_p, const void* transaction_id, int* abort_error)
 {
