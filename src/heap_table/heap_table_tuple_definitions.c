@@ -96,3 +96,13 @@ void build_heap_table_entry_tuple(const heap_table_tuple_defs* httd_p, void* ent
 	set_element_in_tuple(httd_p->entry_def, STATIC_POSITION(0), entry_tuple, &((user_value){.uint_value = unused_space}), 0);
 	set_element_in_tuple(httd_p->entry_def, STATIC_POSITION(1), entry_tuple, &((user_value){.uint_value = page_id}), 0);
 }
+
+uint64_t decompose_heap_table_entry_tuple(const heap_table_tuple_defs* httd_p, const void* entry_tuple, uint32_t* unused_space)
+{
+	user_value uval;
+	get_value_from_element_from_tuple(&uval, httd_p->entry_def, STATIC_POSITION(0), entry_tuple);
+	(*unused_space) = uval.uint_value;
+
+	get_value_from_element_from_tuple(&uval, httd_p->entry_def, STATIC_POSITION(1), entry_tuple);
+	return uval.uint_value;	
+}

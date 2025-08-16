@@ -8,4 +8,7 @@
 
 void build_heap_table_entry_tuple(const heap_table_tuple_defs* httd_p, void* entry_tuple, uint32_t unused_space, uint64_t page_id);
 
+// returns page_id, but unused_space is an in-out parameter
+uint64_t decompose_heap_table_entry_tuple(const heap_table_tuple_defs* httd_p, const void* entry_tuple, uint32_t* unused_space);
+
 #endif
