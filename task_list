@@ -1,11 +1,10 @@
 ** PICKED TASKS
 
  * heap_table
+  * code review, only them proceed further
   * implement
     * heap_table.c functions
-    * heap_table_iterator functions
   * checkpoint
-    * simple direct bplus_tree call functions (next_, clone_, delete_, get_new_heap_table)
     * functions that use the iterator functions (print and destroy)
     * rest of the functions
 
