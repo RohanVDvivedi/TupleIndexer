@@ -21,8 +21,6 @@
 typedef struct heap_table_iterator heap_table_iterator;
 struct heap_table_iterator
 {
-	uint64_t root_page_id;
-
 	// actual iterator over the heap_table's bplus_tree
 	// allows only read-only, leaf-only and forward only accesses
 	bplus_tree_iterator* bpi_p;

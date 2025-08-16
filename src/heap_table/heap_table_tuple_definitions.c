@@ -89,3 +89,10 @@ void print_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
 
 	print_bplus_tree_tuple_definitions(&(httd_p->bpttd));
 }
+
+void build_heap_table_entry_tuple(const heap_table_tuple_defs* httd_p, void* entry_tuple, uint32_t unused_space, uint64_t page_id)
+{
+	init_tuple(httd_p->entry_def, entry_tuple);
+	set_element_in_tuple(httd_p->entry_def, STATIC_POSITION(0), entry_tuple, &((user_value){.uint_value = unused_space}), 0);
+	set_element_in_tuple(httd_p->entry_def, STATIC_POSITION(1), entry_tuple, &((user_value){.uint_value = page_id}), 0);
+}
