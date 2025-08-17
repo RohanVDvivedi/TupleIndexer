@@ -6,8 +6,7 @@
   * implement
     * heap_table.c functions
   * checkpoints
-    * fix and track function
-      * track : perform insert directly, ensure page_id is not NULL_PAGE_ID or is not NULL persistent page
+    * fix function
       * fix : start with update, make sure that the entry exists and has wrong unused_space in the call back, if yes remove the entry keeping the heap_page locked, now if the remove succeeds, proceed further
             : if the page is empty, then do not insert it and instead free it, else reinsert it with the updated free space in the tree and relese lock on it
     * functions that use the iterator functions (print and destroy)
