@@ -3,8 +3,17 @@
  * heap_table
   * test case for heap_table
     * start with heap_table_tuple_defs and print it, and perform and print build and decompose result for the entry_def's entry tuple
+    * full heap page test cases and a utility function to find a right page to insert a tuple into
   * implement
     * heap_table.c functions using the iterator functions (print and destroy)
+    * utility heap_table_entries datastructure a hashmap of page_id -> unused_space
+      * allows insert(page_id, unused_space), remove_all() and merge(heap_table_entries) operations
+      * insert to slowly insert from a function
+      * remove all to remove_all after fixing all the entries
+      * merge to merge the errored entries into an existing global map
+      * insert and merge overwrites unused_spaces of the existing etries
+      * locked under a mutex
+    * write a free space function to find the right free space using iterator and the heap_table_entries data_structure
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
