@@ -55,7 +55,7 @@ uint64_t get_curr_heap_page_id_heap_table_iterator(const heap_table_iterator* ht
 	return decompose_heap_table_entry_tuple(hti_p->httd_p, get_tuple_bplus_tree_iterator(hti_p->bpi_p), unused_space);
 }
 
-persistent_page lock_and_get_curr_heap_page_heap_table_iterator(const heap_table_iterator* hti_p, int write_locked, uint32_t* unused_space)
+persistent_page lock_and_get_curr_heap_page_heap_table_iterator(const heap_table_iterator* hti_p, int write_locked, uint32_t* unused_space, const void* transaction_id, int* abort_error)
 {
 	uint64_t page_id = get_curr_heap_page_id_heap_table_iterator(hti_p, unused_space);
 

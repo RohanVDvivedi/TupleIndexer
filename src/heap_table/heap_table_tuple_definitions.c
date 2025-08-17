@@ -116,6 +116,7 @@ uint64_t decompose_heap_table_entry_tuple(const heap_table_tuple_defs* httd_p, c
 	}
 
 	{
+		user_value uval;
 		get_value_from_element_from_tuple(&uval, httd_p->entry_def, STATIC_POSITION(PAGE_ID_ENTRY_DEF_POSITION), entry_tuple);
 		return uval.uint_value;
 	}

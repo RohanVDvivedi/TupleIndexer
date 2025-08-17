@@ -17,7 +17,7 @@ heap_table_iterator* clone_heap_table_iterator(const heap_table_iterator* hti_p,
 uint64_t get_curr_heap_page_id_heap_table_iterator(const heap_table_iterator* hti_p, uint32_t* unused_space);
 
 // returns get_NULL_persistent_page() if you are at the end of the scan OR if the heap_table is empty
-persistent_page lock_and_get_curr_heap_page_heap_table_iterator(const heap_table_iterator* hti_p, int write_locked, uint32_t* unused_space);
+persistent_page lock_and_get_curr_heap_page_heap_table_iterator(const heap_table_iterator* hti_p, int write_locked, uint32_t* unused_space, const void* transaction_id, int* abort_error);
 
 int next_heap_table_iterator(heap_table_iterator* hti_p, const void* transaction_id, int* abort_error);
 
