@@ -13,7 +13,7 @@
       * merge to merge the errored entries into an existing global map
       * insert and merge overwrites unused_spaces of the existing etries
       * locked under a mutex
-    * write a free space function to find the right free space using iterator and the heap_table_entries data_structure
+    * write a free space function to find the right free space using iterator and the heap_table_entries data_structure (to accumulate wring entries entries), returns NULL persistent page if none with enough space is found
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
