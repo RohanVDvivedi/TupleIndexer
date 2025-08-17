@@ -33,6 +33,12 @@ uint32_t get_unused_space_on_heap_page(const persistent_page* ppage, const page_
 	return get_space_allotted_to_all_tuples_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def)) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def));
 }
 
+int is_heap_page_empty(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d)
+{
+	return get_tomb_stone_count_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def)) == 
+			get_tuple_count_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def));
+}
+
 void print_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d)
 {
 	print_heap_page_header(ppage, pas_p);

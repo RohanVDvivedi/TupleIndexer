@@ -22,7 +22,7 @@ persistent_page get_new_heap_page_with_write_lock(const page_access_specs* pas_p
 // it is literally is space_allotted_to_all_tuples - space_occupied_by_all_tuples OR more likely free_space_on_page + fragmented_space_on_page
 uint32_t get_unused_space_on_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
 
-// returns true if the tombstones of the heap_page == tuple_coun on the heap_page
+// returns true if the tombstones of the heap_page == tuple_count on the heap_page
 int is_heap_page_empty(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
 
 void print_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
