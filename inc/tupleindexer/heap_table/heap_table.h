@@ -32,7 +32,7 @@ uint64_t get_new_heap_table(const heap_table_tuple_defs* httd_p, const page_acce
 // fix and correct an entry (unused_space, page_id) in the heap_table, by removing that entry itself and reinserting with the correct unused_space
 // if the page in context is identified to be empty, then a removal is performed instead of a reinsert
 // this function is a NO-OP if page_id == NULL_PAGE_ID
-void fix_unused_space_in_heap_table(uint64_t root_page_id, uint32_t unused_space, uint64_t page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int fix_unused_space_in_heap_table(uint64_t root_page_id, uint32_t unused_space, uint64_t page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // to be called after you allocate and insert all tuples in a heap_page and then you want it to be tracked by this heap_table
 // the ppage is only read by this function to decipher its unused_space, you have to release lock on it, in any possible case (cases being abort_error or not)
