@@ -68,10 +68,18 @@ int fix_unused_space_in_heap_table(uint64_t root_page_id, uint32_t unused_space,
 	int removed = inspected_update_in_bplus_tree(root_page_id, entry_tuple, &((update_inspector){.context = &(fix_remove_inspect_context){&ppage, httd_p, pam_p}, .update_inspect = fix_remove_inspect}), &(httd_p->bpttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
-	if(!removed) // possibly a stale entry, nothing needs to be done
+	if(!removed) // possibly a stale entry OR a correct unused_space entry, so nothing needs to be done
+	{
+		// release lock on the heap page it was acquired
+		if(!is_persistent_page_NULL(&ppage, pam_p))
+		{
+			// this is the last statement, after a failure, so no need to check abort_error
+			release_lock_on_persistent_page(pam_p, transaction_id, &ppage, NONE_OPTION, abort_error);
+		}
 		return 0;
+	}
 
-	// now ppage is surely locked with the right page
+	// now heap page is surely locked
 
 	// if this page is empty, free it
 	if(is_heap_page_empty(&ppage, httd_p->pas_p, httd_p->record_def))
