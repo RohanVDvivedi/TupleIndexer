@@ -1,5 +1,7 @@
 #include<tupleindexer/heap_table/heap_table.h>
 
+#include<tupleindexer/heap_table/heap_table_tuple_definitions.h>
+
 #include<tupleindexer/bplus_tree/bplus_tree.h>
 #include<tupleindexer/heap_page/heap_page.h>
 
@@ -38,7 +40,7 @@ int fix_unused_space_in_heap_table(uint64_t root_page_id, uint32_t unused_space,
 	else // else first reinsert the page, and then release lock on it
 	{
 		// fetch unused_space on this page
-		uint32_t unused_space = get_unused_space_on_heap_page(ppage, httd_p->pas_p, httd_p->record_def);
+		uint32_t unused_space = get_unused_space_on_heap_page(&ppage, httd_p->pas_p, httd_p->record_def);
 
 		// build the entry for this tuple, that we need to insert
 		build_heap_table_entry_tuple(httd_p, entry_tuple, unused_space, page_id);
