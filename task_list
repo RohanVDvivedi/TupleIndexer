@@ -7,8 +7,9 @@
     * heap_table.c functions
   * checkpoints
     * fix function
-      * fix : start with update, make sure that the entry exists and has wrong unused_space in the call back, if yes remove the entry keeping the heap_page locked, now if the remove succeeds, proceed further
-            : if the page is empty, then do not insert it and instead free it, else reinsert it with the updated free space in the tree and relese lock on it
+      * fix 
+        * start with update, make sure that the entry exists and has wrong unused_space in the call back, if yes remove the entry keeping the heap_page locked, now if the remove succeeds, proceed further
+        * if the page is empty, then do not insert it and instead free it, else reinsert it with the updated free space in the tree and relese lock on it
     * functions that use the iterator functions (print and destroy)
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
