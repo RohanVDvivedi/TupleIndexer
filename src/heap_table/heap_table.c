@@ -41,7 +41,7 @@ static int fix_remove_inspect(const void* context, const tuple_def* record_def, 
 	// fetch the actual unused_space on the heap_page in context
 	uint32_t actual_unused_space = get_unused_space_on_heap_page(ppage, httd_p->pas_p, httd_p->record_def);
 
-	// if the unused_space on the heap_table entry is same as that on the page, then no need to perform any insert
+	// if the unused_space on the heap_table entry is same as that on the page, then no need to perform the remove
 	if(unused_space == actual_unused_space)
 	{
 		// this is the last statement, after a failure, so no need to check abort_error
