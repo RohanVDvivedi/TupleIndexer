@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
  * heap_table
-  * code review for fix and track function
   * test case for heap_table
     * start with heap_table_tuple_defs and print it, and perform and print build and decompose result for the entry_def's entry tuple
   * implement
