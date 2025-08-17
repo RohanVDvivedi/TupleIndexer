@@ -10,6 +10,11 @@ uint64_t get_new_heap_table(const heap_table_tuple_defs* httd_p, const page_acce
 	return get_new_bplus_tree(&(httd_p->bpttd), pam_p, pmm_p, transaction_id, abort_error);
 }
 
+static int fix_remove_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, void (*cancel_update_callback)(void* cancel_update_callback_context, const void* transaction_id, int* abort_error), void* cancel_update_callback_context, const void* transaction_id, int* abort_error)
+{
+
+}
+
 int fix_unused_space_in_heap_table(uint64_t root_page_id, uint32_t unused_space, uint64_t page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// if the page_id is NULL fail immediately
@@ -22,7 +27,7 @@ int fix_unused_space_in_heap_table(uint64_t root_page_id, uint32_t unused_space,
 	build_heap_table_entry_tuple(httd_p, entry_tuple, unused_space, page_id);
 
 	// if this functions succeeds we will have the update_inspector locked the concerned heap_page in the ppage for us
-	int removed = inspected_update_in_bplus_tree(root_page_id, entry_tuple, const update_inspector* ui_p, &(httd_p->bpttd), pam_p, pmm_p, transaction_id, abort_error);
+	int removed = inspected_update_in_bplus_tree(root_page_id, entry_tuple, &((update_inspector){.context = &ppage, .update_inspect = fix_remove_inspect}), &(httd_p->bpttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 	if(!removed) // possibly a stale entry, nothing needs to be done
