@@ -5,7 +5,7 @@
 #define UNUSED_SPACE_ENTRY_DEF_POSITION 0
 #define PAGE_ID_ENTRY_DEF_POSITION      1
 
-positional_accessor entry_key_element_ids = {2, (uint32_t[]){UNUSED_SPACE_ENTRY_DEF_POSITION, PAGE_ID_ENTRY_DEF_POSITION}}; // entry's key is itself, i.e. this must contain {0,1}
+positional_accessor entry_key_element_ids[2] = {STATIC_POSITION(UNUSED_SPACE_ENTRY_DEF_POSITION), STATIC_POSITION(PAGE_ID_ENTRY_DEF_POSITION)}; // entry's key is itself, i.e. this must contain {0,1}
 compare_direction entry_key_compare_direction[2] = {ASC, ASC}; // entry's key compare directions, both ascending (find page with least unused space first (for best-fit) and the fill the page with lower page_id first)
 
 int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def)
@@ -54,7 +54,7 @@ int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_
 		}
 	}
 
-	if(!init_bplus_tree_tuple_definitions(&(httd_p->bpttd), pas_p, httd_p->entry_def, &entry_key_element_ids, entry_key_compare_direction, 2))
+	if(!init_bplus_tree_tuple_definitions(&(httd_p->bpttd), pas_p, httd_p->entry_def, entry_key_element_ids, entry_key_compare_direction, 2))
 	{
 		deinit_heap_table_tuple_definitions(httd_p);
 		return 0;
