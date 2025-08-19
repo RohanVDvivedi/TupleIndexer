@@ -8,7 +8,7 @@
 positional_accessor entry_key_element_ids = {2, (uint32_t[]){UNUSED_SPACE_ENTRY_DEF_POSITION, PAGE_ID_ENTRY_DEF_POSITION}}; // entry's key is itself, i.e. this must contain {0,1}
 compare_direction entry_key_compare_direction[2] = {ASC, ASC}; // entry's key compare directions, both ascending (find page with least unused space first (for best-fit) and the fill the page with lower page_id first)
 
-int init_hash_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def)
+int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def)
 {
 	// zero initialize httd_p
 	(*httd_p) = (heap_table_tuple_defs){};
