@@ -7,7 +7,7 @@ typedef struct heap_table_iterator heap_table_iterator;
 
 // creates a new heap_table_iterator starting with or after the provided entry for (unused_space, page_id), if you only looking for a best-fit page to insert into then you may pass page_id = 0
 // on abort_error, NULL is returned
-heap_table_iterator* get_new_heap_table_iterator(uint64_t root_page_id, uint32_t unused_space, uint64_t page_id, const void* key, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+heap_table_iterator* get_new_heap_table_iterator(uint64_t root_page_id, uint32_t unused_space, uint64_t page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // returns NULL on an abort error
 // on an abort_error, hti_p will still hold its locks
