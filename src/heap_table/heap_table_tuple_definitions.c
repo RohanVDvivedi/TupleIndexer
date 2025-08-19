@@ -21,6 +21,12 @@ int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_
 	if(!is_valid_page_access_specs(pas_p))
 		return 0;
 
+	// check if the record_def's record's min_size fits on the heap page
+	uint32_t space_allotted_for_records = get_space_to_be_allotted_to_all_tuples_on_persistent_page(sizeof_HEAP_PAGE_HEADER(pas_p), pas_p->page_size, &(record_def->size_def));
+	uint32_t space_additional_for_record = get_additional_space_overhead_per_tuple_on_persistent_page(pas_p->page_size, &(record_def->size_def));
+	if(space_allotted_for_records < get_minimum_tuple_size(record_def) + space_additional_for_record)
+		return 0;
+
 	// initialize page_access_specs fo the bpttd
 	httd_p->pas_p = pas_p;
 
