@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
  * heap_table
+  * make lock_and_get_heap_page to take in a int* needs_fixing, in-out parameter to be set to 1 if the page is empty OR has wring unused_space entry for it, cmpute this only if this needs_fixing != NULL
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
