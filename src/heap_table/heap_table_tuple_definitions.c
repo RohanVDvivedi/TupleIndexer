@@ -1,5 +1,9 @@
 #include<tupleindexer/heap_table/heap_table_tuple_definitions.h>
 
+#include<tupleindexer/utils/persistent_page_functions.h>
+
+#include<tupleindexer/heap_page/heap_page_header.h>
+
 #include<stdlib.h>
 
 #define UNUSED_SPACE_ENTRY_DEF_POSITION 0
