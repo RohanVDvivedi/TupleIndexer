@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
  * heap_table
+  * make sure that the a min_size record_def must fit on the heap_page in the heap_table tuple_defs
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
