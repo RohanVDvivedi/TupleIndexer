@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
  * heap_table
+  * code review destroy and print for heap table
   * test case for heap_table
     * start with heap_table_tuple_defs and print it, and perform and print build and decompose result for the entry_def's entry tuple
     * full heap page test cases and a utility function to find a right page to insert a tuple into
