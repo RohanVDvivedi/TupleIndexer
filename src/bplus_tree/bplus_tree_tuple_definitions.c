@@ -25,7 +25,7 @@ int init_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p, const page
 	if(!are_all_positions_accessible_for_tuple_def(record_def, key_element_ids, key_element_count))
 		return 0;
 
-	// initialize page_access_specs fo the bpttd
+	// initialize page_access_specs for the bpttd
 	bpttd_p->pas_p = pas_p;
 
 	// this can only be called after setting the pas_p attribute of bpttd

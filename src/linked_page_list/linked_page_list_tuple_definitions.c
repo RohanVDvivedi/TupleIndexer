@@ -19,7 +19,7 @@ int init_linked_page_list_tuple_definitions(linked_page_list_tuple_defs* lpltd_p
 	lpltd_p->pas_p = pas_p;
 
 	// this can only be done after setting the pas_p attribute of lpltd
-	// there must be room for atleast some bytes after the page_table_page_header
+	// there must be room for atleast some bytes after the linked_page_list_page_header
 	if(!can_page_header_fit_on_persistent_page(sizeof_LINKED_PAGE_LIST_PAGE_HEADER(lpltd_p), lpltd_p->pas_p->page_size))
 		return 0;
 
