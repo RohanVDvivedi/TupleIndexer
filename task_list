@@ -1,5 +1,15 @@
 ** PICKED TASKS
 
+ * heap_page
+  * uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t* possible_insertion_index);
+    * checks tuple is not NULL only then inserts
+    * return value is the index where this function call inserted the tuple
+    * (*possible_insertion_index) will always be set to the value to insert the next tuple, so preserve it and pass between runs
+    * possible_insertion_index if NULL starts the checks from 0
+  * int delete_from_heap_page(persistent_page* ppage, uint32_t index);
+    * fails if a tuple does not exist at the index
+    * updates the tuple to NULL in the page at that index
+
  * heap_table
   * persistent_page get_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, uint32_t unused_space, callback_wrong_entry)
   * test cases and test
