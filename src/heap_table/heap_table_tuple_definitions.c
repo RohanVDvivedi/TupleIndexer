@@ -82,9 +82,9 @@ int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_
 
 int check_if_record_can_be_inserted_for_heap_table_tuple_definitions(const heap_table_tuple_defs* httd_p, const void* record_tuple)
 {
-	// NULL tuple can always be inserted in a heap_page of a heap_table
+	// NULL tuple can never be inserted in a heap_page of a heap_table
 	if(record_tuple == NULL)
-		return 1;
+		return 0;
 
 	uint32_t record_tuple_size = get_tuple_size(httd_p->record_def, record_tuple);
 
