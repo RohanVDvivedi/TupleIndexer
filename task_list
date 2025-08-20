@@ -3,6 +3,7 @@
  * heap_table
   * make lock_and_get_heap_page to take in a int* needs_fixing, in-out parameter to be set to 1 if the page is empty OR has wring unused_space entry for it, cmpute this only if this needs_fixing != NULL
   * compute max_record_size for the record on heap_page of the heap_table
+  * add a function that checks if a tuple can be inserted into some heap_page of the heap_table
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
