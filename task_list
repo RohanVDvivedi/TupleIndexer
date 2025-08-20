@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
  * heap_page
+  * in get_unused_space from heap page, if the tombstone count > 0, then there is 1 additional_space_overhead bytes of extra space on it
   * uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t* possible_insertion_index);
     * checks tuple is not NULL only then inserts
     * return value is the index where this function call inserted the tuple
