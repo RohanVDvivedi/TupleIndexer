@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
  * heap_table
-  * make lock_and_get_heap_page to take in a int* needs_fixing, in-out parameter to be set to 1 if the page is empty OR has wring unused_space entry for it, cmpute this only if this needs_fixing != NULL
   * compute max_record_size for the record on heap_page of the heap_table
   * add a function that checks if a tuple can be inserted into some heap_page of the heap_table
   * persistent_page get_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, uint32_t unused_space, callback_wrong_entry)
