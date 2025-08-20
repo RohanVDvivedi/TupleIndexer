@@ -75,6 +75,21 @@ int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_
 	return 1;
 }
 
+int check_if_record_can_be_inserted_for_heap_table_tuple_definitions(const heap_table_tuple_defs* httd_p, const void* record_tuple)
+{
+	// NULL tuple can always be inserted in a heap_page of a heap_table
+	if(record_tuple == NULL)
+		return 1;
+
+	uint32_t record_tuple_size = get_tuple_size(httd_p->record_def, record_tuple);
+
+	// if the size of the record tuple is greater than the max_record_size of the httd, then it can not be inserted into the heap_table with the given httd
+	if(record_tuple_size > httd_p->max_record_size)
+		return 0;
+
+	return 1;
+}
+
 void deinit_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
 {
 	if(httd_p->entry_def)

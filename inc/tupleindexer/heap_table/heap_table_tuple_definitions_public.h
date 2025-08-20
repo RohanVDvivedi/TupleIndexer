@@ -31,6 +31,8 @@ struct heap_table_tuple_defs
 // it also fails if the pas_p does not pass is_valid_page_access_specs(pas_p)
 int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_access_specs* pas_p, const tuple_def* record_def);
 
+int check_if_record_can_be_inserted_for_heap_table_tuple_definitions(const heap_table_tuple_defs* httd_p, const void* record_tuple);
+
 // then resets all the heap_table_tuple_defs struct attributes to NULL or 0
 void deinit_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p);
 
