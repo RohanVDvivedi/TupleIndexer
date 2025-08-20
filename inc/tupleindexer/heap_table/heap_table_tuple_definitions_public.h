@@ -14,6 +14,9 @@ struct heap_table_tuple_defs
 	// tuple definition of the record on the heap_page-s of this heap_table
 	const tuple_def* record_def;
 
+	// maximum record size record that may fit on any of the heap_page-s of the heap_table
+	uint32_t max_record_size;
+
 	// tuple_definiton for the bplus_tree of the heap_table
 	bplus_tree_tuple_defs bpttd;
 

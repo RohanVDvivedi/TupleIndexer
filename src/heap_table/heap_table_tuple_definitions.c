@@ -70,6 +70,8 @@ int init_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p, const page_
 		return 0;
 	}
 
+	httd_p->max_record_size = get_space_to_be_allotted_to_all_tuples_on_persistent_page(sizeof_HEAP_PAGE_HEADER(pas_p), httd_p->pas_p->page_size, &(httd_p->record_def->size_def)) - get_additional_space_overhead_per_tuple_on_persistent_page(httd_p->pas_p->page_size, &(httd_p->record_def->size_def));
+
 	return 1;
 }
 
@@ -86,6 +88,7 @@ void deinit_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
 	httd_p->record_def = NULL;
 	deinit_bplus_tree_tuple_definitions(&(httd_p->bpttd));
 	httd_p->entry_def = NULL;
+	httd_p->max_record_size = 0;
 }
 
 void print_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
@@ -94,6 +97,8 @@ void print_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
 
 	if(httd_p->pas_p)
 		print_page_access_specs(httd_p->pas_p);
+
+	printf("max_record_size = %"PRIu32"\n", httd_p->max_record_size);
 
 	printf("record_def = ");
 	if(httd_p->record_def)
