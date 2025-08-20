@@ -1,5 +1,7 @@
 #include<tupleindexer/heap_table/heap_table_iterator.h>
 
+#include<tupleindexer/heap_page/heap_page.h>
+
 #include<stdlib.h>
 
 heap_table_iterator* get_new_heap_table_iterator(uint64_t root_page_id, uint32_t unused_space, uint64_t page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
@@ -55,14 +57,24 @@ uint64_t get_curr_heap_page_id_heap_table_iterator(const heap_table_iterator* ht
 	return decompose_heap_table_entry_tuple(hti_p->httd_p, get_tuple_bplus_tree_iterator(hti_p->bpi_p), unused_space);
 }
 
-persistent_page lock_and_get_curr_heap_page_heap_table_iterator(const heap_table_iterator* hti_p, int write_locked, uint32_t* unused_space, const void* transaction_id, int* abort_error)
+persistent_page lock_and_get_curr_heap_page_heap_table_iterator(const heap_table_iterator* hti_p, int write_locked, uint32_t* unused_space, int* entry_needs_fixing, const void* transaction_id, int* abort_error)
 {
 	uint64_t page_id = get_curr_heap_page_id_heap_table_iterator(hti_p, unused_space);
 
 	if(page_id == hti_p->httd_p->pas_p->NULL_PAGE_ID)
 		return get_NULL_persistent_page(hti_p->pam_p);
 
-	return acquire_persistent_page_with_lock(hti_p->pam_p, transaction_id, page_id, ((write_locked) ? WRITE_LOCK : READ_LOCK), abort_error);
+	persistent_page ppage = acquire_persistent_page_with_lock(hti_p->pam_p, transaction_id, page_id, ((write_locked) ? WRITE_LOCK : READ_LOCK), abort_error);
+	if(*abort_error)
+		return get_NULL_persistent_page(hti_p->pam_p);
+
+	// if the entry_needs_fixing is passed then compute it
+	// fixing is necessary only if the heap_page is empty OR actual_unused_space is not equal to the unused_space on it's entry
+	if(entry_needs_fixing != NULL)
+		(*entry_needs_fixing) = is_heap_page_empty(&ppage, hti_p->httd_p->pas_p, hti_p->httd_p->record_def)
+							|| ((*unused_space) != get_unused_space_on_heap_page(&ppage, hti_p->httd_p->pas_p, hti_p->httd_p->record_def));
+
+	return ppage;
 }
 
 int next_heap_table_iterator(heap_table_iterator* hti_p, const void* transaction_id, int* abort_error)

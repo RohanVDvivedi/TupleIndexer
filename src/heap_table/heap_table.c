@@ -195,7 +195,7 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 	while(1)
 	{
 		uint32_t unused_space;
-		persistent_page ppage = lock_and_get_curr_heap_page_heap_table_iterator(hti_p, 0, &unused_space, transaction_id, abort_error);
+		persistent_page ppage = lock_and_get_curr_heap_page_heap_table_iterator(hti_p, 0, &unused_space, NULL, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
