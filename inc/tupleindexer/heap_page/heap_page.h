@@ -4,13 +4,12 @@
 #include<tupleindexer/common/page_access_specification.h>
 #include<tupleindexer/utils/persistent_page_functions.h>
 
+#include<tupleindexer/common/invalid_tuple_indices.h>
+
 /*
 	rules for using a heap_page
 
-	* never insert_* or discard_* at a random index in the heap_page
-	* you only append_* or update_* in the heap_page
-	  because you do not to mess up (page_id, tuple_index) of other tuples while you modify the page
-	  and this help keeps the (page_id, tuple_index) i.e. the tuple pointer constant
+	* use only the provided functions here to modify the page
 */
 
 // the below function returns a is_persistent_page_NULL(), only on an error
@@ -24,6 +23,12 @@ uint32_t get_unused_space_on_heap_page(const persistent_page* ppage, const page_
 
 // returns true if the tombstones of the heap_page == tuple_count on the heap_page
 int is_heap_page_empty(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
+
+// returns the index on the page where tuple was inserted, it looks for an index starting from (*possible_insertion_index)
+// indices of the existing tuple remain unchanged, keeping passing the same possible_insertion_index, for efficient insertions on the single page
+// you will also need to initialize (*possible_insertion_index) = 0, for the first call
+// if the insertion fails for any reason, INVALID_TUPLE_INDEX will be returned
+uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t* possible_insertion_index, const tuple_def* tpl_d, const page_access_specs* pas_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 void print_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
 

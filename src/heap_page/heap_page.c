@@ -39,6 +39,43 @@ int is_heap_page_empty(const persistent_page* ppage, const page_access_specs* pa
 			get_tuple_count_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def));
 }
 
+uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t* possible_insertion_index, const tuple_def* tpl_d, const page_access_specs* pas_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// get tuple_count on the page
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def));
+
+	// limit the (*possible_insertion_index) to be not more than the tuple_count
+	(*possible_insertion_index) = min((*possible_insertion_index), tuple_count);
+
+	// iterate over all the remaining tuples on the page
+	for(; (*possible_insertion_index) < tuple_count; (*possible_insertion_index)++)
+	{
+		// if a tuple exists at (*possible_insertion_index), then continue and look for the next one
+		if(exists_tuple_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def), (*possible_insertion_index)))
+			continue;
+
+		// perform an update at that (*possible_insertion_index)
+		int inserted = update_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, pas_p->page_size, &(tpl_d->size_def), (*possible_insertion_index), tuple, abort_error);
+		if(*abort_error) // if aborted, fail this call
+			return INVALID_TUPLE_INDEX;
+		if(inserted) // if inserted, we are done, return the current (*possible_insertion_index) and then increment it
+			return (*possible_insertion_index)++;
+		else // else this page is not big enough, but we found an empty slot
+			return INVALID_TUPLE_INDEX;
+	}
+
+	// if we reach here (*possible_insertion_index) = tuple_count
+
+	// perfrom an append now
+	int inserted = append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, pas_p->page_size, &(tpl_d->size_def), tuple, abort_error);
+	if(*abort_error) // if aborted, fail this call
+		return INVALID_TUPLE_INDEX;
+	if(inserted) // if inserted, we are done, return the current (*possible_insertion_index) and then increment it
+		return (*possible_insertion_index)++;
+	else // else this page is not big enough
+		return INVALID_TUPLE_INDEX;
+}
+
 void print_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d)
 {
 	print_heap_page_header(ppage, pas_p);
