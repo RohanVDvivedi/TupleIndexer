@@ -74,11 +74,14 @@ int main()
 
 	/* TESTS STARTED */
 
+	uint32_t possible_insertion_index = 0;
+	char temp_tuple[PAGE_SIZE];
+
 	print_heap_page(&heap_page, &(pam_p->pas), record_def);
 
-	char temp_tuple[PAGE_SIZE];
-	initialize_tuple(record_def, temp_tuple, 7, "Rohan Vipulkumar Dvivedi");
-	append_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, &heap_page, PAGE_SIZE, &(record_def->size_def), temp_tuple, &abort_error);
+	initialize_tuple(record_def, temp_tuple, 7, "Rohan Dvivedi");
+	possible_insertion_index = 0;
+	insert_in_heap_page(&heap_page, temp_tuple, &(possible_insertion_index), record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -87,6 +90,113 @@ int main()
 
 	print_heap_page(&heap_page, &(pam_p->pas), record_def);
 
+	initialize_tuple(record_def, temp_tuple, 16, "Rupa Dvivedi");
+	insert_in_heap_page(&heap_page, temp_tuple, &(possible_insertion_index), record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	initialize_tuple(record_def, temp_tuple, 2, "Vipul Dvivedi");
+	insert_in_heap_page(&heap_page, temp_tuple, &(possible_insertion_index), record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	initialize_tuple(record_def, temp_tuple, 17, "Devashree Dvivedi");
+	insert_in_heap_page(&heap_page, temp_tuple, &(possible_insertion_index), record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	initialize_tuple(record_def, temp_tuple, 30, "Manan Joshi");
+	insert_in_heap_page(&heap_page, temp_tuple, &(possible_insertion_index), record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	initialize_tuple(record_def, temp_tuple, 17, "Devashree Joshi");
+	insert_in_heap_page(&heap_page, temp_tuple, &(possible_insertion_index), record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	delete_from_heap_page(&heap_page, 1, record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	delete_from_heap_page(&heap_page, 3, record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	delete_from_heap_page(&heap_page, 5, record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	initialize_tuple(record_def, temp_tuple, 16, "Rupa Dvivedi");
+	possible_insertion_index = 2;
+	insert_in_heap_page(&heap_page, temp_tuple, &(possible_insertion_index), record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	initialize_tuple(record_def, temp_tuple, 17, "Devashree Joshi");
+	insert_in_heap_page(&heap_page, temp_tuple, &(possible_insertion_index), record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
+
+	int deleted = delete_from_heap_page(&heap_page, 13, record_def, &(pam_p->pas), pmm_p, transaction_id, &abort_error);
+	printf("pass if (deleted %d) == 0\n", deleted);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	print_heap_page(&heap_page, &(pam_p->pas), record_def);
 
 	/* CLEANUP */
 
