@@ -54,7 +54,7 @@ uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t
 		if(exists_tuple_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def), (*possible_insertion_index)))
 			continue;
 
-		// perform an update at that (*possible_insertion_index)
+		// perform an update at that (*possible_insertion_index), where presently there is no tuple, and holds just a tombstone
 		int inserted = update_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, pas_p->page_size, &(tpl_d->size_def), (*possible_insertion_index), tuple, abort_error);
 		if(*abort_error) // if aborted, fail this call
 			return INVALID_TUPLE_INDEX;
