@@ -30,6 +30,10 @@ int is_heap_page_empty(const persistent_page* ppage, const page_access_specs* pa
 // if the insertion fails for any reason, INVALID_TUPLE_INDEX will be returned
 uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t* possible_insertion_index, const tuple_def* tpl_d, const page_access_specs* pas_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
+// sets the corresponding tuple on the page to NULL and discards any trailing tombstones
+// returns 1 only if the tuple was deleted
+int delete_from_heap_page(persistent_page* ppage, uint32_t index, const tuple_def* tpl_d, const page_access_specs* pas_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+
 void print_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d);
 
 #endif

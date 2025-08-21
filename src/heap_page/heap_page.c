@@ -76,6 +76,23 @@ uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t
 		return INVALID_TUPLE_INDEX;
 }
 
+int delete_from_heap_page(persistent_page* ppage, uint32_t index, const tuple_def* tpl_d, const page_access_specs* pas_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	// first update the index in concern to NULL
+	int removed = update_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, pas_p->page_size, &(tpl_d->size_def), index, NULL, abort_error);
+	if(*abort_error)
+		return 0;
+	if(!removed) // if not removed, fail this call
+		return 0;
+
+	// then discard trailing tombstones
+	discard_trailing_tomb_stones_on_persistent_page(pmm_p, transaction_id, ppage, pas_p->page_size, &(tpl_d->size_def), abort_error);
+	if(*abort_error)
+		return 0;
+
+	return removed;
+}
+
 void print_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d)
 {
 	print_heap_page_header(ppage, pas_p);
