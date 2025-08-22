@@ -61,7 +61,7 @@ static int goto_next_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		// update the curr_page
 		bpi_p->curr_page = next_leaf_page;
 
-		// goto_next was a success if next_leaf_page is not null
+		// goto_next was a success if curr_page is not null
 		return !is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->pam_p);
 	}
 	else // iterate forward using the pointers on the parent pages that are stacked
@@ -106,7 +106,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		release_lock_on_persistent_page(bpi_p->pam_p, transaction_id, &(bpi_p->curr_page), NONE_OPTION, abort_error);
 		if(*abort_error)
 		{
-			// on an abort error release lock on next_leaf_page if it is not NULL
+			// on an abort error release lock on prev_leaf_page if it is not NULL
 			if(!is_persistent_page_NULL(&prev_leaf_page, bpi_p->pam_p))
 				release_lock_on_persistent_page(bpi_p->pam_p, transaction_id, &prev_leaf_page, NONE_OPTION, abort_error);
 			return 0;
@@ -115,7 +115,7 @@ static int goto_prev_leaf_page(bplus_tree_iterator* bpi_p, const void* transacti
 		// update the curr_page
 		bpi_p->curr_page = prev_leaf_page;
 
-		// goto_next was a success if next_leaf_page is not null
+		// goto_prev was a success if curr_page is not null
 		return !is_persistent_page_NULL(&(bpi_p->curr_page), bpi_p->pam_p);
 	}
 	else // iterate forward using the pointers on the parent pages that are stacked
