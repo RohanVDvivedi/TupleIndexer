@@ -158,6 +158,11 @@ int destroy_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_
 		free_persistent_page(pam_p, transaction_id, page_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
+
+		// goto to the next entry
+		next_heap_table_iterator(hti_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
 	}
 
 	delete_heap_table_iterator(hti_p, transaction_id, abort_error);
@@ -214,6 +219,11 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 		release_lock_on_persistent_page(pam_p, transaction_id, &ppage, NONE_OPTION, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
+
+		// goto to the next entry
+		next_heap_table_iterator(hti_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
 	}
 
 	delete_heap_table_iterator(hti_p, transaction_id, abort_error);
@@ -230,4 +240,63 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 		hti_p = NULL;
 	}
 	return;
+}
+
+persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, const uint32_t required_unused_space, const heap_table_notifier* notify_wrong_entry, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	heap_table_iterator* hti_p = NULL;
+	persistent_page ppage = get_NULL_persistent_page(pam_p);
+
+	hti_p = get_new_heap_table_iterator(root_page_id, required_unused_space, 0, httd_p, pam_p, transaction_id, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	// free each heap page one by one
+	while(1)
+	{
+		int is_fix_needed = 0;
+		uint32_t unused_space_in_entry;
+		ppage = lock_and_get_curr_heap_page_heap_table_iterator(hti_p, 1, &unused_space_in_entry, &is_fix_needed, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// ensure it is not end of the scan
+		if(is_persistent_page_NULL(&ppage, pam_p))
+			break;
+
+		// make sure if the fix is needed, if so notify it
+		if(is_fix_needed && notify_wrong_entry != NULL)
+			notify_wrong_entry->notify(notify_wrong_entry->context, unused_space_in_entry, ppage.page_id);
+
+		// we found the right entry, some page with just enough unused_space
+		if(get_unused_space_on_heap_page(&ppage, httd_p->pas_p, httd_p->record_def) >= required_unused_space)
+			break;
+
+		// release lock on it and continue for the next entry
+		release_lock_on_persistent_page(pam_p, transaction_id, &ppage, NONE_OPTION, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// goto to the next entry
+		next_heap_table_iterator(hti_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	delete_heap_table_iterator(hti_p, transaction_id, abort_error);
+	hti_p = NULL;
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	return ppage;
+
+	ABORT_ERROR:;
+	if(!is_persistent_page_NULL(&ppage, pam_p))
+		release_lock_on_persistent_page(pam_p, transaction_id, &ppage, NONE_OPTION, abort_error);
+	if(hti_p != NULL)
+	{
+		delete_heap_table_iterator(hti_p, transaction_id, abort_error);
+		hti_p = NULL;
+	}
+	return get_NULL_persistent_page(pam_p);
 }

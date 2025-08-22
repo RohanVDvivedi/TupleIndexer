@@ -47,6 +47,19 @@ int destroy_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_
 // it may return an abort_error, unable to print all of the heap_table pages
 void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
+// interface to allow external world about a wrong heap_table entry, i.e. entry whcih needs to be fixed
+// you possibly should insert such entries into a hashmap<page_id, unused_space> to fix_*() them later on
+typedef struct heap_table_notifier heap_table_notifier;
+struct heap_table_notifier
+{
+	void* context;
+	void (*notify)(void* context, uint32_t unused_space, uint64_t page_id);
+};
+
+// write lock and get a heap_page from the heap_table, that has unused_space >= required_unused_space
+// once a heap_page is identified, fill it up to the brim inserting all the possible tuple you could, and then mark it to be fixed
+persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, const uint32_t required_unused_space, const heap_table_notifier* notify_wrong_entry, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+
 #include<tupleindexer/heap_table/heap_table_iterator_public.h>
 
 #endif
