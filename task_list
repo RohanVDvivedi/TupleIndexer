@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
  * heap_table
-  * persistent_page get_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, uint32_t unused_space, callback_wrong_entry)
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
