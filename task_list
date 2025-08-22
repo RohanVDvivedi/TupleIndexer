@@ -1,6 +1,7 @@
 ** PICKED TASKS
 
  * heap_table
+  * code review heap_page and heap_table for abort_error, and it's handling
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
