@@ -2,6 +2,7 @@
 
  * heap_table
   * code review heap_page and heap_table for abort_error, and it's handling
+  * unused_space must not include space taken by the tombstones on a fixed-sized tuple_def page and must include only 1 tombstone on the variable sized page
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
