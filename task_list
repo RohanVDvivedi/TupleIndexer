@@ -1,8 +1,13 @@
 ** PICKED TASKS
 
  * heap_table
-  * code review heap_page and heap_table for abort_error, and it's handling
-  * unused_space must not include space taken by the tombstones on a fixed-sized tuple_def page and must include only 1 tombstone on the variable sized page
+  * unused_space for heap_page calculation
+    * if slotted page
+        if has tombstone_count > 0
+          unused_space += additional_space_overhead
+    * if fixed array page
+        unused_space += (tombstone_count * tuple_size)
+
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
