@@ -230,6 +230,7 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 	}
 
 	debug_print_lock_stack_for_heap_table_iterator(hti_p);
+	printf("\n\n\n");
 
 	delete_heap_table_iterator(hti_p, transaction_id, abort_error);
 	hti_p = NULL;
