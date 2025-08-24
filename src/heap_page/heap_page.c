@@ -30,7 +30,27 @@ persistent_page get_new_heap_page_with_write_lock(const page_access_specs* pas_p
 
 uint32_t get_unused_space_on_heap_page(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d)
 {
-	return get_space_allotted_to_all_tuples_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def)) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def));
+	uint32_t unused_space = get_space_allotted_to_all_tuples_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def)) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def));
+
+	// but there is more to it
+	// any heap_page insertion can replace a tombstones, so add tombstone to unused_space
+
+	if(is_fixed_sized_tuple_def(tpl_d))
+	{
+		// add tombstones to unused_space
+		unused_space += (get_minimum_tuple_size(tpl_d) * get_tomb_stone_count_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def)));
+	}
+	else
+	{
+		// else add back 1 additional_space worth of memory if there are any tombstones on the page
+		// because on a slotted page, any update to a tombstone can only use up atmost 1 tombstone and the rest tombstones remain unaffected
+		if(get_tomb_stone_count_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def)) > 0)
+		{
+			unused_space += get_additional_space_overhead_per_tuple_on_persistent_page(pas_p->page_size, &(tpl_d->size_def));
+		}
+	}
+
+	return unused_space;
 }
 
 int is_heap_page_empty(const persistent_page* ppage, const page_access_specs* pas_p, const tuple_def* tpl_d)
