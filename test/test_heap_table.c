@@ -80,6 +80,7 @@ int insertion_index = 0;
 void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	int is_tracked = 0;
+	uint32_t unused_space_in_entry = 0;
 	persistent_page heap_page = get_NULL_persistent_page(pam_p);
 	uint32_t possible_insertion_index = 0;
 
@@ -106,6 +107,10 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 						exit(-1);
 					}
 				}
+				else
+				{
+					fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
+				}
 				release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 				if(abort_error)
 				{
@@ -121,7 +126,7 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 			// we are possibly inserting into a new page, so we can possibly know the index to insert into it
 			possible_insertion_index = 0;
 
-			heap_page = find_heap_page_with_enough_unused_space_from_heap_table(root_page_id, required_space, FIX_NOTIFIER, httd_p, pam_p, transaction_id, &abort_error);
+			heap_page = find_heap_page_with_enough_unused_space_from_heap_table(root_page_id, required_space, &unused_space_in_entry, FIX_NOTIFIER, httd_p, pam_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -165,6 +170,10 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 				printf("ABORTED\n");
 				exit(-1);
 			}
+		}
+		else
+		{
+			fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
 		}
 		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 		if(abort_error)
