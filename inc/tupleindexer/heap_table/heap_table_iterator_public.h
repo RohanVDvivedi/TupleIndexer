@@ -24,4 +24,6 @@ int next_heap_table_iterator(heap_table_iterator* hti_p, const void* transaction
 
 void delete_heap_table_iterator(heap_table_iterator* hti_p, const void* transaction_id, int* abort_error);
 
+void debug_print_lock_stack_for_heap_table_iterator(heap_table_iterator* hti_p);
+
 #endif

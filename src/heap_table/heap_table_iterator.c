@@ -87,3 +87,8 @@ void delete_heap_table_iterator(heap_table_iterator* hti_p, const void* transact
 	delete_bplus_tree_iterator(hti_p->bpi_p, transaction_id, abort_error);
 	free(hti_p);
 }
+
+void debug_print_lock_stack_for_heap_table_iterator(heap_table_iterator* hti_p)
+{
+	debug_print_lock_stack_for_bplus_tree_iterator(hti_p->bpi_p);
+}
