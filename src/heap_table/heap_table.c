@@ -196,6 +196,8 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 	// print the root page id of the heap_table
 	printf("\n\nHeap_table @ root_page_id = %"PRIu64"\n\n", root_page_id);
 
+	debug_print_lock_stack_for_heap_table_iterator(hti_p);
+
 	// free each heap page one by one
 	while(1)
 	{
@@ -210,6 +212,7 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 
 		// print the entry
 		printf("(unused_space = %"PRIu32", page_id = %"PRIu64")\n\n", unused_space, ppage.page_id);
+		debug_print_lock_stack_for_heap_table_iterator(hti_p);
 
 		// print the heap_page
 		print_heap_page(&ppage, httd_p->pas_p, httd_p->record_def);
@@ -225,6 +228,8 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 		if(*abort_error)
 			goto ABORT_ERROR;
 	}
+
+	debug_print_lock_stack_for_heap_table_iterator(hti_p);
 
 	delete_heap_table_iterator(hti_p, transaction_id, abort_error);
 	hti_p = NULL;
