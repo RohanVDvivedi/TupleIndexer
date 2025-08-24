@@ -242,7 +242,7 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 	return;
 }
 
-persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, const uint32_t required_unused_space, const heap_table_notifier* notify_wrong_entry, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, const uint32_t required_unused_space, uint32_t* unused_space_in_entry, const heap_table_notifier* notify_wrong_entry, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	heap_table_iterator* hti_p = NULL;
 	persistent_page ppage = get_NULL_persistent_page(pam_p);
@@ -255,8 +255,7 @@ persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t
 	while(1)
 	{
 		int is_fix_needed = 0;
-		uint32_t unused_space_in_entry;
-		ppage = lock_and_get_curr_heap_page_heap_table_iterator(hti_p, 1, &unused_space_in_entry, &is_fix_needed, transaction_id, abort_error);
+		ppage = lock_and_get_curr_heap_page_heap_table_iterator(hti_p, 1, unused_space_in_entry, &is_fix_needed, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -266,7 +265,7 @@ persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t
 
 		// make sure if the fix is needed, if so notify it
 		if(is_fix_needed && notify_wrong_entry != NULL)
-			notify_wrong_entry->notify(notify_wrong_entry->context, unused_space_in_entry, ppage.page_id);
+			notify_wrong_entry->notify(notify_wrong_entry->context, (*unused_space_in_entry), ppage.page_id);
 
 		// we found the right entry, some page with just enough unused_space
 		if(get_unused_space_on_heap_page(&ppage, httd_p->pas_p, httd_p->record_def) >= required_unused_space)
