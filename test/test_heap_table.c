@@ -57,6 +57,23 @@ void initialize_tuple(const tuple_def* def, char* tuple, int index, const char* 
 	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
 }
 
+typedef struct fix_entry fix_entry;
+struct fix_entry
+{
+	uint32_t unused_space;
+	uint64_t page_id;
+};
+
+uint32_t fix_entries_size = 0;
+fix_entry fix_entries[2048];
+
+void fix_notify(void* context, uint32_t unused_space, uint64_t page_id)
+{
+	fix_entries[fix_entries_size++] = (fix_entry){unused_space, page_id};
+}
+
+#define FIX_NOTIFIER &((heap_table_notifier){NULL, fix_notify})
+
 int insertion_index = 0;
 
 // last name should be NULL
@@ -104,7 +121,7 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 			// we are possibly inserting into a new page, so we can possibly know the index to insert into it
 			possible_insertion_index = 0;
 
-			heap_page = find_heap_page_with_enough_unused_space_from_heap_table(root_page_id, required_space, NULL, httd_p, pam_p, transaction_id, &abort_error);
+			heap_page = find_heap_page_with_enough_unused_space_from_heap_table(root_page_id, required_space, FIX_NOTIFIER, httd_p, pam_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -158,6 +175,20 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 	}
 }
 
+void fix_all_entries(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	for(uint32_t i = 0; i < fix_entries_size; i++)
+	{
+		fix_unused_space_in_heap_table(root_page_id, fix_entries[i].unused_space, fix_entries[i].page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
+	fix_entries_size = 0;
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -194,9 +225,13 @@ int main()
 
 	insert_tuples_to_heap_table(root_page_id, (char*[]){"Rohan Vipulkumar Dvivedi", "Rupa Vipulkumar Dvivedi", "Shirdiwala Saibaba, Jako rakhe saiya maar sake na koi", "Vipulkumar Bhanuprasad Dvivedi", "Devashree Manan Joshi, Vipulkumar Dvivedi", NULL}, &httd, pam_p, pmm_p);
 
-	/* CLEANUP */
+	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+
+	fix_all_entries(root_page_id, &httd, pam_p, pmm_p);
 
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+
+	/* CLEANUP */
 
 	// destroy heap_table
 	destroy_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
