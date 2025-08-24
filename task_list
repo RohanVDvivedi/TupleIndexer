@@ -2,6 +2,8 @@
 
  * heap_table
   * test cases and test
+    * add delete using the loop over the table and deleting the identofied ones from the list, deleting saibaba and devashree, then print
+    * then reinsert Devsahree Manan Joshi, then print
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
