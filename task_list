@@ -1,13 +1,7 @@
 ** PICKED TASKS
 
  * heap_table
-  * unused_space for heap_page calculation
-    * if slotted page
-        if has tombstone_count > 0
-          unused_space += additional_space_overhead
-    * if fixed array page
-        unused_space += (tombstone_count * tuple_size)
-
+  * code review unused_space and abort_error cases of heap_page and heap_table
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
