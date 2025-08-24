@@ -7,6 +7,7 @@
 #include<tuplestore/tuple_def.h>
 
 #include<tupleindexer/heap_table/heap_table.h>
+#include<tupleindexer/heap_page/heap_page.h>
 
 #include<tupleindexer/interface/unWALed_in_memory_data_store.h>
 #include<tupleindexer/interface/unWALed_page_modification_methods.h>
@@ -54,6 +55,107 @@ void initialize_tuple(const tuple_def* def, char* tuple, int index, const char* 
 
 	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((user_value){.int_value = index}), UINT32_MAX);
 	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
+}
+
+int insertion_index = 0;
+
+// last name should be NULL
+void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	int is_tracked = 0;
+	persistent_page heap_page = get_NULL_persistent_page(pam_p);
+	uint32_t possible_insertion_index = 0;
+
+	for(char** name = names; (*name) != NULL; name++)
+	{
+		// build the tuple that we need to insert
+		char tuple[256];
+		initialize_tuple(httd_p->record_def, tuple, insertion_index++, (*name));
+
+		// calculate required space for this tuple
+		uint32_t required_space = get_space_to_be_occupied_by_tuple_on_persistent_page(httd_p->pas_p->page_size, &(httd_p->record_def->size_def), tuple);
+
+		// if some heap page is currently locked, then ensure it has enough unused_space, else release lock on it
+		if(!is_persistent_page_NULL(&heap_page, pam_p))
+		{
+			if(required_space > get_unused_space_on_heap_page(&heap_page, httd_p->pas_p, httd_p->record_def))
+			{
+				if(is_tracked == 0)
+				{
+					track_unused_space_in_heap_table(root_page_id, &heap_page, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+					if(abort_error)
+					{
+						printf("ABORTED\n");
+						exit(-1);
+					}
+				}
+				release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
+				if(abort_error)
+				{
+					printf("ABORTED\n");
+					exit(-1);
+				}
+			}
+		}
+
+		// if the heap_page is NULL then find one to insert this tuple into
+		if(is_persistent_page_NULL(&heap_page, pam_p))
+		{
+			// we are possibly inserting into a new page, so we can possibly know the index to insert into it
+			possible_insertion_index = 0;
+
+			heap_page = find_heap_page_with_enough_unused_space_from_heap_table(root_page_id, required_space, NULL, httd_p, pam_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			if(is_persistent_page_NULL(&heap_page, pam_p))
+			{
+				heap_page = get_new_heap_page_with_write_lock(httd_p->pas_p, httd_p->record_def, pam_p, pmm_p, transaction_id, &abort_error);
+				if(abort_error)
+				{
+					printf("ABORTED\n");
+					exit(-1);
+				}
+				is_tracked = 0;
+			}
+			else
+				is_tracked = 1;
+		}
+
+		// insert into the heap_page
+		uint32_t index = insert_in_heap_page(&heap_page, tuple, &possible_insertion_index, httd_p->record_def, httd_p->pas_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		printf("(%"PRIu64", %"PRIu32") -> ", heap_page.page_id, index);
+		print_tuple(tuple, httd_p->record_def);
+		printf(" (inserted)\n");
+	}
+
+	// if some heap page is currently locked, then ensure it has enough unused_space, else release lock on it
+	if(!is_persistent_page_NULL(&heap_page, pam_p))
+	{
+		if(is_tracked == 0)
+		{
+			track_unused_space_in_heap_table(root_page_id, &heap_page, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+		}
+		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
 }
 
 int main()
