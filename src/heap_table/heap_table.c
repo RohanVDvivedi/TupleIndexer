@@ -211,8 +211,8 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 			break;
 
 		// print the entry
-		printf("(unused_space = %"PRIu32", page_id = %"PRIu64")\n\n", unused_space, ppage.page_id);
 		debug_print_lock_stack_for_heap_table_iterator(hti_p);
+		printf("(unused_space = %"PRIu32", page_id = %"PRIu64")\n\n", unused_space, ppage.page_id);
 
 		// print the heap_page
 		print_heap_page(&ppage, httd_p->pas_p, httd_p->record_def);
