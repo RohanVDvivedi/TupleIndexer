@@ -192,7 +192,7 @@ int main()
 
 	/* TESTS */
 
-
+	insert_tuples_to_heap_table(root_page_id, (char*[]){"Rohan Vipulkumar Dvivedi", "Rupa Vipulkumar Dvivedi", "Shirdiwala Saibaba, Jako rakhe saiya maar sake na koi", "Vipulkumar Bhanuprasad Dvivedi", "Devashree Manan Joshi, Vipulkumar Dvivedi", NULL}, &httd, pam_p, pmm_p);
 
 	/* CLEANUP */
 
