@@ -1,7 +1,6 @@
 ** PICKED TASKS
 
  * heap_table
-  * code review unused_space and abort_error cases of heap_page and heap_table
   * test cases and test
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
