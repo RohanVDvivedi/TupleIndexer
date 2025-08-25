@@ -76,7 +76,7 @@ void fix_notify(void* context, uint32_t unused_space, uint64_t page_id)
 
 int insertion_index = 0;
 
-// last name should be NULL
+// last of the names should be NULL
 void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	int is_tracked = 0;
@@ -196,6 +196,67 @@ void fix_all_entries(uint64_t root_page_id, const heap_table_tuple_defs* httd_p,
 		}
 	}
 	fix_entries_size = 0;
+}
+
+void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	heap_table_iterator* hti_p = get_new_heap_table_iterator(root_page_id, 0, 0, httd_p, pam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	while(1)
+	{
+		int entry_needs_fixing = 0;
+		uint32_t unused_space_in_entry;
+		persistent_page heap_page = lock_and_get_curr_heap_page_heap_table_iterator(hti_p, 1, &unused_space_in_entry, &entry_needs_fixing, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		if(entry_needs_fixing)
+			fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
+
+		for(uint32_t i = 0; i < get_tuple_count_on_persistent_page(&heap_page, httd_p->pas_p->page_size, &(httd_p->record_def->size_def)); i++)
+		{
+			const void* tuple = get_nth_tuple_on_persistent_page(&heap_page, httd_p->pas_p->page_size, &(httd_p->record_def->size_def), i);
+			if(tuple == NULL)
+				continue;
+			user_value uval;
+			int res = get_value_from_element_from_tuple(&uval, httd_p->record_def, STATIC_POSITION(1), tuple);
+			if(!res || is_user_value_NULL(&uval))
+				continue;
+
+			int match = 0;
+			for(char** name = names; (*name) != NULL && match == 0; name++)
+			{
+				user_value uval2 = {.string_value = (*name), .string_size = strlen((*name))};
+				if(compare_user_value2(&uval, &uval2, httd_p->record_def->type_info->containees[1].al.type_info) == 0)
+					match = 1;
+			}
+
+			if(match)
+			{
+				delete_from_heap_page(&heap_page, i, httd_p->record_def, httd_p->pas_p, pmm_p, transaction_id, &abort_error);
+				if(abort_error)
+				{
+					printf("ABORTED\n");
+					exit(-1);
+				}
+			}
+		}
+	}
+
+	delete_heap_table_iterator(hti_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 }
 
 int main()
