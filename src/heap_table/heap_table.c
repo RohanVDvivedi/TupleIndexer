@@ -25,6 +25,10 @@ static int fix_remove_inspect(const void* context, const tuple_def* record_def, 
 	// we are removing a record for sure, so set this to NULL
 	(*new_record) = NULL;
 
+	// if the old_record itself is NULL, i.e. it does not exist, then we have nothing further to be done
+	if(old_record == NULL)
+		return 0;
+
 	persistent_page* ppage = ((fix_remove_inspect_context*)context)->ppage;
 	const heap_table_tuple_defs* httd_p = ((fix_remove_inspect_context*)context)->httd_p;
 	const page_access_methods* pam_p = ((fix_remove_inspect_context*)context)->pam_p;
