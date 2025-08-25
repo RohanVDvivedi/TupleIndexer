@@ -318,6 +318,10 @@ int main()
 
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
+	delete_tuples_from_heap_table(root_page_id, (char*[]){"Shirdiwala Saibaba, Jako rakhe saiya maar sake na koi", "Devashree Manan Joshi, Vipulkumar Dvivedi", NULL}, &httd, pam_p, pmm_p);
+
+	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+
 	/* CLEANUP */
 
 	// destroy heap_table
