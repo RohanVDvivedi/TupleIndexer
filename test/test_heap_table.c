@@ -224,6 +224,8 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 		if(entry_needs_fixing)
 			fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
 
+		int removed = 0;
+
 		for(uint32_t i = 0; i < get_tuple_count_on_persistent_page(&heap_page, httd_p->pas_p->page_size, &(httd_p->record_def->size_def)); i++)
 		{
 			const void* tuple = get_nth_tuple_on_persistent_page(&heap_page, httd_p->pas_p->page_size, &(httd_p->record_def->size_def), i);
@@ -244,7 +246,7 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 
 			if(match)
 			{
-				delete_from_heap_page(&heap_page, i, httd_p->record_def, httd_p->pas_p, pmm_p, transaction_id, &abort_error);
+				removed += delete_from_heap_page(&heap_page, i, httd_p->record_def, httd_p->pas_p, pmm_p, transaction_id, &abort_error);
 				if(abort_error)
 				{
 					printf("ABORTED\n");
@@ -252,6 +254,9 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 				}
 			}
 		}
+
+		if(removed)
+			fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
 
 		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 		if(abort_error)
@@ -311,15 +316,21 @@ int main()
 	/* TESTS */
 
 	insert_tuples_to_heap_table(root_page_id, (char*[]){"Rohan Vipulkumar Dvivedi", "Rupa Vipulkumar Dvivedi", "Shirdiwala Saibaba, Jako rakhe saiya maar sake na koi", "Vipulkumar Bhanuprasad Dvivedi", "Devashree Manan Joshi, Vipulkumar Dvivedi", NULL}, &httd, pam_p, pmm_p);
-
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	fix_all_entries(root_page_id, &httd, pam_p, pmm_p);
-
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	delete_tuples_from_heap_table(root_page_id, (char*[]){"Shirdiwala Saibaba, Jako rakhe saiya maar sake na koi", "Devashree Manan Joshi, Vipulkumar Dvivedi", NULL}, &httd, pam_p, pmm_p);
+	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
+	fix_all_entries(root_page_id, &httd, pam_p, pmm_p);
+	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+
+	insert_tuples_to_heap_table(root_page_id, (char*[]){"Rohan Dvivedi, The best heap_table that this is, isn't it", "Rohan Dvivedi, The best heap_page that this is, isn't it", "Devashree Manan Joshi", NULL}, &httd, pam_p, pmm_p);
+	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+
+	fix_all_entries(root_page_id, &httd, pam_p, pmm_p);
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	/* CLEANUP */
