@@ -218,6 +218,9 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 			exit(-1);
 		}
 
+		if(is_persistent_page_NULL(&heap_page, pam_p))
+			break;
+
 		if(entry_needs_fixing)
 			fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
 
@@ -251,6 +254,13 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 		}
 
 		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+
+		next_heap_table_iterator(hti_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
