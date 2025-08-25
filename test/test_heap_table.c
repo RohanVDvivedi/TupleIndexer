@@ -249,6 +249,13 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 				}
 			}
 		}
+
+		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
 	}
 
 	delete_heap_table_iterator(hti_p, transaction_id, &abort_error);
