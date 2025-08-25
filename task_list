@@ -1,9 +1,13 @@
 ** PICKED TASKS
 
- * heap_table
-  * test cases and test
-    * add delete using the loop over the table and deleting the identofied ones from the list, deleting saibaba and devashree, then print
-    * then reinsert Devsahree Manan Joshi, then print
+ * tuple_ptr
+   * in pas_p, composed of page_id and tuple_index data_type_infos
+   * functions to read and write the struct to the tuple using the pas_p
+   struct tuple_ptr {uint64_t page_id, uint32_t tuple_index}
+   * also a macro that gives the maximum size of the tuple if such a type in bytes (8 + 4)
+ * heap_table_entries
+   * a map of (page_id -> unused_space)
+   * supports insert, merge, for_each and clear operations
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
