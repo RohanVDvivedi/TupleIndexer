@@ -3,19 +3,24 @@
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
-   * splits and merges happen according to the minimal increase in interior node areas
+   * splits and merges happen according to the minimal increase in interior node bounding boxes
    * inserts walk down only 1 path of the tree, trying to minimize the increased area
    * searches walk down a tree, and maintain a stack, releasing locks only if only 1 entry is to be scaned in the interior node, in READ_LOCK
      * next, prev and get_curr are always supported, in WRITE_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF deletes and inserts (if we are in right rectangle), updates are supported
-   * you need to define a rtree_tuple_definitions, that also has a function pointer to get the hyper_rectangle for any of the records (which is provided by the user)
-   * hyper rectangle is an n dimensional rectangle.
+   * you need to define a rtree_tuple_definitions
+   * hyper rectangle is an n dimensional rectangle
+   * need callbacks
+     * to generate hyper_rectangle tuple from the user_defined tuple
+     * to find collective hyper_rectangle tuple from given two hyper_rectangle tuples -> minimum of the min values, and maximum of the max values
+     * to find intersecting hyper_rectangle tuple from the given two hyper_rectangle tuples -> maximum of the min values, and minimum of the max values
+     * to find the area of the given hyper_rectangle tuple
+   * iterators to find the intersecting hyper_rectangle tuples OR containing hyper_rectangle tuples
    * all interior nodes store a hyper rectangle and a corresponding page_id, and atleast 2 entries must fit on a page, else rttd contruction fails. yet you can have any number of dimensions.
    * you can also specify any numeral datatype for dimension, as long as it is supported by the TupleStore.
-   * need to think about how to calculate areas of the hyper rectangle with dimensions of different types, such that it fits a number and also does not violate precision requirements (getting areas is necessary for splitting and merging).
-   * fail insertions if the lower_bound and upper_bound of the get_hyper_rectangle do not follow <= comparison for any of the n dimensions.
+   * there can be any number of dimensions, as long as 2 the user's tuple fit on leaf page and 2 interior entry tuples fit on a page
    * build utility function to check that hyper rectangle does not have a negative dimension (i.e. lower_bound <= upper_bound), construct hyper_rectangle covering 2 or more hyper rectangles, and check if a hyper_rectangle intersects with another hyper_rectangle etc.
-   * accomodate any tuple that is atleast half the size of the leaf page, and interior page tuples would be fixed width with non NULL elements
    * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
+
  * build functions to relocate root of the datastructures to lower page ids
 
 FAR FUTURE TASKS AND CONCEPTS
