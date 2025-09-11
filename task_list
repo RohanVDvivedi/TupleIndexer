@@ -1,5 +1,14 @@
 ** PICKED TASKS
 
+ * utility function to move a page to a lower memory address
+   * this will support moving root pages for the bplus_tree, array_table, page_table and heap_table (also hash_table to some extent) to a lower page_id values
+ * move worm's and linked_page_list's head page_id will need some more functionality
+
+ * worm (*new features)
+   * return to the user the page_id, tuple_id of the currently appended bytes
+   * allow read iterator to start with a custom page_id, tuple_id
+   * this feature allows random scan in the worm which is already immmutable in som sense
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
@@ -20,8 +29,6 @@
    * there can be any number of dimensions, as long as 2 the user's tuple fit on leaf page and 2 interior entry tuples fit on a page
    * build utility function to check that hyper rectangle does not have a negative dimension (i.e. lower_bound <= upper_bound), construct hyper_rectangle covering 2 or more hyper rectangles, and check if a hyper_rectangle intersects with another hyper_rectangle etc.
    * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
-
- * build functions to relocate root of the datastructures to lower page ids
 
 FAR FUTURE TASKS AND CONCEPTS
   * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
