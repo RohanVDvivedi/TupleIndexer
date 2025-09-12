@@ -5,6 +5,7 @@
  * move worm's and linked_page_list's head page_id will need some more functionality
 
  * utility function to get in the tree and find out its maximum current height
+   * this could held in approximating the number of pages required to be used from the bufferpool
 
  * worm (*new features)
    * return to the user the page_id, tuple_id of the currently appended bytes
