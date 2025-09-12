@@ -4,6 +4,8 @@
    * this will support moving root pages for the bplus_tree, array_table, page_table and heap_table (also hash_table to some extent) to a lower page_id values
  * move worm's and linked_page_list's head page_id will need some more functionality
 
+ * utility function to get in the tree and find out its maximum current height
+
  * worm (*new features)
    * return to the user the page_id, tuple_id of the currently appended bytes
    * allow read iterator to start with a custom page_id, tuple_id
