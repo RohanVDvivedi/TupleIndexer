@@ -252,6 +252,11 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 	return;
 }
 
+uint32_t get_root_level_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	return get_root_level_bplus_tree(root_page_id, &(httd_p->bpttd), pam_p, transaction_id, abort_error);
+}
+
 persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, const uint32_t required_unused_space, uint32_t* unused_space_in_entry, const heap_table_notifier* notify_wrong_entry, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	heap_table_iterator* hti_p = NULL;

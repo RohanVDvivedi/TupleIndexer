@@ -47,6 +47,9 @@ int destroy_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_
 // it may return an abort_error, unable to print all of the heap_table pages
 void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
+// a read utility to get the current maximum level this heap_table hosts, this can be used to approximate the number of buffer pages required
+uint32_t get_root_level_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+
 // interface to allow external world about a wrong heap_table entry, i.e. entry whcih needs to be fixed
 // you possibly should insert such entries into a hashmap<page_id, unused_space> to fix_*() them later on
 typedef struct heap_table_notifier heap_table_notifier;
