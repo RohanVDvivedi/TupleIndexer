@@ -986,6 +986,8 @@ int main()
 	// print the constructed page table
 	print_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
+	printf("\n\nroot_page_level = %"PRIu32"\n\n", get_root_level_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error));
+
 	print_2_buckets(root_page_id, 10, &httd, pam_p);
 
 	res = delete_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 256, 0, &httd, pam_p, pmm_p);
