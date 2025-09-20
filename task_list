@@ -1,6 +1,6 @@
 ** PICKED TASKS
 
- * utility function to get in the tree and find out its maximum current height
+ * utility function to get in the tree and find out its maximum current level
    * this could held in approximating the number of pages required to be used from the bufferpool
 
  * utility function to move a page to a lower memory address
