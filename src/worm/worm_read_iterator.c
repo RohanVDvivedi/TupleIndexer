@@ -28,6 +28,31 @@ worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const worm
 	return wri_p;
 }
 
+worm_read_iterator* get_new_worm_read_iterator2(uint64_t curr_page_id, uint32_t curr_blob_index, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// the following 2 must be present
+	if(wtd_p == NULL || pam_p == NULL)
+		return NULL;
+
+	// allocate enough memory
+	worm_read_iterator* wri_p = malloc(sizeof(worm_read_iterator));
+	if(wri_p == NULL)
+		exit(-1);
+
+	wri_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, curr_page_id, READ_LOCK, abort_error);
+	if(*abort_error)
+	{
+		free(wri_p);
+		return NULL;
+	}
+	wri_p->curr_blob_index = curr_blob_index;
+	wri_p->curr_byte_index = 0; // this position is always present OR the worm is empty and you are at it's end
+	wri_p->wtd_p = wtd_p;
+	wri_p->pam_p = pam_p;
+
+	return wri_p;
+}
+
 worm_read_iterator* clone_worm_read_iterator(const worm_read_iterator* wri_p, const void* transaction_id, int* abort_error)
 {
 	// allocate enough memory
