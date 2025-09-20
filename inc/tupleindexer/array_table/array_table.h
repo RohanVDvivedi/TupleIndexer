@@ -21,6 +21,9 @@ int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* att
 // it may return an abort_error, unable to print all of the array_table pages
 void print_array_table(uint64_t root_page_id, int only_leaf_pages, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
+// a read utility to get the current maximum height this array_table can take, this can be used to approximate the number of buffer pages required
+uint32_t get_height_array_table(uint64_t root_page_id, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+
 #include<tupleindexer/array_table/array_table_range_locker_public.h>
 
 #endif
