@@ -63,7 +63,7 @@ int increment_reference_counter_worm_append_iterator(worm_append_iterator* wai_p
 	return 0;
 }
 
-uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
+uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, uint64_t* insertion_page_id, uint32_t* insertion_blob_index, const void* transaction_id, int* abort_error)
 {
 	// no data to append is always a success
 	if(data_size == 0)
@@ -149,6 +149,17 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 		// build tuple in blob_tuple_buffer for the blob
 		init_tuple(wai_p->wtd_p->partial_blob_tuple_def, blob_tuple_buffer);
 		set_element_in_tuple(wai_p->wtd_p->partial_blob_tuple_def, SELF, blob_tuple_buffer, &uval, UINT32_MAX);
+
+		// before we go ahead and append the bytes lets pass the insertion position to the user
+		if(bytes_appended == 0) // only if there are no bytes appended yet
+		{
+			if(insertion_page_id != NULL && insertion_blob_index != NULL)
+			{
+				// set the current page_id of the tail, and the tuple_count on the tail (because this is going to be the next blob)
+				(*insertion_page_id) = tail_page_p->page_id;
+				(*insertion_blob_index) = get_tuple_count_on_persistent_page(tail_page_p, wai_p->wtd_p->pas_p->page_size, &(wai_p->wtd_p->partial_blob_tuple_def->size_def));
+			}
+		}
 
 		// append blob_tuple_buffer onto the page
 		append_tuple_on_persistent_page_resiliently(wai_p->pmm_p, transaction_id, tail_page_p, wai_p->wtd_p->pas_p->page_size, &(wai_p->wtd_p->partial_blob_tuple_def->size_def), blob_tuple_buffer, abort_error);
