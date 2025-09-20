@@ -62,6 +62,9 @@ int destroy_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd
 // it may return an abort_error, unable to print all of the bplus_tree pages
 void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
+// a read utility to get the current maximum level this bplus_tree hosts, this can be used to approximate the number of buffer pages required
+uint32_t get_root_level_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+
 #include<tupleindexer/bplus_tree/bplus_tree_deadlock_avoiding_lock_compatibility_matrix.h>
 
 #endif
