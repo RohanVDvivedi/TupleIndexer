@@ -24,7 +24,7 @@ int increment_reference_counter_worm_append_iterator(worm_append_iterator* wai_p
 // if data_size > 0, it returns bytes_appended for success, where 0 < bytes_appended <= data_size, bytes_appended could be non-zero lesser than data_size
 // due to the above condition, you may need to call this function more than once for the same input buffer, this will not happen for sure, but the api design allows this to happen
 // on an abort_error, all the pages will be unlocked by the worm_append_iterator, and return value will be 0
-uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
+uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, uint64_t* insertion_page_id, uint32_t* insertion_blob_index, const void* transaction_id, int* abort_error);
 
 void delete_worm_append_iterator(worm_append_iterator* wai_p, const void* transaction_id, int* abort_error);
 
