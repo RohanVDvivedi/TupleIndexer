@@ -2,8 +2,6 @@
 
  * worm (*new features)
    * return to the user the page_id, tuple_id of the currently appended bytes
-   * allow read iterator to start with a custom page_id, tuple_id
-   * this feature allows random scan in the worm which is already immmutable in some sense
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
