@@ -246,7 +246,7 @@ void print_bplus_tree(uint64_t root_page_id, int only_leaf_pages, const bplus_tr
 
 uint32_t get_root_level_bplus_tree(uint64_t root_page_id, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
-	// get lock on the root page of the page_table
+	// get lock on the root page of the bplus_tree
 	persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
 	if(*abort_error)
 		return 0;
