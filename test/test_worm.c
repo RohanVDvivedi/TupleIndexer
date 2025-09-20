@@ -244,14 +244,14 @@ int main()
 		while(t > 0)
 		{
 			prepare_buffer(id++);
-			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 1 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, (id == 0) ? (&(positions[positions_size].page_id)) : NULL, (id == 0) ? (&(positions[positions_size].blob_index)) : NULL, transaction_id, &abort_error);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 1 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, ((id % 2) == 0) ? (&(positions[positions_size].page_id)) : NULL, ((id % 2) == 0) ? (&(positions[positions_size].blob_index)) : NULL, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
 				exit(-1);
 			}
 			printf("bytes_appended = %"PRIu32"\n", bytes_appended);
-			if(id == 0)
+			if((id % 2) == 0)
 				positions_size++;
 			t--;
 		}
