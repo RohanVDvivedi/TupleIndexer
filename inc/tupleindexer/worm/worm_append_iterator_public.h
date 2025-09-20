@@ -26,6 +26,9 @@ int increment_reference_counter_worm_append_iterator(worm_append_iterator* wai_p
 // on an abort_error, all the pages will be unlocked by the worm_append_iterator, and return value will be 0
 uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, uint64_t* insertion_page_id, uint32_t* insertion_blob_index, const void* transaction_id, int* abort_error);
 
+// in the append_to_worm function, insertion_page_id and insertion_blob_index are output parameters (but optional and can be NULLs),
+// they let the user know about the position of the first byte, allowing the users to cache it and perform random access using the worm_read_iterator
+
 void delete_worm_append_iterator(worm_append_iterator* wai_p, const void* transaction_id, int* abort_error);
 
 #endif
