@@ -1,9 +1,5 @@
 ** PICKED TASKS
 
- * utility function to move a page to a lower memory address
-   * this will support moving root pages for the bplus_tree, array_table, page_table and heap_table (also hash_table to some extent) to a lower page_id values
- * move linked_page_list's head page_id will need some more functionality
-
  * worm (*new features)
    * return to the user the page_id, tuple_id of the currently appended bytes
    * allow read iterator to start with a custom page_id, tuple_id
