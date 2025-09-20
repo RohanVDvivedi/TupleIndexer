@@ -223,3 +223,22 @@ void print_array_table(uint64_t root_page_id, int only_leaf_pages, const array_t
 
 	deinitialize_locked_pages_stack(locked_pages_stack_p);
 }
+
+uint32_t get_root_level_array_table(uint64_t root_page_id, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	// get lock on the root page of the page_table
+	persistent_page root_page = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, READ_LOCK, abort_error);
+	if(*abort_error)
+		return 0;
+
+	// get level of the root_page
+	uint32_t root_page_level = get_level_of_array_table_page(&root_page, attd_p);
+
+	// release lock on the root_page
+	release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+	if(*abort_error)
+		return 0;
+
+	// else return the root_page_level
+	return root_page_level;
+}

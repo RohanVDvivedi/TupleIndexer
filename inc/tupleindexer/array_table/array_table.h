@@ -22,7 +22,7 @@ int destroy_array_table(uint64_t root_page_id, const array_table_tuple_defs* att
 void print_array_table(uint64_t root_page_id, int only_leaf_pages, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 // a read utility to get the current maximum level this array_table hosts, this can be used to approximate the number of buffer pages required
-uint32_t get_max_level_array_table(uint64_t root_page_id, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+uint32_t get_root_level_array_table(uint64_t root_page_id, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 #include<tupleindexer/array_table/array_table_range_locker_public.h>
 
