@@ -446,6 +446,11 @@ void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	return ;
 }
 
+uint32_t get_root_level_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	return get_root_level_page_table(root_page_id, &(httd_p->pttd), pam_p, transaction_id, abort_error);
+}
+
 int perform_vaccum_hash_table(uint64_t root_page_id, const hash_table_vaccum_params* htvp, uint32_t params_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	page_table_range_locker* ptrl_p = NULL;

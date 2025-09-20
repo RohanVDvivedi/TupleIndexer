@@ -43,6 +43,9 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 // it may return an abort_error, unable to print all of the hash_table pages
 void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
+// a read utility to get the current maximum level this hash_table hosts, this can be used to approximate the number of buffer pages required
+uint32_t get_root_level_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+
 #include<tupleindexer/hash_table/hash_table_iterator_public.h>
 
 #include<tupleindexer/hash_table/hash_table_vaccum_params.h>
