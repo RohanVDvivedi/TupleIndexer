@@ -1,7 +1,8 @@
 ** PICKED TASKS
 
  * worm (*new features)
-   * return to the user the page_id, tuple_id of the currently appended bytes
+   * test worm new features
+   * review and merge with master
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
