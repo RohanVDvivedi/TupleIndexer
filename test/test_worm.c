@@ -244,7 +244,7 @@ int main()
 		while(t > 0)
 		{
 			prepare_buffer(id++);
-			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 1 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, transaction_id, &abort_error);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 1 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, NULL, NULL, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -297,7 +297,7 @@ int main()
 		while(t > 0)
 		{
 			prepare_buffer(id++);
-			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 0 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, transaction_id, &abort_error);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 0 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, &(positions[positions_size].page_id), &(positions[positions_size++].blob_index), transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -321,6 +321,12 @@ int main()
 	print_worm_as_bytes(head_page_id, 16, &wtd, pam_p);
 
 	print_worm_as_bytes2(head_page_id, 16, &wtd, pam_p);
+
+	for(uint32_t i = 0; i < positions_size; i++)
+	{
+		printf("\n\n printing from = %"PRIu64", %"PRIu32"\n\n", positions[i].page_id, positions[i].blob_index);
+		print_worm_from_ramdom(positions[i].page_id, positions[i].blob_index, 16, &wtd, pam_p);
+	}
 
 	/* CLEANUP */
 
