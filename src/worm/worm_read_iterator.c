@@ -237,6 +237,13 @@ const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const v
 	return data;
 }
 
+uint64_t get_position_in_worm(worm_read_iterator* wri_p, uint32_t* curr_blob_index, uint32_t* curr_byte_index)
+{
+	(*curr_byte_index) = wri_p->curr_byte_index;
+	(*curr_blob_index) = wri_p->curr_blob_index;
+	return wri_p->curr_page.page_id;
+}
+
 void delete_worm_read_iterator(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error)
 {
 	// if curr_page is still locked, then release this lock
