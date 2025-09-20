@@ -251,7 +251,7 @@ int main()
 				exit(-1);
 			}
 			printf("bytes_appended = %"PRIu32"\n", bytes_appended);
-			if((id == 2) || ((id % 2) == 0))
+			if((id == 1) || ((id % 2) == 0))
 				positions_size++;
 			t--;
 		}
