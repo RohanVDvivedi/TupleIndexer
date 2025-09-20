@@ -235,7 +235,7 @@ uint32_t get_root_level_array_table(uint64_t root_page_id, const array_table_tup
 	uint32_t root_page_level = get_level_of_array_table_page(&root_page, attd_p);
 
 	// release lock on the root_page
-	release_lock_on_persistent_page(pam_p, transaction_id, &(bottom->ppage), NONE_OPTION, abort_error);
+	release_lock_on_persistent_page(pam_p, transaction_id, &root_page, NONE_OPTION, abort_error);
 	if(*abort_error)
 		return 0;
 
