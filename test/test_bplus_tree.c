@@ -1137,6 +1137,7 @@ int main()
 	int NULL_insert_result = insert_in_bplus_tree(root_page_id, NULL, &bpttd, pam_p, pmm_p, transaction_id, &abort_error);
 	printf("result of attempting to insert a NULL = %d\n", NULL_insert_result);
 
+	printf("\n\nroot_page_level = %"PRIu32"\n\n", get_root_level_bplus_tree(root_page_id, &bpttd, pam_p, transaction_id, &abort_error));
 
 	/* DELETE USING UPDATE FUNCTIONALITY */
 #define TEST_DELETE_USING_UPDATE
