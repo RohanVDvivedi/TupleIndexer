@@ -325,7 +325,7 @@ int main()
 	for(uint32_t i = 0; i < positions_size; i++)
 	{
 		printf("\n\n printing from = %"PRIu64", %"PRIu32"\n\n", positions[i].page_id, positions[i].blob_index);
-		print_worm_from_ramdom(positions[i].page_id, positions[i].blob_index, 16, &wtd, pam_p);
+		print_worm_from_ramdom(positions[i], 16, &wtd, pam_p);
 	}
 
 	/* CLEANUP */
