@@ -110,7 +110,7 @@ int main()
 		exit(-1);
 	}
 
-	destroy_non_static_type_info_recursively(bit_fields_def->type_info);
+	destroy_type_info_recursively(bit_fields_def->type_info, NULL);
 	free(bit_fields_def);
 
 	// close the in-memory data store
