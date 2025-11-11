@@ -884,7 +884,7 @@ void run_concurrent_writable_scan_forward_and_backward(uint64_t root_page_id, co
 	update_UPDATE_column_params p1 = {root_page_id, 'F', 1, 0, WRITE_LOCK, bpttd_p, pam_p, pmm_p};
 	update_UPDATE_column_params p2 = {root_page_id, 'B', 0, 1, READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, bpttd_p, pam_p, pmm_p};
 
-	executor* thread_pool = new_executor(FIXED_THREAD_COUNT_EXECUTOR, 2, 2, 0, NULL, NULL, NULL);
+	executor* thread_pool = new_executor(FIXED_THREAD_COUNT_EXECUTOR, 2, 2, 0, NULL, NULL, NULL, 0);
 
 	submit_job_executor(thread_pool, (void*(*)(void*))update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER, &p1, NULL, NULL, BLOCKING);
 	submit_job_executor(thread_pool, (void*(*)(void*))update_UPDATE_column_for_all_tuples_with_iterator_WRAPPER, &p2, NULL, NULL, BLOCKING);
