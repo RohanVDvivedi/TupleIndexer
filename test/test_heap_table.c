@@ -53,8 +53,8 @@ void initialize_tuple(const tuple_def* def, char* tuple, int index, const char* 
 {
 	init_tuple(def, tuple);
 
-	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((user_value){.int_value = index}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((datum){.int_value = index}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((datum){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
 }
 
 typedef struct fix_entry fix_entry;
@@ -231,16 +231,16 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 			const void* tuple = get_nth_tuple_on_persistent_page(&heap_page, httd_p->pas_p->page_size, &(httd_p->record_def->size_def), i);
 			if(tuple == NULL)
 				continue;
-			user_value uval;
+			datum uval;
 			int res = get_value_from_element_from_tuple(&uval, httd_p->record_def, STATIC_POSITION(1), tuple);
-			if(!res || is_user_value_NULL(&uval))
+			if(!res || is_datum_NULL(&uval))
 				continue;
 
 			int match = 0;
 			for(char** name = names; (*name) != NULL && match == 0; name++)
 			{
-				user_value uval2 = {.string_value = (*name), .string_size = strlen((*name))};
-				if(compare_user_value2(&uval, &uval2, httd_p->record_def->type_info->containees[1].al.type_info) == 0)
+				datum uval2 = {.string_value = (*name), .string_size = strlen((*name))};
+				if(compare_datum2(&uval, &uval2, httd_p->record_def->type_info->containees[1].al.type_info) == 0)
 					match = 1;
 			}
 

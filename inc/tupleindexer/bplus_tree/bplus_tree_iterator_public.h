@@ -97,13 +97,13 @@ int insert_using_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tup
 
 // you can use the below function only to update only a fixed length non-key column
 
-#include<tuplestore/user_value.h>
+#include<tuplestore/datum.h>
 #include<tuplestore/tuple.h>
 
 // update a non_key column inplace at the place that the bplus_tree_iterator is pointing to
 // ADVISED 	:: only update columns that do not change the tuple size on the page, else the page may become less than half full and this can not be fixed without a merge, and you can not mrege with an iterator
 //			:: also attempting to update to a element value that can increase the tuple size, may even fail, because the slot for the tuple is not big enough
 // on an abort_error, all the lps pages will be unlocked by the bplus_tree_iterator
-int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
+int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const datum* element_value, const void* transaction_id, int* abort_error);
 
 #endif

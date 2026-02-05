@@ -12,12 +12,12 @@ struct worm_tuple_defs
 	// specification of all the pages in the bplus_tree
 	const page_access_specs* pas_p;
 
-	// tuple_def for all blobs in the worm
-	tuple_def* partial_blob_tuple_def;
+	// tuple_def for all binarys in the worm
+	tuple_def* partial_binary_tuple_def;
 };
 
 /*
-	The maximum blob type's bytes that fit on a worm page is equal to the space allotted to all tuples on the page - additional space - min size of the blob type
+	The maximum binary type's bytes that fit on a worm page is equal to the space allotted to all tuples on the page - additional space - min size of the binary type
 */
 
 // initializes the attributes in worm_tuple_defs struct as per the provided parameters

@@ -146,7 +146,7 @@ uint64_t get_child_page_id_at_child_index_in_array_table_index_page(const persis
 		return attd_p->pas_p->NULL_PAGE_ID;
 
 	// the tuple is itself a non-NULLable UINT value, hence we can directly access it
-	user_value uval;
+	datum uval;
 	get_value_from_element_from_tuple(&uval, attd_p->index_def, SELF, child_tuple);
 	return uval.uint_value;
 }
@@ -194,7 +194,7 @@ int set_child_page_id_at_child_index_in_array_table_index_page(persistent_page* 
 		// construct a tuple in temporary memory and make it point to child_page_id
 		char new_child_tuple[MAX_TUPLE_SIZE_FOR_ONLY_NON_NULLABLE_FIXED_WIDTH_UNSIGNED_PAGE_ID];
 		init_tuple(attd_p->index_def, new_child_tuple);
-		set_element_in_tuple(attd_p->index_def, SELF, new_child_tuple, &((user_value){.uint_value = child_page_id}), UINT32_MAX);
+		set_element_in_tuple(attd_p->index_def, SELF, new_child_tuple, &((datum){.uint_value = child_page_id}), UINT32_MAX);
 
 		// perform update
 		update_tuple_on_persistent_page(pmm_p, transaction_id, ppage, attd_p->pas_p->page_size, &(attd_p->index_def->size_def), child_index, new_child_tuple, abort_error);

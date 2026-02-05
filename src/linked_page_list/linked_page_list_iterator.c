@@ -1160,7 +1160,7 @@ int update_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const
 	return 0;
 }
 
-int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
+int update_element_in_place_at_linked_page_list_iterator(linked_page_list_iterator* lpli_p, positional_accessor element_index, const datum* element_value, const void* transaction_id, int* abort_error)
 {
 	// fail if this is not a writable iterator
 	if(!is_writable_linked_page_list_iterator(lpli_p))

@@ -52,7 +52,7 @@ struct tuple_on_page_compare_context2
 	// keys of the tuple on the page to compare on
 	const positional_accessor* tuple_keys_to_compare;
 
-	// data_type infos of the user_values of the keys to be compared with tuples on the page
+	// data_type infos of the datums of the keys to be compared with tuples on the page
 	data_type_info const * const * const key_dtis;
 
 	// direction to compare keys, array of ASC/DESC
@@ -67,7 +67,7 @@ struct tuple_on_page_compare_context2
 int compare_tuples_using_comparator_context2(const void* context, const void* tuple1, const void* uvals2)
 {
 	const tuple_on_page_compare_context2* context_p = context;
-	return compare_tuple_with_user_value(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, uvals2, context_p->key_dtis, context_p->key_compare_direction, context_p->keys_count);
+	return compare_tuple_with_datum(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, uvals2, context_p->key_dtis, context_p->key_compare_direction, context_p->keys_count);
 }
 
 typedef struct tuple_accessed_page tuple_accessed_page;
@@ -724,7 +724,7 @@ struct sortable_row
 	void* row;
 
 	// keys to be sorted, in their materialized form
-	user_value* keys; // points to keyss array, need not be allocated
+	datum* keys; // points to keyss array, need not be allocated
 };
 
 typedef struct mat_sort_context mat_sort_context;
@@ -743,7 +743,7 @@ int compare_sortable_rows(const void* cntxt, const void* s1, const void* s2)
 	const sortable_row* sr1 = s1;
 	const sortable_row* sr2 = s2;
 
-	return compare_user_values3(sr1->keys, sr2->keys, c->key_dtis, c->key_cmp_dirs, c->keys_count);
+	return compare_datums3(sr1->keys, sr2->keys, c->key_dtis, c->key_cmp_dirs, c->keys_count);
 }
 
 void sort_materialized_and_convert_to_sorted_packed_page(
@@ -762,7 +762,7 @@ void sort_materialized_and_convert_to_sorted_packed_page(
 
 	// create all the memory you will need
 
-	user_value* keyss = malloc(sizeof(user_value) * tuple_count * keys_count);
+	datum* keyss = malloc(sizeof(datum) * tuple_count * keys_count);
 	if(keyss == NULL)
 		exit(-1);
 

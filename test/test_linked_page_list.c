@@ -52,8 +52,8 @@ void initialize_tuple(const tuple_def* def, char* tuple, int index, const char* 
 {
 	init_tuple(def, tuple);
 
-	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((user_value){.int_value = index}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((datum){.int_value = index}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((datum){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
 }
 
 int insert_counter = 0;
@@ -333,7 +333,7 @@ int reindex_all(uint64_t head_page_id, int count, char* name, const linked_page_
 			if(count == 0)
 				break;
 
-			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(0), &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
+			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(0), &((datum){.int_value = insert_counter++}), transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -341,7 +341,7 @@ int reindex_all(uint64_t head_page_id, int count, char* name, const linked_page_
 			}
 			if(name != NULL)
 			{
-				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(1), &((user_value){.string_value = name, .string_size = strlen(name)}), transaction_id, &abort_error);
+				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(1), &((datum){.string_value = name, .string_size = strlen(name)}), transaction_id, &abort_error);
 				if(abort_error)
 				{
 					printf("ABORTED\n");
@@ -401,7 +401,7 @@ int reindex_all_reverse(uint64_t head_page_id, int count, char* name, const link
 			if(count == 0)
 				break;
 
-			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(0), &((user_value){.int_value = insert_counter++}), transaction_id, &abort_error);
+			updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(0), &((datum){.int_value = insert_counter++}), transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -409,7 +409,7 @@ int reindex_all_reverse(uint64_t head_page_id, int count, char* name, const link
 			}
 			if(name != NULL)
 			{
-				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(1), &((user_value){.string_value = name, .string_size = strlen(name)}), transaction_id, &abort_error);
+				updated += update_element_in_place_at_linked_page_list_iterator(lpli_p, STATIC_POSITION(1), &((datum){.string_value = name, .string_size = strlen(name)}), transaction_id, &abort_error);
 				if(abort_error)
 				{
 					printf("ABORTED\n");

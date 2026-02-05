@@ -694,7 +694,7 @@ int insert_using_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tup
 	return 0;
 }
 
-int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error)
+int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const datum* element_value, const void* transaction_id, int* abort_error)
 {
 	// cannot update non WRITE_LOCKed bplus_tree_iterator
 	if(!is_writable_bplus_tree_iterator(bpi_p))

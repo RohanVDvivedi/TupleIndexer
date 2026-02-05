@@ -102,8 +102,8 @@ int update_in_array_table(uint64_t root_page_id, bucket_range lock_range, uint32
 		{
 			char record[PAGE_SIZE];
 			init_tuple(attd_p->record_def, record);
-			set_element_in_tuple(attd_p->record_def, STATIC_POSITION(0), record, &(user_value){.uint_value = access_counter}, UINT32_MAX);
-			set_element_in_tuple(attd_p->record_def, STATIC_POSITION(1), record, &(user_value){.string_value = datas[i], .string_size = strlen(datas[i])}, UINT32_MAX);
+			set_element_in_tuple(attd_p->record_def, STATIC_POSITION(0), record, &(datum){.uint_value = access_counter}, UINT32_MAX);
+			set_element_in_tuple(attd_p->record_def, STATIC_POSITION(1), record, &(datum){.string_value = datas[i], .string_size = strlen(datas[i])}, UINT32_MAX);
 
 			success += set_in_array_table(atrl_p, bucket_ids[i], record, transaction_id, &abort_error);
 			if(abort_error)

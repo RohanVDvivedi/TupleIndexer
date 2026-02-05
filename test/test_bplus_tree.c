@@ -158,14 +158,14 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 {
 	init_tuple(def, tuple);
 
-	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((user_value){.int_value = r->index}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = r->name, .string_size = strlen(r->name)}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(2), tuple, &((user_value){.uint_value = r->age}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(3), tuple, &((user_value){.bit_field_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(4), tuple, &((user_value){.string_value = r->email, .string_size = strlen(r->email)}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(5), tuple, &((user_value){.string_value = r->phone, .string_size = strlen(r->phone)}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(6), tuple, &((user_value){.uint_value = r->score}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(7), tuple, &((user_value){.string_value = r->update, .string_size = strlen(r->update)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((datum){.int_value = r->index}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((datum){.string_value = r->name, .string_size = strlen(r->name)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(2), tuple, &((datum){.uint_value = r->age}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(3), tuple, &((datum){.bit_field_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(4), tuple, &((datum){.string_value = r->email, .string_size = strlen(r->email)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(5), tuple, &((datum){.string_value = r->phone, .string_size = strlen(r->phone)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(6), tuple, &((datum){.uint_value = r->score}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(7), tuple, &((datum){.string_value = r->update, .string_size = strlen(r->update)}), UINT32_MAX);
 }
 
 void build_key_tuple_from_record_struct(const bplus_tree_tuple_defs* bpttd_p, void* key_tuple, const record* r)
@@ -177,7 +177,7 @@ void build_key_tuple_from_record_struct(const bplus_tree_tuple_defs* bpttd_p, vo
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
-	user_value uval;
+	datum uval;
 	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(0), tupl);
 	r->index = uval.int_value;
 	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(1), tupl);
@@ -297,7 +297,7 @@ update_inspector ii = {
 
 int updater_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, void (*cancel_update_callback)(void* cancel_update_callback_context, const void* transaction_id, int* abort_error), void* cancel_update_callback_context, const void* transaction_id, int* abort_error)
 {
-	user_value update_data;
+	datum update_data;
 	get_value_from_element_from_tuple(&update_data, record_def, STATIC_POSITION(7), old_record);
 	char update_value[64] = {};
 	strncpy(update_value, update_data.string_value, update_data.string_size);
@@ -307,7 +307,7 @@ int updater_update_inspect(const void* context, const tuple_def* record_def, con
 		strcpy(update_value, "R");
 	else
 		update_value[strlen(update_value)] = update_value[strlen(update_value)-1] + 1;
-	set_element_in_tuple(record_def, STATIC_POSITION(7), *new_record, &((user_value){.string_value = update_value, .string_size = strlen(update_value)}), UINT32_MAX);
+	set_element_in_tuple(record_def, STATIC_POSITION(7), *new_record, &((datum){.string_value = update_value, .string_size = strlen(update_value)}), UINT32_MAX);
 
 	return 1;
 }
@@ -817,11 +817,11 @@ void update_UPDATE_column_for_all_tuples_with_iterator(uint64_t root_page_id, ch
 	while(tuple_to_process != NULL)
 	{
 		// update the update column here in place
-		user_value old_value;
+		datum old_value;
 		get_value_from_element_from_tuple(&old_value, bpttd_p->record_def, STATIC_POSITION(7), tuple_to_process);
 		char data_bytes[64] = {};
 		memmove(data_bytes, old_value.string_value, old_value.string_size);
-		user_value new_value = {.string_value = data_bytes, .string_size = old_value.string_size};
+		datum new_value = {.string_value = data_bytes, .string_size = old_value.string_size};
 		((char*)(new_value.string_value))[0] = first_byte;
 		update_non_key_element_in_place_at_bplus_tree_iterator(bpi_p, STATIC_POSITION(7), &new_value, transaction_id, &abort_error);
 

@@ -20,7 +20,7 @@ worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const worm
 		free(wri_p);
 		return NULL;
 	}
-	wri_p->curr_blob_index = 0;
+	wri_p->curr_binary_index = 0;
 	wri_p->curr_byte_index = 0; // this position is always present OR the worm is empty and you are at it's end
 	wri_p->wtd_p = wtd_p;
 	wri_p->pam_p = pam_p;
@@ -28,7 +28,7 @@ worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const worm
 	return wri_p;
 }
 
-worm_read_iterator* get_new_worm_read_iterator2(uint64_t curr_page_id, uint32_t curr_blob_index, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+worm_read_iterator* get_new_worm_read_iterator2(uint64_t curr_page_id, uint32_t curr_binary_index, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(wtd_p == NULL || pam_p == NULL)
@@ -45,7 +45,7 @@ worm_read_iterator* get_new_worm_read_iterator2(uint64_t curr_page_id, uint32_t 
 		free(wri_p);
 		return NULL;
 	}
-	wri_p->curr_blob_index = curr_blob_index;
+	wri_p->curr_binary_index = curr_binary_index;
 	wri_p->curr_byte_index = 0; // this position is always present OR the worm is empty and you are at it's end
 	wri_p->wtd_p = wtd_p;
 	wri_p->pam_p = pam_p;
@@ -66,7 +66,7 @@ worm_read_iterator* clone_worm_read_iterator(const worm_read_iterator* wri_p, co
 		free(clone_p);
 		return NULL;
 	}
-	clone_p->curr_blob_index = wri_p->curr_blob_index;
+	clone_p->curr_binary_index = wri_p->curr_binary_index;
 	clone_p->curr_byte_index = wri_p->curr_byte_index;
 	clone_p->wtd_p = wri_p->wtd_p;
 	clone_p->pam_p = wri_p->pam_p;
@@ -136,8 +136,8 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 
 	while(data_size > 0)
 	{
-		// if you are blob_index is out of bounds, then change the page
-		if(wri_p->curr_blob_index >= get_tuple_count_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_blob_tuple_def->size_def)))
+		// if you are binary_index is out of bounds, then change the page
+		if(wri_p->curr_binary_index >= get_tuple_count_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_binary_tuple_def->size_def)))
 		{
 			// if there is no next page to go to, then break out of the loop
 			if(!can_goto_next_page(wri_p))
@@ -148,25 +148,25 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 			if(*abort_error)
 				return 0;
 
-			wri_p->curr_blob_index = 0;
+			wri_p->curr_binary_index = 0;
 			wri_p->curr_byte_index = 0;
 		}
 
-		// get the curr_blob, the tuple at curr_blob_index
-		user_value curr_blob;
+		// get the curr_binary, the tuple at curr_binary_index
+		datum curr_binary;
 		{
-			const void* blob_tuple = get_nth_tuple_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_blob_tuple_def->size_def), wri_p->curr_blob_index);
-			get_value_from_element_from_tuple(&curr_blob, wri_p->wtd_p->partial_blob_tuple_def, SELF, blob_tuple);
+			const void* binary_tuple = get_nth_tuple_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_binary_tuple_def->size_def), wri_p->curr_binary_index);
+			get_value_from_element_from_tuple(&curr_binary, wri_p->wtd_p->partial_binary_tuple_def, SELF, binary_tuple);
 		}
 
 		// compute bytes_readable
-		uint32_t bytes_readable = min(data_size, curr_blob.blob_size - wri_p->curr_byte_index);
+		uint32_t bytes_readable = min(data_size, curr_binary.binary_size - wri_p->curr_byte_index);
 
 		// move the data and data_size buffer references forward by bytes_readable
 		// and read respective data if data != NULL
 		if(data != NULL)
 		{
-			memory_move(data, curr_blob.blob_value + wri_p->curr_byte_index, bytes_readable);
+			memory_move(data, curr_binary.binary_value + wri_p->curr_byte_index, bytes_readable);
 			data += bytes_readable;
 		}
 		data_size -= bytes_readable;
@@ -176,9 +176,9 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 
 		// move forward the iterator by bytes_readable bytes
 		wri_p->curr_byte_index += bytes_readable;
-		if(wri_p->curr_byte_index == curr_blob.blob_size)
+		if(wri_p->curr_byte_index == curr_binary.binary_size)
 		{
-			wri_p->curr_blob_index++;
+			wri_p->curr_binary_index++;
 			wri_p->curr_byte_index = 0;
 		}
 	}
@@ -193,8 +193,8 @@ const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const v
 
 	while((*data_size) == 0)
 	{
-		// if you are blob_index is out of bounds, then change the page
-		if(wri_p->curr_blob_index >= get_tuple_count_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_blob_tuple_def->size_def)))
+		// if you are binary_index is out of bounds, then change the page
+		if(wri_p->curr_binary_index >= get_tuple_count_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_binary_tuple_def->size_def)))
 		{
 			// if there is no next page to go to, then break out of the loop
 			if(!can_goto_next_page(wri_p))
@@ -205,29 +205,29 @@ const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const v
 			if(*abort_error)
 				return 0;
 
-			wri_p->curr_blob_index = 0;
+			wri_p->curr_binary_index = 0;
 			wri_p->curr_byte_index = 0;
 		}
 
-		// get the curr_blob, the tuple at curr_blob_index
-		user_value curr_blob;
+		// get the curr_binary, the tuple at curr_binary_index
+		datum curr_binary;
 		{
-			const void* blob_tuple = get_nth_tuple_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_blob_tuple_def->size_def), wri_p->curr_blob_index);
-			get_value_from_element_from_tuple(&curr_blob, wri_p->wtd_p->partial_blob_tuple_def, SELF, blob_tuple);
+			const void* binary_tuple = get_nth_tuple_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_binary_tuple_def->size_def), wri_p->curr_binary_index);
+			get_value_from_element_from_tuple(&curr_binary, wri_p->wtd_p->partial_binary_tuple_def, SELF, binary_tuple);
 		}
 
 		// compute bytes_readable
-		uint32_t bytes_readable = (curr_blob.blob_size - wri_p->curr_byte_index);
+		uint32_t bytes_readable = (curr_binary.binary_size - wri_p->curr_byte_index);
 
-		// if there are no bytes peekable, then go to the next blob
+		// if there are no bytes peekable, then go to the next binary
 		if(bytes_readable == 0)
 		{
-			wri_p->curr_blob_index++;
+			wri_p->curr_binary_index++;
 			wri_p->curr_byte_index = 0;
-			continue; // this continue ensures that the next blob will not be out-of-bounds on this very page, if so we will goto next page first blob in the next page
+			continue; // this continue ensures that the next binary will not be out-of-bounds on this very page, if so we will goto next page first binary in the next page
 		}
 
-		data = curr_blob.blob_value + wri_p->curr_byte_index;
+		data = curr_binary.binary_value + wri_p->curr_byte_index;
 		(*data_size) = bytes_readable; // we can break out of the loop here, only if the data_size is non-zero
 
 		// bytes_readable != 0, so even data_size > 0, hence some bytes were peeked, hence break out of the loop
@@ -237,10 +237,10 @@ const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const v
 	return data;
 }
 
-uint64_t get_position_in_worm(worm_read_iterator* wri_p, uint32_t* curr_blob_index, uint32_t* curr_byte_index)
+uint64_t get_position_in_worm(worm_read_iterator* wri_p, uint32_t* curr_binary_index, uint32_t* curr_byte_index)
 {
 	(*curr_byte_index) = wri_p->curr_byte_index;
-	(*curr_blob_index) = wri_p->curr_blob_index;
+	(*curr_binary_index) = wri_p->curr_binary_index;
 	return wri_p->curr_page.page_id;
 }
 

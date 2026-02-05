@@ -63,14 +63,14 @@ int increment_reference_counter_worm_append_iterator(worm_append_iterator* wai_p
 	return 0;
 }
 
-uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, uint64_t* insertion_page_id, uint32_t* insertion_blob_index, const void* transaction_id, int* abort_error)
+uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t data_size, uint64_t* insertion_page_id, uint32_t* insertion_binary_index, const void* transaction_id, int* abort_error)
 {
 	// no data to append is always a success
 	if(data_size == 0)
 		return 0;
 
-	char* blob_tuple_buffer = malloc(wai_p->wtd_p->pas_p->page_size);
-	if(blob_tuple_buffer == NULL)
+	char* binary_tuple_buffer = malloc(wai_p->wtd_p->pas_p->page_size);
+	if(binary_tuple_buffer == NULL)
 		exit(-1);
 
 	// persistent page for locking tail page, if tail page is not the head page
@@ -99,7 +99,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 	while(data_size > 0)
 	{
 		uint32_t bytes_appendable = 0;
-		while((bytes_appendable = blob_bytes_appendable_on_worm_page(tail_page_p, wai_p->wtd_p)) == 0) // keep on appending new tail pages, while there are no appendable bytes on that page, ideally this loop should run just once
+		while((bytes_appendable = binary_bytes_appendable_on_worm_page(tail_page_p, wai_p->wtd_p)) == 0) // keep on appending new tail pages, while there are no appendable bytes on that page, ideally this loop should run just once
 		{
 			// create a new tail page
 			persistent_page new_page = get_new_persistent_page_with_write_lock(wai_p->pam_p, transaction_id, abort_error);
@@ -143,26 +143,26 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 		// you can not append more bytes than what the data currently points to
 		bytes_appendable = min(bytes_appendable, data_size);
 
-		// build user value for the blob
-		user_value uval = {.blob_value = data, .blob_size = bytes_appendable};
+		// build user value for the binary
+		datum uval = {.binary_value = data, .binary_size = bytes_appendable};
 
-		// build tuple in blob_tuple_buffer for the blob
-		init_tuple(wai_p->wtd_p->partial_blob_tuple_def, blob_tuple_buffer);
-		set_element_in_tuple(wai_p->wtd_p->partial_blob_tuple_def, SELF, blob_tuple_buffer, &uval, UINT32_MAX);
+		// build tuple in binary_tuple_buffer for the binary
+		init_tuple(wai_p->wtd_p->partial_binary_tuple_def, binary_tuple_buffer);
+		set_element_in_tuple(wai_p->wtd_p->partial_binary_tuple_def, SELF, binary_tuple_buffer, &uval, UINT32_MAX);
 
 		// before we go ahead and append the bytes lets pass the insertion position to the user
 		if(bytes_appended == 0) // only if there are no bytes appended yet
 		{
-			if(insertion_page_id != NULL && insertion_blob_index != NULL)
+			if(insertion_page_id != NULL && insertion_binary_index != NULL)
 			{
-				// set the current page_id of the tail, and the tuple_count on the tail (because this is going to be the next blob)
+				// set the current page_id of the tail, and the tuple_count on the tail (because this is going to be the next binary)
 				(*insertion_page_id) = tail_page_p->page_id;
-				(*insertion_blob_index) = get_tuple_count_on_persistent_page(tail_page_p, wai_p->wtd_p->pas_p->page_size, &(wai_p->wtd_p->partial_blob_tuple_def->size_def));
+				(*insertion_binary_index) = get_tuple_count_on_persistent_page(tail_page_p, wai_p->wtd_p->pas_p->page_size, &(wai_p->wtd_p->partial_binary_tuple_def->size_def));
 			}
 		}
 
-		// append blob_tuple_buffer onto the page
-		append_tuple_on_persistent_page_resiliently(wai_p->pmm_p, transaction_id, tail_page_p, wai_p->wtd_p->pas_p->page_size, &(wai_p->wtd_p->partial_blob_tuple_def->size_def), blob_tuple_buffer, abort_error);
+		// append binary_tuple_buffer onto the page
+		append_tuple_on_persistent_page_resiliently(wai_p->pmm_p, transaction_id, tail_page_p, wai_p->wtd_p->pas_p->page_size, &(wai_p->wtd_p->partial_binary_tuple_def->size_def), binary_tuple_buffer, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -192,7 +192,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 			goto ABORT_ERROR;
 	}
 
-	free(blob_tuple_buffer);
+	free(binary_tuple_buffer);
 
 	return bytes_appended;
 
@@ -200,7 +200,7 @@ uint32_t append_to_worm(worm_append_iterator* wai_p, const char* data, uint32_t 
 	// in case of abort, release lock on head_page and tail_page (if tail_page is not NULL)
 	if(!is_persistent_page_NULL(&tail_page, wai_p->pam_p))
 		release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
-	free(blob_tuple_buffer);
+	free(binary_tuple_buffer);
 	release_lock_on_persistent_page(wai_p->pam_p, transaction_id, &(wai_p->head_page), NONE_OPTION, abort_error);
 	return 0;
 }

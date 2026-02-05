@@ -3,8 +3,8 @@
 
 /* WORM = Write-Once-Read-Multiple-times data structure
 ** use it for storing larger than page data types, or types that do not fit on page
-** also has a reference counter for the actual blob data in worm and for the of dependent_root_page_id, AND the worm with the dependent_root_page_id is destroyed when the reference count reaches 0
-** each page has atleast 1 partial_blob_type's tuple on it
+** also has a reference counter for the actual binary data in worm and for the of dependent_root_page_id, AND the worm with the dependent_root_page_id is destroyed when the reference count reaches 0
+** each page has atleast 1 partial_binary_type's tuple on it
 */
 
 /*

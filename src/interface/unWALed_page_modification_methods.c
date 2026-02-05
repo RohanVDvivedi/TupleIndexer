@@ -51,7 +51,7 @@ static int swap_tuples_on_page_unWALed(void* context, const void* transaction_id
 	return swap_tuples_on_page(page, page_size, tpl_sz_d, i1, i2);
 }
 
-static int set_element_in_tuple_in_place_on_page_unWALed(void* context, const void* transaction_id, void* page, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value, int* abort_error)
+static int set_element_in_tuple_in_place_on_page_unWALed(void* context, const void* transaction_id, void* page, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const datum* value, int* abort_error)
 {
 	return set_element_in_tuple_in_place_on_page(page, page_size, tpl_d, tuple_index, element_index, value);
 }

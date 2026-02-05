@@ -52,8 +52,8 @@ void initialize_tuple(const tuple_def* def, char* tuple, int index, const char* 
 {
 	init_tuple(def, tuple);
 
-	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((user_value){.int_value = index}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((datum){.int_value = index}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((datum){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
 }
 
 int main()

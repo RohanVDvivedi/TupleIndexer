@@ -165,7 +165,7 @@ int check_if_record_can_be_inserted_for_bplus_tree_tuple_definitions(const bplus
 		}
 
 		// check the size after inserting a child_page_id, 
-		int can_set_in_index_tuple = set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), temp_index_record_tuple, &((user_value){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}), bpttd_p->max_index_record_size - index_record_tuple_size);
+		int can_set_in_index_tuple = set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), temp_index_record_tuple, &((datum){.uint_value = bpttd_p->pas_p->NULL_PAGE_ID}), bpttd_p->max_index_record_size - index_record_tuple_size);
 		if(!can_set_in_index_tuple)
 		{
 			free(temp_index_record_tuple);
@@ -221,7 +221,7 @@ int build_index_entry_from_record_tuple_using_bplus_tree_tuple_definitions(const
 
 	// copy the child_page_id to the last element in the index entry
 	if(res == 1)
-		res = set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((const user_value){.uint_value = child_page_id}), UINT32_MAX);
+		res = set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((const datum){.uint_value = child_page_id}), UINT32_MAX);
 
 	return res;
 }
@@ -238,7 +238,7 @@ int build_index_entry_from_key_using_bplus_tree_tuple_definitions(const bplus_tr
 
 	// copy the child_page_id to the last element in the index entry
 	if(res == 1)
-		set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((user_value){.uint_value = child_page_id}), UINT32_MAX);
+		set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((datum){.uint_value = child_page_id}), UINT32_MAX);
 
 	return res;
 }

@@ -12,7 +12,7 @@ materialized_key materialize_key_from_tuple(const void* tuple, const tuple_def* 
 	if(mat_key.key_dtis == NULL)
 		exit(-1);
 
-	mat_key.keys = malloc(sizeof(user_value) * key_element_count);
+	mat_key.keys = malloc(sizeof(datum) * key_element_count);
 	if(mat_key.keys == NULL)
 		exit(-1);
 

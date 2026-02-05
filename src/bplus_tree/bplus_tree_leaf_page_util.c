@@ -175,18 +175,18 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		int cmp = compare_elements_of_tuple(last_tuple_page1, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, bpttd_p->record_def, bpttd_p->key_element_ids[i]);
 
 		// if the corresponding elements in the record tuples are equal OR
-		// if the elements are not STRING or BLOB, then proceed as usual
-		if(0 == cmp || (ele_d->type != STRING && ele_d->type != BLOB))
+		// if the elements are not STRING or BINARY, then proceed as usual
+		if(0 == cmp || (ele_d->type != STRING && ele_d->type != BINARY))
 		{
 			// if not set, fail
 			if(!set_element_in_tuple_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2, UINT32_MAX))
 				return 0;
 		}
-		else // we can only suffix truncate STRING or BLOB types
+		else // we can only suffix truncate STRING or BINARY types
 		{
-			user_value last_tuple_page1_element;
+			datum last_tuple_page1_element;
 			get_value_from_element_from_tuple(&last_tuple_page1_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
-			user_value first_tuple_page2_element;
+			datum first_tuple_page2_element;
 			get_value_from_element_from_tuple(&first_tuple_page2_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 			switch(bpttd_p->key_compare_direction[i])
@@ -195,11 +195,11 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				{
 					// last_tuple_page1_element != first_tuple_page2_element, for sure
 					// and since the ordering is ASC, only last_tuple_page1_element may be NULL
-					if(is_user_value_NULL(&last_tuple_page1_element))
+					if(is_datum_NULL(&last_tuple_page1_element))
 					{
-						// if last_tuple_page1_element is NULL, then set the corresponding index_entry_element to EMPTY_USER_VALUE
-						// first_tuple_page2 is bound to be greater than or equal to EMPTY_USER_VALUE
-						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_USER_VALUE, UINT32_MAX))
+						// if last_tuple_page1_element is NULL, then set the corresponding index_entry_element to EMPTY_DATUM
+						// first_tuple_page2 is bound to be greater than or equal to EMPTY_DATUM
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_DATUM, UINT32_MAX))
 							return 0;
 						break; // break from the switch case not the loop
 					}
@@ -208,10 +208,10 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 
 					// compute the number of characters matched
 					uint32_t match_lengths = 0;
-					for(; match_lengths < last_tuple_page1_element.string_or_blob_size && match_lengths < first_tuple_page2_element.string_or_blob_size && ((const char*)(last_tuple_page1_element.string_or_blob_value))[match_lengths] == ((const char*)(first_tuple_page2_element.string_or_blob_value))[match_lengths]; match_lengths++);
+					for(; match_lengths < last_tuple_page1_element.string_or_binary_size && match_lengths < first_tuple_page2_element.string_or_binary_size && ((const char*)(last_tuple_page1_element.string_or_binary_value))[match_lengths] == ((const char*)(first_tuple_page2_element.string_or_binary_value))[match_lengths]; match_lengths++);
 
-					user_value first_tuple_page2_element_copy = first_tuple_page2_element;
-					first_tuple_page2_element_copy.string_or_blob_size = match_lengths + 1;
+					datum first_tuple_page2_element_copy = first_tuple_page2_element;
+					first_tuple_page2_element_copy.string_or_binary_size = match_lengths + 1;
 					// if not set, fail
 					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &first_tuple_page2_element_copy, UINT32_MAX))
 						return 0;
@@ -221,10 +221,10 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				{
 					// last_tuple_page1_element != first_tuple_page2_element, for sure
 					// and since the ordering is DESC, only first_tuple_page2_element may be NULL
-					if(is_user_value_NULL(&first_tuple_page2_element))
+					if(is_datum_NULL(&first_tuple_page2_element))
 					{
-						// if first_tuple_page2_element is NULL, then set the corresponding index_entry_element to NULL_USER_VALUE
-						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, NULL_USER_VALUE, UINT32_MAX))
+						// if first_tuple_page2_element is NULL, then set the corresponding index_entry_element to NULL_DATUM
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, NULL_DATUM, UINT32_MAX))
 							return 0;
 						break;
 					}
@@ -233,12 +233,12 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 
 					// compute the number of characters matched
 					uint32_t match_lengths = 0;
-					for(; match_lengths < last_tuple_page1_element.string_or_blob_size && match_lengths < first_tuple_page2_element.string_or_blob_size && ((const char*)(last_tuple_page1_element.string_or_blob_value))[match_lengths] == ((const char*)(first_tuple_page2_element.string_or_blob_value))[match_lengths]; match_lengths++);
+					for(; match_lengths < last_tuple_page1_element.string_or_binary_size && match_lengths < first_tuple_page2_element.string_or_binary_size && ((const char*)(last_tuple_page1_element.string_or_binary_value))[match_lengths] == ((const char*)(first_tuple_page2_element.string_or_binary_value))[match_lengths]; match_lengths++);
 
-					if(match_lengths + 1 < last_tuple_page1_element.string_or_blob_size) // to ensure that index_entry does not become equal to last_tuple_page1's index representation
+					if(match_lengths + 1 < last_tuple_page1_element.string_or_binary_size) // to ensure that index_entry does not become equal to last_tuple_page1's index representation
 					{
-						user_value last_tuple_page1_element_copy = last_tuple_page1_element;
-						last_tuple_page1_element_copy.string_or_blob_size = match_lengths + 1;
+						datum last_tuple_page1_element_copy = last_tuple_page1_element;
+						last_tuple_page1_element_copy.string_or_binary_size = match_lengths + 1;
 						// if not set, fail
 						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &last_tuple_page1_element_copy, UINT32_MAX))
 							return 0;
@@ -287,28 +287,28 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				// NULL is the least value of any type
 				// check if index entry element is NULL
 				{
-					user_value index_entry_element;
+					datum index_entry_element;
 					get_value_from_element_from_tuple(&index_entry_element, bpttd_p->index_def, STATIC_POSITION(i), index_entry);
-					if(is_user_value_NULL(&index_entry_element))
+					if(is_datum_NULL(&index_entry_element))
 						break;
 				}
 
 				// if not NULL, then set it to NULL
 				// this may fail if the element is non-nullable
-				if(set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, NULL_USER_VALUE, UINT32_MAX))
+				if(set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, NULL_DATUM, UINT32_MAX))
 					break;
 
 				// else set it to min_val for that element
 				if(is_primitive_numeral_type_info(ele_d))
 				{
-					const user_value min_val = get_MIN_value_for_primitive_numeral_type_info(ele_d);
+					const datum min_val = get_MIN_value_for_primitive_numeral_type_info(ele_d);
 					// if not set, fail
 					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &min_val, UINT32_MAX))
 						return 0;
 				}
-				else // min value of a non primitive numeral type info is generally EMPTY_USER_VALUE
+				else // min value of a non primitive numeral type info is generally EMPTY_DATUM
 				{
-					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_USER_VALUE, UINT32_MAX))
+					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_DATUM, UINT32_MAX))
 						return 0;
 				}
 				break;
@@ -320,36 +320,36 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				if(is_primitive_numeral_type_info(ele_d))
 				{
 					// if not set, fail
-					const user_value max_val = get_MAX_value_for_primitive_numeral_type_info(ele_d);
+					const datum max_val = get_MAX_value_for_primitive_numeral_type_info(ele_d);
 					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, &max_val, UINT32_MAX))
 						return 0;
 				}
-				else if(ele_d->type == STRING || ele_d->type == BLOB) // max values of STRING and BLOB types are difficult to compute
+				else if(ele_d->type == STRING || ele_d->type == BINARY) // max values of STRING and BINARY types are difficult to compute
 				{
-					user_value first_tuple_page2_element;
+					datum first_tuple_page2_element;
 					get_value_from_element_from_tuple(&first_tuple_page2_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
-					if(is_user_value_NULL(&first_tuple_page2_element))
+					if(is_datum_NULL(&first_tuple_page2_element))
 					{
 						// the shortest string greater than NULL, is an empty string
-						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_USER_VALUE, UINT32_MAX))
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_DATUM, UINT32_MAX))
 							return 0;
 						break;
 					}
 
 					// count the number of UCHAR_MAX characters in the prefix of the first_tuple_page2_element
 					uint32_t maximum_char_value_prefix_count = 0;
-					while(maximum_char_value_prefix_count < first_tuple_page2_element.string_or_blob_size
-						&& ((const unsigned char*)(first_tuple_page2_element.string_or_blob_value))[maximum_char_value_prefix_count] == UNSIGNED_MAX_VALUE_OF(unsigned char))
+					while(maximum_char_value_prefix_count < first_tuple_page2_element.string_or_binary_size
+						&& ((const unsigned char*)(first_tuple_page2_element.string_or_binary_value))[maximum_char_value_prefix_count] == UNSIGNED_MAX_VALUE_OF(unsigned char))
 						maximum_char_value_prefix_count++;
 
 					// build max value element inside index entry of length `maximum_char_value_prefix_count + 1`, where each byte is UCHAR_MAX
 
-					// first set it to EMPTY_USER_VALUE i.e. empty string
-					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_USER_VALUE, UINT32_MAX))
+					// first set it to EMPTY_DATUM i.e. empty string
+					if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, EMPTY_DATUM, UINT32_MAX))
 						return 0;
 
-					// a variable string or blob has 0 elements if empty, if so expand it to hold maximum_char_value_prefix_count elements, and then again expand it by 1 byte, we would still be fine if the second expand fails
+					// a variable string or binary has 0 elements if empty, if so expand it to hold maximum_char_value_prefix_count elements, and then again expand it by 1 byte, we would still be fine if the second expand fails
 					if(get_element_count_for_element_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry) == 0)
 					{
 						if(!expand_element_count_for_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, 0, maximum_char_value_prefix_count, UINT32_MAX))
@@ -357,10 +357,10 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 						expand_element_count_for_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, maximum_char_value_prefix_count, 1, UINT32_MAX);
 					}
 
-					// now set all the elements of this new string or blob type to UCHAR_MAX
+					// now set all the elements of this new string or binary type to UCHAR_MAX
 					for(uint32_t j = 0; j < get_element_count_for_element_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry); j++)
 					{
-						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i, j), index_entry, &(user_value){.uint_value = UNSIGNED_MAX_VALUE_OF(unsigned char)}, UINT32_MAX))
+						if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i, j), index_entry, &(datum){.uint_value = UNSIGNED_MAX_VALUE_OF(unsigned char)}, UINT32_MAX))
 							return 0;
 					}
 				}
@@ -381,7 +381,7 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 	}
 
 	// copy the child_page_id to the last element in the index entry
-	if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((const user_value){.uint_value = child_page_id}), UINT32_MAX))
+	if(!set_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_entry, &((const datum){.uint_value = child_page_id}), UINT32_MAX))
 		return 0;
 
 	// success

@@ -13,8 +13,8 @@ typedef struct worm_read_iterator worm_read_iterator;
 
 worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-// this forces the worm_read_iterator to start from the specified curr_page_id and curr_blob_index
-worm_read_iterator* get_new_worm_read_iterator2(uint64_t curr_page_id, uint32_t curr_blob_index, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+// this forces the worm_read_iterator to start from the specified curr_page_id and curr_binary_index
+worm_read_iterator* get_new_worm_read_iterator2(uint64_t curr_page_id, uint32_t curr_binary_index, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 worm_read_iterator* clone_worm_read_iterator(const worm_read_iterator* wri_p, const void* transaction_id, int* abort_error);
 
@@ -34,13 +34,13 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 
 // this function can be used to directly peek the next available consecutive bytes from worm
 // this function allows peeking directly into the page, by returning the memory pointer on the page, pointing to data_size number of bytes
-// returns NULL and 0, if there are no more bytes/blobs in the worm, this implies end of worm
+// returns NULL and 0, if there are no more bytes/binarys in the worm, this implies end of worm
 // peek will not move the iterator forward, you will need to call read_from_worm(wri_p, NULL, data_size, transaction_id, &abort_error); to make it move forward by that many bytes
 // on an abort_error all locks are released and NULL and 0 is returned
 const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const void* transaction_id, int* abort_error);
 
-// get current position of the worm_read_iterator, the curr_blob_index and curr_byte_index are output parameters, and the return value is the curr_page_id of the worm we are in
-uint64_t get_position_in_worm(worm_read_iterator* wri_p, uint32_t* curr_blob_index, uint32_t* curr_byte_index);
+// get current position of the worm_read_iterator, the curr_binary_index and curr_byte_index are output parameters, and the return value is the curr_page_id of the worm we are in
+uint64_t get_position_in_worm(worm_read_iterator* wri_p, uint32_t* curr_binary_index, uint32_t* curr_byte_index);
 
 void delete_worm_read_iterator(worm_read_iterator* wri_p, const void* transaction_id, int* abort_error);
 

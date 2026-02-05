@@ -258,7 +258,7 @@ int swap_tuples_on_persistent_page(const page_modification_methods* pmm_p, const
 	return res;
 }
 
-int set_element_in_tuple_in_place_on_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value, int* abort_error)
+int set_element_in_tuple_in_place_on_persistent_page(const page_modification_methods* pmm_p, const void* transaction_id, persistent_page* ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const datum* value, int* abort_error)
 {
 	// if a persistent_page is not write locked, then you can not write to it
 	if(!is_persistent_page_write_locked(ppage))

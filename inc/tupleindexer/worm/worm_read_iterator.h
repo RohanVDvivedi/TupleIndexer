@@ -11,10 +11,10 @@ struct worm_read_iterator
 	// curr_page that we are looking at
 	persistent_page curr_page;
 
-	// curr_blob_index -> index of the tuple we are looking at in curr_page
-	uint32_t curr_blob_index;
+	// curr_binary_index -> index of the tuple we are looking at in curr_page
+	uint32_t curr_binary_index;
 
-	// curr_byte_index -> index of the byte in the blob that we are looking at
+	// curr_byte_index -> index of the byte in the binary that we are looking at
 	uint32_t curr_byte_index;
 
 	const worm_tuple_defs* wtd_p;

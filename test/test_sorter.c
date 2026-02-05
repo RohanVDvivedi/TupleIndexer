@@ -151,19 +151,19 @@ void build_tuple_from_record_struct(const tuple_def* def, void* tuple, const rec
 {
 	init_tuple(def, tuple);
 
-	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((user_value){.int_value = r->index}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((user_value){.string_value = r->name, .string_size = strlen(r->name)}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(2), tuple, &((user_value){.uint_value = r->age}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(3), tuple, &((user_value){.bit_field_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(4), tuple, &((user_value){.string_value = r->email, .string_size = strlen(r->email)}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(5), tuple, &((user_value){.string_value = r->phone, .string_size = strlen(r->phone)}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(6), tuple, &((user_value){.uint_value = r->score}), UINT32_MAX);
-	set_element_in_tuple(def, STATIC_POSITION(7), tuple, &((user_value){.string_value = r->update, .string_size = strlen(r->update)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(0), tuple, &((datum){.int_value = r->index}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((datum){.string_value = r->name, .string_size = strlen(r->name)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(2), tuple, &((datum){.uint_value = r->age}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(3), tuple, &((datum){.bit_field_value = ((strcmp(r->sex, "Male") == 0) ? 1 : 0)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(4), tuple, &((datum){.string_value = r->email, .string_size = strlen(r->email)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(5), tuple, &((datum){.string_value = r->phone, .string_size = strlen(r->phone)}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(6), tuple, &((datum){.uint_value = r->score}), UINT32_MAX);
+	set_element_in_tuple(def, STATIC_POSITION(7), tuple, &((datum){.string_value = r->update, .string_size = strlen(r->update)}), UINT32_MAX);
 }
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
-	user_value uval;
+	datum uval;
 	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(0), tupl);
 	r->index = uval.int_value;
 	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(1), tupl);

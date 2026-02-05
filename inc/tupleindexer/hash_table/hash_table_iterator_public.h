@@ -63,7 +63,7 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 // ADVISED 	:: only update columns that do not change the tuple size on the page, else the page may become less than half full and this can not be fixed by this function
 //			:: also attempting to update to a element value that can increase the tuple size, may even fail, because the slot for the tuple is not big enough
 // on an ABORT_ERROR, all iterators that hash_table_iterator points to are deleted
-int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, positional_accessor element_index, const user_value* element_value, const void* transaction_id, int* abort_error);
+int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, positional_accessor element_index, const datum* element_value, const void* transaction_id, int* abort_error);
 
 #include<tupleindexer/hash_table/hash_table_vaccum_params.h>
 

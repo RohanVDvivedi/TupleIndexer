@@ -147,7 +147,7 @@ struct active_sorted_run
 	uint64_t head_page_id;
 	linked_page_list_iterator* run_iterator;
 
-	user_value* cached_keys_for_curr_tuple;
+	datum* cached_keys_for_curr_tuple;
 };
 
 static void cache_keys_for_active_sorted_run(active_sorted_run* asr_p, const sorter_tuple_defs* std_p)
@@ -155,7 +155,7 @@ static void cache_keys_for_active_sorted_run(active_sorted_run* asr_p, const sor
 	// allocate memory for caches_keys
 	if(asr_p->cached_keys_for_curr_tuple == NULL)
 	{
-		asr_p->cached_keys_for_curr_tuple = malloc(sizeof(user_value) * std_p->key_element_count);
+		asr_p->cached_keys_for_curr_tuple = malloc(sizeof(datum) * std_p->key_element_count);
 		if(asr_p->cached_keys_for_curr_tuple == NULL)
 			exit(-1);
 	}
@@ -188,7 +188,7 @@ static int compare_sorted_runs(const void* sh_vp, const void* asr_vp1, const voi
 	const active_sorted_run* asr_p1 = asr_vp1;
 	const active_sorted_run* asr_p2 = asr_vp2;
 	if(asr_p1->cached_keys_for_curr_tuple != NULL && asr_p2->cached_keys_for_curr_tuple != NULL)
-		return compare_user_values3(asr_p1->cached_keys_for_curr_tuple,
+		return compare_datums3(asr_p1->cached_keys_for_curr_tuple,
 									asr_p2->cached_keys_for_curr_tuple,
 									sh_p->std_p->key_type_infos,
 									sh_p->std_p->key_compare_direction,

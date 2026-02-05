@@ -17,7 +17,7 @@ struct materialized_key
 
 	data_type_info const ** key_dtis;
 
-	user_value* keys;
+	datum* keys;
 };
 
 materialized_key materialize_key_from_tuple(const void* tuple, const tuple_def* tpl_d, const positional_accessor* key_columns_to_materialize, uint32_t key_element_count);

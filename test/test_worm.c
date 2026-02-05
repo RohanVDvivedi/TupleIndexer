@@ -39,7 +39,7 @@ typedef struct worm_position worm_position;
 struct worm_position
 {
 	uint64_t page_id;
-	uint32_t blob_index;
+	uint32_t binary_index;
 };
 
 uint32_t positions_size = 0;
@@ -47,7 +47,7 @@ worm_position positions[BUFFER_APPEND_COUNT * 10];
 
 void print_worm_from_ramdom(worm_position pos, uint32_t buffer_size, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p)
 {
-	worm_read_iterator* wri_p = get_new_worm_read_iterator2(pos.page_id, pos.blob_index, wtd_p, pam_p, transaction_id, &abort_error);
+	worm_read_iterator* wri_p = get_new_worm_read_iterator2(pos.page_id, pos.binary_index, wtd_p, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -244,7 +244,7 @@ int main()
 		while(t > 0)
 		{
 			prepare_buffer(id++);
-			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 1 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, ((id == 1) || ((id % 2) == 0)) ? (&(positions[positions_size].page_id)) : NULL, ((id == 1) || ((id % 2) == 0)) ? (&(positions[positions_size].blob_index)) : NULL, transaction_id, &abort_error);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 1 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, ((id == 1) || ((id % 2) == 0)) ? (&(positions[positions_size].page_id)) : NULL, ((id == 1) || ((id % 2) == 0)) ? (&(positions[positions_size].binary_index)) : NULL, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -299,7 +299,7 @@ int main()
 		while(t > 0)
 		{
 			prepare_buffer(id++);
-			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 0 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, &(positions[positions_size].page_id), &(positions[positions_size].blob_index), transaction_id, &abort_error);
+			uint32_t bytes_appended = append_to_worm(wai_p, buffer, (id == 0 && BUFFER_APPEND_SIZE == 244) ? 230 : BUFFER_APPEND_SIZE, &(positions[positions_size].page_id), &(positions[positions_size].binary_index), transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -327,7 +327,7 @@ int main()
 
 	for(uint32_t i = 0; i < positions_size; i++)
 	{
-		printf("\n\n printing from = %"PRIu64", %"PRIu32"\n\n", positions[i].page_id, positions[i].blob_index);
+		printf("\n\n printing from = %"PRIu64", %"PRIu32"\n\n", positions[i].page_id, positions[i].binary_index);
 		print_worm_from_ramdom(positions[i], 16, &wtd, pam_p);
 	}
 
