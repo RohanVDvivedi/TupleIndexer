@@ -187,7 +187,7 @@ static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const v
 		goto ABORT_ERROR;
 
 	// push it to the back of the sorted_runs queue
-	uint64_t pushed = push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint32_t run_head_page_ids_count, int were_reserved_slots, const void* transaction_id, int* abort_error)
+	uint64_t pushed = push_sorted_runs(sh_p, ((uint64_t[1]){sh_p->unsorted_partial_run_head_page_id}), 1, 0, transaction_id, abort_error);
 	if(*abort_error) // if aborted after this call, the sorter is already freed from it's resources
 		return 0;
 	if(pushed == 0) // if not pushed fail here
@@ -199,8 +199,7 @@ static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const v
 	if(*abort_error)
 		goto ABORT_ERROR;
 
-	// copy the unsorted_partial_run_head_page_id into a local variable, and then reset it
-	uint64_t new_sorted_run = sh_p->unsorted_partial_run_head_page_id;
+	// reinitialize the head_page_id of unsorted_partial_run
 	sh_p->unsorted_partial_run_head_page_id = sh_p->std_p->lpltd.pas_p->NULL_PAGE_ID;
 
 	return 1;
@@ -266,6 +265,7 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 	ABORT_ERROR:;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	sh_p->unsorted_partial_run = NULL;
 	return 0;
 }
 
