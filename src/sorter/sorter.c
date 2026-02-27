@@ -19,6 +19,10 @@ sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_m
 	sh.unsorted_partial_run_head_page_id = std_p->pttd.pas_p->NULL_PAGE_ID;
 	sh.unsorted_partial_run = NULL;
 
+	sh.sorted_runs_first_index = 0;
+	sh.sorted_runs_count = 0;
+	sh.sorted_runs_slots_reserved_count = 0;
+
 	// create a page_table for holding the sorted runs
 	// failure here is reported by the abort_error if any, else it is a success
 	sh.sorted_runs_root_page_id = get_new_page_table(&(std_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
