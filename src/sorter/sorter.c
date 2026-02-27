@@ -30,16 +30,139 @@ sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_m
 	return sh;
 }
 
-// internal function to pop sorted runs
-static int pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint64_t* run_head_page_ids_count, uint64_t reserve_count_increment, const void* transaction_id, int* abort_error)
+// produces (i1 + i2) % SORTED_RUNS_CAPACITY
+static inline uint64_t add_circular(uint64_t i1, uint64_t i2)
 {
+	if(i1 == SORTED_RUNS_CAPACITY)
+		i1 = 0;
+	if(i2 == SORTED_RUNS_CAPACITY)
+		i2 = 0;
 
+	if(SORTED_RUNS_CAPACITY - i1 > i2)
+		return i1 + i2;
+	else
+		return i2 - (SORTED_RUNS_CAPACITY - i1);
+}
+
+/*
+	below 2 functions are purely internal and you must not attempt to call them from outside
+	reserve_count_* functions must be lesser than the value of (*run_head_page_ids_count), else it is a bug
+	if you reserve a number of slots by using a reserve_count_increment parameter then it implies you will return this same number of sorted_runs upon completion of your task (of merging these sorted runs that you just popped)
+	basically you reserve slots during pop, so that your next anticipated push succeeds
+*/
+
+// internal function to pop sorted runs
+static inline uint64_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint32_t run_head_page_ids_count, uint32_t reserve_count_increment, const void* transaction_id, int* abort_error)
+{
+	// handle that will have to be freed/destroyed on error or on return
+	page_table_range_locker* ptrl_p = NULL;
+
+	// return value
+	uint64_t popped_count = 0;
+
+	{
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// you can never pop more runs than what the sorted_runs actually contains
+		popped_count = min(sh_p->sorted_runs_count, run_head_page_ids_count);
+
+		// you can not reserve more slots than what you pop
+		reserve_count_increment = min(reserve_count_increment, popped_count);
+
+		for(uint64_t i = 0; i < popped_count; i++)
+		{
+			uint64_t index = add_circular(sh_p->sorted_runs_first_index, i);
+
+			run_head_page_ids[i] = get_from_page_table(ptrl_p, index, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			set_in_page_table(ptrl_p, index, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+
+		sh_p->sorted_runs_first_index = add_circular(sh_p->sorted_runs_first_index, popped_count);
+		sh_p->sorted_runs_count -= popped_count;
+		sh_p->sorted_runs_slots_reserved_count += reserve_count_increment;
+
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error);
+		ptrl_p = NULL;
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	return popped_count;
+
+	// all you need to do here is clean up all the open iterators
+	ABORT_ERROR:;
+	if(sh_p->unsorted_partial_run != NULL)
+		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	if(ptrl_p != NULL)
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
+	return 0;
 }
 
 // internal function to push sorted runs
-static int push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint64_t* run_head_page_ids_count, uint64_t reserve_count_decrement, const void* transaction_id, int* abort_error)
+static inline uint64_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint32_t run_head_page_ids_count, int were_reserved_slots, const void* transaction_id, int* abort_error)
 {
+	// handle that will have to be freed/destroyed on error or on return
+	page_table_range_locker* ptrl_p = NULL;
 
+	// return value
+	uint64_t pushed_count = 0;
+
+	{
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		if(were_reserved_slots)
+		{
+			if(sh_p->sorted_runs_slots_reserved_count < run_head_page_ids_count)
+			{
+				printf("BUG :: pushing to reserved slots over the current reservation in sorter\n");
+				exit(-1);
+			}
+
+			pushed_count = run_head_page_ids_count;
+		}
+		else
+		{
+			uint64_t total_pushable_slots = SORTED_RUNS_CAPACITY - (sh_p->sorted_runs_count + sh_p->sorted_runs_slots_reserved_count);
+			pushed_count = min(run_head_page_ids_count, total_pushable_slots);
+		}
+
+		for(uint64_t i = 0; i < pushed_count; i++)
+		{
+			uint64_t index = add_circular(add_circular(sh_p->sorted_runs_first_index, sh_p->sorted_runs_count), i);
+
+			set_in_page_table(ptrl_p, index, run_head_page_ids[i], transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
+
+		sh_p->sorted_runs_count += pushed_count;
+		if(were_reserved_slots)
+			sh_p->sorted_runs_slots_reserved_count -= pushed_count;
+
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error);
+		ptrl_p = NULL;
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
+
+	return pushed_count;
+
+	// all you need to do here is clean up all the open iterators
+	ABORT_ERROR:;
+	if(sh_p->unsorted_partial_run != NULL)
+		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	if(ptrl_p != NULL)
+		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
+	return 0;
 }
 
 // if there exists a unsorted partial run, then it is sorter and put at the end of the sorted runs
