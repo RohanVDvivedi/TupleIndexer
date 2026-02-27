@@ -1,10 +1,6 @@
 ** PICKED TASKS
 
 ** REVAMP SORTER
- * make a single circular queue for the sorter from the page_table
-   * give it functions like
-     int pop_sorted_run(sorter, uint64_t* run_head_page_ids, uint64_t* run_head_page_ids_count, uint64_t reserve_count_increment);
-     int push_sorted_run(sorter, uint64_t* run_head_page_ids, uint64_t* run_head_page_ids_count, uint64_t reserve_count_decrement);
    * api
      * insert_tuple_in_sorter
      * insert_sorted_run_in_sorter
