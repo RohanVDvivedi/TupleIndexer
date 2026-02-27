@@ -495,10 +495,13 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tra
 			}
 		}
 
-		delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
-		output_run.run_iterator = NULL;
-		if(*abort_error)
-			goto ABORT_ERROR;
+		if(output_run.run_iterator != NULL)
+		{
+			delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
+			output_run.run_iterator = NULL;
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 
 		push_sorted_runs(sh_p, &(output_run.head_page_id), 1, 1, transaction_id, abort_error);
 		if(*abort_error)
