@@ -284,18 +284,19 @@ int main()
 	res = insert_from_file(&sh, TEST_DATA_RANDOM_FILE, 0, 4, 256);
 	printf("insertions to sorter completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	insert_in_sorter(sh_p, NULL, transaction_id, &abort_error);
+	insert_in_sorter(&sh, NULL, transaction_id, &abort_error);
 	printf("tuple flushing from buffer done\n\n");
 
+	int merge_result = 0;
 	do
 	{
-		res = merge_few_run_in_sorter(&sh, N_WAY_SORT, transaction_id, &abort_error);
+		merge_result = merge_few_run_in_sorter(&sh, N_WAY_SORT, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
 		}
-	}while(res);
+	}while(merge_result);
 
 	/* CLEANUP */
 
