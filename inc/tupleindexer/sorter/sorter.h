@@ -56,7 +56,7 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 // on success, returns 1, and otherwise 0 if there is only 1 run in the sorted_runs
 // ideally call this function in loop, in several different threads, until all your inserts are completed
 // on an abort error, all iterators are closed, no need to call destroy_sorter
-int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error);
+int merge_few_run_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* transaction_id, int* abort_error);
 
 // destroys the sorter, destroying every run except for the first run, if the sorted_data is not NULL
 // it will also destroy the unsorted_partial_run, and close all iterators

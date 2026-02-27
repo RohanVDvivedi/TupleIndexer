@@ -209,8 +209,6 @@ static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const v
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
 	sh_p->unsorted_partial_run = NULL;
-	if(ptrl_p != NULL)
-		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;
 }
 
@@ -333,7 +331,7 @@ static int compare_sorted_runs(const void* sh_vp, const void* asr_vp1, const voi
 
 // ------------------------------------------------------------------------
 
-int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* transaction_id, int* abort_error);
+int merge_few_run_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* transaction_id, int* abort_error)
 {
 	// need to merge always 2 or more sorted runs onto 1
 	if(N_way < 2)
@@ -343,6 +341,7 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 	if(sh_p->sorted_runs_count <= 1)
 		return 0;
 
+	uint64_t* sorted_runs_page_ids = NULL;
 	active_sorted_run_heap input_runs_heap;
 	if(0 == initialize_active_sorted_run_heap(&input_runs_heap, min(N_way, sh_p->sorted_runs_count)))
 		exit(-1);
@@ -350,92 +349,49 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 	#define HEAP_INFO &((heap_info){.type = MIN_HEAP, .comparator = contexted_comparator(sh_p, compare_sorted_runs)})
 	active_sorted_run output_run = {};
 
-	uint64_t runs_consumed = 0;		// input runs that have been consumed
-	uint64_t runs_created = 0;		// output runs that have been created
-
 	// iterate while all runs have not been consumed
-	while(runs_consumed < sh_p->sorted_runs_count)
 	{
-		// OPTIMIZATION 0
-		// if there is only 1 run remaining to be consumed, then directly move it to the newly created run, without iterating over it's tuples
-		if((sh_p->sorted_runs_count - runs_consumed) == 1)
+		uint64_t* sorted_runs_page_ids = malloc(sizeof(uint64_t) * N_way);
+		if(sorted_runs_page_ids == NULL)
+			exit(-1);
+
+		N_way = pop_sorted_runs(sh_p, sorted_runs_page_ids, N_way, 1, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		if(N_way == 1)
 		{
-			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			push_sorted_runs(sh_p, sorted_runs_page_ids, 1, 1, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
-
-			// below code is equivalent to
-			// only_run_left_head_page_id = ptrl[runs_consumed]
-			// ptrl[runs_consumed++] = NULL
-			// ptrl[runs_created++] = only_run_left_head_page_id
-
-			uint64_t only_run_left_head_page_id = get_from_page_table(ptrl_p, runs_consumed, transaction_id, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-
-			set_in_page_table(ptrl_p, runs_consumed++, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-
-			set_in_page_table(ptrl_p, runs_created++, only_run_left_head_page_id, transaction_id, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-
-			delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
-			ptrl_p = NULL;
-			if(*abort_error)
-				goto ABORT_ERROR;
-
-			// no runs now must be left, you may break, or continue to be safe
-			continue;
+			free(sorted_runs_page_ids);
+			return 0;
 		}
 
-		// create the input runs, and initialize them into the input_runs_heap, then also initialize the output_run
-		// and also update the respective runs_head_page_id in page_table of the sorter accordingly
+		for(uint64_t i = 0; i < N_way; i++)
 		{
-			ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			active_sorted_run e = {};
+
+			e.head_page_id = sorted_runs_page_ids[i];
+
+			e.run_iterator = get_new_linked_page_list_iterator(e.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 
-			for(uint64_t runs_selected = 0; runs_selected < N_way && runs_consumed < sh_p->sorted_runs_count; runs_selected++, runs_consumed++)
-			{
-				active_sorted_run e = {};
-
-				e.head_page_id = get_from_page_table(ptrl_p, runs_consumed, transaction_id, abort_error);
-				if(*abort_error)
-					goto ABORT_ERROR;
-
-				e.run_iterator = get_new_linked_page_list_iterator(e.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
-				if(*abort_error)
-					goto ABORT_ERROR;
-
-				cache_keys_for_active_sorted_run(&e, sh_p->std_p);
-				push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &e);
-
-				set_in_page_table(ptrl_p, runs_consumed, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
-				if(*abort_error)
-					goto ABORT_ERROR;
-			}
-
-			output_run.head_page_id = get_new_linked_page_list(&(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-
-			output_run.run_iterator = get_new_linked_page_list_iterator(output_run.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-
-			set_in_page_table(ptrl_p, runs_created++, output_run.head_page_id, transaction_id, abort_error);
-			if(*abort_error)
-				goto ABORT_ERROR;
-
-			delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
-			ptrl_p = NULL;
-			if(*abort_error)
-				goto ABORT_ERROR;
+			cache_keys_for_active_sorted_run(&e, sh_p->std_p);
+			push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &e);
 		}
 
-		int optimization_2_to_be_attempted = 1;
+		free(sorted_runs_page_ids);
+		sorted_runs_page_ids = NULL;
+
+		output_run.head_page_id = get_new_linked_page_list(&(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		output_run.run_iterator = get_new_linked_page_list_iterator(output_run.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
 
 		// iterate while there are still tuples in the runs waiting to be merged into output_run
 		while(!is_empty_active_sorted_run_heap(&input_runs_heap))
@@ -446,7 +402,7 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 				active_sorted_run e = *get_front_of_active_sorted_run_heap(&input_runs_heap);
 				pop_from_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE);
 
-				// move the record from the fron of e to tha tail of output_run
+				// move the record from the front of e to tha tail of output_run
 				{
 					// record to be consumed
 					const void* record = get_tuple_linked_page_list_iterator(e.run_iterator);
@@ -497,7 +453,7 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 					continue;
 				}
 
-				// e is empty, so it meant to be destroyed
+				// e is empty, so it is meant to be destroyed
 
 				// else we need to destroy e
 				destroy_cache_keys_for_active_sorted_run(&e);
@@ -513,63 +469,6 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 
 			// you may not use e beyond this point
 
-			// OPTIMIZATION 2, optimization 1 is under this piece of code
-			// if there are runs left to be consumed i.e. (consumed_runs < sh_p->sorted_runs_count), then there is a chance for this optimization to kick in
-			// Optimization is to pick new input run, immediately after the first run of the N-way sort is consumed
-			// this happens if the last consumed tuple is NULL or is strictly lesser than or equal to the first tuple of the next incomming run
-			if((runs_consumed < sh_p->sorted_runs_count) && (get_element_count_active_sorted_run_heap(&input_runs_heap) < N_way) && optimization_2_to_be_attempted)
-			{
-				ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
-				if(*abort_error)
-					goto ABORT_ERROR;
-
-				// open new active sorted run to be consumed
-				{
-					active_sorted_run run_to_consume = {};
-
-					run_to_consume.head_page_id = get_from_page_table(ptrl_p, runs_consumed, transaction_id, abort_error);
-					if(*abort_error)
-						goto ABORT_ERROR;
-
-					run_to_consume.run_iterator = get_new_linked_page_list_iterator(run_to_consume.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
-					if(*abort_error)
-						goto ABORT_ERROR;
-
-					// now run_to_consume has been initialized
-
-					// last produced run in the output_run must either be NULL OR must be lesser than the first tuple of run_to_consume
-					if(get_tuple_linked_page_list_iterator(output_run.run_iterator) == NULL || compare_sorted_runs(sh_p, &output_run, &run_to_consume) <= 0)
-					{
-						// push this new run to the input_runs_heap
-						cache_keys_for_active_sorted_run(&run_to_consume, sh_p->std_p);
-						push_to_heap_active_sorted_run_heap(&input_runs_heap, HEAP_INFO, HEAP_DEGREE, &run_to_consume);
-
-						// mark the run_to_consume as consumed
-						set_in_page_table(ptrl_p, runs_consumed++, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
-						if(*abort_error)
-							goto ABORT_ERROR;
-
-						optimization_2_to_be_attempted = 1;
-					}
-					else
-					{
-						delete_linked_page_list_iterator(run_to_consume.run_iterator, transaction_id, abort_error);
-						run_to_consume.run_iterator = NULL;
-						if(*abort_error)
-							goto ABORT_ERROR;
-
-						// upon first failure to run optimization 2, it should not be attempted again
-						optimization_2_to_be_attempted = 0;
-					}
-				}
-
-				delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
-				ptrl_p = NULL;
-				if(*abort_error)
-					goto ABORT_ERROR;
-			}
-
-			// OPTIMIZATION 1
 			// merge the only remaining run and break out
 			// this is to be performed only if we are at the head of the last remaining run, else iterate on the current page tuple by tuple
 			if(get_element_count_active_sorted_run_heap(&input_runs_heap) == 1 && is_at_head_tuple_linked_page_list_iterator(((active_sorted_run*)get_front_of_active_sorted_run_heap(&input_runs_heap))->run_iterator))
@@ -596,18 +495,15 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 			}
 		}
 
-		// now we may destroy the iterator over the ouput_run, if it exists
-		if(output_run.run_iterator != NULL)
-		{
-			delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
-			output_run = (active_sorted_run){};
-			if(*abort_error)
-				goto ABORT_ERROR;
-		}
-	}
+		delete_linked_page_list_iterator(output_run.run_iterator, transaction_id, abort_error);
+		output_run.run_iterator = NULL;
+		if(*abort_error)
+			goto ABORT_ERROR;
 
-	// update the sorted_runs_count
-	sh_p->sorted_runs_count = runs_created;
+		push_sorted_runs(sh_p, &(output_run.head_page_id), 1, 1, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+	}
 
 	// destroy the heap
 	deinitialize_active_sorted_run_heap(&input_runs_heap);
@@ -615,6 +511,9 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 	return 1;
 
 	ABORT_ERROR:;
+	if(sorted_runs_page_ids != NULL)
+		free(sorted_runs_page_ids);
+	sorted_runs_page_ids = NULL;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
 	sh_p->unsorted_partial_run = NULL;
