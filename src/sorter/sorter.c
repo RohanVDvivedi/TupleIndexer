@@ -98,9 +98,6 @@ static inline uint64_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 
 	// all you need to do here is clean up all the open iterators
 	ABORT_ERROR:;
-	if(sh_p->unsorted_partial_run != NULL)
-		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
-	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;
@@ -159,9 +156,6 @@ static inline uint64_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_
 
 	// all you need to do here is clean up all the open iterators
 	ABORT_ERROR:;
-	if(sh_p->unsorted_partial_run != NULL)
-		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
-	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;
