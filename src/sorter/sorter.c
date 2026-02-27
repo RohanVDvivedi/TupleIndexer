@@ -30,6 +30,18 @@ sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_m
 	return sh;
 }
 
+// internal function to pop sorted runs
+static int pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint64_t* run_head_page_ids_count, uint64_t reserve_count_increment, const void* transaction_id, int* abort_error)
+{
+
+}
+
+// internal function to push sorted runs
+static int push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint64_t* run_head_page_ids_count, uint64_t reserve_count_decrement, const void* transaction_id, int* abort_error)
+{
+
+}
+
 // if there exists a unsorted partial run, then it is sorter and put at the end of the sorted runs
 // ensure that the unsorted_partial_run exists, and it is not empty and as a HEAD_ONLY_LINKED_PAGE_LIST
 // on an ABORT_ERROR, all iterators including the ones in the sorter_handle are closed
