@@ -9,9 +9,12 @@
 #include<tupleindexer/linked_page_list/linked_page_list_iterator_public.h>
 
 /*
-	Note: The sorter is a single threaded structure, i.e. is thread unsafe by design and only 1 thread must be accessing it at a time, hence an external lock is necesary to use it, for concurrent accesses.
-	To gain performance on sorting you may tweak to a higher value of N_way, but this will happen at the cost of more pages being locked at once. (in the active runs of the iterators)
+	Note: The sorter is a single threaded structure.
+	Only the insert_sorted_run_in_sorter and merge_sorted_runs_in_sorter are concurrent and thread safe
 */
+
+// this is how big the queue for storing the sorted runs using the page_table can become
+#define SORTED_RUNS_CAPACITY UINT64_MAX
 
 typedef struct sorter_handle sorter_handle;
 struct sorter_handle
@@ -19,8 +22,11 @@ struct sorter_handle
 	// page_table storing all runs
 	uint64_t sorted_runs_root_page_id;
 
-	// number of total runs in the page_table at root_page_id
+	// below three attributes allows us to index into the page_table pointed to by the sorted_runs_root_page_id
+	// allowing us to use this page_table as a curcular queue
+	uint64_t sorted_runs_first_index;
 	uint64_t sorted_runs_count;
+	uint64_t sorted_runs_slots_reserved_count;
 
 	// iterator to the last partial run, and its head_page_id
 	// this run does not exist in the runs_root_page_id

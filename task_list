@@ -5,14 +5,6 @@
    * give it functions like
      int pop_sorted_run(sorter, uint64_t* run_head_page_ids, uint64_t* run_head_page_ids_count, uint64_t reserve_count_increment);
      int push_sorted_run(sorter, uint64_t* run_head_page_ids, uint64_t* run_head_page_ids_count, uint64_t reserve_count_decrement);
-   * sorter stores the following
-     * sorted_runs_queue root page id
-     * uint64_t first_sorted_run_id;
-     * SORTED_RUNS_CAPACITY = UINT64_MAX
-     * uint64_t sorted_runs_count;
-     * uint64_t reserved_sorted_runs_capacity;
-     * uint64_t partial_unsorted_run_head_page_id;
-     * linked_page_list_iterator partial_unsorted_run_iterator
    * api
      * insert_tuple_in_sorter
      * insert_sorted_run_in_sorter
