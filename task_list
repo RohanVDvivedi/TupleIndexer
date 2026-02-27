@@ -5,13 +5,7 @@
    * just exit and let the delete function of the hash_table_iterator deal with this
 
 ** REVAMP SORTER
-   * api
-     * insert_tuple_in_sorter
-     * insert_sorted_run_in_sorter
-     * finalize_any_partial_run
-     * get_sorted_runs_count
-     * merge_runs_in_sorter
-     * delete_sorter
+   * review sorter code
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
