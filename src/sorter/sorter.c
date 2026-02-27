@@ -564,12 +564,12 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 			goto ABORT_ERROR;
 
 		// fetch the 0th entry and write it to (*sorted data)
-		(*sorted_data) = get_from_page_table(ptrl_p, 0, transaction_id, abort_error);
+		(*sorted_data) = get_from_page_table(ptrl_p, sh_p->sorted_runs_first_index, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
 		// then set the 0th entry to NULL_PAGE_ID
-		set_in_page_table(ptrl_p, 0, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
+		set_in_page_table(ptrl_p, sh_p->sorted_runs_first_index, sh_p->std_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
