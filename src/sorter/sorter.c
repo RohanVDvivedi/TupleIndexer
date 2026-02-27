@@ -343,8 +343,6 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 	if(sh_p->sorted_runs_count <= 1)
 		return 0;
 
-	// handle that will be maintained while accessing the runs page_table
-	page_table_range_locker* ptrl_p = NULL;
 	active_sorted_run_heap input_runs_heap;
 	if(0 == initialize_active_sorted_run_heap(&input_runs_heap, min(N_way, sh_p->sorted_runs_count)))
 		exit(-1);
@@ -619,8 +617,7 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint64_t N_way, const void* tra
 	ABORT_ERROR:;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
-	if(ptrl_p != NULL)
-		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
+	sh_p->unsorted_partial_run = NULL;
 	while(!is_empty_active_sorted_run_heap(&input_runs_heap))
 	{
 		active_sorted_run e = *get_front_of_active_sorted_run_heap(&input_runs_heap);
