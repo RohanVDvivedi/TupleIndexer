@@ -351,7 +351,7 @@ int merge_few_run_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tra
 
 	// iterate while all runs have not been consumed
 	{
-		uint64_t* sorted_runs_page_ids = malloc(sizeof(uint64_t) * N_way);
+		sorted_runs_page_ids = malloc(sizeof(uint64_t) * N_way);
 		if(sorted_runs_page_ids == NULL)
 			exit(-1);
 
