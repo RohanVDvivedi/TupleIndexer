@@ -100,6 +100,7 @@ static inline uint64_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 	ABORT_ERROR:;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;
@@ -160,19 +161,17 @@ static inline uint64_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_
 	ABORT_ERROR:;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;
 }
 
-// if there exists a unsorted partial run, then it is sorter and put at the end of the sorted runs
+// if there exists a unsorted partial run, then it is sorted and put at the end of the sorted runs
 // ensure that the unsorted_partial_run exists, and it is not empty and as a HEAD_ONLY_LINKED_PAGE_LIST
 // on an ABORT_ERROR, all iterators including the ones in the sorter_handle are closed
 static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const void* transaction_id, int* abort_error)
 {
-	// handle that will be maintained while accessing the runs page_table
-	page_table_range_locker* ptrl_p = NULL;
-
 	// fail if there is no unsorted_partial_run
 	if(sh_p->unsorted_partial_run == NULL)
 		return 0;
@@ -187,6 +186,13 @@ static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const v
 	if(*abort_error)
 		goto ABORT_ERROR;
 
+	// push it to the back of the sorted_runs queue
+	uint64_t pushed = push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint32_t run_head_page_ids_count, int were_reserved_slots, const void* transaction_id, int* abort_error)
+	if(*abort_error) // if aborted after this call, the sorter is already freed from it's resources
+		return 0;
+	if(pushed == 0) // if not pushed fail here
+		return 0;
+
 	// close the iterator on unsorted_partial_run
 	delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
 	sh_p->unsorted_partial_run = NULL;
@@ -197,28 +203,13 @@ static int consume_unsorted_partial_run_from_sorter(sorter_handle* sh_p, const v
 	uint64_t new_sorted_run = sh_p->unsorted_partial_run_head_page_id;
 	sh_p->unsorted_partial_run_head_page_id = sh_p->std_p->lpltd.pas_p->NULL_PAGE_ID;
 
-	// ptrl[sorted_runs_count++] = unsorted_partial_run_head_page_id
-	{
-		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
-		if(*abort_error)
-			goto ABORT_ERROR;
-
-		set_in_page_table(ptrl_p, sh_p->sorted_runs_count++, new_sorted_run, transaction_id, abort_error);
-		if(*abort_error)
-			goto ABORT_ERROR;
-
-		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
-		ptrl_p = NULL;
-		if(*abort_error)
-			goto ABORT_ERROR;
-	}
-
 	return 1;
 
 	// all you need to do here is clean up all the open iterators
 	ABORT_ERROR:;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;

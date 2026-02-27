@@ -1,5 +1,9 @@
 ** PICKED TASKS
 
+** bug fix in hash_table_iterator
+   * no need to delete child iterators on abort_error
+   * just exit and let the delete function of the hash_table_iterator deal with this
+
 ** REVAMP SORTER
    * api
      * insert_tuple_in_sorter
