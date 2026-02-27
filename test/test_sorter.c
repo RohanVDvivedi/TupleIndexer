@@ -284,12 +284,15 @@ int main()
 	res = insert_from_file(&sh, TEST_DATA_RANDOM_FILE, 0, 4, 256);
 	printf("insertions to sorter completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	external_sort_merge_sorter(&sh, N_WAY_SORT, transaction_id, &abort_error);
-	if(abort_error)
+	do
 	{
-		printf("ABORTED\n");
-		exit(-1);
-	}
+		res = merge_few_run_in_sorter(&sh, N_WAY_SORT, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}while(res);
 
 	/* CLEANUP */
 
