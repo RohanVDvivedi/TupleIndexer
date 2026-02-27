@@ -3,9 +3,12 @@
 ** bug fix in hash_table_iterator
    * no need to delete child iterators on abort_error
    * just exit and let the delete function of the hash_table_iterator deal with this
+   * test all dependent code
 
 ** REVAMP SORTER
    * review sorter code
+   * review all test cases manually, with valgrind and time
+   * check to see if volatile page store code got any faster
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
