@@ -5,6 +5,11 @@
    * just exit and let the delete function of the hash_table_iterator deal with this
    * test all dependent code
 
+** build lock for sorter to use the queue in parallel
+   * locker
+     * locker.lock(locker.lock_obj)
+     * locker.unlock(locker.lock_obj)
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
