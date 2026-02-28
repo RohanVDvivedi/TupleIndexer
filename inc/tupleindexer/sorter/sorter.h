@@ -58,6 +58,10 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 // on an abort error, all iterators are closed, no need to call destroy_sorter
 int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* transaction_id, int* abort_error);
 
+/*
+	sorter is like a datastructure, you destroy it only if all prior calls succeeded without an abort_error
+*/
+
 // destroys the sorter, destroying every run except for the first run, if the sorted_data is not NULL
 // it will also destroy the unsorted_partial_run, and close all iterators
 // you need to call this function only on success, on abort error, you do not need to call this function
