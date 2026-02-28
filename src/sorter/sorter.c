@@ -331,7 +331,7 @@ static int compare_sorted_runs(const void* sh_vp, const void* asr_vp1, const voi
 
 // ------------------------------------------------------------------------
 
-int merge_few_run_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* transaction_id, int* abort_error)
+int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* transaction_id, int* abort_error)
 {
 	// need to merge always 2 or more sorted runs onto 1
 	if(N_way < 2)

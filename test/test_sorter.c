@@ -290,7 +290,7 @@ int main()
 	int merge_result = 0;
 	do
 	{
-		merge_result = merge_few_run_in_sorter(&sh, N_WAY_SORT, transaction_id, &abort_error);
+		merge_result = merge_N_runs_in_sorter(&sh, N_WAY_SORT, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
