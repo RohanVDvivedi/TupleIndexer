@@ -243,9 +243,58 @@ result insert_from_file(sorter_handle* sh_p, char* file_name, uint32_t skip_firs
 	return res;
 }
 
-void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count)
+void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p)
 {
 	uint64_t tuples_seen = 0;
+
+	int previous_tuple_valid = 0;
+	char previous_tuple[PAGE_SIZE];
+
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(result_head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	if(!is_empty_linked_page_list(lpli_p))
+	{
+		while(1)
+		{
+			tuples_seen++;
+
+			const void* curr_tuple = get_tuple_linked_page_list_iterator(lpli_p);
+
+			if(previous_tuple_valid)
+			{
+				// previous_tuple must be <= curr_tuple
+				if(compare_tuples2(previous_tuple, curr_tuple, lpltd_p->record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT) > 0)
+				{
+					char print_buffer[PAGE_SIZE];
+					printf("sorting checkout found tuple order mismatch\n");
+					sprint_tuple(print_buffer, previous_tuple, lpltd_p->record_def);
+					printf("prev: %s \n", print_buffer);
+					sprint_tuple(print_buffer, curr_tuple, lpltd_p->record_def);
+					printf("curr: %s \n", print_buffer);
+					printf("\n");
+				}
+			}
+
+			memory_move(previous_tuple, curr_tuple, get_tuple_size(lpltd_p->record_def, curr_tuple));
+
+			if(is_at_tail_tuple_linked_page_list_iterator(lpli_p))
+				break;
+
+			next_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+		}
+	}
+
+	delete_linked_page_list_iterator(lpli_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
 
 	if(tuples_seen != tuple_count)
 		printf("sorting evaluation expected %"PRIu64" tuples, but we instead found %"PRIu64"\n\n", tuples_count, tuples_seen);
@@ -329,7 +378,7 @@ int main()
 	}
 
 	// evaluate sorting results
-	evaluate_sort_result(result_head_page_id, tuples_count);
+	evaluate_sort_result(result_head_page_id, tuples_count, &(std.lpltd), pam_p);
 
 	// destroy the result
 	destroy_linked_page_list(result_head_page_id, &(std.lpltd), pam_p, transaction_id, &abort_error);
