@@ -263,7 +263,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 		// increment the curr_bucket_id to point to the next bucket_id
 		hti_p->curr_bucket_id++;
 
-		// fecth the head_page_id for the new curr_bucket, and open a bucket iterator over it
+		// fetch the head_page_id for the new curr_bucket, and open a bucket iterator over it
 		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
@@ -317,7 +317,7 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 		// decrement the curr_bucket_id to point to the next bucket_id
 		hti_p->curr_bucket_id--;
 
-		// fecth the head_page_id for the new curr_bucket, and open a bucket iterator over it
+		// fetch the head_page_id for the new curr_bucket, and open a bucket iterator over it
 		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
