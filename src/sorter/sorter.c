@@ -349,16 +349,18 @@ int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tran
 	#define HEAP_INFO &((heap_info){.type = MIN_HEAP, .comparator = contexted_comparator(sh_p, compare_sorted_runs)})
 	active_sorted_run output_run = {};
 
-	// iterate while all runs have not been consumed
+	// actual algorithm, for merging once
 	{
 		sorted_runs_page_ids = malloc(sizeof(uint64_t) * N_way);
 		if(sorted_runs_page_ids == NULL)
 			exit(-1);
 
+		// pop atmost N_way runs from the sorted_runs
 		N_way = pop_sorted_runs(sh_p, sorted_runs_page_ids, N_way, 1, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
+		// if we popped only 1 run, then push it back and fail this call
 		if(N_way == 1)
 		{
 			push_sorted_runs(sh_p, sorted_runs_page_ids, 1, 1, transaction_id, abort_error);
@@ -368,6 +370,7 @@ int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tran
 			return 0;
 		}
 
+		// initialize all input runs
 		for(uint64_t i = 0; i < N_way; i++)
 		{
 			active_sorted_run e = {};
@@ -385,6 +388,7 @@ int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tran
 		free(sorted_runs_page_ids);
 		sorted_runs_page_ids = NULL;
 
+		// initilize the output run
 		output_run.head_page_id = get_new_linked_page_list(&(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
