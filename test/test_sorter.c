@@ -277,6 +277,7 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 					sprint_tuple(print_buffer, curr_tuple, lpltd_p->record_def);
 					printf("curr: %s \n", print_buffer);
 					printf("\n");
+					exit(-1);
 				}
 			}
 
@@ -297,7 +298,12 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 	}
 
 	if(tuples_seen != tuple_count)
+	{
 		printf("sorting evaluation expected %"PRIu64" tuples, but we instead found %"PRIu64"\n\n", tuples_count, tuples_seen);
+		exit(-1);
+	}
+
+	printf("It turns out all %"PRIu64" tuples are sorted\n", tuples_count);
 }
 
 int main()
