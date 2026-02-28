@@ -46,13 +46,14 @@ static inline uint64_t add_circular(uint64_t i1, uint64_t i2)
 
 /*
 	below 2 functions are purely internal and you must not attempt to call them from outside
-	reserve_count_* functions must be lesser than the value of (*run_head_page_ids_count), else it is a bug
-	if you reserve a number of slots by using a reserve_count_increment parameter then it implies you will return this same number of sorted_runs upon completion of your task (of merging these sorted runs that you just popped)
+	reserve_count_increment functions must be lesser than the value of (*run_head_page_ids_count), else it is a bug
+	if you reserve a number of slots by using a reserve_count_increment parameter then it implies that,
+	you will return this same number of sorted_runs upon completion of your task (of merging these sorted runs that you just popped)
 	basically you reserve slots during pop, so that your next anticipated push succeeds
 */
 
 // internal function to pop sorted runs
-static inline uint64_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint32_t run_head_page_ids_count, uint32_t reserve_count_increment, const void* transaction_id, int* abort_error)
+static inline uint32_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint32_t run_head_page_ids_count, uint32_t reserve_count_increment, const void* transaction_id, int* abort_error)
 {
 	// handle that will have to be freed/destroyed on error or on return
 	page_table_range_locker* ptrl_p = NULL;
@@ -107,7 +108,7 @@ static inline uint64_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 }
 
 // internal function to push sorted runs
-static inline uint64_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint32_t run_head_page_ids_count, int were_reserved_slots, const void* transaction_id, int* abort_error)
+static inline uint32_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_page_ids, uint32_t run_head_page_ids_count, int were_reserved_slots, const void* transaction_id, int* abort_error)
 {
 	// handle that will have to be freed/destroyed on error or on return
 	page_table_range_locker* ptrl_p = NULL;
