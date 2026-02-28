@@ -243,6 +243,14 @@ result insert_from_file(sorter_handle* sh_p, char* file_name, uint32_t skip_firs
 	return res;
 }
 
+void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count)
+{
+	uint64_t tuples_seen = 0;
+
+	if(tuples_seen != tuple_count)
+		printf("sorting evaluation expected %"PRIu64" tuples, but we instead found %"PRIu64"\n\n", tuples_count, tuples_seen);
+}
+
 int main()
 {
 	/* SETUP STARTED */
@@ -273,15 +281,18 @@ int main()
 
 	// variable to test insert and delete operations
 	result res;
+	uint64_t tuples_count = 0;
 
 	/* SETUP COMPLETED */
 
 	/* INSERTIONS STARTED */
 
 	res = insert_from_file(&sh, TEST_DATA_FILE, 0, 0, 256);
+	tuples_count += res.operations_succeeded;
 	printf("insertions to sorter completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	res = insert_from_file(&sh, TEST_DATA_RANDOM_FILE, 0, 4, 256);
+	tuples_count += res.operations_succeeded;
 	printf("insertions to sorter completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	insert_in_sorter(&sh, NULL, transaction_id, &abort_error);
@@ -316,6 +327,9 @@ int main()
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	// evaluate sorting results
+	evaluate_sort_result(result_head_page_id, tuples_count);
 
 	// destroy the result
 	destroy_linked_page_list(result_head_page_id, &(std.lpltd), pam_p, transaction_id, &abort_error);
