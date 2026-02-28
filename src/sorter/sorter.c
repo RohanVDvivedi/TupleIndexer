@@ -45,13 +45,13 @@ static inline uint64_t add_circular(uint64_t i1, uint64_t i2)
 		return i2 - (SORTED_RUNS_CAPACITY - i1);
 }
 
-static inline void lock_sorted_runs(sorter_lock* slocker)
+static inline void lock_sorted_runs(sorter_locker* slocker)
 {
 	if(slocker->lock != NULL)
 		slocker->lock(slocker->sorter_lock);
 }
 
-static inline void unlock_sorted_runs(sorter_lock* slocker)
+static inline void unlock_sorted_runs(sorter_locker* slocker)
 {
 	if(slocker->unlock != NULL)
 		slocker->unlock(slocker->sorter_lock);
