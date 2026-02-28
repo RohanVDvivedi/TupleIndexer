@@ -246,6 +246,7 @@ result insert_from_file(sorter_handle* sh_p, char* file_name, uint32_t skip_firs
 void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p)
 {
 	uint64_t tuples_seen = 0;
+	uint64_t compares_done = 0;
 
 	int prev_tuple_valid = 0;
 	char prev_tuple[PAGE_SIZE];
@@ -278,6 +279,7 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 					printf("\n");
 					exit(-1);
 				}
+				compares_done++;
 			}
 
 			memory_move(prev_tuple, curr_tuple, get_tuple_size(lpltd_p->record_def, curr_tuple));
@@ -303,7 +305,7 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 		exit(-1);
 	}
 
-	printf("It turns out all %"PRIu64" tuples are sorted\n", tuples_count);
+	printf("It turns out all %"PRIu64" tuples are sorted, found out after making %"PRIu64"\n", tuples_count, compares_done);
 }
 
 int main()
