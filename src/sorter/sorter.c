@@ -360,8 +360,14 @@ int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tran
 		if(*abort_error)
 			goto ABORT_ERROR;
 
-		// if we popped only 1 run, then push it back and fail this call
-		if(N_way == 1)
+		// if we popped 0 runs, then fail this call
+		if(N_way == 0)
+		{
+			free(sorted_runs_page_ids);
+			deinitialize_active_sorted_run_heap(&input_runs_heap);
+			return 0;
+		}
+		else if(N_way == 1) // if we popped only 1 run, then push it back and fail this call
 		{
 			push_sorted_runs(sh_p, sorted_runs_page_ids, 1, 1, transaction_id, abort_error);
 			if(*abort_error)
