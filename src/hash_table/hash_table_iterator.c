@@ -284,11 +284,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 		goto ABORT_ERROR;
 	return result;
 
-	ABORT_ERROR:;
-	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
-	if(hti_p->lpli_p)
-		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	ABORT_ERROR:; // delete will take care of deleting the child iterators
 	return 0;
 }
 
@@ -342,11 +338,7 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 		goto ABORT_ERROR;
 	return result;
 
-	ABORT_ERROR:;
-	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
-	if(hti_p->lpli_p)
-		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	ABORT_ERROR:; // delete will take care of deleting the child iterators
 	return 0;
 }
 
@@ -396,11 +388,7 @@ int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 
 	return result;
 
-	ABORT_ERROR:;
-	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
-	if(hti_p->lpli_p)
-		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	ABORT_ERROR:; // delete will take care of deleting the child iterators
 	return 0;
 }
 
@@ -428,11 +416,7 @@ int update_at_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 
 	return result;
 
-	ABORT_ERROR:;
-	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
-	if(hti_p->lpli_p)
-		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	ABORT_ERROR:; // delete will take care of deleting the child iterators
 	return 0;
 }
 
@@ -492,11 +476,7 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 
 	return result;
 
-	ABORT_ERROR:;
-	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are anyway aborting
-	if(hti_p->lpli_p)
-		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	ABORT_ERROR:; // delete will take care of deleting the child iterators
 	return 0;
 }
 
@@ -537,11 +517,7 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 
 	return result;
 
-	ABORT_ERROR:;
-	if(hti_p->ptrl_p)
-		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum needed here as the tuple stiull exists and nothing has been logically deleted
-	if(hti_p->lpli_p)
-		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
+	ABORT_ERROR:; // delete will take care of deleting the child iterators
 	return 0;
 }
 
