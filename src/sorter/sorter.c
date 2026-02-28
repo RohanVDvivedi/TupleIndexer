@@ -367,6 +367,7 @@ int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tran
 			if(*abort_error)
 				goto ABORT_ERROR;
 			free(sorted_runs_page_ids);
+			deinitialize_active_sorted_run_heap(&input_runs_heap, N_way);
 			return 0;
 		}
 
