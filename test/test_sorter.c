@@ -247,8 +247,8 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 {
 	uint64_t tuples_seen = 0;
 
-	int previous_tuple_valid = 0;
-	char previous_tuple[PAGE_SIZE];
+	int prev_tuple_valid = 0;
+	char prev_tuple[PAGE_SIZE];
 
 	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(result_head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
@@ -265,23 +265,23 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 
 			const void* curr_tuple = get_tuple_linked_page_list_iterator(lpli_p);
 
-			if(previous_tuple_valid)
+			if(prev_tuple_valid)
 			{
 				// previous_tuple must be <= curr_tuple
-				if(compare_tuples2(previous_tuple, curr_tuple, lpltd_p->record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT) > 0)
+				if(compare_tuples2(prev_tuple, curr_tuple, lpltd_p->record_def, KEY_ELEMENTS_IN_RECORD, KEY_ELEMENTS_SORT_DIRECTION, KEY_ELEMENTS_COUNT) > 0)
 				{
-					char print_buffer[PAGE_SIZE];
 					printf("sorting checkout found tuple order mismatch\n");
-					sprint_tuple(print_buffer, previous_tuple, lpltd_p->record_def);
-					printf("prev: %s \n", print_buffer);
-					sprint_tuple(print_buffer, curr_tuple, lpltd_p->record_def);
-					printf("curr: %s \n", print_buffer);
+					printf("prev: ");
+					print_tuple(prev_tuple, lpltd_p->record_def);
+					printf("\ncurr: ");
+					print_tuple(curr_tuple, lpltd_p->record_def);
 					printf("\n");
 					exit(-1);
 				}
 			}
 
-			memory_move(previous_tuple, curr_tuple, get_tuple_size(lpltd_p->record_def, curr_tuple));
+			memory_move(prev_tuple, curr_tuple, get_tuple_size(lpltd_p->record_def, curr_tuple));
+			prev_tuple_valid = 1;
 
 			if(is_at_tail_tuple_linked_page_list_iterator(lpli_p))
 				break;
@@ -297,7 +297,7 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 		exit(-1);
 	}
 
-	if(tuples_seen != tuple_count)
+	if(tuples_seen != tuples_count)
 	{
 		printf("sorting evaluation expected %"PRIu64" tuples, but we instead found %"PRIu64"\n\n", tuples_count, tuples_seen);
 		exit(-1);
