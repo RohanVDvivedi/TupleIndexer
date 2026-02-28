@@ -329,7 +329,7 @@ int main()
 	print_sorter_tuple_definitions(&std);
 
 	// create a sorter and get its root
-	sorter_handle sh = get_new_sorter(&std, pam_p, pmm_p, transaction_id, &abort_error);
+	sorter_handle sh = get_new_sorter(((sorter_locker){}), &std, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
