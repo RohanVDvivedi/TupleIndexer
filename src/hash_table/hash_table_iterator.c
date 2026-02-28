@@ -257,7 +257,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 			delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 			hti_p->lpli_p = NULL;
 			if(*abort_error)
-				goto ABORT_ERROR;
+				return 0;
 		}
 
 		// increment the curr_bucket_id to point to the next bucket_id
@@ -266,13 +266,13 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 		// fetch the head_page_id for the new curr_bucket, and open a bucket iterator over it
 		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 		if(curr_bucket_head_page_id != hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID)
 		{
 			// open a linked_page_list_iterator at bucket_head_page_id
 			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
-				goto ABORT_ERROR;
+				return 0;
 		}
 
 		return 1;
@@ -281,11 +281,8 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 	// goto next tuple in the same bucket
 	int result = next_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	if(*abort_error)
-		goto ABORT_ERROR;
+		return 0;
 	return result;
-
-	ABORT_ERROR:; // delete will take care of deleting the child iterators
-	return 0;
 }
 
 int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error)
@@ -311,7 +308,7 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 			delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 			hti_p->lpli_p = NULL;
 			if(*abort_error)
-				goto ABORT_ERROR;
+				return 0;
 		}
 
 		// decrement the curr_bucket_id to point to the next bucket_id
@@ -320,13 +317,13 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 		// fetch the head_page_id for the new curr_bucket, and open a bucket iterator over it
 		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 		if(curr_bucket_head_page_id != hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID)
 		{
 			// open a linked_page_list_iterator at bucket_head_page_id
 			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
-				goto ABORT_ERROR;
+				return 0;
 		}
 
 		return 1;
@@ -335,11 +332,8 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 	// goto prev tuple in the same bucket
 	int result = prev_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 	if(*abort_error)
-		goto ABORT_ERROR;
+		return 0;
 	return result;
-
-	ABORT_ERROR:; // delete will take care of deleting the child iterators
-	return 0;
 }
 
 int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple, const void* transaction_id, int* abort_error)
@@ -362,34 +356,31 @@ int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 	{
 		uint64_t curr_bucket_head_page_id = get_new_linked_page_list(&(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 
 		// set the new bucket head in the pre-calculated curr_bucket_id
 		set_in_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, curr_bucket_head_page_id, transaction_id, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 
 		// open a bucket iterator for the new linked_page_list bucket
 		hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 
 		// now you may release locks on the range_locker iterator ptrl_p
 		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error);  // no vaccum required here, since we only performed a set with a non NULL value
 		hti_p->ptrl_p = NULL;
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 	}
 
 	// perform a simple insert to this open bucket
 	int result = insert_at_linked_page_list_iterator(hti_p->lpli_p, tuple, INSERT_BEFORE_LINKED_PAGE_LIST_ITERATOR, transaction_id, abort_error);
 	if(*abort_error)
-		goto ABORT_ERROR;
+		return 0;
 
 	return result;
-
-	ABORT_ERROR:; // delete will take care of deleting the child iterators
-	return 0;
 }
 
 int update_at_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple, const void* transaction_id, int* abort_error)
@@ -412,12 +403,9 @@ int update_at_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 	// you may not access curr_tuple beyond the below call
 	int result = update_at_linked_page_list_iterator(hti_p->lpli_p, tuple, transaction_id, abort_error);
 	if(*abort_error)
-		goto ABORT_ERROR;
+		return 0;
 
 	return result;
-
-	ABORT_ERROR:; // delete will take care of deleting the child iterators
-	return 0;
 }
 
 int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
@@ -440,7 +428,7 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 	// perform actual removal
 	int result = remove_from_linked_page_list_iterator(hti_p->lpli_p, aft_op, transaction_id, abort_error);
 	if(*abort_error)
-		goto ABORT_ERROR;
+		return 0;
 
 	// we are done if the current bucket is not empty
 	if(!is_empty_linked_page_list(hti_p->lpli_p))
@@ -455,29 +443,26 @@ int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* tran
 	{
 		uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 
 		// close the iterator on the bucket
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 		hti_p->lpli_p = NULL;
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 
 		// now we can destroy the linked_page_list bucket
 		destroy_linked_page_list(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, transaction_id, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 
 		// now we can set the bucket_head_page_id corresponding to curr_bucket_id to NULL_PAGE_ID
 		set_in_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID, transaction_id, abort_error);
 		if(*abort_error)
-			goto ABORT_ERROR;
+			return 0;
 	}
 
 	return result;
-
-	ABORT_ERROR:; // delete will take care of deleting the child iterators
-	return 0;
 }
 
 int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, positional_accessor element_index, const datum* element_value, const void* transaction_id, int* abort_error)
@@ -513,12 +498,9 @@ int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* 
 	// you may not access curr_tuple beyond the below call
 	int result = update_element_in_place_at_linked_page_list_iterator(hti_p->lpli_p, element_index, element_value, transaction_id, abort_error);
 	if(*abort_error)
-		goto ABORT_ERROR;
+		return 0;
 
 	return result;
-
-	ABORT_ERROR:; // delete will take care of deleting the child iterators
-	return 0;
 }
 
 void delete_hash_table_iterator(hash_table_iterator* hti_p, hash_table_vaccum_params* htvp, const void* transaction_id, int* abort_error)
