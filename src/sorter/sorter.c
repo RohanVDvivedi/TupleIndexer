@@ -217,7 +217,7 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 {
 	// giving this function a NULL record implies that all the user wants is to mark finish for his insertions
 	if(record == NULL)
-		return consume_unsorted_partial_run_from_sorter(sh_p, transaction_id, abort_error);
+		return consume_unsorted_partial_run_from_sorter(sh_p, transaction_id, abort_error); // no abort_error handling, so it is made pass through
 
 	// check that the record could be inserted to the runs (linked_page_list)
 	// this check will fail insertion even if record == NULL
