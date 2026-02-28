@@ -624,6 +624,7 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 	ABORT_ERROR:;
 	if(sh_p->unsorted_partial_run != NULL)
 		delete_linked_page_list_iterator(sh_p->unsorted_partial_run, transaction_id, abort_error);
+	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
 	return 0;
