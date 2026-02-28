@@ -336,17 +336,16 @@ int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tran
 {
 	// need to merge always 2 or more sorted runs onto 1
 	if(N_way < 2)
-		return 0;
-
-	// can not merge 1 or lesser number of sorted runs
-	if(sh_p->sorted_runs_count <= 1)
-		return 0;
+	{
+		printf("BUG :: you can merge only more than 1 runs into 1 in the sorter (must pass, N_way >= 2)\n");
+		exit(-1);
+	}
 
 	uint64_t* sorted_runs_page_ids = NULL;
 	active_sorted_run_heap input_runs_heap;
-	if(0 == initialize_active_sorted_run_heap(&input_runs_heap, min(N_way, sh_p->sorted_runs_count)))
+	if(0 == initialize_active_sorted_run_heap(&input_runs_heap, N_way))
 		exit(-1);
-	#define HEAP_DEGREE 2
+	#define HEAP_DEGREE 3
 	#define HEAP_INFO &((heap_info){.type = MIN_HEAP, .comparator = contexted_comparator(sh_p, compare_sorted_runs)})
 	active_sorted_run output_run = {};
 
