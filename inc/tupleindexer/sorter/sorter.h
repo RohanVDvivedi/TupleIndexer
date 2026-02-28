@@ -17,6 +17,14 @@
 // this is how big the queue for storing the sorted runs using the page_table can become
 #define SORTED_RUNS_CAPACITY UINT64_MAX
 
+typedef struct sorter_locker sorter_locker;
+struct sorter_locker
+{
+	void* sorter_lock;
+	void (*lock)(void* sorter_lock);
+	void (*unlock)(void* sorter_lock);
+};
+
 typedef struct sorter_handle sorter_handle;
 struct sorter_handle
 {
@@ -28,6 +36,9 @@ struct sorter_handle
 	uint64_t sorted_runs_first_index;
 	uint64_t sorted_runs_count;
 	uint64_t sorted_runs_slots_reserved_count;
+
+	// uses a user provided locker interface to protect the sorted_runs queue
+	sorter_locker slocker;
 
 	// iterator to the last partial run, and its head_page_id
 	// this run does not exist in the runs_root_page_id
@@ -45,7 +56,8 @@ struct sorter_handle
 };
 
 // this function fails silently if any of std_p, pam_p OR pmm_p are NULL
-sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+// pass an all empty (sorter_locker){}, if you do not want to use it
+sorter_handle get_new_sorter(sorter_locker slocker, const sorter_tuple_defs* std_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // inserts 1 record into the sorter
 // calling this function with a NULL record, pushes the last partially unsorted run into the sorter

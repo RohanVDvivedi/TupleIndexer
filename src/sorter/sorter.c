@@ -5,7 +5,7 @@
 
 #include<stdlib.h>
 
-sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+sorter_handle get_new_sorter(sorter_locker slocker, const sorter_tuple_defs* std_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	sorter_handle sh = {};
 
@@ -22,6 +22,7 @@ sorter_handle get_new_sorter(const sorter_tuple_defs* std_p, const page_access_m
 	sh.sorted_runs_first_index = 0;
 	sh.sorted_runs_count = 0;
 	sh.sorted_runs_slots_reserved_count = 0;
+	sh.slocker = slocker;
 
 	// create a page_table for holding the sorted runs
 	// failure here is reported by the abort_error if any, else it is a success
@@ -44,6 +45,18 @@ static inline uint64_t add_circular(uint64_t i1, uint64_t i2)
 		return i2 - (SORTED_RUNS_CAPACITY - i1);
 }
 
+static inline void lock_sorted_runs(sorter_lock* slocker)
+{
+	if(slocker->lock != NULL)
+		slocker->lock(slocker->sorter_lock);
+}
+
+static inline void unlock_sorted_runs(sorter_lock* slocker)
+{
+	if(slocker->unlock != NULL)
+		slocker->unlock(slocker->sorter_lock);
+}
+
 /*
 	below 2 functions are purely internal and you must not attempt to call them from outside
 	reserve_count_increment functions must be lesser than the value of (*run_head_page_ids_count), else it is a bug
@@ -60,6 +73,8 @@ static inline uint32_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 
 	// return value
 	uint64_t popped_count = 0;
+
+	lock_sorted_runs(&(sh_p->slocker));
 
 	{
 		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
@@ -95,6 +110,11 @@ static inline uint32_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 			goto ABORT_ERROR;
 	}
 
+	// no return in the middle, so the lock is still held
+	// so release lock now here, or on an abort error
+
+	unlock_sorted_runs(&(sh_p->slocker));
+
 	return popped_count;
 
 	// all you need to do here is clean up all the open iterators
@@ -104,6 +124,7 @@ static inline uint32_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
+	unlock_sorted_runs(&(sh_p->slocker));
 	return 0;
 }
 
@@ -115,6 +136,8 @@ static inline uint32_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_
 
 	// return value
 	uint64_t pushed_count = 0;
+
+	lock_sorted_runs(&(sh_p->slocker));
 
 	{
 		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
@@ -156,6 +179,11 @@ static inline uint32_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_
 			goto ABORT_ERROR;
 	}
 
+	// no return in the middle, so the lock is still held
+	// so release lock now here, or on an abort error
+
+	unlock_sorted_runs(&(sh_p->slocker));
+
 	return pushed_count;
 
 	// all you need to do here is clean up all the open iterators
@@ -165,6 +193,7 @@ static inline uint32_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_
 	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
+	unlock_sorted_runs(&(sh_p->slocker));
 	return 0;
 }
 
