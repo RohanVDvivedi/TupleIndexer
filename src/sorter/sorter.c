@@ -51,10 +51,10 @@ static inline void lock_sorted_runs(sorter_locker* slocker)
 		slocker->lock(slocker->sorter_lock);
 }
 
-static inline void unlock_sorted_runs(sorter_locker* slocker)
+static inline void unlock_sorted_runs(sorter_locker* slocker, uint32_t pushed_count, uint32_t popped_count, uint64_t sorted_runs_count)
 {
 	if(slocker->unlock != NULL)
-		slocker->unlock(slocker->sorter_lock);
+		slocker->unlock(slocker->sorter_lock, pushed_count, popped_count, sorted_runs_count);
 }
 
 /*
@@ -113,7 +113,7 @@ static inline uint32_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 	// no return in the middle, so the lock is still held
 	// so release lock now here, or on an abort error
 
-	unlock_sorted_runs(&(sh_p->slocker));
+	unlock_sorted_runs(&(sh_p->slocker), 0, popped_count, sh_p->sorted_runs_count);
 
 	return popped_count;
 
@@ -124,7 +124,7 @@ static inline uint32_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
-	unlock_sorted_runs(&(sh_p->slocker));
+	unlock_sorted_runs(&(sh_p->slocker), 0, 0, sh_p->sorted_runs_count);
 	return 0;
 }
 
@@ -182,7 +182,7 @@ static inline uint32_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_
 	// no return in the middle, so the lock is still held
 	// so release lock now here, or on an abort error
 
-	unlock_sorted_runs(&(sh_p->slocker));
+	unlock_sorted_runs(&(sh_p->slocker), pushed_count, 0, sh_p->sorted_runs_count);
 
 	return pushed_count;
 
@@ -193,7 +193,7 @@ static inline uint32_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_
 	sh_p->unsorted_partial_run = NULL;
 	if(ptrl_p != NULL)
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // we have lock on the WHOLE_BUCKET_RANGE, hence vaccum not needed
-	unlock_sorted_runs(&(sh_p->slocker));
+	unlock_sorted_runs(&(sh_p->slocker), 0, 0, sh_p->sorted_runs_count);
 	return 0;
 }
 

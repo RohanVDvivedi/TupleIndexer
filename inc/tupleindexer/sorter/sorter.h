@@ -22,7 +22,7 @@ struct sorter_locker
 {
 	void* sorter_lock;
 	void (*lock)(void* sorter_lock);
-	void (*unlock)(void* sorter_lock);
+	void (*unlock)(void* sorter_lock, uint32_t pushed_count, uint32_t popped_count, uint64_t sorted_runs_count);
 };
 
 typedef struct sorter_handle sorter_handle;
