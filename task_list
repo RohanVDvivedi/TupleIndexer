@@ -1,7 +1,5 @@
 ** PICKED TASKS
 
-* utility function to check if the accessed element is one of the key_element_ids
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
