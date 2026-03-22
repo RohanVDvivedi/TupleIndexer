@@ -694,6 +694,8 @@ int insert_using_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* tup
 	return 0;
 }
 
+#include<tupleindexer/common/check_key_element.h>
+
 int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* bpi_p, positional_accessor element_index, const datum* element_value, const void* transaction_id, int* abort_error)
 {
 	// cannot update non WRITE_LOCKed bplus_tree_iterator
@@ -702,20 +704,8 @@ int update_non_key_element_in_place_at_bplus_tree_iterator(bplus_tree_iterator* 
 
 	// make sure that the element that the user is trying to update in place is not a key for the bplus_tree
 	// if you allow so, it could be a disaster
-	for(uint32_t i = 0; i < bpi_p->bpttd_p->key_element_count; i++)
-	{
-		int match = 1;
-		for(uint32_t j = 0; j < min(bpi_p->bpttd_p->key_element_ids[i].positions_length, element_index.positions_length); j++)
-		{
-			if(bpi_p->bpttd_p->key_element_ids[i].positions[j] != element_index.positions[j])
-			{
-				match = 0;
-				break;
-			}
-		}
-		if(match)
-			return 0;
-	}
+	if(is_element_part_of_key(bpi_p->bpttd_p->key_element_count, bpi_p->bpttd_p->key_element_ids, &element_index))
+		return 0;
 
 	// get current leaf page that the bplus_tree_iterator is pointing to
 	persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
