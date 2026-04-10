@@ -358,7 +358,7 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 				break;
 			}
 
-			int next_res = next_hash_table_iterator(hti_p, 0, transaction_id, &abort_error);
+			int next_res = next_hash_table_iterator(hti_p, GO_NEXT_TUPLE_IN_SAME_BUCKET, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -483,7 +483,7 @@ result update_non_key_element_in_file(uint64_t root_page_id, char* element, char
 				exit(-1);
 			}
 
-			int next_res = next_hash_table_iterator(hti_p, 0, transaction_id, &abort_error);
+			int next_res = next_hash_table_iterator(hti_p, GO_NEXT_TUPLE_IN_SAME_BUCKET, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -580,7 +580,7 @@ result update_in_file(uint64_t root_page_id, char* element, char* file_name, uin
 				exit(-1);
 			}
 
-			int next_res = next_hash_table_iterator(hti_p, 0, transaction_id, &abort_error);
+			int next_res = next_hash_table_iterator(hti_p, GO_NEXT_TUPLE_IN_SAME_BUCKET, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -682,7 +682,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 			if(removed)
 				continue;
 
-			int next_res = next_hash_table_iterator(hti_p, 0, transaction_id, &abort_error);
+			int next_res = next_hash_table_iterator(hti_p, GO_NEXT_TUPLE_IN_SAME_BUCKET, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -770,7 +770,7 @@ int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, 
 		if(removed)
 			continue;
 
-		int next_res = next_hash_table_iterator(hti_p, 1, transaction_id, &abort_error);
+		int next_res = next_hash_table_iterator(hti_p, GO_NEXT_TUPLE_IN_MAY_BE_NEXT_BUCKET, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -818,7 +818,7 @@ void print_2_buckets(uint64_t root_page_id, uint64_t start_bucket_id, const hash
 
 	while(start_bucket_id == get_curr_bucket_index_for_hash_table_iterator(hti2_p))
 	{
-		int next_res = next_hash_table_iterator(hti2_p, 1, transaction_id, &abort_error);
+		int next_res = next_hash_table_iterator(hti2_p, GO_NEXT_TUPLE_IN_MAY_BE_NEXT_BUCKET, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -837,7 +837,7 @@ void print_2_buckets(uint64_t root_page_id, uint64_t start_bucket_id, const hash
 		else
 			print_tuple(tuple, httd_p->lpltd.record_def);
 
-		int next_res = next_hash_table_iterator(hti1_p, 0, transaction_id, &abort_error);
+		int next_res = next_hash_table_iterator(hti1_p, GO_NEXT_TUPLE_IN_SAME_BUCKET, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -857,7 +857,7 @@ void print_2_buckets(uint64_t root_page_id, uint64_t start_bucket_id, const hash
 		else
 			print_tuple(tuple, httd_p->lpltd.record_def);
 
-		int next_res = next_hash_table_iterator(hti2_p, 0, transaction_id, &abort_error);
+		int next_res = next_hash_table_iterator(hti2_p, GO_NEXT_TUPLE_IN_SAME_BUCKET, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
