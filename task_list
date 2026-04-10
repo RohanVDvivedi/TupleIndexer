@@ -1,5 +1,10 @@
 ** PICKED TASKS
 
+* hash_table_iterator
+ * replace can_jump_bucket to an enum
+ * enum hash_table_iteration_constraint{GO_NEXT_TUPLE_IN_SAME_BUCKET = 0, GO_NEXT_TUPLE_TO_MAY_BE_NEXT_BUCKET = 1, GO_NEXT_TUPLE_TO_MAY_BE_NEXT_EXISTING_BUCKET = 2};
+ * changing bucket is allowed in only constraint rules 1 and 2
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required

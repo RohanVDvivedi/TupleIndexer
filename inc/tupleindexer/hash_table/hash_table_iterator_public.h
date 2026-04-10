@@ -36,33 +36,33 @@ const void* get_tuple_hash_table_iterator(const hash_table_iterator* hti_p);
 
 // jumps one tuple next
 // if hti_p->key == NULL, then the iterator is allowed to jump buckets, if can_jump_bucket = 1
-// on an ABORT_ERROR, all iterators that hash_table_iterator points to are deleted
+// on an abort_error, returns 0 and fails
 int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error);
 
 // jumps one tuple prev
 // if hti_p->key == NULL, then the iterator is allowed to jump buckets, if can_jump_bucket = 1
-// on an ABORT_ERROR, all iterators that hash_table_iterator points to are deleted
+// on an abort_error, returns 0 and fails
 int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error);
 
 // for the below 4 functions curr_tuple refers to the return value of the get_tuple_hash_table_iterator()
 
 // insertions allowed only if hti_p->key != NULL, and key(tuple) == hti_p->key
-// on an ABORT_ERROR, all iterators that hash_table_iterator points to are deleted
+// on an abort_error, returns 0 and fails
 int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple, const void* transaction_id, int* abort_error);
 
 // update allowed only if curr_tuple != NULL, and key(curr_tuple) == key(tuple i.e. the new tuple)
-// on an ABORT_ERROR, all iterators that hash_table_iterator points to are deleted
+// on an abort_error, returns 0 and fails
 int update_at_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple, const void* transaction_id, int* abort_error);
 
 // remove allowed only if curr_tuple != NULL
-// on an ABORT_ERROR, all iterators that hash_table_iterator points to are deleted
+// on an abort_error, returns 0 and fails
 int remove_from_hash_table_iterator(hash_table_iterator* hti_p, const void* transaction_id, int* abort_error);
 
 // update_non_key_element allowed only if curr_tuple != NULL
 // update a non_key column inplace at the place that the hash_table_iterator is pointing to
 // ADVISED 	:: only update columns that do not change the tuple size on the page, else the page may become less than half full and this can not be fixed by this function
 //			:: also attempting to update to a element value that can increase the tuple size, may even fail, because the slot for the tuple is not big enough
-// on an ABORT_ERROR, all iterators that hash_table_iterator points to are deleted
+// on an abort_error, returns 0 and fails
 int update_non_key_element_in_place_at_hash_table_iterator(hash_table_iterator* hti_p, positional_accessor element_index, const datum* element_value, const void* transaction_id, int* abort_error);
 
 #include<tupleindexer/hash_table/hash_table_vaccum_params.h>
