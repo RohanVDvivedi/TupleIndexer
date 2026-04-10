@@ -234,7 +234,7 @@ const void* get_tuple_hash_table_iterator(const hash_table_iterator* hti_p)
 	return record;
 }
 
-int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error)
+int next_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_constraint constr, const void* transaction_id, int* abort_error)
 {
 	// check if there is no next tuple, if so we would need to jump bucket
 	if(hti_p->lpli_p == NULL || is_empty_linked_page_list(hti_p->lpli_p) || is_at_tail_tuple_linked_page_list_iterator(hti_p->lpli_p))
@@ -244,7 +244,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 			return 0;
 
 		// if you are not allowed to jump buckets, then fail this call
-		if(!can_jump_bucket)
+		if(constr == GO_NEXT_TUPLE_IN_SAME_BUCKET)
 			return 0;
 
 		// if you are already at the last_bucket_id, then fail this call
@@ -285,7 +285,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 	return result;
 }
 
-int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error)
+int prev_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_constraint constr, const void* transaction_id, int* abort_error)
 {
 	// check if there is no prev tuple, if so we would need to jump bucket
 	if(hti_p->lpli_p == NULL || is_empty_linked_page_list(hti_p->lpli_p) || is_at_head_tuple_linked_page_list_iterator(hti_p->lpli_p))
@@ -295,7 +295,7 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, co
 			return 0;
 
 		// if you are not allowed to jump buckets, then fail this call
-		if(!can_jump_bucket)
+		if(constr == GO_NEXT_TUPLE_IN_SAME_BUCKET)
 			return 0;
 
 		// if you are already at the first_bucket_id, then fail this call

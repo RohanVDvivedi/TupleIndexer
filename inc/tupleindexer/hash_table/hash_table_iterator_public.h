@@ -34,15 +34,23 @@ int is_curr_bucket_full_for_hash_table_iterator(const hash_table_iterator* hti_p
 // the return value of this function is referred to as the curr_tuple of the iterator, for the remainder of the declarations in this file
 const void* get_tuple_hash_table_iterator(const hash_table_iterator* hti_p);
 
+typedef enum hash_table_iteration_constraint hash_table_iteration_constraint;
+enum hash_table_iteration_constraint
+{
+	GO_NEXT_TUPLE_IN_SAME_BUCKET = 0,
+	GO_NEXT_TUPLE_IN_MAY_BE_NEXT_BUCKET = 1,
+	GO_NEXT_TUPLE_IN_MAY_BE_NEXT_EXISTING_BUCKET = 2
+};
+
 // jumps one tuple next
-// if hti_p->key == NULL, then the iterator is allowed to jump buckets, if can_jump_bucket = 1
+// if hti_p->key == NULL, then the iterator is allowed to jump buckets, if constr != GO_NEXT_TUPLE_IN_SAME_BUCKET
 // on an abort_error, returns 0 and fails
-int next_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error);
+int next_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_constraint constr, const void* transaction_id, int* abort_error);
 
 // jumps one tuple prev
-// if hti_p->key == NULL, then the iterator is allowed to jump buckets, if can_jump_bucket = 1
+// if hti_p->key == NULL, then the iterator is allowed to jump buckets, if constr != GO_NEXT_TUPLE_IN_SAME_BUCKET
 // on an abort_error, returns 0 and fails
-int prev_hash_table_iterator(hash_table_iterator* hti_p, int can_jump_bucket, const void* transaction_id, int* abort_error);
+int prev_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_constraint constr, const void* transaction_id, int* abort_error);
 
 // for the below 4 functions curr_tuple refers to the return value of the get_tuple_hash_table_iterator()
 
