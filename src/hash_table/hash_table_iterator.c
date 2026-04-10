@@ -251,18 +251,25 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_co
 		if(hti_p->curr_bucket_id == hti_p->lock_range.last_bucket_id)
 			return 0;
 
+		uint64_t curr_bucket_head_page_id;
 		if(constr == GO_NEXT_TUPLE_IN_MAY_BE_NEXT_BUCKET)
 		{
-			// increment the curr_bucket_id to point to the next bucket_id
-			hti_p->curr_bucket_id++;
-
-			// fetch the head_page_id for the new curr_bucket
-			uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
+			// fetch the head_page_id for the new incremented curr_bucket_id
+			curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, ++hti_p->curr_bucket_id, transaction_id, abort_error);
 			if(*abort_error)
 				return 0;
 		}
 		else if(constr == GO_NEXT_TUPLE_IN_MAY_BE_NEXT_EXISTING_BUCKET)
 		{
+			uint64_t new_curr_bucket_id = hti_p->curr_bucket_id;
+			curr_bucket_head_page_id = find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &new_curr_bucket_id, GREATER_THAN, transaction_id, abort_error);
+			if(*abort_error)
+				return 0;
+
+			if(new_curr_bucket_id > hti_p->lock_range.last_bucket_id)
+				return 0;
+
+			hti_p->curr_bucket_id = new_curr_bucket_id;
 		}
 
 		// free the existing iterator, over the linked_page_list bucket
@@ -310,18 +317,25 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_co
 		if(hti_p->curr_bucket_id == hti_p->lock_range.first_bucket_id)
 			return 0;
 
+		uint64_t curr_bucket_head_page_id;
 		if(constr == GO_NEXT_TUPLE_IN_MAY_BE_NEXT_BUCKET)
 		{
-			// decrement the curr_bucket_id to point to the next bucket_id
-			hti_p->curr_bucket_id--;
-
-			// fetch the head_page_id for the new curr_bucket
-			uint64_t curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, hti_p->curr_bucket_id, transaction_id, abort_error);
+			// fetch the head_page_id for the new decremented curr_bucket_id
+			curr_bucket_head_page_id = get_from_page_table(hti_p->ptrl_p, --hti_p->curr_bucket_id, transaction_id, abort_error);
 			if(*abort_error)
 				return 0;
 		}
 		else if(constr == GO_NEXT_TUPLE_IN_MAY_BE_NEXT_EXISTING_BUCKET)
 		{
+			uint64_t new_curr_bucket_id = hti_p->curr_bucket_id;
+			curr_bucket_head_page_id = find_non_NULL_PAGE_ID_in_page_table(hti_p->ptrl_p, &new_curr_bucket_id, LESSER_THAN, transaction_id, abort_error);
+			if(*abort_error)
+				return 0;
+
+			if(new_curr_bucket_id < hti_p->lock_range.first_bucket_id)
+				return 0;
+
+			hti_p->curr_bucket_id = new_curr_bucket_id;
 		}
 
 		// free the existing iterator, over the linked_page_list bucket
