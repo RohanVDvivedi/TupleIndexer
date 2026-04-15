@@ -5,7 +5,7 @@
 #include<tupleindexer/page_table/page_table.h>
 #include<tupleindexer/linked_page_list/linked_page_list.h>
 
-uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+hash_table_handle get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// initial_bucket_count can not be 0
 	// it has to be 1 at minimum
@@ -14,32 +14,35 @@ uint64_t get_new_hash_table(uint64_t initial_bucket_count, const hash_table_tupl
 	// create a new page_table for the hash_table
 	uint64_t root_page_id = get_new_page_table(&(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
-		return httd_p->pttd.pas_p->NULL_PAGE_ID;
+		return (hash_table_handle){httd_p->pttd.pas_p->NULL_PAGE_ID, 0};
 
 	// take a range lock on the page table, to set the bucket_count
 	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, (bucket_range){initial_bucket_count, initial_bucket_count}, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
-		return httd_p->pttd.pas_p->NULL_PAGE_ID;
+		return (hash_table_handle){httd_p->pttd.pas_p->NULL_PAGE_ID, 0};
 
 	// set the initial_bucket_count
 	set_in_page_table(ptrl_p, initial_bucket_count, root_page_id, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // vaccum will not be required here, it is already an abort
-		return httd_p->pttd.pas_p->NULL_PAGE_ID;
+		return (hash_table_handle){httd_p->pttd.pas_p->NULL_PAGE_ID, 0};
 	}
 
 	delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // vaccum will not be required here, since we only performed a single set call
 	if(*abort_error)
-		return httd_p->pttd.pas_p->NULL_PAGE_ID;
+		return (hash_table_handle){httd_p->pttd.pas_p->NULL_PAGE_ID, 0};
 
-	return root_page_id;
+	return (hash_table_handle){root_page_id, initial_bucket_count};
 }
 
-uint64_t get_bucket_count_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+uint64_t get_bucket_count_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	if(hth_p->bucket_count != 0)
+		return hth_p->bucket_count;
+
 	// take a range lock on the page table
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -55,7 +58,7 @@ uint64_t get_bucket_count_hash_table(uint64_t root_page_id, const hash_table_tup
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error); // vaccum will not be required here, we only perforned a read
 	if(*abort_error)
 		return 0;
-	return bucket_count;
+	return (hth_p->bucket_count = bucket_count);
 }
 
 typedef struct hash_table_bucket hash_table_bucket;
@@ -66,8 +69,11 @@ struct hash_table_bucket
 	linked_page_list_iterator* bucket_iterator;		// defaults to NULL, unless the iterator is not initialized
 };
 
-int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int expand_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	// invalidate the bucket count in the handle
+	hth_p->bucket_count = 0;
+
 	// zero initialize all local variables of the function
 	int result = 0;
 	page_table_range_locker* ptrl_p = NULL;
@@ -75,7 +81,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	hash_table_bucket split_hash_buckets[2] = {};
 
 	// take a range lock on the page table
-	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -103,7 +109,7 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	split_hash_buckets[1].bucket_id = bucket_count;
 
 	// page_table[++bucket_count] = root_page_id
-	set_in_page_table(ptrl_p, ++bucket_count, root_page_id, transaction_id, abort_error);
+	set_in_page_table(ptrl_p, ++bucket_count, hth_p->root_page_id, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -268,12 +274,15 @@ int expand_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	return result;
 }
 
-int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int shrink_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
+	// invalidate the bucket count in the handle
+	hth_p->bucket_count = 0;
+
 	int result = 0;
 
 	// take a range lock on the page table
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -302,7 +311,7 @@ int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 
 	// decrement the bucket_count
 	// page_table[--bucket_count] = root_page_id
-	set_in_page_table(ptrl_p, --bucket_count, root_page_id, transaction_id, abort_error);
+	set_in_page_table(ptrl_p, --bucket_count, hth_p->root_page_id, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -353,18 +362,22 @@ int shrink_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	return result;
 }
 
-int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+int destroy_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// take a range lock on the page table, to get the bucket_count
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
-	if(*abort_error)
-		goto DELETE_BUCKET_RANGE_LOCKER_AND_ABORT;
+	uint64_t bucket_count = hth_p->bucket_count;
+	if(bucket_count == 0)
+	{
+		find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
+		if(*abort_error)
+			goto DELETE_BUCKET_RANGE_LOCKER_AND_ABORT;
+		hth_p->bucket_count = bucket_count;
+	}
 
 	// iterate over all the buckets and destroy them, without altering the page_table
 	uint64_t bucket_id = 0;
@@ -389,7 +402,7 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 		return 0;
 
 	// now you may destroy the page_table
-	destroy_page_table(root_page_id, &(httd_p->pttd), pam_p, transaction_id, abort_error);
+	destroy_page_table(hth_p->root_page_id, &(httd_p->pttd), pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -400,21 +413,25 @@ int destroy_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_
 	return 0;
 }
 
-void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+void print_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// take a range lock on the page table, to get the bucket_count
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return ;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
-	if(*abort_error)
-		goto DELETE_BUCKET_RANGE_LOCKER_AND_ABORT;
+	uint64_t bucket_count = hth_p->bucket_count;
+	if(bucket_count == 0)
+	{
+		find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
+		if(*abort_error)
+			goto DELETE_BUCKET_RANGE_LOCKER_AND_ABORT;
+		hth_p->bucket_count = bucket_count;
+	}
 
 	// print the root page id of the hash_table, and it's bucket_count
-	printf("\n\nHash_table @ root_page_id = %"PRIu64", and bucket_count = %"PRIu64"\n\n", root_page_id, bucket_count);
+	printf("\n\nHash_table @ root_page_id = %"PRIu64", and bucket_count = %"PRIu64"\n\n", hth_p->root_page_id, bucket_count);
 
 	// iterate over all the buckets, printing their contents
 	for(uint64_t bucket_id = 0; bucket_id < bucket_count; bucket_id++)
@@ -446,26 +463,30 @@ void print_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p
 	return ;
 }
 
-uint32_t get_root_level_hash_table(uint64_t root_page_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+uint32_t get_root_level_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
-	return get_root_level_page_table(root_page_id, &(httd_p->pttd), pam_p, transaction_id, abort_error);
+	return get_root_level_page_table(hth_p->root_page_id, &(httd_p->pttd), pam_p, transaction_id, abort_error);
 }
 
-int perform_vaccum_hash_table(uint64_t root_page_id, const hash_table_vaccum_params* htvp, uint32_t params_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+int perform_vaccum_hash_table(hash_table_handle* hth_p, const hash_table_vaccum_params* htvp, uint32_t params_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	page_table_range_locker* ptrl_p = NULL;
 	linked_page_list_iterator* lpli_p = NULL;
 
 	// take a range lock on the page table, to get the bucket_count
-	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
-	if(*abort_error)
-		goto ABORT_ERROR;
+	uint64_t bucket_count = hth_p->bucket_count;
+	if(bucket_count == 0)
+	{
+		find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+		hth_p->bucket_count = bucket_count;
+	}
 
 	for(uint32_t i = 0; i < params_count; i++)
 	{

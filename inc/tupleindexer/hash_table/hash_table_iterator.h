@@ -9,10 +9,12 @@
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
 #include<tupleindexer/common/materialized_key.h>
 
+#include<tupleindexer/hash_table/hash_table_handle.h>
+
 typedef struct hash_table_iterator hash_table_iterator;
 struct hash_table_iterator
 {
-	uint64_t root_page_id;
+	hash_table_handle* hth_p;
 
 	// the key you should be looking for
 	const void* key;

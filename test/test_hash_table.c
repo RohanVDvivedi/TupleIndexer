@@ -193,12 +193,14 @@ struct result
 #define MAX_THRESHOLD 10
 int fill_figure = 0;
 
+hash_table_handle hth;
+
 // after every insert, check and increment fill_figure if the bucket is full,
 // and decrement after every delete, that makes the bucket empty
 // if the fill_figure > THRESHOLD, then expand and reset fill_figure
 // if the fill_figure < -THRESHOLD, then shrink and reset fill_figure
 
-result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+result insert_from_file(hash_table_handle* hth_p, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -236,7 +238,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 
 		//printf("hash = %"PRIu64"\n", hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, hash_func, httd_p->key_element_count));
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -268,7 +270,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		if(fill_figure > MAX_THRESHOLD)
 		{
 			fill_figure = 0;
-			int expanded = expand_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+			int expanded = expand_hash_table(hth_p, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -287,7 +289,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(hth_p, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -301,7 +303,7 @@ result insert_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
-result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+result insert_unique_from_file(hash_table_handle* hth_p, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -339,7 +341,7 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 
 		//printf("hash = %"PRIu64"\n", hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, hash_func, httd_p->key_element_count));
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -397,7 +399,7 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 		if(fill_figure > MAX_THRESHOLD)
 		{
 			fill_figure = 0;
-			int expanded = expand_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+			int expanded = expand_hash_table(hth_p, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -416,7 +418,7 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(hth_p, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -430,7 +432,7 @@ result insert_unique_from_file(uint64_t root_page_id, char* file_name, uint32_t 
 	return res;
 }
 
-result update_non_key_element_in_file(uint64_t root_page_id, char* element, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+result update_non_key_element_in_file(hash_table_handle* hth_p, char* element, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -466,7 +468,7 @@ result update_non_key_element_in_file(uint64_t root_page_id, char* element, char
 		//sprint_tuple(print_buffer, record_tuple, record_def);
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -511,7 +513,7 @@ result update_non_key_element_in_file(uint64_t root_page_id, char* element, char
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(hth_p, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -525,7 +527,7 @@ result update_non_key_element_in_file(uint64_t root_page_id, char* element, char
 	return res;
 }
 
-result update_in_file(uint64_t root_page_id, char* element, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+result update_in_file(hash_table_handle* hth_p, char* element, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -563,7 +565,7 @@ result update_in_file(uint64_t root_page_id, char* element, char* file_name, uin
 		//sprint_tuple(print_buffer, record_tuple, record_def);
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -608,7 +610,7 @@ result update_in_file(uint64_t root_page_id, char* element, char* file_name, uin
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(hth_p, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -622,7 +624,7 @@ result update_in_file(uint64_t root_page_id, char* element, char* file_name, uin
 	return res;
 }
 
-result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+result delete_from_file(hash_table_handle* hth_p, char* file_name, uint32_t skip_first, uint32_t skip_every, uint32_t tuples_to_process, int print_on_completion, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	// open test data file
 	FILE* f = fopen(file_name, "r");
@@ -658,7 +660,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		//sprint_tuple(print_buffer, key_tuple, bpttd.key_def);
 		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -702,7 +704,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		}
 
 		// here since we deleted using a key, we might have emptied a bucket, hence a vaccum is necessary
-		perform_vaccum_hash_table(root_page_id, &htvp, 1, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		perform_vaccum_hash_table(hth_p, &htvp, 1, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -712,7 +714,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 		if(fill_figure < MIN_THRESHOLD)
 		{
 			fill_figure = 0;
-			int shrunk = shrink_hash_table(root_page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+			int shrunk = shrink_hash_table(hth_p, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -731,7 +733,7 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	// print hash table
 	if(print_on_completion)
 	{
-		print_hash_table(root_page_id, httd_p, pam_p, transaction_id, &abort_error);
+		print_hash_table(hth_p, httd_p, pam_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -745,11 +747,11 @@ result delete_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_fi
 	return res;
 }
 
-int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, uint64_t last_bucket_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+int delete_all_from_hash_table(hash_table_handle* hth_p, uint64_t start_bucket_id, uint64_t last_bucket_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
 	int removed_count = 0;
 
-	hash_table_iterator* hti_p = get_new_hash_table_iterator(root_page_id, (bucket_range){start_bucket_id, last_bucket_id}, NULL, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){start_bucket_id, last_bucket_id}, NULL, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -790,7 +792,7 @@ int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, 
 	}
 
 	// here since we deleted using a key, we might have emptied a bucket, hence a vaccum is necessary
-	perform_vaccum_hash_table(root_page_id, &htvp, 1, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	perform_vaccum_hash_table(hth_p, &htvp, 1, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -800,9 +802,9 @@ int delete_all_from_hash_table(uint64_t root_page_id, uint64_t start_bucket_id, 
 	return removed_count;
 }
 
-void print_2_buckets(uint64_t root_page_id, uint64_t start_bucket_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p)
+void print_2_buckets(hash_table_handle* hth_p, uint64_t start_bucket_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p)
 {
-	hash_table_iterator* hti1_p = get_new_hash_table_iterator(root_page_id, (bucket_range){start_bucket_id, start_bucket_id + 1}, NULL, httd_p, pam_p, NULL, transaction_id, &abort_error);
+	hash_table_iterator* hti1_p = get_new_hash_table_iterator(hth_p, (bucket_range){start_bucket_id, start_bucket_id + 1}, NULL, httd_p, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -909,7 +911,7 @@ int main()
 	print_hash_table_tuple_definitions(&httd);
 
 	// create a bplus tree and get its root
-	uint64_t root_page_id = get_new_hash_table(INITIAL_BUCKET_COUNT, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	hth = get_new_hash_table(INITIAL_BUCKET_COUNT, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -920,101 +922,101 @@ int main()
 	printf("\n");
 
 	// print the constructed page table
-	print_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+	print_hash_table(&hth, &httd, pam_p, transaction_id, &abort_error);
 
 	/* TESTS STARTED */
 
 	result res;
 
 	// insert all tuples
-	res = insert_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 256, 0, &httd, pam_p, pmm_p);
+	res = insert_from_file(&hth, TEST_DATA_FILE, 3, 3, 256, 0, &httd, pam_p, pmm_p);
 
 	printf("insertions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	// insert all tuples
-	res = insert_unique_from_file(root_page_id, TEST_DATA_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
+	res = insert_unique_from_file(&hth, TEST_DATA_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
 
 	printf("insertions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	// ---------------------------
-	int shrink_res = shrink_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	int shrink_res = shrink_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("shrink result = %d\n\n", shrink_res);
 
-	shrink_res = shrink_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	shrink_res = shrink_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("shrink result = %d\n\n", shrink_res);
 
-	shrink_res = shrink_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	shrink_res = shrink_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("shrink result = %d\n\n", shrink_res);
 	// ---------------------------
 
-	int expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	int expand_res = expand_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("expand result = %d\n\n", expand_res);
 
-	expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	expand_res = expand_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("expand result = %d\n\n", expand_res);
 
-	expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	expand_res = expand_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("expand result = %d\n\n", expand_res);
 
-	expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	expand_res = expand_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("expand result = %d\n\n", expand_res);
 
-	expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	expand_res = expand_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("expand result = %d\n\n", expand_res);
 
-	expand_res = expand_hash_table(root_page_id, &httd, pam_p, pmm_p, transaction_id, &abort_error);
+	expand_res = expand_hash_table(&hth, &httd, pam_p, pmm_p, transaction_id, &abort_error);
 
 	printf("expand result = %d\n\n", expand_res);
 	// ---------------------------
 
-	res = update_in_file(root_page_id, "ABCDEF", TEST_DATA_FILE, 16, 0, 10, 0, &httd, pam_p, pmm_p);
+	res = update_in_file(&hth, "ABCDEF", TEST_DATA_FILE, 16, 0, 10, 0, &httd, pam_p, pmm_p);
 
 	printf("update to ABCDEF in hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
-	res = update_non_key_element_in_file(root_page_id, "ABC", TEST_DATA_FILE, 19, 0, 5, 0, &httd, pam_p, pmm_p);
+	res = update_non_key_element_in_file(&hth, "ABC", TEST_DATA_FILE, 19, 0, 5, 0, &httd, pam_p, pmm_p);
 
 	printf("update_non_key to ABC in hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 	// print the constructed page table
-	print_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+	print_hash_table(&hth, &httd, pam_p, transaction_id, &abort_error);
 
-	printf("\n\nroot_page_level = %"PRIu32"\n\n", get_root_level_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error));
+	printf("\n\nroot_page_level = %"PRIu32"\n\n", get_root_level_hash_table(&hth, &httd, pam_p, transaction_id, &abort_error));
 
-	print_2_buckets(root_page_id, 10, &httd, pam_p);
+	print_2_buckets(&hth, 10, &httd, pam_p);
 
-	res = delete_from_file(root_page_id, TEST_DATA_FILE, 3, 3, 256, 0, &httd, pam_p, pmm_p);
+	res = delete_from_file(&hth, TEST_DATA_FILE, 3, 3, 256, 0, &httd, pam_p, pmm_p);
 
 	printf("deletions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 
 #define DELETE_ALL_USING_FILE
 
 #ifdef DELETE_ALL_USING_FILE
-	res = delete_from_file(root_page_id, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
+	res = delete_from_file(&hth, TEST_DATA_RANDOM_FILE, 0, 0, 256, 0, &httd, pam_p, pmm_p);
 
 	printf("deletions to hash table completed (%u of %u)\n\n", res.operations_succeeded, res.records_processed);
 #else
-	int rem_count = delete_all_from_hash_table(root_page_id, 0, 19, &httd, pam_p, pmm_p);
+	int rem_count = delete_all_from_hash_table(&hth, 0, 19, &httd, pam_p, pmm_p);
 
 	printf("delete all deleted %d tuples\n\n", rem_count);
 #endif
 
 	// print the constructed page table
-	print_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+	print_hash_table(&hth, &httd, pam_p, transaction_id, &abort_error);
 
 	/* TESTS ENDED */
 
 	/* CLEANUP */
 
 	// destroy bplus tree
-	destroy_hash_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
+	destroy_hash_table(&hth, &httd, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");

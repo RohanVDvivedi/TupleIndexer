@@ -11,7 +11,7 @@ PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions_
 				array_table/array_table.h array_table/array_table_tuple_definitions_public.h array_table/array_table_range_locker_public.h \
 				page_table/page_table.h page_table/page_table_tuple_definitions_public.h page_table/page_table_range_locker_public.h \
 				linked_page_list/linked_page_list.h linked_page_list/linked_page_list_tuple_definitions_public.h linked_page_list/linked_page_list_iterator_public.h \
-				hash_table/hash_table.h hash_table/hash_table_tuple_definitions_public.h hash_table/hash_table_iterator_public.h hash_table/hash_table_vaccum_params.h \
+				hash_table/hash_table_handle.h hash_table/hash_table.h hash_table/hash_table_tuple_definitions_public.h hash_table/hash_table_iterator_public.h hash_table/hash_table_vaccum_params.h \
 				sorter/sorter.h sorter/sorter_tuple_definitions_public.h \
 				worm/worm.h worm/worm_tuple_definitions_public.h worm/worm_append_iterator_public.h worm/worm_read_iterator_public.h \
 				heap_table/heap_table.h heap_table/heap_table_tuple_definitions_public.h heap_table/heap_table_iterator_public.h \
