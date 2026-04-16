@@ -50,7 +50,7 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 // a read utility to get the current maximum level this heap_table hosts, this can be used to approximate the number of buffer pages required
 uint32_t get_root_level_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-// interface to allow external world about a wrong heap_table entry, i.e. entry whcih needs to be fixed
+// interface to allow external world about a wrong heap_table entry, i.e. entry which needs to be fixed
 // you possibly should insert such entries into a hashmap<page_id, unused_space> to fix_*() them later on
 typedef struct heap_table_notifier heap_table_notifier;
 struct heap_table_notifier
