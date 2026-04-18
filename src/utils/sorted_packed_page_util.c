@@ -788,7 +788,10 @@ void sort_materialized_and_convert_to_sorted_packed_page(
 
 		memory_move(row_i, tuple, tuple_size);
 		for(uint32_t k = 0; k < keys_count; k++)
-			get_value_from_element_from_tuple(&(keyss[i * keys_count + k]), tpl_def, tuple_keys_to_compare[k], tuple);
+		{
+			if(!get_value_from_element_from_tuple(&(keyss[i * keys_count + k]), tpl_def, tuple_keys_to_compare[k], tuple))
+				keyss[i * keys_count + k] = (*NULL_DATUM);
+		}
 
 		sortable_rows[i].keys = &(keyss[i * keys_count]);
 		sortable_rows[i].row = row_i;
