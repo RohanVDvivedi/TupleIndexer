@@ -54,10 +54,6 @@ int check_if_record_can_be_inserted_for_sorter_tuple_definitions(const sorter_tu
 	if(record_tuple == NULL)
 		return 0;
 
-	// if atleast one key element is OUT_OF_BOUNDS then fail
-	if(!are_all_positions_accessible_for_tuple(record_tuple, std_p->record_def, std_p->key_element_ids, std_p->key_element_count))
-		return 0;
-
 	// if the record can be inserted into a run of the sorter, i.e. in a linked_page_list, then it can be inserted into a sorter
 	return check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions(&(std_p->lpltd), record_tuple);
 }

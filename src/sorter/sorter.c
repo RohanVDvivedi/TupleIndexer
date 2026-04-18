@@ -322,7 +322,10 @@ static void cache_keys_for_active_sorted_run(active_sorted_run* asr_p, const sor
 	const void* tuple = get_tuple_linked_page_list_iterator(asr_p->run_iterator);
 
 	for(uint32_t i = 0; i < std_p->key_element_count; i++)
-		get_value_from_element_from_tuple(&(asr_p->cached_keys_for_curr_tuple[i]), std_p->record_def, std_p->key_element_ids[i], tuple);
+	{
+		if(!get_value_from_element_from_tuple(&(asr_p->cached_keys_for_curr_tuple[i]), std_p->record_def, std_p->key_element_ids[i], tuple))
+			asr_p->cached_keys_for_curr_tuple[i] = (*NULL_DATUM);
+	}
 }
 
 static void destroy_cache_keys_for_active_sorted_run(active_sorted_run* asr_p)
