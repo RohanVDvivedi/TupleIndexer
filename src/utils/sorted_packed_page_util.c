@@ -35,7 +35,7 @@ struct tuple_on_page_compare_context
 
 #define get_tuple_on_page_compare_context(tpl_def_v, tuple_keys_to_compare_v, key_def_v, key_elements_to_compare_v, key_compare_direction_v, keys_count_v) ((const tuple_on_page_compare_context){.tpl_def = tpl_def_v, .tuple_keys_to_compare = tuple_keys_to_compare_v, .key_def = key_def_v, .key_elements_to_compare = key_elements_to_compare_v, .key_compare_direction = key_compare_direction_v, .keys_count = keys_count_v})
 
-int compare_tuples_using_comparator_context(const void* context, const void* tuple1, const void* tuple2)
+static int compare_tuples_using_comparator_context(const void* context, const void* tuple1, const void* tuple2)
 {
 	const tuple_on_page_compare_context* context_p = context;
 	return compare_tuples(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, tuple2, context_p->key_def, context_p->key_elements_to_compare, context_p->key_compare_direction, context_p->keys_count);
@@ -64,7 +64,7 @@ struct tuple_on_page_compare_context2
 
 #define get_tuple_on_page_compare_context2(tpl_def_v, tuple_keys_to_compare_v, key_dtis_v, key_compare_direction_v, keys_count_v) ((const tuple_on_page_compare_context2){.tpl_def = tpl_def_v, .tuple_keys_to_compare = tuple_keys_to_compare_v, .key_dtis = key_dtis_v, .key_compare_direction = key_compare_direction_v, .keys_count = keys_count_v})
 
-int compare_tuples_using_comparator_context2(const void* context, const void* tuple1, const void* uvals2)
+static int compare_tuples_using_comparator_context2(const void* context, const void* tuple1, const void* uvals2)
 {
 	const tuple_on_page_compare_context2* context_p = context;
 	return compare_tuple_with_datum(tuple1, context_p->tpl_def, context_p->tuple_keys_to_compare, uvals2, context_p->key_dtis, context_p->key_compare_direction, context_p->keys_count);
@@ -737,7 +737,7 @@ struct mat_sort_context
 	const compare_direction* key_cmp_dirs;
 };
 
-int compare_sortable_rows(const void* cntxt, const void* s1, const void* s2)
+static int compare_sortable_rows(const void* cntxt, const void* s1, const void* s2)
 {
 	const mat_sort_context* c = cntxt;
 	const sortable_row* sr1 = s1;
