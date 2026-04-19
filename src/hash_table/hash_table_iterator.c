@@ -261,7 +261,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_co
 		if(hti_p->curr_bucket_id == hti_p->lock_range.last_bucket_id)
 			return 0;
 
-		uint64_t curr_bucket_head_page_id;
+		uint64_t curr_bucket_head_page_id = hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID;
 		if(constr == GO_NEXT_TUPLE_IN_MAY_BE_NEXT_BUCKET)
 		{
 			// fetch the head_page_id for the new incremented curr_bucket_id
@@ -327,7 +327,7 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_co
 		if(hti_p->curr_bucket_id == hti_p->lock_range.first_bucket_id)
 			return 0;
 
-		uint64_t curr_bucket_head_page_id;
+		uint64_t curr_bucket_head_page_id = hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID;
 		if(constr == GO_NEXT_TUPLE_IN_MAY_BE_NEXT_BUCKET)
 		{
 			// fetch the head_page_id for the new decremented curr_bucket_id
