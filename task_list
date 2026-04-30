@@ -1,15 +1,15 @@
 ** PICKED TASKS
 
-* worm revamp
-  * use heap_table and heap_page instead to share unused space from the chunks
-  * implement and support reading tuple_pointer(page_id, tuple_id)
-  * each chunk stores BINARY for the chunk itself, next_page_id, next_tuple_id (both of which type infos are given in pas)
-  * every head of the worm has head that also has tail_page_id and tail_tuple_id, as the first attribute of the chunk tuple
-  * every append, first appends to the tail's bytes and only when that page is full is when we create a new tail chunk
-  * any open worm append iterator alays keeps the head and the tail open
-  * reader does latch crabbing until it reaches tail
-  * interface to the worm remains unchanged
-    * every function gets a root_page_id, head_page_id, head_tuple_id in it's definition
+* blob_list
+  * a worm replacement
+  * no latch crabbing
+  * get_new_blob_list_read_iterator(uint64_t root_page_id, uint64_t page_id, uint32_t tuple_index);
+    * delete, clone and read and peek fubnctions
+    * current page to be read is always kept open, and read will go next always forward, also no latch crabbing
+  * get_new_blob_list_write_iterator(uint64_t root_page_id, uint64_t head_page_id, uint32_t head_tuple_index, uint64_t tail_page_id, uint32_t tail_tuple_index);
+    * delete, discard_from_head, append_to_tail
+    * fetch the head and discard partial bytes or all of the head blob
+    * fetch the tail and extend it if you can, or create a new blob, update the next of the tail and update tail page_id and tail tuple_index
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
