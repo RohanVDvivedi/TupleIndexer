@@ -12,6 +12,11 @@ int destroy_blob_store(uint64_t root_page_id, const blob_store_tuple_defs* bstd_
 	return destroy_heap_table(root_page_id, &(bstd_p->httd), pam_p, transaction_id, abort_error);
 }
 
+void print_blob_store(uint64_t root_page_id, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+{
+	print_heap_table(root_page_id, &(bstd_p->httd), pam_p, transaction_id, abort_error);
+}
+
 uint32_t get_root_level_blob_store(uint64_t root_page_id, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	return get_root_level_heap_table(root_page_id, &(bstd_p->httd), pam_p, transaction_id, abort_error) + 1;
