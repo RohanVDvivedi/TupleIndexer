@@ -5,7 +5,7 @@
 
 int init_worm_tuple_definitions(worm_tuple_defs* wtd_p, const page_access_specs* pas_p)
 {
-	// zero initialize attd_p
+	// zero initialize wtd_p
 	(*wtd_p) = (worm_tuple_defs){};
 
 	// check if page_access_specs struct is valid
