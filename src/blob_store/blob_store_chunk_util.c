@@ -32,6 +32,15 @@ void set_next_chunk_pointer(void* chunk, uint64_t next_page_id, uint32_t next_tu
 
 uint32_t append_bytes_to_back_of_chunk(void* chunk, void* data, uint32_t data_size, uint32_t max_size_increment_allowed, const blob_store_tuple_defs* bstd_p);
 
-uint32_t discard_bytes_from_front_of_chunk(void* chunk, uint32_t data_size, const blob_store_tuple_defs* bstd_p);
+uint32_t discard_bytes_from_front_of_chunk(void* chunk, uint32_t data_size, const blob_store_tuple_defs* bstd_p)
+{
+	uint32_t chunk_data_size = get_element_count_for_element_from_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk);
+
+	uint32_t bytes_discarded = min(data_size, chunk_data_size);
+
+	discard_elements_from_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk, 0, bytes_discarded);
+
+	return bytes_discarded;
+}
 
 int set_next_chunk_pointer_in_ppage(persistent_page* ppage, uint32_t tuple_index, uint64_t next_page_id, uint32_t next_tuple_index, const blob_store_tuple_defs* bstd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
