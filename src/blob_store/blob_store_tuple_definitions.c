@@ -56,6 +56,18 @@ int init_blob_store_tuple_definitions(blob_store_tuple_defs* bstd_p, const page_
 
 	// compute min_chunk_size and max_chunk_size
 
+	// minimum size of the chunk_tuple_def + sizeof of 1 byte chunk
+	bstd_p->min_chunk_size = get_minimum_tuple_size(bstd_p->chunk_tuple_def) + bstd_p->chunk_tuple_def->type_info->containees[0].al.type_info->min_size + 1;
+
+	bstd_p->max_chunk_size = get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_HEAP_PAGE_HEADER(bstd_p->pas_p), bstd_p->pas_p->page_size, &(bstd_p->chunk_tuple_def->size_def));
+
+	// minimal check
+	if(bstd_p->max_chunk_size < bstd_p->min_chunk_size)
+	{
+		deinit_blob_store_tuple_definitions(bstd_p);
+		return 0;
+	}
+
 	bstd_p->max_data_bytes_in_chunk = bstd_p->max_chunk_size - bstd_p->min_chunk_size + 1;
 
 	return 1;
