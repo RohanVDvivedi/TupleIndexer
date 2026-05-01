@@ -9,6 +9,8 @@
 typedef struct blob_store_write_iterator blob_store_write_iterator;
 struct blob_store_write_iterator
 {
+	uint64_t root_page_id;
+
 	uint64_t head_page_id;
 	uint32_t head_tuple_index;
 
