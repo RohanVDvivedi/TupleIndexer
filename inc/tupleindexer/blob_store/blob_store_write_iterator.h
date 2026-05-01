@@ -14,6 +14,7 @@ struct blob_store_write_iterator
 
 	uint64_t tail_page_id;
 	uint32_t tail_tuple_index;
+	uint32_t tail_byte_index;
 
 	// starts with being 0, and gets set/reset after every append
 	// if 0, we try to append to the tail chunk
