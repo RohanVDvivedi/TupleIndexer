@@ -111,7 +111,7 @@ void deinit_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
 	httd_p->max_record_size = 0;
 }
 
-void print_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p)
+void print_heap_table_tuple_definitions(const heap_table_tuple_defs* httd_p)
 {
 	printf("Heap_table tuple defs:\n");
 

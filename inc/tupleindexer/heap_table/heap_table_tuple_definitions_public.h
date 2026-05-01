@@ -37,6 +37,6 @@ int check_if_record_can_be_inserted_for_heap_table_tuple_definitions(const heap_
 void deinit_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p);
 
 // print heap_table_tuple_definitions
-void print_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p);
+void print_heap_table_tuple_definitions(const heap_table_tuple_defs* httd_p);
 
 #endif

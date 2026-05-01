@@ -70,11 +70,19 @@ int init_blob_store_tuple_definitions(blob_store_tuple_defs* bstd_p, const page_
 
 	bstd_p->max_data_bytes_in_chunk = bstd_p->max_chunk_size - bstd_p->min_chunk_size + 1;
 
+	if(!init_heap_table_tuple_definitions(&(bstd_p->httd), bstd_p->pas_p, bstd_p->chunk_tuple_def))
+	{
+		deinit_blob_store_tuple_definitions(bstd_p);
+		return 0;
+	}
+
 	return 1;
 }
 
 void deinit_blob_store_tuple_definitions(blob_store_tuple_defs* bstd_p)
 {
+	deinit_heap_table_tuple_definitions(&(bstd_p->httd));
+
 	if(bstd_p->chunk_tuple_def)
 	{
 		if(bstd_p->chunk_tuple_def->type_info)
@@ -85,6 +93,7 @@ void deinit_blob_store_tuple_definitions(blob_store_tuple_defs* bstd_p)
 		}
 		free(bstd_p->chunk_tuple_def);
 	}
+
 	(*bstd_p) = (blob_store_tuple_defs){};
 }
 
@@ -104,4 +113,6 @@ void print_blob_store_tuple_definitions(const blob_store_tuple_defs* bstd_p)
 	printf("min_chunk_size = %"PRIu32"\n", bstd_p->min_chunk_size);
 	printf("max_chunk_size = %"PRIu32"\n", bstd_p->max_chunk_size);
 	printf("max_data_bytes_in_chunk = %"PRIu32"\n", bstd_p->max_data_bytes_in_chunk);
+
+	print_heap_table_tuple_definitions(&(bstd_p->httd));
 }

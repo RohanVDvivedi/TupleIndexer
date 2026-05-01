@@ -4,6 +4,8 @@
 #include<tuplestore/tuple.h>
 #include<inttypes.h>
 
+#include<tupleindexer/heap_table/heap_table_tuple_definitions_public.h>
+
 #include<tupleindexer/common/page_access_specification.h>
 
 typedef struct blob_store_tuple_defs blob_store_tuple_defs;
@@ -20,6 +22,9 @@ struct blob_store_tuple_defs
 	uint32_t max_chunk_size; // chunk with it being the only one on the page and occupying all of the space on that heap_page
 
 	uint32_t max_data_bytes_in_chunk; // max_chunk_size - min_chunk_size + 1, maximum number of raw bytes we can put in chunk
+
+	// the tuple_defs for the heap_table that helps us manager free space for the chunks
+	heap_table_tuple_defs httd;
 };
 
 // initializes the attributes in blob_store_tuple_defs struct as per the provided parameters
