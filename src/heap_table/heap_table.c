@@ -202,7 +202,7 @@ void print_heap_table(uint64_t root_page_id, const heap_table_tuple_defs* httd_p
 
 	debug_print_lock_stack_for_heap_table_iterator(hti_p);
 
-	// free each heap page one by one
+	// print each heap page one by one
 	while(1)
 	{
 		uint32_t unused_space;
@@ -266,7 +266,7 @@ persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t
 	if(*abort_error)
 		goto ABORT_ERROR;
 
-	// free each heap page one by one
+	// iterate over each heap page one by one
 	while(1)
 	{
 		int is_fix_needed = 0;
