@@ -9,7 +9,7 @@
 typedef struct worm_tuple_defs worm_tuple_defs;
 struct worm_tuple_defs
 {
-	// specification of all the pages in the bplus_tree
+	// specification of all the pages in the worm
 	const page_access_specs* pas_p;
 
 	// tuple_def for all binarys in the worm
