@@ -32,7 +32,24 @@ void set_next_chunk_pointer(void* chunk, uint64_t next_page_id, uint32_t next_tu
 	set_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(2), chunk, &(const datum){.uint_value = next_tuple_index}, 0);
 }
 
-uint32_t append_bytes_to_back_of_chunk(void* chunk, void* data, uint32_t data_size, uint32_t max_size_increment_allowed, const blob_store_tuple_defs* bstd_p);
+uint32_t append_bytes_to_back_of_chunk(void* chunk, void* data, uint32_t data_size, uint32_t max_size_increment_allowed, const blob_store_tuple_defs* bstd_p)
+{
+	uint32_t bytes_appended = min(get_max_size_increment_allowed_for_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk), max_size_increment_allowed);
+
+	uint32_t old_chunk_data_size = get_element_count_for_element_from_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk);
+
+	// expand the chunk_data, this must succeed
+	expand_element_count_for_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk, old_chunk_data_size, bytes_appended, max_size_increment_allowed);
+
+	// this copy is illegal, ideally a set should be called, but this is faster
+	{
+		datum uval;
+		get_value_from_element_from_tuple(&uval, bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk);
+		memory_move(((char*)uval.binary_value) + old_chunk_data_size, data, bytes_appended);
+	}
+
+	return bytes_appended;
+}
 
 uint32_t discard_bytes_from_front_of_chunk(void* chunk, uint32_t data_size, const blob_store_tuple_defs* bstd_p)
 {
