@@ -29,15 +29,16 @@ uint64_t get_tail_position_in_blob_store(blob_store_read_iterator* bsri_p, uint3
 
 // if data_size == 0, return 0 directly
 // if data_size > 0, it returns bytes_appended for success, where 0 < bytes_appended <= data_size, bytes_appended could be non-zero lesser than data_size
-// due to the above condition, you may need to call this function more than once for the same input buffer, this will not happen for sure, but the api design allows this to happen
 // on an abort_error, all the pages will be unlocked by the blob_store_write_iterator, and return value will be 0
 uint32_t append_to_tail_blob_store(blob_store_write_iterator* bswi_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
 
 // if data_size == 0, return 0 directly
 // if data_size > 0, it returns bytes_discarded for success, where 0 < bytes_discarded <= data_size, bytes_discarded could be non-zero lesser than data_size
-// due to the above condition, you may need to call this function more than once for the same input buffer, this will not happen for sure, but the api design allows this to happen (it may happen only if the blob becomes empty)
 // on an abort_error, all the pages will be unlocked by the blob_store_write_iterator, and return value will be 0
 uint32_t discard_from_head_blob_store(blob_store_write_iterator* bswi_p, uint32_t data_size, const void* transaction_id, int* abort_error);
+
+// both the above functions try to modify minimal pages while appending a singular chunk of data
+// this allows you to brek your insets into smaller and smaller transactions
 
 void delete_blob_store_write_iterator(blob_store_write_iterator* bswi_p, const void* transaction_id, int* abort_error);
 

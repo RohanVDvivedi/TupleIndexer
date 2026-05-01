@@ -18,7 +18,7 @@ blob_store_read_iterator* clone_blob_store_read_iterator(const blob_store_read_i
 // if data_size == 0, then 0 is returned right away
 // if data == NULL, then a forward relative seek is performed for data_size bytes
 // if data_size > 0, then a 0 is returned only if there are no more bytes in blob_store to be read
-// lesser than data_size bytes are read, possibly because of you reaching the end of the blob_store
+// lesser than data_size bytes are read, possibly because of you have reached the end of the blob_store
 // on an abort_error all locks are released and 0 is returned
 uint32_t read_from_blob_store(blob_store_read_iterator* bsri_p, char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
 
