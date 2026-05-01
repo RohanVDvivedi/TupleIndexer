@@ -30,7 +30,7 @@ uint32_t read_from_blob(blob_store_read_iterator* bsri_p, char* data, uint32_t d
 const char* peek_in_blob(blob_store_read_iterator* bsri_p, uint32_t* data_size, const void* transaction_id, int* abort_error);
 
 // get current position of the blob_store_read_iterator, the curr_binary_index and curr_byte_index are output parameters, and the return value is the curr_page_id of the blob_store page that we are in
-uint64_t get_position_in_blob(blob_store_read_iterator* bsri_p, uint32_t* curr_tuple_index, uint32_t* curr_byte_index);
+uint64_t get_position_in_blob(const blob_store_read_iterator* bsri_p, uint32_t* curr_tuple_index, uint32_t* curr_byte_index);
 
 void delete_blob_store_read_iterator(blob_store_read_iterator* bsri_p, const void* transaction_id, int* abort_error);
 
