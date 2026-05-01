@@ -1,5 +1,7 @@
 #include<tupleindexer/blob_store/blob_store_chunk_util.h>
 
+#include<tupleindexer/utils/persistent_page_functions.h>
+
 #include<tuplestore/tuple.h>
 #include<tuplestore/datum.h>
 
@@ -43,4 +45,15 @@ uint32_t discard_bytes_from_front_of_chunk(void* chunk, uint32_t data_size, cons
 	return bytes_discarded;
 }
 
-int set_next_chunk_pointer_in_ppage(persistent_page* ppage, uint32_t tuple_index, uint64_t next_page_id, uint32_t next_tuple_index, const blob_store_tuple_defs* bstd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+int set_next_chunk_pointer_in_ppage(persistent_page* ppage, uint32_t tuple_index, uint64_t next_page_id, uint32_t next_tuple_index, const blob_store_tuple_defs* bstd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+{
+	set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, ppage, bstd_p->pas_p->page_size, bstd_p->chunk_tuple_def, tuple_index, STATIC_POSITION(1), &(const datum){.uint_value = next_page_id}, abort_error);
+	if(*abort_error)
+		return 0;
+
+	set_element_in_tuple_in_place_on_persistent_page(pmm_p, transaction_id, ppage, bstd_p->pas_p->page_size, bstd_p->chunk_tuple_def, tuple_index, STATIC_POSITION(2), &(const datum){.uint_value = next_tuple_index}, abort_error);
+	if(*abort_error)
+		return 0;
+
+	return 1;
+}
