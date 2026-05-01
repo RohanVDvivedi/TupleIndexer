@@ -1,6 +1,12 @@
 #ifndef BLOB_STORE_CHUNK_UTIL_H
 #define BLOB_STORE_CHUNK_UTIL_H
 
+#include<tupleindexer/blob_store/blob_store_tuple_definitions.h>
+
+#include<tupleindexer/utils/persistent_page.h>
+
+#include<tupleindexer/interface/opaque_page_modification_methods.h>
+
 void initialize_chunk(void* chunk, const void* chunk_data, uint32_t chunk_data_size, uint64_t next_page_id, uint32_t next_tuple_index, const blob_store_tuple_defs* bstd_p);
 
 uint64_t get_next_chunk_pointer(const void* chunk, uint32_t* next_tuple_index, const blob_store_tuple_defs* bstd_p);
