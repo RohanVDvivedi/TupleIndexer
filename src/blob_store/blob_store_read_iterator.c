@@ -159,6 +159,9 @@ uint32_t read_from_blob(blob_store_read_iterator* bsri_p, char* data, uint32_t d
 		bsri_p->curr_byte_index += bytes_read_this_iteration;
 		bsri_p->unread_chunk_data.binary_value += bytes_read_this_iteration;
 		bsri_p->unread_chunk_data.binary_size -= bytes_read_this_iteration;
+
+		// update return value
+		bytes_read += bytes_read_this_iteration;
 	}
 
 	return bytes_read;
