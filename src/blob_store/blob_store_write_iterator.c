@@ -95,9 +95,9 @@ uint64_t get_tail_position_in_blob(const blob_store_write_iterator* bswi_p, uint
 	return bswi_p->tail_page_id;
 }
 
-uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
+uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
 
-uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t data_size, const void* transaction_id, int* abort_error);
+uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, uint32_t data_size, const void* transaction_id, int* abort_error);
 
 void delete_blob_store_write_iterator(blob_store_write_iterator* bswi_p, const void* transaction_id, int* abort_error)
 {

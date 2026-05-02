@@ -30,15 +30,17 @@ uint64_t get_head_position_in_blob(const blob_store_write_iterator* bswi_p, uint
 // tail_byte_index will be the size of the binary in the tail
 uint64_t get_tail_position_in_blob(const blob_store_write_iterator* bswi_p, uint32_t* tail_tuple_index, uint32_t* tail_byte_index);
 
+#include<tupleindexer/heap_table/heap_table.h> // only to make the heap_table_notifier available here
+
 // if data_size == 0, return 0 directly
 // if data_size > 0, it returns bytes_appended for success, where 0 < bytes_appended <= data_size, bytes_appended could be non-zero lesser than data_size
 // on an abort_error, all the pages will be unlocked by the blob_store_write_iterator, and return value will be 0
-uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
+uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
 
 // if data_size == 0, return 0 directly
 // if data_size > 0, it returns bytes_discarded for success, where 0 < bytes_discarded <= data_size, bytes_discarded could be non-zero lesser than data_size
 // on an abort_error, all the pages will be unlocked by the blob_store_write_iterator, and return value will be 0
-uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t data_size, const void* transaction_id, int* abort_error);
+uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, uint32_t data_size, const void* transaction_id, int* abort_error);
 
 // both the above functions try to modify minimal pages while appending a singular chunk of data
 // this allows you to brek your insets into smaller and smaller transactions
