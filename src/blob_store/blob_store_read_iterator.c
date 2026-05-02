@@ -123,9 +123,74 @@ static int goto_next_page(blob_store_read_iterator* bsri_p, const void* transact
 	return !is_persistent_page_NULL(&(bsri_p->curr_page), bsri_p->pam_p);
 }
 
-uint32_t read_from_blob(blob_store_read_iterator* bsri_p, char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
+uint32_t read_from_blob(blob_store_read_iterator* bsri_p, char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
+{
+	uint32_t bytes_read = 0;
 
-const char* peek_in_blob(blob_store_read_iterator* bsri_p, uint32_t* data_size, const void* transaction_id, int* abort_error);
+	while(data_size > 0)
+	{
+		// goto_next_page until there is nothing in unread_chunk_data
+		while(is_datum_NULL(&(bsri_p->unread_chunk_data)) || (bsri_p->unread_chunk_data.binary_size == 0))
+		{
+			int went_next = goto_next_page(bsri_p, transaction_id, abort_error);
+			if(*abort_error)
+				return 0;
+			if(went_next == 0)
+				break;
+		}
+
+		// if there is still nothing break out of the loop
+		if((is_datum_NULL(&(bsri_p->unread_chunk_data)) || (bsri_p->unread_chunk_data.binary_size = 0)))
+			break;
+
+		// figure the number of bytes to read in this iteration
+		uint32_t bytes_read_this_iteration = min(data_size, bsri_p->unread_chunk_data.binary_size);
+
+		// copy that many number of bytes
+		if(data)
+			memory_move(data, bsri_p->unread_chunk_data.binary_value, bytes_read_this_iteration);
+
+		// move forward the output
+		if(data)
+			data += bytes_read_this_iteration;
+		data_size -= bytes_read_this_iteration;
+
+		// move the iterator forward
+		bsri_p->curr_byte_index += bytes_read_this_iteration;
+		bsri_p->unread_chunk_data.binary_value += bytes_read_this_iteration;
+		bsri_p->unread_chunk_data.binary_size -= bytes_read_this_iteration;
+	}
+
+	return bytes_read;
+}
+
+const char* peek_in_blob(blob_store_read_iterator* bsri_p, uint32_t* data_size, const void* transaction_id, int* abort_error)
+{
+	const char* data = NULL;
+	(*data_size) = 0;
+
+	while((*data_size) == 0)
+	{
+		// goto_next_page until there is nothing in unread_chunk_data
+		while(is_datum_NULL(&(bsri_p->unread_chunk_data)) || (bsri_p->unread_chunk_data.binary_size == 0))
+		{
+			int went_next = goto_next_page(bsri_p, transaction_id, abort_error);
+			if(*abort_error)
+				return 0;
+			if(went_next == 0)
+				break;
+		}
+
+		// if there is still nothing break out of the loop
+		if((is_datum_NULL(&(bsri_p->unread_chunk_data)) || (bsri_p->unread_chunk_data.binary_size = 0)))
+			break;
+
+		data = bsri_p->unread_chunk_data.binary_value;
+		(*data_size) = bsri_p->unread_chunk_data.binary_size;
+	}
+
+	return data;
+}
 
 uint64_t get_position_in_blob(const blob_store_read_iterator* bsri_p, uint32_t* curr_tuple_index, uint32_t* curr_byte_index)
 {
