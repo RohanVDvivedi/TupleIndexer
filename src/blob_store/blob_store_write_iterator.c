@@ -97,7 +97,97 @@ uint64_t get_tail_position_in_blob(const blob_store_write_iterator* bswi_p, uint
 
 uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
 
-uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, uint32_t data_size, const void* transaction_id, int* abort_error);
+uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, uint32_t data_size, const void* transaction_id, int* abort_error)
+{
+	// can not discard if the blob is empty
+	if(is_empty_blob_in_blob_store(bswi_p))
+		return 0;
+
+	// can not discard if the head is not present
+	if(bswi_p->head_page_id == bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
+		return 0;
+
+	// get write lock on the head page
+	persistent_page head_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, bswi_p->head_page_id, WRITE_LOCK, abort_error);
+	if(*abort_error)
+		return 0;
+
+	// must not return NULL, this tuple must exist
+	const void* head_chunk = get_nth_tuple_on_persistent_page(&head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_tuple_index);
+
+	// get the number of bytes in head_chunk
+	uint32_t data_bytes_in_head_chunk = 0;
+	{
+		datum head_chunk_data = get_curr_chunk_data(head_chunk, bswi_p->bstd_p);
+		if(!is_datum_NULL(&head_chunk_data))
+			data_bytes_in_head_chunk = head_chunk_data.binary_size;
+	}
+
+	uint32_t bytes_discarded = 0;
+
+	if(data_bytes_in_head_chunk > data_size) // shrink the chunk
+	{
+		// clone the head_chunk
+		uint32_t head_chunk_size = get_tuple_size(bswi_p->bstd_p->chunk_tuple_def, head_chunk);
+		void* cloned_head_chunk = malloc(head_chunk_size);
+		memory_move(cloned_head_chunk, head_chunk, head_chunk_size);
+
+		// discard bytes from its (clone's) front
+		discard_bytes_from_front_of_chunk(cloned_head_chunk, data_bytes_in_head_chunk, bswi_p->bstd_p);
+
+		// update this head_chunk with it's clone
+		update_tuple_on_persistent_page_resiliently(bswi_p->pmm_p, transaction_id, &head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_tuple_index, cloned_head_chunk, abort_error);
+		free(cloned_head_chunk);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		bytes_discarded = data_size;
+	}
+	else // discard the chunk
+	{
+		uint64_t old_head_page_id = bswi_p->head_page_id;
+		uint32_t old_head_tuple_index = bswi_p->head_tuple_index;
+
+		uint32_t old_head_page_unused_space = get_unused_space_on_heap_page(&head_page, bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def);
+
+		// fetch the new head
+		bswi_p->head_page_id = get_next_chunk_pointer(head_chunk, &(bswi_p->head_tuple_index), bswi_p->bstd_p);
+
+		// discard the chunk
+		delete_from_heap_page(&head_page, old_head_tuple_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+
+		// notify that the unused space changed
+		if(notify_wrong_entry)
+			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, old_head_page_id);
+
+		bytes_discarded = data_bytes_in_head_chunk;
+
+		// if we destroyed the only chunk, make the tail also NULL_PAGE_ID
+		// i.e. reset tail pointer if the head_page_id just became NULL, making the blob empty
+		if(bswi_p->head_page_id == bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
+		{
+			bswi_p->tail_page_id = bswi_p->bstd_p->pas_p->NULL_PAGE_ID;
+			bswi_p->tail_tuple_index = 0;
+
+			bswi_p->tail_byte_index = 0;
+			bswi_p->is_tail_page_full = 0;
+		}
+	}
+
+	// release the lock and exit
+	release_lock_on_persistent_page(bswi_p->pam_p, transaction_id, &head_page, NONE_OPTION, abort_error);
+	if(*abort_error)
+		goto ABORT_ERROR;
+
+	return bytes_discarded;
+
+	ABORT_ERROR:
+	if(!is_persistent_page_NULL(&head_page, bswi_p->pam_p))
+		release_lock_on_persistent_page(bswi_p->pam_p, transaction_id, &head_page, NONE_OPTION, abort_error);
+	return 0;
+}
 
 void delete_blob_store_write_iterator(blob_store_write_iterator* bswi_p, const void* transaction_id, int* abort_error)
 {
