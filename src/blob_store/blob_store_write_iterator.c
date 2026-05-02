@@ -134,6 +134,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 		}
 		else
 		{
+			uint32_t unused_space_in_old_tail_page = get_unused_space_on_heap_page(&old_tail_page, bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def);
+
 			// get the tail_chunk
 			const void* tail_chunk = get_nth_tuple_on_persistent_page(&old_tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->tail_tuple_index);
 
@@ -154,6 +156,10 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 			free(cloned_tail_chunk);
 			if(*abort_error)
 				goto ABORT_ERROR;
+
+			// notify that the unused space changed
+			if(notify_wrong_entry)
+				notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, unused_space_in_old_tail_page, old_tail_page.page_id);
 		}
 
 		release_lock_on_persistent_page(bswi_p->pam_p, transaction_id, &old_tail_page, NONE_OPTION, abort_error);
