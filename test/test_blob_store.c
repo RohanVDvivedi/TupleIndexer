@@ -244,6 +244,18 @@ int main()
 
 	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
 
+
+
+
+	append_to_blob(root_page_id, &(bptrs[1]), "Rohan Dvivedi", 13, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[1]), 5, &bstd, pam_p);
+
+
+
+
 	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, 300, &bstd, pam_p, pmm_p);
 
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
@@ -261,6 +273,11 @@ int main()
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
+
+
+
+
+	print_blob(&(bptrs[1]), 5, &bstd, pam_p);
 
 
 
