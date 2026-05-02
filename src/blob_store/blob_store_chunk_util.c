@@ -26,6 +26,14 @@ uint64_t get_next_chunk_pointer(const void* chunk, uint32_t* next_tuple_index, c
 	return uval.uint_value;
 }
 
+datum get_curr_chunk_data(const void* chunk, const blob_store_tuple_defs* bstd_p)
+{
+	datum chunk_data;
+	if(!get_value_from_element_from_tuple(&chunk_data, bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk))
+		return (*NULL_DATUM);
+	return chunk_data;
+}
+
 void set_next_chunk_pointer(void* chunk, uint64_t next_page_id, uint32_t next_tuple_index, const blob_store_tuple_defs* bstd_p)
 {
 	set_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(1), chunk, &(const datum){.uint_value = next_page_id}, 0);

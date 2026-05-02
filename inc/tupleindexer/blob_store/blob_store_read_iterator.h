@@ -17,6 +17,9 @@ struct blob_store_read_iterator
 	// curr_byte_index -> index of the byte in the binary of the tuple that we are looking at
 	uint32_t curr_byte_index;
 
+	// current unread chunk pointed in the curr_page
+	datum unread_chunk_data;
+
 	const blob_store_tuple_defs* bstd_p;
 
 	const page_access_methods* pam_p;

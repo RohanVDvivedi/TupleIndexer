@@ -11,6 +11,8 @@ void initialize_chunk(void* chunk, const void* chunk_data, uint32_t chunk_data_s
 
 uint64_t get_next_chunk_pointer(const void* chunk, uint32_t* next_tuple_index, const blob_store_tuple_defs* bstd_p);
 
+datum get_curr_chunk_data(const void* chunk, const blob_store_tuple_defs* bstd_p);
+
 void set_next_chunk_pointer(void* chunk, uint64_t next_page_id, uint32_t next_tuple_index, const blob_store_tuple_defs* bstd_p);
 
 // max_size_increment_allowed is the number of unused bytes on the page
