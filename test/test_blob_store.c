@@ -118,6 +118,7 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 			exit(-1);
 		}
 		data_size -= bytes_discarded;
+		bptr->bytes_appended -= bytes_discarded;
 	}
 
 	bptr->head_page_id = get_head_position_in_blob(bswi_p, &(bptr->head_tuple_index));
@@ -233,6 +234,10 @@ int main()
 	// print whole of blob store
 	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
 
+
+
+
+
 	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, 100, &bstd, pam_p, pmm_p);
 
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
@@ -256,6 +261,35 @@ int main()
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
+
+
+
+
+
+	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
+
+
+
+
+
+	discard_from_blob(root_page_id, &(bptrs[0]), 300, &bstd, pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
+
+	discard_from_blob(root_page_id, &(bptrs[0]), 100, &bstd, pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 120, &bstd, pam_p);
+
+	discard_from_blob(root_page_id, &(bptrs[0]), 200, &bstd, pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
+
+	discard_from_blob(root_page_id, &(bptrs[0]), 482, &bstd, pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
+
+
+
 
 	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
 
