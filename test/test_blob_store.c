@@ -19,6 +19,37 @@
 const void* transaction_id = NULL;
 int abort_error = 0;
 
+typedef struct fix_entry fix_entry;
+struct fix_entry
+{
+	uint32_t unused_space;
+	uint64_t page_id;
+};
+
+uint32_t fix_entries_size = 0;
+fix_entry fix_entries[2048];
+
+void fix_notify(void* context, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id)
+{
+	fix_entries[fix_entries_size++] = (fix_entry){unused_space, page_id};
+}
+
+#define FIX_NOTIFIER &((heap_table_notifier){NULL, fix_notify})
+
+void fix_all_entries(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
+{
+	for(uint32_t i = 0; i < fix_entries_size; i++)
+	{
+		fix_unused_space_in_heap_table(root_page_id, fix_entries[i].unused_space, fix_entries[i].page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
+	fix_entries_size = 0;
+}
+
 typedef struct blob_pointer blob_pointer;
 struct blob_pointer
 {
@@ -28,6 +59,131 @@ struct blob_pointer
 	uint64_t tail_page_id;
 	uint32_t tail_tuple_index;
 };
+
+blob_pointer bptrs[16];
+
+void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint32_t data_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p, page_modification_methods* pmm_p)
+{
+	blob_store_write_iterator* bswi_p = get_new_blob_store_write_iterator(root_page_id, bptr->head_page_id, bptr->head_tuple_index, bptr->tail_page_id, bptr->tail_tuple_index, bstd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	while(data_size > 0)
+	{
+		uint32_t bytes_appended = append_to_tail_in_blob(bswi_p, FIX_NOTIFIER, data, data_size, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		data += bytes_appended;
+		data_size -= bytes_appended;
+	}
+
+	bptr->head_page_id = get_head_position_in_blob(bswi_p, &(bptr->head_tuple_index));
+	uint32_t tail_byte_index;
+	bptr->tail_page_id = get_tail_position_in_blob(bswi_p, &(bptr->tail_tuple_index), &tail_byte_index);
+
+	delete_blob_store_write_iterator(bswi_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
+void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p, page_modification_methods* pmm_p)
+{
+	blob_store_write_iterator* bswi_p = get_new_blob_store_write_iterator(root_page_id, bptr->head_page_id, bptr->head_tuple_index, bptr->tail_page_id, bptr->tail_tuple_index, bstd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	while(data_size > 0)
+	{
+		uint32_t bytes_discarded = discard_from_head_in_blob(bswi_p, FIX_NOTIFIER, data_size, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		data_size -= bytes_discarded;
+	}
+
+	bptr->head_page_id = get_head_position_in_blob(bswi_p, &(bptr->head_tuple_index));
+	uint32_t tail_byte_index;
+	bptr->tail_page_id = get_tail_position_in_blob(bswi_p, &(bptr->tail_tuple_index), &tail_byte_index);
+
+	delete_blob_store_write_iterator(bswi_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
+void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, uint32_t batch_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
+{
+	blob_store_read_iterator* bsri_p = get_new_blob_store_read_iterator(page_id, tuple_index, byte_index, bstd_p, pam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	if(batch_size == 0) // peek and print
+	{
+		while(1)
+		{
+			uint32_t bytes_peeked;
+			const char* bytes = peek_in_blob(bsri_p, &bytes_peeked, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			printf("<%*.s>\n", bytes_peeked, bytes);
+			if(bytes_peeked == 0)
+				break;
+		}
+	}
+	else // read and print
+	{
+		char* batched_bytes = malloc(batch_size);
+
+		while(1)
+		{
+			uint32_t bytes_read = read_from_blob(bsri_p, batched_bytes, batch_size, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
+			printf("<%*.s>\n", bytes_read, batched_bytes);
+			if(bytes_read == 0)
+				break;
+		}
+
+		free(batched_bytes);
+	}
+
+	delete_blob_store_read_iterator(bsri_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+}
+
+void print_blob(blob_pointer* bptr, uint32_t batch_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
+{
+	print_blob2(bptr->head_page_id, bptr->head_tuple_index, 0, batch_size, bstd_p, pam_p);
+}
 
 int main()
 {
@@ -45,6 +201,10 @@ int main()
 
 	// print the generated blob_store tuple defs
 	print_blob_store_tuple_definitions(&bstd);
+
+	// zero initialize bptrs
+	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
+		bptrs[i] = (blob_pointer){pam_p->pas.NULL_PAGE_ID, 0, pam_p->pas.NULL_PAGE_ID, 0};
 
 	// create a blob_store
 	uint64_t root_page_id = get_new_blob_store(&bstd, pam_p, pmm_p, transaction_id, &abort_error);
