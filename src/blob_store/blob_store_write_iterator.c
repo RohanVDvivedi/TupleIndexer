@@ -95,7 +95,42 @@ uint64_t get_tail_position_in_blob(const blob_store_write_iterator* bswi_p, uint
 	return bswi_p->tail_page_id;
 }
 
-uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error);
+uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
+{
+	int was_empty = is_empty_blob_in_blob_store(bswi_p);
+
+	// if the blob is not empty, then tail must exists, if not we fail
+	if(!was_empty)
+		if(bswi_p->tail_page_id == bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
+			return 0;
+
+	uint32_t bytes_appended = 0;
+
+	// append to existing tail_chunk
+	if((bytes_appended == 0) && (bswi_p->tail_page_id != bswi_p->bstd_p->pas_p->NULL_PAGE_ID) && (!(bswi_p->is_tail_page_full)))
+	{
+	}
+
+	// if nothing was appended, we need to add a new chunk
+	if(bytes_appended == 0)
+	{
+		if(data_size >= bswi_p->max_data_bytes_in_chunk) // add a new full page as a new chunk having the only chunk as it's only tuple
+		{
+		}
+		else // find a page with enough free space to insert the chunk in it
+		{
+		}
+	}
+
+	// the the blob was earlier was empty, we need to make the head and tail point to the same only chunk
+	if(was_empty)
+	{
+		bswi_p->head_page_id = bswi_p->tail_page_id;
+		bswi_p->head_tuple_index = bswi_p->tail_tuple_index;
+	}
+
+	return bytes_appended'
+}
 
 uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, uint32_t data_size, const void* transaction_id, int* abort_error)
 {
