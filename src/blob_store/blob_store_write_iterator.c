@@ -168,7 +168,47 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 		uint64_t tail_page_id;
 		uint64_t tail_tuple_index;
 
-		if(data_size >= bswi_p->bstd_p->max_data_bytes_in_chunk) // add a new full page as a new chunk having the only chunk as it's only tuple
+		if(bytes_appended == 0 && data_size < bswi_p->bstd_p->max_data_bytes_in_chunk) // find a page with enough free space to insert the chunk in it
+		{
+			uint32_t unused_space_in_entry;
+
+			uint32_t required_unused_space = bswi_p->bstd_p->min_chunk_size - 1 + data_size;
+
+			tail_page = find_heap_page_with_enough_unused_space_from_heap_table(bswi_p->root_page_id, required_unused_space, &unused_space_in_entry, notify_wrong_entry, &(bswi_p->bstd_p->httd), bswi_p->pam_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+
+			// move further only if a page with large enough space is found
+			if(!is_persistent_page_NULL(&tail_page, bswi_p->pam_p))
+			{
+				tail_page_id = tail_page.page_id;
+
+				bytes_appended = data_size;
+
+				// make chunk large enough to accomodate the remaining bytes
+				void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
+				initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
+
+				// insert it
+				uint32_t possible_insertion_index = 0;
+				tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
+				free(chunk);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				// notify that the unused space changed
+				if(notify_wrong_entry)
+					notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, unused_space_in_entry, tail_page_id);
+
+				release_lock_on_persistent_page(bswi_p->pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+			}
+		}
+
+		// if still no success (bytes_appended == 0), allocate a new page for the new tail chunk
+
+		if(bytes_appended == 0) // add a new full page as a new chunk having the only chunk as it's only tuple
 		{
 			// this new page will only accomodate the new chunk
 			bytes_appended = bswi_p->bstd_p->max_data_bytes_in_chunk;
@@ -197,9 +237,6 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 			release_lock_on_persistent_page(bswi_p->pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
-		}
-		else // find a page with enough free space to insert the chunk in it
-		{
 		}
 
 		// update bswi_p's tail pointer
