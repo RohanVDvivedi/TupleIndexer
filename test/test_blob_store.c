@@ -314,6 +314,10 @@ int main()
 	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
 
 
+	// print staring from a random partial page
+	print_blob2(bptrs[1].head_page_id, bptrs[1].head_tuple_index, 6, 0, &bstd, pam_p);
+
+
 
 
 	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
