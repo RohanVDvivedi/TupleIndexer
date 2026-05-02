@@ -252,17 +252,20 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 		// now update the pointer on the old tail chunk
 
 		// get write lock on the tail page
-		old_tail_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, old_tail_page_id, WRITE_LOCK, abort_error);
-		if(*abort_error)
-			goto ABORT_ERROR;
+		if(old_tail_page_id != bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
+		{
+			old_tail_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, old_tail_page_id, WRITE_LOCK, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
 
-		set_next_chunk_pointer_in_ppage(&old_tail_page, old_tail_tuple_index, tail_page_id, tail_tuple_index, bswi_p->bstd_p, bswi_p->pmm_p, transaction_id, abort_error);
-		if(*abort_error)
-			goto ABORT_ERROR;
+			set_next_chunk_pointer_in_ppage(&old_tail_page, old_tail_tuple_index, tail_page_id, tail_tuple_index, bswi_p->bstd_p, bswi_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
 
-		release_lock_on_persistent_page(bswi_p->pam_p, transaction_id, &old_tail_page, NONE_OPTION, abort_error);
-		if(*abort_error)
-			goto ABORT_ERROR;
+			release_lock_on_persistent_page(bswi_p->pam_p, transaction_id, &old_tail_page, NONE_OPTION, abort_error);
+			if(*abort_error)
+				goto ABORT_ERROR;
+		}
 	}
 
 	// the the blob was earlier was empty, we need to make the head and tail point to the same only chunk
