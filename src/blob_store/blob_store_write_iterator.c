@@ -142,8 +142,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 			bytes_appended = min(bytes_appendable, data_size);
 
 			// clone the tail_chunk
-			uint32_t tail_chunk_size = get_tuple_size(bswi_p->bstd_p->chunk_tuple_def, tail_chunk) + bytes_appended;
-			void* cloned_tail_chunk = malloc(tail_chunk_size);
+			uint32_t tail_chunk_size = get_tuple_size(bswi_p->bstd_p->chunk_tuple_def, tail_chunk);
+			void* cloned_tail_chunk = malloc(tail_chunk_size + bytes_appended);
 			memory_move(cloned_tail_chunk, tail_chunk, tail_chunk_size);
 
 			bswi_p->tail_byte_index += bytes_appended;
