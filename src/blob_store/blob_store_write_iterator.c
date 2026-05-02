@@ -144,6 +144,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 			void* cloned_tail_chunk = malloc(tail_chunk_size);
 			memory_move(cloned_tail_chunk, tail_chunk, tail_chunk_size);
 
+			bswi_p->tail_byte_index += bytes_appended;
+
 			// append to it bytes_appended number of bytes
 			append_bytes_to_back_of_chunk(cloned_tail_chunk, data, bytes_appended, bytes_appended, bswi_p->bstd_p);
 
@@ -189,6 +191,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 				void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
 				initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
 
+				bswi_p->tail_byte_index = bytes_appended;
+
 				// insert it
 				uint32_t possible_insertion_index = 0;
 				tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
@@ -222,6 +226,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 			// make chunk large enough to fit the page
 			void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
 			initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
+
+			bswi_p->tail_byte_index = bytes_appended;
 
 			uint32_t possible_insertion_index = 0;
 			tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
@@ -325,6 +331,9 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap
 			goto ABORT_ERROR;
 
 		bytes_discarded = data_size;
+
+		if(bswi_p->head_page_id == bswi_p->tail_page_id)
+			bswi_p->tail_byte_index -= bytes_discarded;
 	}
 	else // discard the chunk
 	{
