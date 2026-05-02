@@ -17,7 +17,7 @@ void set_next_chunk_pointer(void* chunk, uint64_t next_page_id, uint32_t next_tu
 
 // max_size_increment_allowed is the number of unused bytes on the page
 // number of appended bytes are returned
-uint32_t append_bytes_to_back_of_chunk(void* chunk, void* data, uint32_t data_size, uint32_t max_size_increment_allowed, const blob_store_tuple_defs* bstd_p);
+uint32_t append_bytes_to_back_of_chunk(void* chunk, const void* data, uint32_t data_size, uint32_t max_size_increment_allowed, const blob_store_tuple_defs* bstd_p);
 
 // atmost data_size number of bytes are discarded
 // number of bytes discarded are returned

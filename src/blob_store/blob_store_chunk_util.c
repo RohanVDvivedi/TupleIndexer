@@ -40,7 +40,7 @@ void set_next_chunk_pointer(void* chunk, uint64_t next_page_id, uint32_t next_tu
 	set_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(2), chunk, &(const datum){.uint_value = next_tuple_index}, 0);
 }
 
-uint32_t append_bytes_to_back_of_chunk(void* chunk, void* data, uint32_t data_size, uint32_t max_size_increment_allowed, const blob_store_tuple_defs* bstd_p)
+uint32_t append_bytes_to_back_of_chunk(void* chunk, const void* data, uint32_t data_size, uint32_t max_size_increment_allowed, const blob_store_tuple_defs* bstd_p)
 {
 	uint32_t bytes_appended = min(get_max_size_increment_allowed_for_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk), max_size_increment_allowed);
 
