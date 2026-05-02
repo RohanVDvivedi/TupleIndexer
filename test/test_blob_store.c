@@ -58,6 +58,8 @@ struct blob_pointer
 
 	uint64_t tail_page_id;
 	uint32_t tail_tuple_index;
+
+	uint32_t bytes_appended;
 };
 
 blob_pointer bptrs[16];
@@ -74,6 +76,7 @@ void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint3
 	while(data_size > 0)
 	{
 		uint32_t bytes_appended = append_to_tail_in_blob(bswi_p, FIX_NOTIFIER, data, data_size, transaction_id, &abort_error);
+		printf("%u bytes appended\n", bytes_appended);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -81,6 +84,7 @@ void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint3
 		}
 		data += bytes_appended;
 		data_size -= bytes_appended;
+		bptr->bytes_appended += bytes_appended;
 	}
 
 	bptr->head_page_id = get_head_position_in_blob(bswi_p, &(bptr->head_tuple_index));
@@ -107,6 +111,7 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 	while(data_size > 0)
 	{
 		uint32_t bytes_discarded = discard_from_head_in_blob(bswi_p, FIX_NOTIFIER, data_size, transaction_id, &abort_error);
+		printf("%u bytes discarded\n", bytes_discarded);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -185,6 +190,8 @@ void print_blob(blob_pointer* bptr, uint32_t batch_size, const blob_store_tuple_
 	print_blob2(bptr->head_page_id, bptr->head_tuple_index, 0, batch_size, bstd_p, pam_p);
 }
 
+char* data1 = "In 1995, a small manufacturing company was struggling to stay afloat. Employee morale was low, production costs were high, and competition was fierce. Then, a new CEO, John, took the helm. He implemented a series of bold changes, including investing in new technology, implementing lean manufacturing principles, and fostering a culture of innovation. The transformation was slow but steady. Within 5 years, the company had reduced production costs by 15% and increased profits by 10%. Over the next 15 years, the company continued to grow and evolve, expanding into new markets and launching innovative products. By 2015, the company had become a global leader in its industry, with a workforce of over 5,000 employees and annual revenue of $1 billion. John's leadership and vision had transformed the company from a struggling enterprise into a thriving success story.";
+
 int main()
 {
 	/* SETUP STARTED */
@@ -204,7 +211,7 @@ int main()
 
 	// zero initialize bptrs
 	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
-		bptrs[i] = (blob_pointer){pam_p->pas.NULL_PAGE_ID, 0, pam_p->pas.NULL_PAGE_ID, 0};
+		bptrs[i] = (blob_pointer){pam_p->pas.NULL_PAGE_ID, 0, pam_p->pas.NULL_PAGE_ID, 0, 0};
 
 	// create a blob_store
 	uint64_t root_page_id = get_new_blob_store(&bstd, pam_p, pmm_p, transaction_id, &abort_error);
@@ -215,6 +222,32 @@ int main()
 	}
 
 	// print whole of blob store
+	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
+
+	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, 100, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
+
+	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, 300, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 120, &bstd, pam_p);
+
+	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, 200, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
+
+	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, strlen(data1) - bptrs[0].bytes_appended, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
+
 	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
 
 	/* CLEANUP */
