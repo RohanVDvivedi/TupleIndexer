@@ -67,7 +67,7 @@ struct fix_entry
 uint32_t fix_entries_size = 0;
 fix_entry fix_entries[2048];
 
-void fix_notify(void* context, uint32_t unused_space, uint64_t page_id)
+void fix_notify(void* context, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id)
 {
 	fix_entries[fix_entries_size++] = (fix_entry){unused_space, page_id};
 }
@@ -109,7 +109,7 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 				}
 				else
 				{
-					fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
+					fix_notify(NULL, root_page_id, unused_space_in_entry, heap_page.page_id);
 				}
 				release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 				if(abort_error)
@@ -173,7 +173,7 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 		}
 		else
 		{
-			fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
+			fix_notify(NULL, root_page_id, unused_space_in_entry, heap_page.page_id);
 		}
 		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 		if(abort_error)
@@ -222,7 +222,7 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 			break;
 
 		if(entry_needs_fixing)
-			fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
+			fix_notify(NULL, root_page_id, unused_space_in_entry, heap_page.page_id);
 
 		int removed = 0;
 
@@ -256,7 +256,7 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 		}
 
 		if(removed)
-			fix_notify(NULL, unused_space_in_entry, heap_page.page_id);
+			fix_notify(NULL, root_page_id, unused_space_in_entry, heap_page.page_id);
 
 		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 		if(abort_error)
