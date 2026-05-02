@@ -56,7 +56,7 @@ typedef struct heap_table_notifier heap_table_notifier;
 struct heap_table_notifier
 {
 	void* context;
-	void (*notify)(void* context, uint32_t unused_space, uint64_t page_id);
+	void (*notify)(void* context, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id);
 };
 
 // write lock and get a heap_page from the heap_table, that has unused_space >= required_unused_space

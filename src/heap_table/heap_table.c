@@ -280,7 +280,7 @@ persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t
 
 		// make sure if the fix is needed, if so notify it
 		if(is_fix_needed && notify_wrong_entry != NULL)
-			notify_wrong_entry->notify(notify_wrong_entry->context, (*unused_space_in_entry), ppage.page_id);
+			notify_wrong_entry->notify(notify_wrong_entry->context, root_page_id, (*unused_space_in_entry), ppage.page_id);
 
 		// we found the right entry, some page with just enough unused_space
 		if(get_unused_space_on_heap_page(&ppage, httd_p->pas_p, httd_p->record_def) >= required_unused_space)
