@@ -36,8 +36,8 @@ blob_store_read_iterator* get_new_blob_store_read_iterator(uint64_t head_page_id
 	if(bsri_p == NULL)
 		exit(-1);
 
-	if(head_page_id == bsri_p->bstd_p->pas_p->NULL_PAGE_ID)
-		bsri_p->curr_page = get_NULL_persistent_page(bsri_p->pam_p);
+	if(head_page_id == bstd_p->pas_p->NULL_PAGE_ID)
+		bsri_p->curr_page = get_NULL_persistent_page(pam_p);
 	else
 	{
 		bsri_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, READ_LOCK, abort_error);
@@ -49,9 +49,9 @@ blob_store_read_iterator* get_new_blob_store_read_iterator(uint64_t head_page_id
 	}
 	bsri_p->curr_tuple_index = curr_tuple_index;
 	bsri_p->curr_byte_index = curr_byte_index;
-	refresh_unread_chunk_data_for_blob_store_read_iterator(bsri_p);
 	bsri_p->bstd_p = bstd_p;
 	bsri_p->pam_p = pam_p;
+	refresh_unread_chunk_data_for_blob_store_read_iterator(bsri_p);
 
 	return bsri_p;
 }
@@ -76,9 +76,9 @@ blob_store_read_iterator* clone_blob_store_read_iterator(const blob_store_read_i
 	}
 	clone_p->curr_tuple_index = bsri_p->curr_tuple_index;
 	clone_p->curr_byte_index = bsri_p->curr_byte_index;
-	refresh_unread_chunk_data_for_blob_store_read_iterator(clone_p);
 	clone_p->bstd_p = bsri_p->bstd_p;
 	clone_p->pam_p = bsri_p->pam_p;
+	refresh_unread_chunk_data_for_blob_store_read_iterator(clone_p);
 
 	return clone_p;
 }

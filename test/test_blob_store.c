@@ -143,6 +143,7 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 
 	if(batch_size == 0) // peek and print
 	{
+		printf("PEEK_PRINT\n");
 		while(1)
 		{
 			uint32_t bytes_peeked;
@@ -152,15 +153,22 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 				printf("ABORTED\n");
 				exit(-1);
 			}
-			printf("<%*.s>\n", bytes_peeked, bytes);
+			printf("<%.*s>\n", bytes_peeked, bytes);
 			if(bytes_peeked == 0)
 				break;
+			read_from_blob(bsri_p, NULL, bytes_peeked, transaction_id, &abort_error);
+			if(abort_error)
+			{
+				printf("ABORTED\n");
+				exit(-1);
+			}
 		}
 	}
 	else // read and print
 	{
 		char* batched_bytes = malloc(batch_size);
 
+		printf("READ_PRINT\n");
 		while(1)
 		{
 			uint32_t bytes_read = read_from_blob(bsri_p, batched_bytes, batch_size, transaction_id, &abort_error);
@@ -169,7 +177,7 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 				printf("ABORTED\n");
 				exit(-1);
 			}
-			printf("<%*.s>\n", bytes_read, batched_bytes);
+			printf("<%.*s>\n", bytes_read, batched_bytes);
 			if(bytes_read == 0)
 				break;
 		}

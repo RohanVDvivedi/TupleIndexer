@@ -30,6 +30,10 @@ blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_
 	bswi_p->tail_byte_index = 0;
 	bswi_p->is_tail_page_full = 0;
 
+	bswi_p->bstd_p = bstd_p;
+	bswi_p->pam_p = pam_p;
+	bswi_p->pmm_p = pmm_p;
+
 	// if there is tail_page_id provided, compute tail_byte_index and is_tail_page_full
 	if(tail_page_id != bstd_p->pas_p->NULL_PAGE_ID)
 	{
@@ -71,10 +75,6 @@ blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_
 			return NULL;
 		}
 	}
-
-	bswi_p->bstd_p = bstd_p;
-	bswi_p->pam_p = pam_p;
-	bswi_p->pmm_p = pmm_p;
 
 	return bswi_p;
 }
