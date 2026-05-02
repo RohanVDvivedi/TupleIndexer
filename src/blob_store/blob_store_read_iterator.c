@@ -140,7 +140,7 @@ uint32_t read_from_blob(blob_store_read_iterator* bsri_p, char* data, uint32_t d
 		}
 
 		// if there is still nothing break out of the loop
-		if((is_datum_NULL(&(bsri_p->unread_chunk_data)) || (bsri_p->unread_chunk_data.binary_size = 0)))
+		if((is_datum_NULL(&(bsri_p->unread_chunk_data)) || (bsri_p->unread_chunk_data.binary_size == 0)))
 			break;
 
 		// figure the number of bytes to read in this iteration
@@ -182,7 +182,7 @@ const char* peek_in_blob(blob_store_read_iterator* bsri_p, uint32_t* data_size, 
 		}
 
 		// if there is still nothing break out of the loop
-		if((is_datum_NULL(&(bsri_p->unread_chunk_data)) || (bsri_p->unread_chunk_data.binary_size = 0)))
+		if((is_datum_NULL(&(bsri_p->unread_chunk_data)) || (bsri_p->unread_chunk_data.binary_size == 0)))
 			break;
 
 		data = bsri_p->unread_chunk_data.binary_value;
