@@ -325,7 +325,7 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap
 		memory_move(cloned_head_chunk, head_chunk, head_chunk_size);
 
 		// discard bytes from its (clone's) front
-		discard_bytes_from_front_of_chunk(cloned_head_chunk, data_bytes_in_head_chunk, bswi_p->bstd_p);
+		discard_bytes_from_front_of_chunk(cloned_head_chunk, data_size, bswi_p->bstd_p);
 
 		// update this head_chunk with it's clone
 		update_tuple_on_persistent_page_resiliently(bswi_p->pmm_p, transaction_id, &head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_tuple_index, cloned_head_chunk, abort_error);
