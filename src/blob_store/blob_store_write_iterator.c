@@ -215,7 +215,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 		if(bytes_appended == 0) // add a new full page as a new chunk having the only chunk as it's only tuple
 		{
 			// this new page will only accomodate the new chunk
-			bytes_appended = bswi_p->bstd_p->max_data_bytes_in_chunk;
+			bytes_appended = min(bswi_p->bstd_p->max_data_bytes_in_chunk, data_size);
 
 			// grab a new tail_page
 			tail_page = get_new_heap_page_with_write_lock(bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def, bswi_p->pam_p, bswi_p->pmm_p, transaction_id, abort_error);
