@@ -304,6 +304,8 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap
 	if(*abort_error)
 		return 0;
 
+	uint32_t old_head_page_unused_space = get_unused_space_on_heap_page(&head_page, bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def);
+
 	// must not return NULL, this tuple must exist
 	const void* head_chunk = get_nth_tuple_on_persistent_page(&head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_tuple_index);
 
@@ -333,6 +335,10 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap
 		if(*abort_error)
 			goto ABORT_ERROR;
 
+		// notify that the unused space changed
+		if(notify_wrong_entry)
+			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, bswi_p->head_page_id);
+
 		bytes_discarded = data_size;
 
 		if(bswi_p->head_page_id == bswi_p->tail_page_id)
@@ -342,8 +348,6 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap
 	{
 		uint64_t old_head_page_id = bswi_p->head_page_id;
 		uint32_t old_head_tuple_index = bswi_p->head_tuple_index;
-
-		uint32_t old_head_page_unused_space = get_unused_space_on_heap_page(&head_page, bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def);
 
 		// fetch the new head
 		bswi_p->head_page_id = get_next_chunk_pointer(head_chunk, &(bswi_p->head_tuple_index), bswi_p->bstd_p);

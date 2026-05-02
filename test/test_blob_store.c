@@ -274,17 +274,25 @@ int main()
 
 	discard_from_blob(root_page_id, &(bptrs[0]), 300, &bstd, pam_p, pmm_p);
 
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
 	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
 
 	discard_from_blob(root_page_id, &(bptrs[0]), 100, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 120, &bstd, pam_p);
 
 	discard_from_blob(root_page_id, &(bptrs[0]), 200, &bstd, pam_p, pmm_p);
 
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
 	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
 
-	discard_from_blob(root_page_id, &(bptrs[0]), 482, &bstd, pam_p, pmm_p);
+	discard_from_blob(root_page_id, &(bptrs[0]), 1000, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
 
