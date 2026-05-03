@@ -1,7 +1,7 @@
 ** PICKED TASKS
 
 * blob_store
-  * extensive code review for write_iterator and read_iterator
+  * extensive code review for write_iterator and read_iterator, write comments for both
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
