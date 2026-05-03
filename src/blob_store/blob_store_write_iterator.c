@@ -27,54 +27,9 @@ blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_
 	bswi_p->tail_page_id = tail_page_id;
 	bswi_p->tail_tuple_index = tail_tuple_index;
 
-	bswi_p->tail_byte_index = 0;
-	bswi_p->is_tail_page_full = 0;
-
 	bswi_p->bstd_p = bstd_p;
 	bswi_p->pam_p = pam_p;
 	bswi_p->pmm_p = pmm_p;
-
-	// if there is tail_page_id provided, compute tail_byte_index and is_tail_page_full
-	if(tail_page_id != bstd_p->pas_p->NULL_PAGE_ID)
-	{
-		persistent_page tail_page = acquire_persistent_page_with_lock(pam_p, transaction_id, tail_page_id, READ_LOCK, abort_error);
-		if(*abort_error)
-		{
-			free(bswi_p);
-			return NULL;
-		}
-
-		{
-			const void* tail_chunk = get_nth_tuple_on_persistent_page(&tail_page, bstd_p->pas_p->page_size, &(bstd_p->chunk_tuple_def->size_def), tail_tuple_index);
-			if(tail_chunk == NULL)
-			{
-				free(bswi_p);
-				return NULL;
-			}
-
-			datum tail_chunk_data = get_curr_chunk_data(tail_chunk, bstd_p);
-			if(is_datum_NULL(&tail_chunk_data))
-			{
-				free(bswi_p);
-				return NULL;
-			}
-
-			bswi_p->tail_byte_index = tail_chunk_data.binary_size;
-		}
-
-		{
-			uint32_t bytes_appendable_on_tail_page = get_space_allotted_to_all_tuples_on_persistent_page(&tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def))
-				+ get_space_occupied_by_all_tuples_on_persistent_page(&tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def));
-			bswi_p->is_tail_page_full = (bytes_appendable_on_tail_page == 0);
-		}
-
-		release_lock_on_persistent_page(pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
-		if(*abort_error)
-		{
-			free(bswi_p);
-			return NULL;
-		}
-	}
 
 	return bswi_p;
 }
@@ -90,14 +45,13 @@ uint64_t get_head_position_in_blob(const blob_store_write_iterator* bswi_p, uint
 	return bswi_p->head_page_id;
 }
 
-uint64_t get_tail_position_in_blob(const blob_store_write_iterator* bswi_p, uint32_t* tail_tuple_index, uint32_t* tail_byte_index)
+uint64_t get_tail_position_in_blob(const blob_store_write_iterator* bswi_p, uint32_t* tail_tuple_index)
 {
-	(*tail_byte_index) = bswi_p->tail_byte_index;
 	(*tail_tuple_index) = bswi_p->tail_tuple_index;
 	return bswi_p->tail_page_id;
 }
 
-uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, const char* data, uint32_t data_size, const void* transaction_id, int* abort_error)
+uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* data, uint32_t data_size, chunk_append_position* app_pos, const heap_table_notifier* notify_wrong_entry, const void* transaction_id, int* abort_error)
 {
 	// no bytes to append
 	if(data_size == 0)
@@ -116,7 +70,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 	persistent_page tail_page = get_NULL_persistent_page(bswi_p->pam_p);
 
 	// append to existing tail_chunk
-	if((bytes_appended == 0) && (bswi_p->tail_page_id != bswi_p->bstd_p->pas_p->NULL_PAGE_ID) && (!(bswi_p->is_tail_page_full)))
+	if((bytes_appended == 0) && (bswi_p->tail_page_id != bswi_p->bstd_p->pas_p->NULL_PAGE_ID))
 	{
 		// get write lock on the tail page
 		old_tail_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, bswi_p->tail_page_id, WRITE_LOCK, abort_error);
@@ -127,17 +81,24 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 		uint32_t bytes_appendable = get_space_allotted_to_all_tuples_on_persistent_page(&old_tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def))
 			- get_space_occupied_by_all_tuples_on_persistent_page(&old_tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def));
 
-		if(bytes_appendable == 0)
-		{
-			// update the hint
-			bswi_p->is_tail_page_full = 1;
-		}
-		else
+		if(bytes_appendable > 0)
 		{
 			uint32_t unused_space_in_old_tail_page = get_unused_space_on_heap_page(&old_tail_page, bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def);
 
 			// get the tail_chunk
 			const void* tail_chunk = get_nth_tuple_on_persistent_page(&old_tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->tail_tuple_index);
+
+			// update app_pos, poiunting to the end of the current chunk
+			if(app_pos)
+			{
+				app_pos->page_id = bswi_p->tail_page_id;
+				app_pos->tuple_index = bswi_p->tail_tuple_index;
+				app_pos->byte_index = 0;
+
+				datum tail_chunk_data = get_curr_chunk_data(tail_chunk, bswi_p->bstd_p);
+				if(!is_datum_NULL(&tail_chunk_data))
+					app_pos->byte_index = tail_chunk_data.binary_size;
+			}
 
 			bytes_appended = min(bytes_appendable, data_size);
 
@@ -145,8 +106,6 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 			uint32_t tail_chunk_size = get_tuple_size(bswi_p->bstd_p->chunk_tuple_def, tail_chunk);
 			void* cloned_tail_chunk = malloc(tail_chunk_size + bytes_appended);
 			memory_move(cloned_tail_chunk, tail_chunk, tail_chunk_size);
-
-			bswi_p->tail_byte_index += bytes_appended;
 
 			// append to it bytes_appended number of bytes
 			append_bytes_to_back_of_chunk(cloned_tail_chunk, data, bytes_appended, bytes_appended, bswi_p->bstd_p);
@@ -197,8 +156,6 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 				void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
 				initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
 
-				bswi_p->tail_byte_index = bytes_appended;
-
 				// insert it
 				uint32_t possible_insertion_index = 0;
 				tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
@@ -233,8 +190,6 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 			void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
 			initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
 
-			bswi_p->tail_byte_index = bytes_appended;
-
 			uint32_t possible_insertion_index = 0;
 			tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
 			free(chunk);
@@ -254,6 +209,14 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 		// update bswi_p's tail pointer
 		bswi_p->tail_page_id = tail_page_id;
 		bswi_p->tail_tuple_index = tail_tuple_index;
+
+		// update app_pos
+		if(app_pos)
+		{
+			app_pos->page_id = tail_page_id;
+			app_pos->tuple_index = tail_tuple_index;
+			app_pos->byte_index = 0;
+		}
 
 		// now update the pointer on the old tail chunk
 
@@ -291,7 +254,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const heap_ta
 	return 0;
 }
 
-uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap_table_notifier* notify_wrong_entry, uint32_t data_size, const void* transaction_id, int* abort_error)
+uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t data_size, const heap_table_notifier* notify_wrong_entry, const void* transaction_id, int* abort_error)
 {
 	// no bytes to discard
 	if(data_size == 0)
@@ -346,9 +309,6 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap
 			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, bswi_p->head_page_id);
 
 		bytes_discarded = data_size;
-
-		if(bswi_p->head_page_id == bswi_p->tail_page_id)
-			bswi_p->tail_byte_index -= bytes_discarded;
 	}
 	else // discard the chunk
 	{
@@ -375,9 +335,6 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, const heap
 		{
 			bswi_p->tail_page_id = bswi_p->bstd_p->pas_p->NULL_PAGE_ID;
 			bswi_p->tail_tuple_index = 0;
-
-			bswi_p->tail_byte_index = 0;
-			bswi_p->is_tail_page_full = 0;
 		}
 	}
 
