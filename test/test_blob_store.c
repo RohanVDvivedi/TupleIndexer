@@ -75,8 +75,9 @@ void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint3
 
 	while(data_size > 0)
 	{
-		uint32_t bytes_appended = append_to_tail_in_blob(bswi_p, FIX_NOTIFIER, data, data_size, transaction_id, &abort_error);
-		printf("%u bytes appended\n", bytes_appended);
+		chunk_append_position pos;
+		uint32_t bytes_appended = append_to_tail_in_blob(bswi_p, data, data_size, &pos, FIX_NOTIFIER, transaction_id, &abort_error);
+		printf("%u bytes appended @ (%lu, %u, %u)\n", bytes_appended, pos.page_id, pos.tuple_index, pos.byte_index);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -88,8 +89,7 @@ void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint3
 	}
 
 	bptr->head_page_id = get_head_position_in_blob(bswi_p, &(bptr->head_tuple_index));
-	uint32_t tail_byte_index;
-	bptr->tail_page_id = get_tail_position_in_blob(bswi_p, &(bptr->tail_tuple_index), &tail_byte_index);
+	bptr->tail_page_id = get_tail_position_in_blob(bswi_p, &(bptr->tail_tuple_index));
 
 	delete_blob_store_write_iterator(bswi_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -110,7 +110,7 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 
 	while(data_size > 0)
 	{
-		uint32_t bytes_discarded = discard_from_head_in_blob(bswi_p, FIX_NOTIFIER, data_size, transaction_id, &abort_error);
+		uint32_t bytes_discarded = discard_from_head_in_blob(bswi_p, data_size, FIX_NOTIFIER, transaction_id, &abort_error);
 		printf("%u bytes discarded\n", bytes_discarded);
 		if(abort_error)
 		{
@@ -122,8 +122,7 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 	}
 
 	bptr->head_page_id = get_head_position_in_blob(bswi_p, &(bptr->head_tuple_index));
-	uint32_t tail_byte_index;
-	bptr->tail_page_id = get_tail_position_in_blob(bswi_p, &(bptr->tail_tuple_index), &tail_byte_index);
+	bptr->tail_page_id = get_tail_position_in_blob(bswi_p, &(bptr->tail_tuple_index));
 
 	delete_blob_store_write_iterator(bswi_p, transaction_id, &abort_error);
 	if(abort_error)
