@@ -83,6 +83,9 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 		if(bytes_appendable > 0)
 		{
+			bytes_appended = min(bytes_appendable, data_size);
+
+			// this is to perform notify if the unsed_space changes
 			uint32_t unused_space_in_old_tail_page = get_unused_space_on_heap_page(&old_tail_page, bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def);
 
 			// get the tail_chunk
@@ -99,8 +102,6 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 				if(!is_datum_NULL(&tail_chunk_data))
 					app_pos->byte_index = tail_chunk_data.binary_size;
 			}
-
-			bytes_appended = min(bytes_appendable, data_size);
 
 			// clone the tail_chunk
 			uint32_t tail_chunk_size = get_tuple_size(bswi_p->bstd_p->chunk_tuple_def, tail_chunk);
@@ -137,10 +138,10 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 		if(bytes_appended == 0 && data_size < bswi_p->bstd_p->max_data_bytes_in_chunk) // find a page with enough free space to insert the chunk in it
 		{
-			uint32_t unused_space_in_entry;
-
+			// space required for the new small chunk
 			uint32_t required_unused_space = bswi_p->bstd_p->min_chunk_size - 1 + data_size;
 
+			uint32_t unused_space_in_entry;
 			tail_page = find_heap_page_with_enough_unused_space_from_heap_table(bswi_p->root_page_id, required_unused_space, &unused_space_in_entry, notify_wrong_entry, &(bswi_p->bstd_p->httd), bswi_p->pam_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
@@ -148,15 +149,16 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 			// move further only if a page with large enough space is found
 			if(!is_persistent_page_NULL(&tail_page, bswi_p->pam_p))
 			{
-				tail_page_id = tail_page.page_id;
-
 				bytes_appended = data_size;
 
 				// make chunk large enough to accomodate the remaining bytes
 				void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
 				initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
 
-				// insert it
+				// initialize the tail_page_id
+				tail_page_id = tail_page.page_id;
+
+				// insert it, and get the tail_tuple_index
 				uint32_t possible_insertion_index = 0;
 				tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
 				free(chunk);
@@ -184,12 +186,15 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 			tail_page = get_new_heap_page_with_write_lock(bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def, bswi_p->pam_p, bswi_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
-			tail_page_id = tail_page.page_id;
 
 			// make chunk large enough to fit the page
 			void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
 			initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
 
+			// initialize the tail_page_id
+			tail_page_id = tail_page.page_id;
+
+			// insert it, and get the tail_tuple_index
 			uint32_t possible_insertion_index = 0;
 			tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
 			free(chunk);
@@ -220,7 +225,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 		// now update the pointer on the old tail chunk
 
-		// get write lock on the tail page
+		// get write lock on the old tail page, and update the next chunk pointer on it
 		if(old_tail_page_id != bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
 		{
 			old_tail_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, old_tail_page_id, WRITE_LOCK, abort_error);
@@ -237,7 +242,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 		}
 	}
 
-	// the the blob was earlier was empty, we need to make the head and tail point to the same only chunk
+	// the the blob was earlier empty, we need to make the head and tail point to the same only new chunk
 	if(was_empty)
 	{
 		bswi_p->head_page_id = bswi_p->tail_page_id;
