@@ -213,8 +213,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 		// update app_pos
 		if(app_pos)
 		{
-			app_pos->page_id = tail_page_id;
-			app_pos->tuple_index = tail_tuple_index;
+			app_pos->page_id = bswi_p->tail_page_id;
+			app_pos->tuple_index = bswi_p->tail_tuple_index;
 			app_pos->byte_index = 0;
 		}
 
