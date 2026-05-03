@@ -290,13 +290,15 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t d
 
 	if(data_bytes_in_head_chunk > data_size) // shrink the chunk
 	{
+		bytes_discarded = data_size;
+
 		// clone the head_chunk
 		uint32_t head_chunk_size = get_tuple_size(bswi_p->bstd_p->chunk_tuple_def, head_chunk);
 		void* cloned_head_chunk = malloc(head_chunk_size);
 		memory_move(cloned_head_chunk, head_chunk, head_chunk_size);
 
 		// discard bytes from its (clone's) front
-		discard_bytes_from_front_of_chunk(cloned_head_chunk, data_size, bswi_p->bstd_p);
+		discard_bytes_from_front_of_chunk(cloned_head_chunk, bytes_discarded, bswi_p->bstd_p);
 
 		// update this head_chunk with it's clone
 		update_tuple_on_persistent_page_resiliently(bswi_p->pmm_p, transaction_id, &head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_tuple_index, cloned_head_chunk, abort_error);
@@ -307,11 +309,11 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t d
 		// notify that the unused space changed
 		if(notify_wrong_entry)
 			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, bswi_p->head_page_id);
-
-		bytes_discarded = data_size;
 	}
 	else // discard the chunk
 	{
+		bytes_discarded = data_bytes_in_head_chunk;
+
 		uint64_t old_head_page_id = bswi_p->head_page_id;
 		uint32_t old_head_tuple_index = bswi_p->head_tuple_index;
 
@@ -326,8 +328,6 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t d
 		// notify that the unused space changed
 		if(notify_wrong_entry)
 			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, old_head_page_id);
-
-		bytes_discarded = data_bytes_in_head_chunk;
 
 		// if we destroyed the only chunk, make the tail also NULL_PAGE_ID
 		// i.e. reset tail pointer if the head_page_id just became NULL, making the blob empty
