@@ -8,19 +8,25 @@
 
 static void refresh_unread_chunk_data_for_blob_store_read_iterator(blob_store_read_iterator* bsri_p)
 {
+	// initialize unread_chunk_data, to NULL, to avert against any failures
 	bsri_p->unread_chunk_data = (*NULL_DATUM);
 
+	// failed because no page latches
 	if(is_persistent_page_NULL(&(bsri_p->curr_page), bsri_p->pam_p))
 		return;
 
+	// failed because no chunk present as the index
 	const void* chunk = get_nth_tuple_on_persistent_page(&(bsri_p->curr_page), bsri_p->bstd_p->pas_p->page_size, &(bsri_p->bstd_p->chunk_tuple_def->size_def), bsri_p->curr_tuple_index);
 	if(chunk == NULL)
 		return ;
 
 	bsri_p->unread_chunk_data = get_curr_chunk_data(chunk, bsri_p->bstd_p);
+
+	// failed because the chunk_data is absent
 	if(is_datum_NULL(&(bsri_p->unread_chunk_data)))
 		return ;
 
+	// move the unread_chunk_data by curr_byte_index number of bytes
 	bsri_p->unread_chunk_data.binary_value += bsri_p->curr_byte_index;
 	bsri_p->unread_chunk_data.binary_size -= bsri_p->curr_byte_index;
 }
@@ -88,6 +94,7 @@ blob_store_read_iterator* clone_blob_store_read_iterator(const blob_store_read_i
 // on abort_error OR on reaching end, all page locks are released, and return value is 0
 static int goto_next_page(blob_store_read_iterator* bsri_p, const void* transaction_id, int* abort_error)
 {
+	// default initialize the next_chunk pointer
 	uint64_t next_page_id = bsri_p->bstd_p->pas_p->NULL_PAGE_ID;
 	uint32_t next_tuple_index = 0;
 
