@@ -1,8 +1,5 @@
 ** PICKED TASKS
 
-* blob_store
-  * extensive code review for write_iterator and read_iterator, write comments for both
-
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
