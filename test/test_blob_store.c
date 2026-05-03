@@ -117,6 +117,8 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 			printf("ABORTED\n");
 			exit(-1);
 		}
+		if(bytes_discarded == 0)
+			break;
 		data_size -= bytes_discarded;
 		bptr->bytes_appended -= bytes_discarded;
 	}
@@ -132,7 +134,7 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 	}
 }
 
-void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, uint32_t batch_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
+void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, uint64_t bytes_to_print, uint32_t batch_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
 {
 	blob_store_read_iterator* bsri_p = get_new_blob_store_read_iterator(page_id, tuple_index, byte_index, bstd_p, pam_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -144,7 +146,7 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 	if(batch_size == 0) // peek and print
 	{
 		printf("PEEK_PRINT\n");
-		while(1)
+		while(bytes_to_print > 0)
 		{
 			uint32_t bytes_peeked;
 			const char* bytes = peek_in_blob(bsri_p, &bytes_peeked, transaction_id, &abort_error);
@@ -156,6 +158,7 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 			printf("<%.*s>\n", bytes_peeked, bytes);
 			if(bytes_peeked == 0)
 				break;
+			bytes_to_print -= bytes_peeked;
 			read_from_blob(bsri_p, NULL, bytes_peeked, transaction_id, &abort_error);
 			if(abort_error)
 			{
@@ -169,7 +172,7 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 		char* batched_bytes = malloc(batch_size);
 
 		printf("READ_PRINT\n");
-		while(1)
+		while(bytes_to_print > 0)
 		{
 			uint32_t bytes_read = read_from_blob(bsri_p, batched_bytes, batch_size, transaction_id, &abort_error);
 			if(abort_error)
@@ -180,6 +183,7 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 			printf("<%.*s>\n", bytes_read, batched_bytes);
 			if(bytes_read == 0)
 				break;
+			bytes_to_print -= bytes_read;
 		}
 
 		free(batched_bytes);
@@ -195,7 +199,7 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 
 void print_blob(blob_pointer* bptr, uint32_t batch_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
 {
-	print_blob2(bptr->head_page_id, bptr->head_tuple_index, 0, batch_size, bstd_p, pam_p);
+	print_blob2(bptr->head_page_id, bptr->head_tuple_index, 0, UINT64_MAX, batch_size, bstd_p, pam_p);
 }
 
 char* data1 = "In 1995, a small manufacturing company was struggling to stay afloat. Employee morale was low, production costs were high, and competition was fierce. Then, a new CEO, John, took the helm. He implemented a series of bold changes, including investing in new technology, implementing lean manufacturing principles, and fostering a culture of innovation. The transformation was slow but steady. Within 5 years, the company had reduced production costs by 15% and increased profits by 10%. Over the next 15 years, the company continued to grow and evolve, expanding into new markets and launching innovative products. By 2015, the company had become a global leader in its industry, with a workforce of over 5,000 employees and annual revenue of $1 billion. John's leadership and vision had transformed the company from a struggling enterprise into a thriving success story."
@@ -265,6 +269,9 @@ int main()
 
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
 
+	// print staring from a random partial page
+	print_blob2(1, 0, 105, 120, 120, &bstd, pam_p);
+
 	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
 
 	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, strlen(data1) - bptrs[0].bytes_appended, &bstd, pam_p, pmm_p);
@@ -314,11 +321,40 @@ int main()
 
 
 	// print staring from a random partial page
-	print_blob2(bptrs[1].head_page_id, bptrs[1].head_tuple_index, 6, 0, &bstd, pam_p);
-
+	print_blob2(bptrs[1].head_page_id, bptrs[1].head_tuple_index, 6, UINT64_MAX, 0, &bstd, pam_p);
 
 	// print staring from a random partial page
-	print_blob2(bptrs[0].head_page_id, bptrs[0].head_tuple_index, 57, 500, &bstd, pam_p);
+	print_blob2(bptrs[0].head_page_id, bptrs[0].head_tuple_index, 57, UINT64_MAX, 500, &bstd, pam_p);
+
+
+
+
+	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
+
+
+
+
+
+
+	discard_from_blob(root_page_id, &(bptrs[0]), UINT32_MAX, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
+
+
+
+
+
+	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
+
+
+
+	append_to_blob(root_page_id, &(bptrs[0]), "Rohan Dvivedi", 13, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[0]), 5, &bstd, pam_p);
 
 
 
