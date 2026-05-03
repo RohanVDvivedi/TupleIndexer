@@ -283,13 +283,27 @@ int main()
 
 
 
+	append_to_blob(root_page_id, &(bptrs[2]), "Rupa Dvivedi", 12, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[2]), 5, &bstd, pam_p);
+
+
+
+
+
 	print_blob(&(bptrs[1]), 5, &bstd, pam_p);
 
 
 
 
 
+
+
 	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
+
+
 
 
 
@@ -355,6 +369,11 @@ int main()
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 5, &bstd, pam_p);
+
+
+
+
+	print_blob(&(bptrs[2]), 5, &bstd, pam_p);
 
 
 
