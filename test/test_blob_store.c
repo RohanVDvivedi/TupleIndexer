@@ -453,6 +453,33 @@ int main()
 
 	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
 
+
+
+
+
+	append_to_blob(root_page_id, &(bptrs[3]), data1, 120, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[3]), 100, &bstd, pam_p);
+
+	append_to_blob(root_page_id, &(bptrs[3]), data1 + 120, 120, &bstd, pam_p, pmm_p);
+
+	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+
+	print_blob(&(bptrs[3]), 100, &bstd, pam_p);
+
+
+
+
+	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
+		printf("\n\n%d -> count(%lu)\n\n", i, count_bytes_in_blob(&(bptrs[i]), &bstd, pam_p));
+
+
+
+	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
+
+
 	/* CLEANUP */
 	// destroy blob_store
 	destroy_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
