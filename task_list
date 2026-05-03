@@ -1,9 +1,6 @@
 ** PICKED TASKS
 
 * blob_store
-  * better way to return the first byte where the first byte of payload was appended
-  * no need to track and maintain and return tail_byte_index
-  * no need to track is_tail_page_full, we will always need tail page to update it's next pointer
   * extensive code review
   * test
 
