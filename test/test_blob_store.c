@@ -202,6 +202,46 @@ void print_blob(blob_pointer* bptr, uint32_t batch_size, const blob_store_tuple_
 	print_blob2(bptr->head_page_id, bptr->head_tuple_index, 0, UINT64_MAX, batch_size, bstd_p, pam_p);
 }
 
+uint64_t count_bytes_in_blob(blob_pointer* bptr, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
+{
+	blob_store_read_iterator* bsri_p = get_new_blob_store_read_iterator(bptr->head_page_id, bptr->head_tuple_index, 0, bstd_p, pam_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	uint64_t bytes_count = 0;
+	while(1)
+	{
+		uint32_t bytes_peeked;
+		peek_in_blob(bsri_p, &bytes_peeked, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+		bytes_count += bytes_peeked;
+		if(bytes_peeked == 0)
+			break;
+		read_from_blob(bsri_p, NULL, bytes_peeked, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
+
+	delete_blob_store_read_iterator(bsri_p, transaction_id, &abort_error);
+	if(abort_error)
+	{
+		printf("ABORTED\n");
+		exit(-1);
+	}
+
+	return bytes_count;
+}
+
 char* data1 = "In 1995, a small manufacturing company was struggling to stay afloat. Employee morale was low, production costs were high, and competition was fierce. Then, a new CEO, John, took the helm. He implemented a series of bold changes, including investing in new technology, implementing lean manufacturing principles, and fostering a culture of innovation. The transformation was slow but steady. Within 5 years, the company had reduced production costs by 15% and increased profits by 10%. Over the next 15 years, the company continued to grow and evolve, expanding into new markets and launching innovative products. By 2015, the company had become a global leader in its industry, with a workforce of over 5,000 employees and annual revenue of $1 billion. John's leadership and vision had transformed the company from a struggling enterprise into a thriving success story."
 "\t\tDebt can be a major financial burden, hindering your ability to save, invest, and achieve your financial goals. Whether it's credit card debt, student loans, or a mortgage, managing debt requires discipline, planning, and a commitment to living within your means. The first step is to create a budget that accounts for your income, expenses, and debt payments. Identify areas where you can cut back on spending and allocate more money towards debt reduction. Consider using strategies like the snowball method (paying off the smallest debts first) or the avalanche method (tackling debts with the highest interest rates first) to accelerate your progress. If you're struggling to manage your debt, don't hesitate to seek professional help from a financial advisor or credit counselor. They can provide guidance on debt consolidation, negotiation with creditors, and other strategies for getting back on track.";
 
@@ -233,6 +273,11 @@ int main()
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	printf("test data1 size = %zu\n\n", strlen(data1));
+
+
+
 
 	// print whole of blob store
 	print_blob_store(root_page_id, &bstd, pam_p, transaction_id, &abort_error);
@@ -283,11 +328,26 @@ int main()
 
 
 
+
+	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
+		printf("\n\n%d -> count(%lu)\n\n", i, count_bytes_in_blob(&(bptrs[i]), &bstd, pam_p));
+
+
+
+
 	append_to_blob(root_page_id, &(bptrs[2]), "Rupa Dvivedi", 12, &bstd, pam_p, pmm_p);
 
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[2]), 5, &bstd, pam_p);
+
+
+
+
+
+
+	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
+		printf("\n\n%d -> count(%lu)\n\n", i, count_bytes_in_blob(&(bptrs[i]), &bstd, pam_p));
 
 
 
@@ -348,6 +408,9 @@ int main()
 
 
 
+	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
+		printf("\n\n%d -> count(%lu)\n\n", i, count_bytes_in_blob(&(bptrs[i]), &bstd, pam_p));
+
 
 
 	discard_from_blob(root_page_id, &(bptrs[0]), UINT32_MAX, &bstd, pam_p, pmm_p);
@@ -364,6 +427,12 @@ int main()
 
 
 
+
+	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
+		printf("\n\n%d -> count(%lu)\n\n", i, count_bytes_in_blob(&(bptrs[i]), &bstd, pam_p));
+
+
+
 	append_to_blob(root_page_id, &(bptrs[0]), "Rohan Dvivedi", 13, &bstd, pam_p, pmm_p);
 
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
@@ -375,6 +444,10 @@ int main()
 
 	print_blob(&(bptrs[2]), 5, &bstd, pam_p);
 
+
+
+	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
+		printf("\n\n%d -> count(%lu)\n\n", i, count_bytes_in_blob(&(bptrs[i]), &bstd, pam_p));
 
 
 
