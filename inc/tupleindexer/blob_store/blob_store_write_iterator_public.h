@@ -19,22 +19,19 @@ typedef struct blob_store_write_iterator blob_store_write_iterator;
 	it holds only minimal locks for both the operation and does not do latch crabbing as we are now operating with stable pointers
 */
 
-blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_id, uint64_t head_page_id, uint32_t head_tuple_index, uint64_t tail_page_id, uint32_t tail_tuple_index, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_id, tuple_pointer head_pointer, tuple_pointer tail_pointer, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // returns true only if both head and tail have NULL_PAGE_ID
 int is_empty_blob_in_blob_store(const blob_store_write_iterator* bswi_p);
 
-// returns head_page_id
-uint64_t get_head_position_in_blob(const blob_store_write_iterator* bswi_p, uint32_t* head_tuple_index);
+tuple_pointer get_head_pointer_in_blob(const blob_store_write_iterator* bswi_p);
 
-// tail_byte_index will be the size of the binary in the tail
-uint64_t get_tail_position_in_blob(const blob_store_write_iterator* bswi_p, uint32_t* tail_tuple_index);
+tuple_pointer get_tail_pointer_in_blob(const blob_store_write_iterator* bswi_p);
 
 typedef struct chunk_append_position chunk_append_position;
 struct chunk_append_position
 {
-	uint64_t page_id;
-	uint32_t tuple_index;
+	tuple_pointer chunk_pointer;
 	uint32_t byte_index;
 };
 

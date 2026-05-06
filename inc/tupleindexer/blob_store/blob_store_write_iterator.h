@@ -6,16 +6,16 @@
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
 
+#include<tupleindexer/common/tuple_pointer.h>
+
 typedef struct blob_store_write_iterator blob_store_write_iterator;
 struct blob_store_write_iterator
 {
 	uint64_t root_page_id;
 
-	uint64_t head_page_id;
-	uint32_t head_tuple_index;
+	tuple_pointer head_chunk_pointer;
 
-	uint64_t tail_page_id;
-	uint32_t tail_tuple_index;
+	tuple_pointer tail_chunk_pointer;
 
 	const blob_store_tuple_defs* bstd_p;
 

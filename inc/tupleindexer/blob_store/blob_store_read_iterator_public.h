@@ -11,7 +11,7 @@
 
 typedef struct blob_store_read_iterator blob_store_read_iterator;
 
-blob_store_read_iterator* get_new_blob_store_read_iterator(uint64_t head_page_id, uint32_t curr_tuple_index, uint32_t curr_byte_index, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+blob_store_read_iterator* get_new_blob_store_read_iterator(tuple_pointer chunk_pointer, uint32_t byte_index, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 blob_store_read_iterator* clone_blob_store_read_iterator(const blob_store_read_iterator* bsri_p, const void* transaction_id, int* abort_error);
 
@@ -29,8 +29,8 @@ uint32_t read_from_blob(blob_store_read_iterator* bsri_p, char* data, uint32_t d
 // on an abort_error all locks are released and NULL and 0 is returned
 const char* peek_in_blob(blob_store_read_iterator* bsri_p, uint32_t* data_size, const void* transaction_id, int* abort_error);
 
-// get current position of the blob_store_read_iterator, the curr_binary_index and curr_byte_index are output parameters, and the return value is the curr_page_id of the blob_store page that we are in
-uint64_t get_position_in_blob(const blob_store_read_iterator* bsri_p, uint32_t* curr_tuple_index, uint32_t* curr_byte_index);
+// get current position of the blob_store_read_iterator, curr_byte_index are output parameters, and the return value is the curr_chunk_pointer of the blob_store page that we are in
+tuple_pointer get_position_in_blob(const blob_store_read_iterator* bsri_p, uint32_t* curr_byte_index);
 
 void delete_blob_store_read_iterator(blob_store_read_iterator* bsri_p, const void* transaction_id, int* abort_error);
 

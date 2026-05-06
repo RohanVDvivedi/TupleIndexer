@@ -26,19 +26,16 @@ int init_blob_store_tuple_definitions(blob_store_tuple_defs* bstd_p, const page_
 			exit(-1);
 		(*chunk_data_type_info) = get_variable_length_binary_type("chunk_data", bstd_p->pas_p->page_size);
 
-		data_type_info* chunk_type_info = malloc(sizeof_tuple_data_type_info(3));
+		data_type_info* chunk_type_info = malloc(sizeof_tuple_data_type_info(2));
 		if(chunk_type_info == NULL)
 			exit(-1);
-		initialize_tuple_data_type_info(chunk_type_info, "chunk", 0, bstd_p->pas_p->page_size, 3);
+		initialize_tuple_data_type_info(chunk_type_info, "chunk", 0, bstd_p->pas_p->page_size, 2);
 
 		strcpy(chunk_type_info->containees[0].field_name, "chunk_data");
 		chunk_type_info->containees[0].al.type_info = chunk_data_type_info;
 
-		strcpy(chunk_type_info->containees[1].field_name, "next_page_id");
-		chunk_type_info->containees[1].al.type_info = (data_type_info*)(&(bstd_p->pas_p->page_id_type_info));
-
-		strcpy(chunk_type_info->containees[2].field_name, "next_tuple_index");
-		chunk_type_info->containees[2].al.type_info = (data_type_info*)(&(bstd_p->pas_p->tuple_index_type_info));
+		strcpy(chunk_type_info->containees[1].field_name, "next_chunk_pointer");
+		chunk_type_info->containees[1].al.type_info = (data_type_info*)(&(bstd_p->pas_p->tuple_pointer_type_info));
 
 		bstd_p->chunk_tuple_def = malloc(sizeof(tuple_def));
 		if(bstd_p->chunk_tuple_def == NULL)

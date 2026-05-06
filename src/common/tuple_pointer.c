@@ -10,6 +10,11 @@ int is_tuple_pointer_NULL(const void* tptr_tpl, const page_access_specs* pas_p)
 	return (uval.uint_value == pas_p->NULL_PAGE_ID);
 }
 
+tuple_pointer get_NULL_tuple_pointer(const page_access_specs* pas_p)
+{
+	return (tuple_pointer){.page_id = pas_p->NULL_PAGE_ID, .tuple_index = 0};
+}
+
 tuple_pointer get_tuple_pointer(const void* tptr_tpl, const page_access_specs* pas_p)
 {
 	tuple_pointer tptr;

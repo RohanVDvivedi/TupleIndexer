@@ -12,6 +12,8 @@ struct tuple_pointer
 
 int is_tuple_pointer_NULL(const void* tptr_tpl, const page_access_specs* pas_p);
 
+tuple_pointer get_NULL_tuple_pointer(const page_access_specs* pas_p);
+
 tuple_pointer get_tuple_pointer(const void* tptr_tpl, const page_access_specs* pas_p);
 
 void set_tuple_pointer(void* tptr_tpl, tuple_pointer tptr, const page_access_specs* pas_p);

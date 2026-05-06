@@ -15,7 +15,7 @@ struct blob_store_tuple_defs
 	const page_access_specs* pas_p;
 
 	// tuple_def for all chunks in the blob_store
-	// contains variable_length_binary + next_page_id + next_tuple_index
+	// contains variable_length_binary + next_chunk_pointer
 	tuple_def* chunk_tuple_def;
 
 	uint32_t min_chunk_size; // chunk with just 1 byte in it
