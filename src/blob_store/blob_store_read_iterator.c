@@ -31,7 +31,7 @@ static void refresh_unread_chunk_data_for_blob_store_read_iterator(blob_store_re
 	bsri_p->unread_chunk_data.binary_size -= bsri_p->curr_byte_index;
 }
 
-blob_store_read_iterator* get_new_blob_store_read_iterator(uint64_t head_page_id, uint32_t curr_tuple_index, uint32_t curr_byte_index, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+blob_store_read_iterator* get_new_blob_store_read_iterator(tuple_pointer chunk_pointer, uint32_t byte_index, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(bstd_p == NULL || pam_p == NULL)
@@ -42,19 +42,19 @@ blob_store_read_iterator* get_new_blob_store_read_iterator(uint64_t head_page_id
 	if(bsri_p == NULL)
 		exit(-1);
 
-	if(head_page_id == bstd_p->pas_p->NULL_PAGE_ID)
+	if(is_tuple_pointer_NULL(chunk_pointer, bstd_p->pas_p))
 		bsri_p->curr_page = get_NULL_persistent_page(pam_p);
 	else
 	{
-		bsri_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, head_page_id, READ_LOCK, abort_error);
+		bsri_p->curr_page = acquire_persistent_page_with_lock(pam_p, transaction_id, chunk_pointer.page_id, READ_LOCK, abort_error);
 		if(*abort_error)
 		{
 			free(bsri_p);
 			return NULL;
 		}
 	}
-	bsri_p->curr_tuple_index = curr_tuple_index;
-	bsri_p->curr_byte_index = curr_byte_index;
+	bsri_p->curr_tuple_index = chunk_pointer.tuple_index;
+	bsri_p->curr_byte_index = byte_index;
 	bsri_p->bstd_p = bstd_p;
 	bsri_p->pam_p = pam_p;
 	refresh_unread_chunk_data_for_blob_store_read_iterator(bsri_p);
@@ -95,17 +95,16 @@ blob_store_read_iterator* clone_blob_store_read_iterator(const blob_store_read_i
 static int goto_next_page(blob_store_read_iterator* bsri_p, const void* transaction_id, int* abort_error)
 {
 	// default initialize the next_chunk pointer
-	uint64_t next_page_id = bsri_p->bstd_p->pas_p->NULL_PAGE_ID;
-	uint32_t next_tuple_index = 0;
+	tuple_pointer next_chunk_pointer = get_NULL_tuple_pointer(bsri_p->bstd_p->pas_p);
 
-	// find the next_page_id and next_tuple_index (we already know that the next_byte_index = 0)
+	// find the next_chunk_pointer (we already know that the next_byte_index = 0)
 	{
 		if(is_persistent_page_NULL(&(bsri_p->curr_page), bsri_p->pam_p))
 			return 0;
 
 		const void* chunk = get_nth_tuple_on_persistent_page(&(bsri_p->curr_page), bsri_p->bstd_p->pas_p->page_size, &(bsri_p->bstd_p->chunk_tuple_def->size_def), bsri_p->curr_tuple_index);
 		if(chunk != NULL)
-			next_page_id = get_next_chunk_pointer(chunk, &next_tuple_index, bsri_p->bstd_p);
+			next_chunk_pointer = get_next_chunk_pointer(chunk, bsri_p->bstd_p);
 	}
 
 	// release lock on the curr_page
@@ -114,13 +113,13 @@ static int goto_next_page(blob_store_read_iterator* bsri_p, const void* transact
 		return 0;
 
 	// lock the next_page as curr_page, and set the pointers on the page
-	if(next_page_id != bsri_p->bstd_p->pas_p->NULL_PAGE_ID)
+	if(is_tuple_pointer_NULL(next_chunk_pointer, bsri_p->bstd_p->pas_p))
 	{
-		bsri_p->curr_page = acquire_persistent_page_with_lock(bsri_p->pam_p, transaction_id, next_page_id, READ_LOCK, abort_error);
+		bsri_p->curr_page = acquire_persistent_page_with_lock(bsri_p->pam_p, transaction_id, next_chunk_pointer.page_id, READ_LOCK, abort_error);
 		if(*abort_error)
 			return 0;
 	}
-	bsri_p->curr_tuple_index = next_tuple_index;
+	bsri_p->curr_tuple_index = next_chunk_pointer.tuple_index;
 	bsri_p->curr_byte_index = 0;
 
 	// refresh the unread chunk data
@@ -202,11 +201,10 @@ const char* peek_in_blob(blob_store_read_iterator* bsri_p, uint32_t* data_size, 
 	return data;
 }
 
-uint64_t get_position_in_blob(const blob_store_read_iterator* bsri_p, uint32_t* curr_tuple_index, uint32_t* curr_byte_index)
+tuple_pointer get_current_position_in_blob(const blob_store_read_iterator* bsri_p, uint32_t* curr_byte_index)
 {
 	(*curr_byte_index) = bsri_p->curr_byte_index;
-	(*curr_tuple_index) = bsri_p->curr_tuple_index;
-	return bsri_p->curr_page.page_id;
+	return (tuple_pointer){.page_id = bsri_p->curr_page.page_id, .tuple_index = bsri_p->curr_tuple_index};
 }
 
 void delete_blob_store_read_iterator(blob_store_read_iterator* bsri_p, const void* transaction_id, int* abort_error)
