@@ -7,6 +7,8 @@
 
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
 
+#include<tupleindexer/common/tuple_pointer.h>
+
 void initialize_chunk(void* chunk, const void* chunk_data, uint32_t chunk_data_size, tuple_pointer next_chunk_pointer, const blob_store_tuple_defs* bstd_p);
 
 tuple_pointer get_next_chunk_pointer(const void* chunk, const blob_store_tuple_defs* bstd_p);
