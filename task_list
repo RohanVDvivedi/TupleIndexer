@@ -1,5 +1,13 @@
 ** PICKED TASKS
 
+ * implement tuple_ptr struct
+   * consisting of page_id and tuple_index
+   * use this in blob_store
+   * provide a data_type_info with is_static = 1 in pas_p
+   * also a tuple_def for it
+   * implement a function to make it into a tuple and back into a struct
+   * use this in blob_store
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
