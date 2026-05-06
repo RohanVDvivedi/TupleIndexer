@@ -1,11 +1,14 @@
 ** PICKED TASKS
 
  * implement tuple_ptr struct
-   * consisting of page_id and tuple_index
-   * use this in blob_store
+   * consisting of uint64_t page_id and uint32_t tuple_index
    * provide a data_type_info with is_static = 1 in pas_p
    * also a tuple_def for it
-   * implement a function to make it into a tuple and back into a struct
+   * implement
+     * int is_tuple_pointer_NULL(const void* tuple_pointer, pas_p)
+     * tuple_ptr get_tuple_pointer(const void* tuple_pointer, pas_p)
+     * void set_tuple_pointer_in_tuple(void* tuple_pointer, tuple_ptr tptr, pas_p)
+     * int set_tuple_pointer_in_persistent_page(void* tuple_pointer, tuple_ptr tptr, pas_p, transaction_id, abort_error)
    * use this in blob_store
 
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
