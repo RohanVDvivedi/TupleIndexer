@@ -53,11 +53,9 @@ void fix_all_entries(uint64_t root_page_id, const heap_table_tuple_defs* httd_p,
 typedef struct blob_pointer blob_pointer;
 struct blob_pointer
 {
-	uint64_t head_page_id;
-	uint32_t head_tuple_index;
+	tuple_pointer head_pointer;
 
-	uint64_t tail_page_id;
-	uint32_t tail_tuple_index;
+	tuple_pointer tail_pointer;
 
 	uint32_t bytes_appended;
 };
@@ -66,7 +64,7 @@ blob_pointer bptrs[16];
 
 void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint32_t data_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p, page_modification_methods* pmm_p)
 {
-	blob_store_write_iterator* bswi_p = get_new_blob_store_write_iterator(root_page_id, bptr->head_page_id, bptr->head_tuple_index, bptr->tail_page_id, bptr->tail_tuple_index, bstd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	blob_store_write_iterator* bswi_p = get_new_blob_store_write_iterator(root_page_id, bptr->head_pointer, bptr->tail_pointer, bstd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -77,7 +75,7 @@ void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint3
 	{
 		chunk_append_position pos;
 		uint32_t bytes_appended = append_to_tail_in_blob(bswi_p, data, data_size, &pos, FIX_NOTIFIER, transaction_id, &abort_error);
-		printf("%u bytes appended @ (%lu, %u, %u)\n", bytes_appended, pos.page_id, pos.tuple_index, pos.byte_index);
+		printf("%u bytes appended @ (%lu, %u, %u)\n", bytes_appended, pos.chunk_pointer.page_id, pos.chunk_pointer.tuple_index, pos.byte_index);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -88,8 +86,8 @@ void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint3
 		bptr->bytes_appended += bytes_appended;
 	}
 
-	bptr->head_page_id = get_head_position_in_blob(bswi_p, &(bptr->head_tuple_index));
-	bptr->tail_page_id = get_tail_position_in_blob(bswi_p, &(bptr->tail_tuple_index));
+	bptr->head_pointer = get_head_pointer_in_blob(bswi_p);
+	bptr->tail_pointer = get_tail_pointer_in_blob(bswi_p);
 
 	delete_blob_store_write_iterator(bswi_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -101,7 +99,7 @@ void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint3
 
 void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p, page_modification_methods* pmm_p)
 {
-	blob_store_write_iterator* bswi_p = get_new_blob_store_write_iterator(root_page_id, bptr->head_page_id, bptr->head_tuple_index, bptr->tail_page_id, bptr->tail_tuple_index, bstd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	blob_store_write_iterator* bswi_p = get_new_blob_store_write_iterator(root_page_id, bptr->head_pointer, bptr->tail_pointer, bstd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -123,8 +121,8 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 		bptr->bytes_appended -= bytes_discarded;
 	}
 
-	bptr->head_page_id = get_head_position_in_blob(bswi_p, &(bptr->head_tuple_index));
-	bptr->tail_page_id = get_tail_position_in_blob(bswi_p, &(bptr->tail_tuple_index));
+	bptr->head_pointer = get_head_pointer_in_blob(bswi_p);
+	bptr->tail_pointer = get_tail_pointer_in_blob(bswi_p);
 
 	delete_blob_store_write_iterator(bswi_p, transaction_id, &abort_error);
 	if(abort_error)
@@ -134,9 +132,9 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 	}
 }
 
-void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, uint64_t bytes_to_print, uint32_t batch_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
+void print_blob2(tuple_pointer chunk_pointer, uint32_t byte_index, uint64_t bytes_to_print, uint32_t batch_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
 {
-	blob_store_read_iterator* bsri_p = get_new_blob_store_read_iterator(page_id, tuple_index, byte_index, bstd_p, pam_p, transaction_id, &abort_error);
+	blob_store_read_iterator* bsri_p = get_new_blob_store_read_iterator(chunk_pointer, byte_index, bstd_p, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -199,12 +197,12 @@ void print_blob2(uint64_t page_id, uint32_t tuple_index, uint32_t byte_index, ui
 
 void print_blob(blob_pointer* bptr, uint32_t batch_size, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
 {
-	print_blob2(bptr->head_page_id, bptr->head_tuple_index, 0, UINT64_MAX, batch_size, bstd_p, pam_p);
+	print_blob2(bptr->head_pointer, 0, UINT64_MAX, batch_size, bstd_p, pam_p);
 }
 
 uint64_t count_bytes_in_blob(blob_pointer* bptr, const blob_store_tuple_defs* bstd_p, page_access_methods* pam_p)
 {
-	blob_store_read_iterator* bsri_p = get_new_blob_store_read_iterator(bptr->head_page_id, bptr->head_tuple_index, 0, bstd_p, pam_p, transaction_id, &abort_error);
+	blob_store_read_iterator* bsri_p = get_new_blob_store_read_iterator(bptr->head_pointer, 0, bstd_p, pam_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -264,7 +262,7 @@ int main()
 
 	// zero initialize bptrs
 	for(int i = 0; i < sizeof(bptrs)/sizeof(bptrs[0]); i++)
-		bptrs[i] = (blob_pointer){pam_p->pas.NULL_PAGE_ID, 0, pam_p->pas.NULL_PAGE_ID, 0, 0};
+		bptrs[i] = (blob_pointer){get_NULL_tuple_pointer(&(pam_p->pas)), get_NULL_tuple_pointer(&(pam_p->pas)), 0};
 
 	// create a blob_store
 	uint64_t root_page_id = get_new_blob_store(&bstd, pam_p, pmm_p, transaction_id, &abort_error);
@@ -315,7 +313,7 @@ int main()
 	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
 
 	// print staring from a random partial page
-	print_blob2(1, 0, 105, 120, 120, &bstd, pam_p);
+	print_blob2((tuple_pointer){1, 0}, 105, 120, 120, &bstd, pam_p);
 
 	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
 
@@ -395,10 +393,10 @@ int main()
 
 
 	// print staring from a random partial page
-	print_blob2(bptrs[1].head_page_id, bptrs[1].head_tuple_index, 6, UINT64_MAX, 0, &bstd, pam_p);
+	print_blob2(bptrs[1].head_pointer, 6, UINT64_MAX, 0, &bstd, pam_p);
 
 	// print staring from a random partial page
-	print_blob2(bptrs[0].head_page_id, bptrs[0].head_tuple_index, 57, UINT64_MAX, 500, &bstd, pam_p);
+	print_blob2(bptrs[0].head_pointer, 57, UINT64_MAX, 500, &bstd, pam_p);
 
 
 
