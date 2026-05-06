@@ -113,7 +113,7 @@ static int goto_next_page(blob_store_read_iterator* bsri_p, const void* transact
 		return 0;
 
 	// lock the next_page as curr_page, and set the pointers on the page
-	if(is_tuple_pointer_NULL(next_chunk_pointer, bsri_p->bstd_p->pas_p))
+	if(!is_tuple_pointer_NULL(next_chunk_pointer, bsri_p->bstd_p->pas_p))
 	{
 		bsri_p->curr_page = acquire_persistent_page_with_lock(bsri_p->pam_p, transaction_id, next_chunk_pointer.page_id, READ_LOCK, abort_error);
 		if(*abort_error)
