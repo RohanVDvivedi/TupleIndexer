@@ -10,7 +10,9 @@ struct tuple_pointer
 	uint32_t tuple_index;
 };
 
-int is_tuple_pointer_NULL(const void* tptr_tpl, const page_access_specs* pas_p);
+int is_tuple_pointer_NULL(tuple_pointer tptr, const page_access_specs* pas_p);
+
+int is_tuple_pointer_NULL2(const void* tptr_tpl, const page_access_specs* pas_p);
 
 tuple_pointer get_NULL_tuple_pointer(const page_access_specs* pas_p);
 

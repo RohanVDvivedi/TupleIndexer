@@ -2,7 +2,12 @@
 
 #include<tuplestore/tuple.h>
 
-int is_tuple_pointer_NULL(const void* tptr_tpl, const page_access_specs* pas_p)
+int is_tuple_pointer_NULL(tuple_pointer tptr, const page_access_specs* pas_p)
+{
+	return (tptr.page_id == pas_p->NULL_PAGE_ID);
+}
+
+int is_tuple_pointer_NULL2(const void* tptr_tpl, const page_access_specs* pas_p)
 {
 	datum uval;
 	get_value_from_element_from_tuple(&uval, &(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(0), tptr_tpl);

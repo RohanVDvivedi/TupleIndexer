@@ -8,7 +8,7 @@
 
 #include<stdlib.h>
 
-blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_id, uint64_t head_page_id, uint32_t head_tuple_index, uint64_t tail_page_id, uint32_t tail_tuple_index, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_id, tuple_pointer head_pointer, tuple_pointer tail_pointer, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 3 must be present
 	if(bstd_p == NULL || pam_p == NULL || pmm_p == NULL)
@@ -21,11 +21,9 @@ blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_
 
 	bswi_p->root_page_id = root_page_id;
 
-	bswi_p->head_page_id = head_page_id;
-	bswi_p->head_tuple_index = head_tuple_index;
+	bswi_p->head_chunk_pointer = head_pointer;
 
-	bswi_p->tail_page_id = tail_page_id;
-	bswi_p->tail_tuple_index = tail_tuple_index;
+	bswi_p->tail_chunk_pointer = tail_pointer;
 
 	bswi_p->bstd_p = bstd_p;
 	bswi_p->pam_p = pam_p;
@@ -36,19 +34,17 @@ blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_
 
 int is_empty_blob_in_blob_store(const blob_store_write_iterator* bswi_p)
 {
-	return (bswi_p->head_page_id == bswi_p->bstd_p->pas_p->NULL_PAGE_ID) && (bswi_p->tail_page_id == bswi_p->bstd_p->pas_p->NULL_PAGE_ID);
+	return is_tuple_pointer_NULL(bswi_p->head_chunk_pointer, bswi_p->bstd_p->pas_p) && is_tuple_pointer_NULL(bswi_p->tail_chunk_pointer, bswi_p->bstd_p->pas_p);
 }
 
-uint64_t get_head_position_in_blob(const blob_store_write_iterator* bswi_p, uint32_t* head_tuple_index)
+tuple_pointer get_head_pointer_in_blob(const blob_store_write_iterator* bswi_p)
 {
-	(*head_tuple_index) = bswi_p->head_tuple_index;
-	return bswi_p->head_page_id;
+	return bswi_p->head_chunk_pointer;
 }
 
-uint64_t get_tail_position_in_blob(const blob_store_write_iterator* bswi_p, uint32_t* tail_tuple_index)
+tuple_pointer get_tail_pointer_in_blob(const blob_store_write_iterator* bswi_p)
 {
-	(*tail_tuple_index) = bswi_p->tail_tuple_index;
-	return bswi_p->tail_page_id;
+	return bswi_p->tail_chunk_pointer;
 }
 
 uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* data, uint32_t data_size, chunk_append_position* app_pos, const heap_table_notifier* notify_wrong_entry, const void* transaction_id, int* abort_error)
@@ -61,7 +57,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 	// if the blob is not empty, then tail must exists, if not we fail
 	if(!was_empty)
-		if(bswi_p->tail_page_id == bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
+		if(is_tuple_pointer_NULL(bswi_p->tail_chunk_pointer, bswi_p->bstd_p->pas_p))
 			return 0;
 
 	uint32_t bytes_appended = 0;
@@ -70,10 +66,10 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 	persistent_page tail_page = get_NULL_persistent_page(bswi_p->pam_p);
 
 	// append to existing tail_chunk
-	if((bytes_appended == 0) && (bswi_p->tail_page_id != bswi_p->bstd_p->pas_p->NULL_PAGE_ID))
+	if((bytes_appended == 0) && !is_tuple_pointer_NULL(bswi_p->tail_chunk_pointer, bswi_p->bstd_p->pas_p))
 	{
 		// get write lock on the tail page
-		old_tail_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, bswi_p->tail_page_id, WRITE_LOCK, abort_error);
+		old_tail_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, bswi_p->tail_chunk_pointer.page_id, WRITE_LOCK, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -89,13 +85,12 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 			uint32_t unused_space_in_old_tail_page = get_unused_space_on_heap_page(&old_tail_page, bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def);
 
 			// get the tail_chunk
-			const void* tail_chunk = get_nth_tuple_on_persistent_page(&old_tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->tail_tuple_index);
+			const void* tail_chunk = get_nth_tuple_on_persistent_page(&old_tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->tail_chunk_pointer.tuple_index);
 
 			// update app_pos, poiunting to the end of the current chunk
 			if(app_pos)
 			{
-				app_pos->page_id = bswi_p->tail_page_id;
-				app_pos->tuple_index = bswi_p->tail_tuple_index;
+				app_pos->chunk_pointer = bswi_p->tail_chunk_pointer;
 				app_pos->byte_index = 0;
 
 				datum tail_chunk_data = get_curr_chunk_data(tail_chunk, bswi_p->bstd_p);
@@ -112,7 +107,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 			append_bytes_to_back_of_chunk(cloned_tail_chunk, data, bytes_appended, bytes_appended, bswi_p->bstd_p);
 
 			// update the tail
-			update_tuple_on_persistent_page_resiliently(bswi_p->pmm_p, transaction_id, &old_tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->tail_tuple_index, cloned_tail_chunk, abort_error);
+			update_tuple_on_persistent_page_resiliently(bswi_p->pmm_p, transaction_id, &old_tail_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->tail_chunk_pointer.tuple_index, cloned_tail_chunk, abort_error);
 			free(cloned_tail_chunk);
 			if(*abort_error)
 				goto ABORT_ERROR;
@@ -130,11 +125,9 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 	// if nothing was appended, we need to add a new chunk
 	if(bytes_appended == 0)
 	{
-		uint64_t old_tail_page_id = bswi_p->tail_page_id;
-		uint64_t old_tail_tuple_index = bswi_p->tail_tuple_index;
+		tuple_pointer old_tail_pointer = bswi_p->tail_chunk_pointer;
 
-		uint64_t tail_page_id;
-		uint64_t tail_tuple_index;
+		tuple_pointer tail_pointer;
 
 		if(bytes_appended == 0 && data_size < bswi_p->bstd_p->max_data_bytes_in_chunk) // find a page with enough free space to insert the chunk in it
 		{
@@ -153,21 +146,21 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 				// make chunk large enough to accomodate the remaining bytes
 				void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
-				initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
+				initialize_chunk(chunk, data, bytes_appended, get_NULL_tuple_pointer(bswi_p->bstd_p->pas_p), bswi_p->bstd_p);
 
-				// initialize the tail_page_id
-				tail_page_id = tail_page.page_id;
+				// initialize the tail_pointer.page_id
+				tail_pointer.page_id = tail_page.page_id;
 
-				// insert it, and get the tail_tuple_index
+				// insert it, and get the tail_pointer.tuple_index
 				uint32_t possible_insertion_index = 0;
-				tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
+				tail_pointer.tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
 				free(chunk);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
 				// notify that the unused space changed
 				if(notify_wrong_entry)
-					notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, unused_space_in_entry, tail_page_id);
+					notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, unused_space_in_entry, tail_pointer.page_id);
 
 				release_lock_on_persistent_page(bswi_p->pam_p, transaction_id, &tail_page, NONE_OPTION, abort_error);
 				if(*abort_error)
@@ -189,14 +182,14 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 			// make chunk large enough to fit the page
 			void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
-			initialize_chunk(chunk, data, bytes_appended, bswi_p->bstd_p->pas_p->NULL_PAGE_ID, 0, bswi_p->bstd_p);
+			initialize_chunk(chunk, data, bytes_appended, get_NULL_tuple_pointer(bswi_p->bstd_p->pas_p), bswi_p->bstd_p);
 
 			// initialize the tail_page_id
-			tail_page_id = tail_page.page_id;
+			tail_pointer.page_id = tail_page.page_id;
 
 			// insert it, and get the tail_tuple_index
 			uint32_t possible_insertion_index = 0;
-			tail_tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
+			tail_pointer.tuple_index = insert_in_heap_page(&tail_page, chunk, &possible_insertion_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
 			free(chunk);
 			if(*abort_error)
 				goto ABORT_ERROR;
@@ -212,27 +205,25 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 		}
 
 		// update bswi_p's tail pointer
-		bswi_p->tail_page_id = tail_page_id;
-		bswi_p->tail_tuple_index = tail_tuple_index;
+		bswi_p->tail_chunk_pointer = tail_pointer;
 
 		// update app_pos
 		if(app_pos)
 		{
-			app_pos->page_id = bswi_p->tail_page_id;
-			app_pos->tuple_index = bswi_p->tail_tuple_index;
+			app_pos->chunk_pointer = bswi_p->tail_chunk_pointer;
 			app_pos->byte_index = 0;
 		}
 
 		// now update the pointer on the old tail chunk
 
 		// get write lock on the old tail page, and update the next chunk pointer on it
-		if(old_tail_page_id != bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
+		if(!is_tuple_pointer_NULL(old_tail_pointer, bswi_p->bstd_p->pas_p))
 		{
-			old_tail_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, old_tail_page_id, WRITE_LOCK, abort_error);
+			old_tail_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, old_tail_pointer.page_id, WRITE_LOCK, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 
-			set_next_chunk_pointer_in_ppage(&old_tail_page, old_tail_tuple_index, tail_page_id, tail_tuple_index, bswi_p->bstd_p, bswi_p->pmm_p, transaction_id, abort_error);
+			set_next_chunk_pointer_in_ppage(&old_tail_page, old_tail_pointer.tuple_index, tail_pointer, bswi_p->bstd_p, bswi_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 
@@ -244,10 +235,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 	// the the blob was earlier empty, we need to make the head and tail point to the same only new chunk
 	if(was_empty)
-	{
-		bswi_p->head_page_id = bswi_p->tail_page_id;
-		bswi_p->head_tuple_index = bswi_p->tail_tuple_index;
-	}
+		bswi_p->head_chunk_pointer = bswi_p->tail_chunk_pointer;
 
 	return bytes_appended;
 
@@ -270,18 +258,18 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t d
 		return 0;
 
 	// can not discard if the head is not present
-	if(bswi_p->head_page_id == bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
+	if(is_tuple_pointer_NULL(bswi_p->head_chunk_pointer, bswi_p->bstd_p->pas_p))
 		return 0;
 
 	// get write lock on the head page
-	persistent_page head_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, bswi_p->head_page_id, WRITE_LOCK, abort_error);
+	persistent_page head_page = acquire_persistent_page_with_lock(bswi_p->pam_p, transaction_id, bswi_p->head_chunk_pointer.page_id, WRITE_LOCK, abort_error);
 	if(*abort_error)
 		return 0;
 
 	uint32_t old_head_page_unused_space = get_unused_space_on_heap_page(&head_page, bswi_p->bstd_p->pas_p, bswi_p->bstd_p->chunk_tuple_def);
 
 	// must not return NULL, this tuple must exist
-	const void* head_chunk = get_nth_tuple_on_persistent_page(&head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_tuple_index);
+	const void* head_chunk = get_nth_tuple_on_persistent_page(&head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_chunk_pointer.tuple_index);
 
 	// get the number of bytes in head_chunk
 	uint32_t data_bytes_in_head_chunk = 0;
@@ -306,41 +294,37 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t d
 		discard_bytes_from_front_of_chunk(cloned_head_chunk, bytes_discarded, bswi_p->bstd_p);
 
 		// update this head_chunk with it's clone
-		update_tuple_on_persistent_page_resiliently(bswi_p->pmm_p, transaction_id, &head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_tuple_index, cloned_head_chunk, abort_error);
+		update_tuple_on_persistent_page_resiliently(bswi_p->pmm_p, transaction_id, &head_page, bswi_p->bstd_p->pas_p->page_size, &(bswi_p->bstd_p->chunk_tuple_def->size_def), bswi_p->head_chunk_pointer.tuple_index, cloned_head_chunk, abort_error);
 		free(cloned_head_chunk);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
 		// notify that the unused space changed
 		if(notify_wrong_entry)
-			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, bswi_p->head_page_id);
+			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, bswi_p->head_chunk_pointer.page_id);
 	}
 	else // discard the chunk
 	{
 		bytes_discarded = data_bytes_in_head_chunk;
 
-		uint64_t old_head_page_id = bswi_p->head_page_id;
-		uint32_t old_head_tuple_index = bswi_p->head_tuple_index;
+		tuple_pointer old_head_chunk_pointer = bswi_p->head_chunk_pointer;
 
 		// fetch the new head
-		bswi_p->head_page_id = get_next_chunk_pointer(head_chunk, &(bswi_p->head_tuple_index), bswi_p->bstd_p);
+		bswi_p->head_chunk_pointer = get_next_chunk_pointer(head_chunk, bswi_p->bstd_p);
 
 		// discard the chunk
-		delete_from_heap_page(&head_page, old_head_tuple_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
+		delete_from_heap_page(&head_page, old_head_chunk_pointer.tuple_index, bswi_p->bstd_p->chunk_tuple_def, bswi_p->bstd_p->pas_p, bswi_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
 		// notify that the unused space changed
 		if(notify_wrong_entry)
-			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, old_head_page_id);
+			notify_wrong_entry->notify(notify_wrong_entry->context, bswi_p->root_page_id, old_head_page_unused_space, old_head_chunk_pointer.page_id);
 
 		// if we destroyed the only chunk, make the tail also NULL_PAGE_ID
 		// i.e. reset tail pointer if the head_page_id just became NULL, making the blob empty
-		if(bswi_p->head_page_id == bswi_p->bstd_p->pas_p->NULL_PAGE_ID)
-		{
-			bswi_p->tail_page_id = bswi_p->bstd_p->pas_p->NULL_PAGE_ID;
-			bswi_p->tail_tuple_index = 0;
-		}
+		if(is_tuple_pointer_NULL(bswi_p->head_chunk_pointer, bswi_p->bstd_p->pas_p))
+			bswi_p->tail_chunk_pointer = get_NULL_tuple_pointer(bswi_p->bstd_p->pas_p);
 	}
 
 	// release the lock and exit
