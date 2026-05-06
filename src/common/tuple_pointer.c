@@ -37,6 +37,7 @@ tuple_pointer get_tuple_pointer(const void* tptr_tpl, const page_access_specs* p
 
 void set_tuple_pointer(void* tptr_tpl, tuple_pointer tptr, const page_access_specs* pas_p)
 {
+	init_tuple(&(pas_p->tuple_pointer_tuple_def), tptr_tpl);
 	set_element_in_tuple(&(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(0), tptr_tpl, &((const datum){.uint_value = tptr.page_id}), 0);
 	set_element_in_tuple(&(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(1), tptr_tpl, &((const datum){.uint_value = tptr.tuple_index}), 0);
 }
