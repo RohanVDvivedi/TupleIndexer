@@ -17,11 +17,22 @@ int initialize_page_access_specs(page_access_specs* pas_p, uint32_t page_id_widt
 	pas_p->NULL_PAGE_ID = NULL_PAGE_ID;
 
 	pas_p->page_id_type_info = define_uint_non_nullable_type("page_id", pas_p->page_id_width);
+	pas_p->page_id_type_info.is_static = 1;
 	if(!initialize_tuple_def(&(pas_p->page_id_tuple_def), &(pas_p->page_id_type_info)))
 		return 0;
 
 	pas_p->page_offset_type_info = define_uint_non_nullable_type("page_offset/tuple_index", get_value_size_on_page(page_size));
+	pas_p->page_offset_type_info.is_static = 1;
 	if(!initialize_tuple_def(&(pas_p->page_offset_tuple_def), &(pas_p->page_offset_type_info)))
+		return 0;
+
+	initialize_tuple_data_type_info((&(pas_p->tuple_pointer_type_info)), "tuple_pointer", 0, 0, 2);
+	pas_p->tuple_pointer_type_info.is_static = 1;
+	strcpy(pas_p->tuple_pointer_type_info.containees[0].field_name, "page_id");
+	pas_p->tuple_pointer_type_info.containees[0].al.type_info = &(pas_p->page_id_type_info);
+	strcpy(pas_p->tuple_pointer_type_info.containees[1].field_name, "tuple_index");
+	pas_p->tuple_pointer_type_info.containees[1].al.type_info = &(pas_p->tuple_index_type_info);
+	if(!initialize_tuple_def(&(pas_p->tuple_pointer_tuple_def), &(pas_p->tuple_pointer_type_info)))
 		return 0;
 
 	return 1;
@@ -43,6 +54,9 @@ int is_valid_page_access_specs(const page_access_specs* pas_p)
 	if(pas_p->page_offset_tuple_def.type_info == NULL || pas_p->page_offset_tuple_def.type_info != &(pas_p->page_offset_type_info) || pas_p->page_offset_type_info.is_finalized == 0)
 		return 0;
 
+	if(pas_p->tuple_pointer_tuple_def.type_info == NULL || pas_p->tuple_pointer_tuple_def.type_info != &(pas_p->tuple_pointer_type_info) || pas_p->tuple_pointer_type_info.is_finalized == 0)
+		return 0;
+
 	return 1;
 }
 
@@ -55,5 +69,7 @@ void print_page_access_specs(const page_access_specs* pas_p)
 	print_tuple_def(&(pas_p->page_id_tuple_def));
 	printf("page_offset_type_info = \n");
 	print_tuple_def(&(pas_p->page_offset_tuple_def));
+	printf("tuple_pointer_type_info = \n");
+	print_tuple_def(&(pas_p->tuple_pointer_tuple_def));
 	printf("\n");
 }

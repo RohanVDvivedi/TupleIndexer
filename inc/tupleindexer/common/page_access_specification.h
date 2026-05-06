@@ -48,6 +48,14 @@ struct page_access_specs
 		tuple_def page_offset_tuple_def;
 		tuple_def tuple_index_tuple_def;
 	};
+
+	// defines a non-nullable type info for {page_id_type_info, tuple_index_type_info}
+	data_type_info tuple_pointer_type_info;
+	data_position_info dummy[2]; // the above attribute has 2 elemnts
+
+	// helps in working with tuple_pointers in indices and the blob_store
+	// the type_info of this tuple_def must be the attribute above
+	tuple_def tuple_pointer_tuple_def;
 };
 
 // initialize all attributed of page_access_specs
