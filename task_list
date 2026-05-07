@@ -1,5 +1,11 @@
 ** PICKED TASKS
 
+* construct sample heap_table_notifier implementation that holds some N possible entries to be fixed
+  * struct entry{uint64_t root_page_id; uint64_t unused_space; uint64_t page_id;}
+  * on every notify, insert a new entry for a page_id if it does not exists, if it already exists send it to the end
+  * maintain in it, entry[] entries; uint32_t entry_capacity; uint32_t entry_count; singlylist free_entries; linkedlist entry_processing_order; hashmap page_id->entry
+  * add a function to pop 1 entry by value to process it, from entry_processing_order
+
 ** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
  * Rtree will be supported
    * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
