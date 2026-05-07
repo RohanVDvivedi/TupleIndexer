@@ -20,7 +20,7 @@ PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions_
 				bitmap_page/bitmap_page.h \
 				interface/page_access_methods.h interface/page_access_methods_options.h interface/opaque_page_access_methods.h interface/unWALed_in_memory_data_store.h \
 				interface/page_modification_methods.h interface/opaque_page_modification_methods.h interface/unWALed_page_modification_methods.h \
-				utils/page_lock_type.h utils/power_table.h utils/bucket_range.h \
+				utils/page_lock_type.h utils/power_table.h utils/bucket_range.h utils/heap_table_accumulative_notifier.h \
 				common/page_access_specification.h common/tuple_pointer.h common/find_position.h common/invalid_tuple_indices.h common/materialized_key.h
 
 # the library, which we will create
