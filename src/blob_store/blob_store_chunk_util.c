@@ -15,7 +15,7 @@ void initialize_chunk(void* chunk, const void* chunk_data, uint32_t chunk_data_s
 		char next_chunk_pointer_tuple[sizeof(tuple_pointer)];
 		set_tuple_pointer(next_chunk_pointer_tuple, next_chunk_pointer, bstd_p->pas_p);
 		set_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(1), chunk, &(const datum){.tuple_value = next_chunk_pointer_tuple}, 0);
-	}	
+	}
 }
 
 tuple_pointer get_next_chunk_pointer(const void* chunk, const blob_store_tuple_defs* bstd_p)
