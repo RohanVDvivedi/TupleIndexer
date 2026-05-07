@@ -9,6 +9,8 @@
 #include<tupleindexer/heap_table/heap_table.h>
 #include<tupleindexer/heap_page/heap_page.h>
 
+#include<tupleindexer/utils/heap_table_accumulative_notifier.h>
+
 #include<tupleindexer/interface/unWALed_in_memory_data_store.h>
 #include<tupleindexer/interface/unWALed_page_modification_methods.h>
 
@@ -57,22 +59,23 @@ void initialize_tuple(const tuple_def* def, char* tuple, int index, const char* 
 	set_element_in_tuple(def, STATIC_POSITION(1), tuple, &((datum){.string_value = name, .string_size = strlen(name)}), UINT32_MAX);
 }
 
-typedef struct fix_entry fix_entry;
-struct fix_entry
+heap_table_accumulative_notifier htan;
+
+void fix_all_entries(const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
+	uint64_t root_page_id;
 	uint32_t unused_space;
 	uint64_t page_id;
-};
-
-uint32_t fix_entries_size = 0;
-fix_entry fix_entries[2048];
-
-void fix_notify(void* context, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id)
-{
-	fix_entries[fix_entries_size++] = (fix_entry){unused_space, page_id};
+	while(pop_from_heap_table_accumulative_notifier(&htan, &root_page_id, &unused_space, &page_id))
+	{
+		fix_unused_space_in_heap_table(root_page_id, unused_space, page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		if(abort_error)
+		{
+			printf("ABORTED\n");
+			exit(-1);
+		}
+	}
 }
-
-#define FIX_NOTIFIER &((heap_table_notifier){NULL, fix_notify})
 
 int insertion_index = 0;
 
@@ -109,7 +112,7 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 				}
 				else
 				{
-					fix_notify(NULL, root_page_id, unused_space_in_entry, heap_page.page_id);
+					push_to_heap_table_accumulative_notifier(&htan, root_page_id, unused_space_in_entry, heap_page.page_id);
 				}
 				release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 				if(abort_error)
@@ -126,7 +129,7 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 			// we are possibly inserting into a new page, so we can possibly know the index to insert into it
 			possible_insertion_index = 0;
 
-			heap_page = find_heap_page_with_enough_unused_space_from_heap_table(root_page_id, required_space, &unused_space_in_entry, FIX_NOTIFIER, httd_p, pam_p, transaction_id, &abort_error);
+			heap_page = find_heap_page_with_enough_unused_space_from_heap_table(root_page_id, required_space, &unused_space_in_entry, &HEAP_TABLE_ACCUMULATIVE_NOTIFIER(&htan), httd_p, pam_p, transaction_id, &abort_error);
 			if(abort_error)
 			{
 				printf("ABORTED\n");
@@ -173,7 +176,7 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 		}
 		else
 		{
-			fix_notify(NULL, root_page_id, unused_space_in_entry, heap_page.page_id);
+			push_to_heap_table_accumulative_notifier(&htan, root_page_id, unused_space_in_entry, heap_page.page_id);
 		}
 		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 		if(abort_error)
@@ -182,20 +185,6 @@ void insert_tuples_to_heap_table(uint64_t root_page_id, char** names, const heap
 			exit(-1);
 		}
 	}
-}
-
-void fix_all_entries(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
-{
-	for(uint32_t i = 0; i < fix_entries_size; i++)
-	{
-		fix_unused_space_in_heap_table(root_page_id, fix_entries[i].unused_space, fix_entries[i].page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
-		if(abort_error)
-		{
-			printf("ABORTED\n");
-			exit(-1);
-		}
-	}
-	fix_entries_size = 0;
 }
 
 void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
@@ -222,7 +211,7 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 			break;
 
 		if(entry_needs_fixing)
-			fix_notify(NULL, root_page_id, unused_space_in_entry, heap_page.page_id);
+			push_to_heap_table_accumulative_notifier(&htan, root_page_id, unused_space_in_entry, heap_page.page_id);
 
 		int removed = 0;
 
@@ -256,7 +245,7 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 		}
 
 		if(removed)
-			fix_notify(NULL, root_page_id, unused_space_in_entry, heap_page.page_id);
+			push_to_heap_table_accumulative_notifier(&htan, root_page_id, unused_space_in_entry, heap_page.page_id);
 
 		release_lock_on_persistent_page(pam_p, transaction_id, &heap_page, NONE_OPTION, &abort_error);
 		if(abort_error)
@@ -284,6 +273,9 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 int main()
 {
 	/* SETUP STARTED */
+
+	// setup notifier
+	initialize_heap_table_accumulative_notifier(&htan, 24);
 
 	// construct an in-memory data store
 	page_access_methods* pam_p = get_new_unWALed_in_memory_data_store(&((page_access_specs){.page_id_width = PAGE_ID_WIDTH, .page_size = PAGE_SIZE}));
@@ -318,19 +310,19 @@ int main()
 	insert_tuples_to_heap_table(root_page_id, (char*[]){"Rohan Vipulkumar Dvivedi", "Rupa Vipulkumar Dvivedi", "Shirdiwala Saibaba, Jako rakhe saiya maar sake na koi", "Vipulkumar Bhanuprasad Dvivedi", "Devashree Manan Joshi, Vipulkumar Dvivedi", NULL}, &httd, pam_p, pmm_p);
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
-	fix_all_entries(root_page_id, &httd, pam_p, pmm_p);
+	fix_all_entries(&httd, pam_p, pmm_p);
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	delete_tuples_from_heap_table(root_page_id, (char*[]){"Shirdiwala Saibaba, Jako rakhe saiya maar sake na koi", "Devashree Manan Joshi, Vipulkumar Dvivedi", NULL}, &httd, pam_p, pmm_p);
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
-	fix_all_entries(root_page_id, &httd, pam_p, pmm_p);
+	fix_all_entries(&httd, pam_p, pmm_p);
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	insert_tuples_to_heap_table(root_page_id, (char*[]){"Rohan Dvivedi, The best heap_table that this is, isn't it", "Rohan Dvivedi, The best heap_page that this is, isn't it", "Devashree Manan Joshi", NULL}, &httd, pam_p, pmm_p);
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
-	fix_all_entries(root_page_id, &httd, pam_p, pmm_p);
+	fix_all_entries(&httd, pam_p, pmm_p);
 	print_heap_table(root_page_id, &httd, pam_p, transaction_id, &abort_error);
 
 	/* CLEANUP */
@@ -342,6 +334,9 @@ int main()
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	// destroyer notifier
+	deinitialize_heap_table_accumulative_notifier(&htan);
 
 	// close the in-memory data store
 	close_and_destroy_unWALed_in_memory_data_store(pam_p);

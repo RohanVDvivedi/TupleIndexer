@@ -8,6 +8,8 @@
 
 #include<tupleindexer/blob_store/blob_store.h>
 
+#include<tupleindexer/utils/heap_table_accumulative_notifier.h>
+
 #include<tupleindexer/interface/unWALed_in_memory_data_store.h>
 #include<tupleindexer/interface/unWALed_page_modification_methods.h>
 
@@ -19,35 +21,22 @@
 const void* transaction_id = NULL;
 int abort_error = 0;
 
-typedef struct fix_entry fix_entry;
-struct fix_entry
+heap_table_accumulative_notifier htan;
+
+void fix_all_entries(const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
+	uint64_t root_page_id;
 	uint32_t unused_space;
 	uint64_t page_id;
-};
-
-uint32_t fix_entries_size = 0;
-fix_entry fix_entries[2048];
-
-void fix_notify(void* context, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id)
-{
-	fix_entries[fix_entries_size++] = (fix_entry){unused_space, page_id};
-}
-
-#define FIX_NOTIFIER &((heap_table_notifier){NULL, fix_notify})
-
-void fix_all_entries(uint64_t root_page_id, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
-{
-	for(uint32_t i = 0; i < fix_entries_size; i++)
+	while(pop_from_heap_table_accumulative_notifier(&htan, &root_page_id, &unused_space, &page_id))
 	{
-		fix_unused_space_in_heap_table(root_page_id, fix_entries[i].unused_space, fix_entries[i].page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		fix_unused_space_in_heap_table(root_page_id, unused_space, page_id, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
 			exit(-1);
 		}
 	}
-	fix_entries_size = 0;
 }
 
 typedef struct blob_pointer blob_pointer;
@@ -74,7 +63,7 @@ void append_to_blob(uint64_t root_page_id, blob_pointer* bptr, char* data, uint3
 	while(data_size > 0)
 	{
 		chunk_append_position pos;
-		uint32_t bytes_appended = append_to_tail_in_blob(bswi_p, data, data_size, &pos, FIX_NOTIFIER, transaction_id, &abort_error);
+		uint32_t bytes_appended = append_to_tail_in_blob(bswi_p, data, data_size, &pos, &HEAP_TABLE_ACCUMULATIVE_NOTIFIER(&htan), transaction_id, &abort_error);
 		printf("%u bytes appended @ (%lu, %u, %u)\n", bytes_appended, pos.chunk_pointer.page_id, pos.chunk_pointer.tuple_index, pos.byte_index);
 		if(abort_error)
 		{
@@ -108,7 +97,7 @@ void discard_from_blob(uint64_t root_page_id, blob_pointer* bptr, uint32_t data_
 
 	while(data_size > 0)
 	{
-		uint32_t bytes_discarded = discard_from_head_in_blob(bswi_p, data_size, FIX_NOTIFIER, transaction_id, &abort_error);
+		uint32_t bytes_discarded = discard_from_head_in_blob(bswi_p, data_size, &HEAP_TABLE_ACCUMULATIVE_NOTIFIER(&htan), transaction_id, &abort_error);
 		printf("%u bytes discarded\n", bytes_discarded);
 		if(abort_error)
 		{
@@ -247,6 +236,9 @@ int main()
 {
 	/* SETUP STARTED */
 
+	// setup notifier
+	initialize_heap_table_accumulative_notifier(&htan, 24);
+
 	// construct an in-memory data store
 	page_access_methods* pam_p = get_new_unWALed_in_memory_data_store(&((page_access_specs){.page_id_width = PAGE_ID_WIDTH, .page_size = PAGE_SIZE}));
 
@@ -286,7 +278,7 @@ int main()
 
 	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, 100, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
 
@@ -295,7 +287,7 @@ int main()
 
 	append_to_blob(root_page_id, &(bptrs[1]), "Rohan Dvivedi", 13, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[1]), 5, &bstd, pam_p);
 
@@ -304,13 +296,13 @@ int main()
 
 	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, 300, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 120, &bstd, pam_p);
 
 	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, 200, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	// print staring from a random partial page
 	print_blob2((tuple_pointer){1, 0}, 105, 120, 120, &bstd, pam_p);
@@ -319,7 +311,7 @@ int main()
 
 	append_to_blob(root_page_id, &(bptrs[0]), data1 + bptrs[0].bytes_appended, strlen(data1) - bptrs[0].bytes_appended, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
 
@@ -335,7 +327,7 @@ int main()
 
 	append_to_blob(root_page_id, &(bptrs[2]), "Rupa Dvivedi", 12, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[2]), 5, &bstd, pam_p);
 
@@ -369,25 +361,25 @@ int main()
 
 	discard_from_blob(root_page_id, &(bptrs[0]), 300, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
 
 	discard_from_blob(root_page_id, &(bptrs[0]), 100, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 120, &bstd, pam_p);
 
 	discard_from_blob(root_page_id, &(bptrs[0]), 200, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 0, &bstd, pam_p);
 
 	discard_from_blob(root_page_id, &(bptrs[0]), 1000, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
 
@@ -413,7 +405,7 @@ int main()
 
 	discard_from_blob(root_page_id, &(bptrs[0]), UINT32_MAX, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 50, &bstd, pam_p);
 
@@ -433,7 +425,7 @@ int main()
 
 	append_to_blob(root_page_id, &(bptrs[0]), "Rohan Dvivedi", 13, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[0]), 5, &bstd, pam_p);
 
@@ -457,13 +449,13 @@ int main()
 
 	append_to_blob(root_page_id, &(bptrs[3]), data1, 120, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[3]), 100, &bstd, pam_p);
 
 	append_to_blob(root_page_id, &(bptrs[3]), data1 + 120, 120, &bstd, pam_p, pmm_p);
 
-	fix_all_entries(root_page_id, &(bstd.httd), pam_p, pmm_p);
+	fix_all_entries(&(bstd.httd), pam_p, pmm_p);
 
 	print_blob(&(bptrs[3]), 100, &bstd, pam_p);
 
@@ -486,6 +478,9 @@ int main()
 		printf("ABORTED\n");
 		exit(-1);
 	}
+
+	// destroyer notifier
+	deinitialize_heap_table_accumulative_notifier(&htan);
 
 	// close the in-memory data store
 	close_and_destroy_unWALed_in_memory_data_store(pam_p);

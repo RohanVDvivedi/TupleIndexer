@@ -33,7 +33,7 @@ struct heap_table_accumulative_notifier
 	hashmap entries_by_page_id;
 };
 
-void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint32_t entries_capacity); 
+void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint32_t entries_capacity);
 
 void deinitialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p);
 
@@ -41,6 +41,6 @@ void push_to_heap_table_accumulative_notifier(heap_table_accumulative_notifier* 
 
 int pop_from_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t* root_page_id, uint32_t* unused_space, uint64_t* page_id);
 
-#define HEAP_TABLE_ACCUMULATIVE_NOTIFIER(htan_p) ((const heap_table_notifier){htan_p, push_to_heap_table_accumulative_notifier})
+#define HEAP_TABLE_ACCUMULATIVE_NOTIFIER(htan_p) ((const heap_table_notifier){(htan_p), (void (*)(void*, uint64_t, uint32_t, uint64_t))push_to_heap_table_accumulative_notifier})
 
 #endif
