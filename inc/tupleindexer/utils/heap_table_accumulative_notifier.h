@@ -37,6 +37,8 @@ void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifie
 
 void deinitialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p);
 
+uint32_t get_notification_count_for_heap_table_accumulative_notifier(const heap_table_accumulative_notifier* htan_p);
+
 void push_to_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id);
 
 int pop_from_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t* root_page_id, uint32_t* unused_space, uint64_t* page_id);
