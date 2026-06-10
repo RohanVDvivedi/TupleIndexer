@@ -159,7 +159,7 @@ int is_correct_insertion_index_for_insert_at_in_sorted_packed_page(
 {
 	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
-	// if the index is not valid we fail the insertion
+	// if the index is not valid we fail
 	if( !(0 <= index && index <= tuple_count) )
 		return 0;
 
