@@ -40,9 +40,9 @@ int may_require_split_for_insert_for_bplus_tree(const persistent_page* ppage, ui
 	// the space that will become free memory -> after defragmentation and discarding tomb stones (ther should be no tomb stones, though)
 	uint32_t available_space_after_compaction = allotted_space - used_space;
 	
-	// page will be surely split if the unused space is lesser than incoming tuple size for fixed sized tuple
+	// page will be surely split if the page is full for fixed sized tuple
 	if(is_fixed_sized_tuple_def(def))
-		return available_space_after_compaction < def->size_def.size;
+		return get_tuple_count_on_persistent_page(ppage, page_size, &(def->size_def)) == get_maximum_tuple_count_on_persistent_page(get_page_header_size_persistent_page(ppage, page_size), page_size, &(def->size_def));
 	// for a variable sized tuple the page must be more than half full to may require spliting
 	else
 	{
