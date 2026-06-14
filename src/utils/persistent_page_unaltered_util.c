@@ -6,6 +6,10 @@ int can_append_tuple_on_persistent_page_if_done_resiliently(const persistent_pag
 	if(can_append_tuple_on_persistent_page(ppage, page_size, tpl_sz_d, external_tuple))
 		return 1;
 
+	// decisively return 0, if we have reached the max tuple count on that page
+	if(get_tuple_count_on_persistent_page(ppage, page_size, tpl_sz_d) == get_maximum_tuple_count_on_persistent_page(get_page_header_size_persistent_page(ppage, page_size), page_size, tpl_sz_d))
+		return 0;
+
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
 	uint32_t space_required_by_external_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(page_size, tpl_sz_d, external_tuple);
 
@@ -21,6 +25,10 @@ int can_insert_tuple_on_persistent_page_if_done_resiliently(const persistent_pag
 	// if can insert without compaction, then succeed
 	if(can_insert_tuple_on_persistent_page(ppage, page_size, tpl_sz_d, index, external_tuple))
 		return 1;
+
+	// decisively return 0, if we have reached the max tuple count on that page
+	if(get_tuple_count_on_persistent_page(ppage, page_size, tpl_sz_d) == get_maximum_tuple_count_on_persistent_page(get_page_header_size_persistent_page(ppage, page_size), page_size, tpl_sz_d))
+		return 0;
 
 	uint32_t unused_space_on_page = get_space_allotted_to_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d) - get_space_occupied_by_all_tuples_on_persistent_page(ppage, page_size, tpl_sz_d);
 	uint32_t space_required_by_external_tuple = get_space_to_be_occupied_by_tuple_on_persistent_page(page_size, tpl_sz_d, external_tuple);
