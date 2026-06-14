@@ -642,6 +642,11 @@ int can_merge_bplus_tree_leaf_pages(const persistent_page* page1, const persiste
 	if(total_space_page1 < space_in_use_page1 + space_in_use_page2)
 		return 0;
 
+	// even tuple count must satisfy, space space check
+	if(get_maximum_tuple_count_on_persistent_page(get_page_header_size_persistent_page(page1, bpttd_p->pas_p->page_size), bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)) <
+		get_tuple_count_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)) + get_tuple_count_on_persistent_page(page2, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def)))
+		return 0;
+
 	return 1;
 }
 

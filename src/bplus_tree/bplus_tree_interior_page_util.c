@@ -431,6 +431,11 @@ int can_merge_bplus_tree_interior_pages(const persistent_page* page1, const void
 	if(total_space_page1 < space_in_use_page1 + space_to_be_occupied_by_separator_tuple + space_in_use_page2)
 		return 0;
 
+	// even tuple count must satisfy, after space check
+	if(get_maximum_tuple_count_on_persistent_page(get_page_header_size_persistent_page(page1, bpttd_p->pas_p->page_size), bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) <
+		get_tuple_count_on_persistent_page(page1, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)) + 1 + get_tuple_count_on_persistent_page(page2, bpttd_p->pas_p->page_size, &(bpttd_p->index_def->size_def)))
+		return 0;
+
 	return 1;
 }
 

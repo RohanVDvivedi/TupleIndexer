@@ -269,6 +269,11 @@ int can_merge_linked_page_list_pages(const persistent_page* page1, const persist
 	if(total_space_page1_OR_page2 < space_in_use_page1 + space_in_use_page2)
 		return 0;
 
+	// even tuple count must satisfy, after space check
+	if(get_maximum_tuple_count_on_persistent_page(sizeof_LINKED_PAGE_LIST_PAGE_HEADER(lpltd_p), lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)) <
+		get_tuple_count_on_persistent_page(page1, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)) + get_tuple_count_on_persistent_page(page2, lpltd_p->pas_p->page_size, &(lpltd_p->record_def->size_def)))
+		return 0;
+
 	return 1;
 }
 
