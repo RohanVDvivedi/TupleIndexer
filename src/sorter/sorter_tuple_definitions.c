@@ -83,7 +83,7 @@ void print_sorter_tuple_definitions(const sorter_tuple_defs* std_p)
 		{
 			printf("{ ");
 			for(uint32_t j = 0; j < std_p->key_element_ids[i].positions_length; j++)
-				printf("%u, ", std_p->key_element_ids[i].positions[j]);
+				printf("%"PRIu32", ", std_p->key_element_ids[i].positions[j]);
 			printf(" }, ");
 		}
 		printf(" }\n");

@@ -211,7 +211,7 @@ void print_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p)
 		{
 			printf("{ ");
 			for(uint32_t j = 0; j < httd_p->key_element_ids[i].positions_length; j++)
-				printf("%u, ", httd_p->key_element_ids[i].positions[j]);
+				printf("%"PRIu32", ", httd_p->key_element_ids[i].positions[j]);
 			printf(" }, ");
 		}
 		printf(" }\n");

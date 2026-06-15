@@ -285,7 +285,7 @@ void print_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p)
 		{
 			printf("{ ");
 			for(uint32_t j = 0; j < bpttd_p->key_element_ids[i].positions_length; j++)
-				printf("%u, ", bpttd_p->key_element_ids[i].positions[j]);
+				printf("%"PRIu32", ", bpttd_p->key_element_ids[i].positions[j]);
 			printf(" }, ");
 		}
 		printf(" }\n");
