@@ -44,7 +44,7 @@ void set_next_chunk_pointer(void* chunk, tuple_pointer next_chunk_pointer, const
 
 uint32_t append_bytes_to_back_of_chunk(void* chunk, const void* data, uint32_t data_size, uint32_t max_size_increment_allowed, const blob_store_tuple_defs* bstd_p)
 {
-	uint32_t bytes_appended = min(get_max_size_increment_allowed_for_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk), max_size_increment_allowed);
+	uint32_t bytes_appended = min(data_size, min(get_max_size_increment_allowed_for_element_in_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk), max_size_increment_allowed));
 
 	uint32_t old_chunk_data_size = get_element_count_for_element_from_tuple(bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk);
 
