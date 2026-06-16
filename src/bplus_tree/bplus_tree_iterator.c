@@ -143,6 +143,7 @@ bplus_tree_iterator* clone_bplus_tree_iterator(const bplus_tree_iterator* bpi_p,
 	if(clone_p == NULL)
 		exit(-1);
 
+	clone_p->root_page_id = bpi_p->root_page_id;
 	clone_p->is_stacked = bpi_p->is_stacked;
 	clone_p->curr_tuple_index = bpi_p->curr_tuple_index;
 	clone_p->bpttd_p = bpi_p->bpttd_p;
