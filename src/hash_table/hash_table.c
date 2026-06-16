@@ -490,7 +490,7 @@ int perform_vaccum_hash_table(hash_table_handle* hth_p, const hash_table_vaccum_
 
 	for(uint32_t i = 0; i < params_count; i++)
 	{
-		if(htvp->hash_table_vaccum_needed)
+		if(htvp[i].hash_table_vaccum_needed)
 		{
 			uint64_t curr_bucket_id = get_bucket_index_for_key_using_hash_table_tuple_definitions(httd_p, htvp[i].hash_table_vaccum_key, bucket_count);
 
@@ -528,7 +528,7 @@ int perform_vaccum_hash_table(hash_table_handle* hth_p, const hash_table_vaccum_
 			}
 		}
 
-		if(htvp->page_table_vaccum_needed)
+		if(htvp[i].page_table_vaccum_needed)
 		{
 			perform_vaccum_page_table_range_locker(ptrl_p, htvp[i].page_table_vaccum_bucket_id, transaction_id, abort_error);
 			if(*abort_error)

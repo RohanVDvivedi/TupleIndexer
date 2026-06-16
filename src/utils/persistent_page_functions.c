@@ -21,5 +21,5 @@ int is_persistent_page_write_locked(const persistent_page* ppage)
 
 int was_persistent_page_modified(const persistent_page* ppage)
 {
-	return !!(ppage->flags | WAS_MODIFIED);
+	return !!(ppage->flags & WAS_MODIFIED);
 }

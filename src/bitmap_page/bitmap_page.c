@@ -66,6 +66,8 @@ persistent_page get_new_bitmap_page_with_write_lock(const page_access_specs* pas
 	// insert a tuple on the page consisting of all 0 bit fields
 	{
 		char* zero_bits_tuple = malloc(tpl_d->size_def.size);
+		if(zero_bits_tuple == NULL)
+			exit(-1);
 		init_tuple(tpl_d, zero_bits_tuple);
 
 		uint32_t element_count = get_element_count_for_element_from_tuple(tpl_d, SELF, zero_bits_tuple);

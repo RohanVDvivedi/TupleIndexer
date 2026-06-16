@@ -352,9 +352,11 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 					// a variable string or binary has 0 elements if empty, if so expand it to hold maximum_char_value_prefix_count elements, and then again expand it by 1 byte, we would still be fine if the second expand fails
 					if(get_element_count_for_element_from_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry) == 0)
 					{
-						if(!expand_element_count_for_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, 0, maximum_char_value_prefix_count, UINT32_MAX))
+						uint32_t index_entry_size = get_tuple_size(bpttd_p->index_def, index_entry);
+						if(!expand_element_count_for_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, 0, maximum_char_value_prefix_count, bpttd_p->max_index_record_size - index_entry_size))
 							return 0;
-						expand_element_count_for_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, maximum_char_value_prefix_count, 1, UINT32_MAX);
+						index_entry_size = get_tuple_size(bpttd_p->index_def, index_entry);
+						expand_element_count_for_element_in_tuple(bpttd_p->index_def, STATIC_POSITION(i), index_entry, maximum_char_value_prefix_count, 1, bpttd_p->max_index_record_size - index_entry_size);
 					}
 
 					// now set all the elements of this new string or binary type to UCHAR_MAX

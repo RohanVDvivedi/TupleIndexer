@@ -429,6 +429,8 @@ int remove_from_bplus_tree_iterator(bplus_tree_iterator* bpi_p, bplus_tree_after
 	else // we will need to reposition the iterator so grab the key for the curr_tuple
 	{
 		curr_key = malloc(bpi_p->bpttd_p->max_index_record_size); // key would be no bigger than the max_index_record_size
+		if(curr_key == NULL)
+			exit(-1);
 		if(!extract_key_from_record_tuple_using_bplus_tree_tuple_definitions(bpi_p->bpttd_p, curr_tuple, curr_key))
 		{
 			free(curr_key);

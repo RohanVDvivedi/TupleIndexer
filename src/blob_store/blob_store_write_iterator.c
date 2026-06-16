@@ -101,6 +101,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 			// clone the tail_chunk
 			uint32_t tail_chunk_size = get_tuple_size(bswi_p->bstd_p->chunk_tuple_def, tail_chunk);
 			void* cloned_tail_chunk = malloc(tail_chunk_size + bytes_appended);
+			if(cloned_tail_chunk == NULL)
+				exit(-1);
 			memory_move(cloned_tail_chunk, tail_chunk, tail_chunk_size);
 
 			// append to it bytes_appended number of bytes
@@ -146,6 +148,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 				// make chunk large enough to accomodate the remaining bytes
 				void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
+				if(chunk == NULL)
+					exit(-1);
 				initialize_chunk(chunk, data, bytes_appended, get_NULL_tuple_pointer(bswi_p->bstd_p->pas_p), bswi_p->bstd_p);
 
 				// initialize the tail_pointer.page_id
@@ -182,6 +186,8 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 
 			// make chunk large enough to fit the page
 			void* chunk = malloc(bswi_p->bstd_p->max_chunk_size);
+			if(chunk == NULL)
+				exit(-1);
 			initialize_chunk(chunk, data, bytes_appended, get_NULL_tuple_pointer(bswi_p->bstd_p->pas_p), bswi_p->bstd_p);
 
 			// initialize the tail_page_id
@@ -288,6 +294,8 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t d
 		// clone the head_chunk
 		uint32_t head_chunk_size = get_tuple_size(bswi_p->bstd_p->chunk_tuple_def, head_chunk);
 		void* cloned_head_chunk = malloc(head_chunk_size);
+		if(cloned_head_chunk == NULL)
+			exit(-1);
 		memory_move(cloned_head_chunk, head_chunk, head_chunk_size);
 
 		// discard bytes from its (clone's) front

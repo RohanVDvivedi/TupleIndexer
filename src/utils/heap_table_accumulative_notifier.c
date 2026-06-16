@@ -15,6 +15,8 @@ static cy_uint hash_heap_table_accumulative_notifier_entry(const void* he_p)
 void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint32_t entries_capacity)
 {
 	htan_p->entries = malloc(entries_capacity * sizeof(heap_table_accumulative_notifier_entry));
+	if(htan_p->entries == NULL)
+		exit(-1);
 	htan_p->entries_capacity = entries_capacity;
 
 	htan_p->entries_count = 0;

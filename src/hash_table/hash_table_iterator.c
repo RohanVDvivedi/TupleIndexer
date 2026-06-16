@@ -145,6 +145,7 @@ hash_table_iterator* get_new_hash_table_iterator(hash_table_handle* hth_p, bucke
 	return hti_p;
 
 	DELETE_EVERYTHING_AND_ABORT:;
+	destroy_materialized_key(&(hti_p->mat_key));
 	if(hti_p->ptrl_p)
 		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are aborting
 	if(hti_p->lpli_p)
@@ -164,7 +165,6 @@ hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p,
 
 	clone_p->hth_p = hti_p->hth_p;
 	clone_p->key = hti_p->key;
-	clone_p->mat_key = hti_p->mat_key; // key remains the same, so mat_key can also be copied, possibly pointing to contents in the same key
 	clone_p->lock_range = hti_p->lock_range;
 	clone_p->curr_bucket_id = hti_p->curr_bucket_id;
 	clone_p->ptrl_p = NULL;
@@ -173,6 +173,12 @@ hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p,
 	clone_p->pam_p = hti_p->pam_p;
 	clone_p->pmm_p = hti_p->pmm_p;
 	clone_p->bucket_count = hti_p->bucket_count;
+
+	// initialize mat_key
+	if(hti_p->key == NULL)
+		clone_p->mat_key = (materialized_key){};
+	else
+		clone_p->mat_key = materialize_key_from_tuple(hti_p->key, hti_p->httd_p->key_def, NULL, hti_p->httd_p->key_element_count);
 
 	if(hti_p->ptrl_p != NULL)
 	{
@@ -191,6 +197,7 @@ hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p,
 	return clone_p;
 
 	DELETE_EVERYTHING_AND_ABORT:;
+	destroy_materialized_key(&(clone_p->mat_key));
 	if(clone_p->ptrl_p)
 		delete_page_table_range_locker(clone_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no abort required here, as we did not make any update
 	if(clone_p->lpli_p)
@@ -362,6 +369,11 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_co
 		{
 			// open a linked_page_list_iterator at bucket_head_page_id
 			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+			if(*abort_error)
+				return 0;
+
+			// goto prev tuple in the same bucket, we would like to start from tail in the previous bucket
+			prev_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 			if(*abort_error)
 				return 0;
 		}

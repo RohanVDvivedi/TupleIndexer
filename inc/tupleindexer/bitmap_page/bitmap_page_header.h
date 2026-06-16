@@ -1,5 +1,5 @@
-#ifndef ARRAY_TABLE_PAGE_HEADER_H
-#define ARRAY_TABLE_PAGE_HEADER_H
+#ifndef BITMAP_PAGE_HEADER_H
+#define BITMAP_PAGE_HEADER_H
 
 #include<tupleindexer/common/common_page_header.h>
 #include<tupleindexer/common/page_access_specification.h>
