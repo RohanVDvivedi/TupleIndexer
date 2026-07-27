@@ -14,6 +14,8 @@ static cy_uint hash_heap_table_accumulative_notifier_entry(const void* he_p)
 
 void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint32_t entries_capacity)
 {
+	pthread_mutex_init(&(htan_p->lock), NULL);
+
 	htan_p->entries = malloc(entries_capacity * sizeof(heap_table_accumulative_notifier_entry));
 	if(htan_p->entries == NULL)
 		exit(-1);
@@ -29,17 +31,23 @@ void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifie
 
 void deinitialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p)
 {
+	pthread_mutex_destroy(&(htan_p->lock));
 	free(htan_p->entries);
 	deinitialize_hashmap(&(htan_p->entries_by_page_id));
 }
 
-uint32_t get_notification_count_for_heap_table_accumulative_notifier(const heap_table_accumulative_notifier* htan_p)
+uint32_t get_notification_count_for_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p)
 {
-	return get_element_count_hashmap(&(htan_p->entries_by_page_id));
+	pthread_mutex_lock(&(htan_p->lock));
+	uint32_t result = get_element_count_hashmap(&(htan_p->entries_by_page_id));
+	pthread_mutex_unlock(&(htan_p->lock));
+	return result;
 }
 
 void push_to_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id)
 {
+	pthread_mutex_lock(&(htan_p->lock));
+
 	// fetch if one exists
 	heap_table_accumulative_notifier_entry* he_p = (heap_table_accumulative_notifier_entry*) find_equals_in_hashmap(&(htan_p->entries_by_page_id), &(const heap_table_accumulative_notifier_entry){.page_id = page_id});
 
@@ -85,15 +93,21 @@ void push_to_heap_table_accumulative_notifier(heap_table_accumulative_notifier* 
 	}
 	else // do nothing
 	{
-		return;
 	}
+
+	pthread_mutex_unlock(&(htan_p->lock));
 }
 
 int pop_from_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t* root_page_id, uint32_t* unused_space, uint64_t* page_id)
 {
+	pthread_mutex_lock(&(htan_p->lock));
+
 	heap_table_accumulative_notifier_entry* he_p = (heap_table_accumulative_notifier_entry*) get_head_of_linkedlist(&(htan_p->process_order_for_entries));
 	if(he_p == NULL)
+	{
+		pthread_mutex_unlock(&(htan_p->lock));
 		return 0;
+	}
 
 	(*root_page_id) = he_p->root_page_id;
 	(*unused_space) = he_p->unused_space;
@@ -106,5 +120,6 @@ int pop_from_heap_table_accumulative_notifier(heap_table_accumulative_notifier* 
 	// insert it in the free list
 	insert_tail_in_singlylist(&(htan_p->free_entries), he_p);
 
+	pthread_mutex_unlock(&(htan_p->lock));
 	return 1;
 }

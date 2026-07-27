@@ -8,6 +8,8 @@
 #include<cutlery/bst.h>
 #include<cutlery/hashmap.h>
 
+#include<pthread.h>
+
 typedef struct heap_table_accumulative_notifier_entry heap_table_accumulative_notifier_entry;
 struct heap_table_accumulative_notifier_entry
 {
@@ -23,6 +25,8 @@ struct heap_table_accumulative_notifier_entry
 typedef struct heap_table_accumulative_notifier heap_table_accumulative_notifier;
 struct heap_table_accumulative_notifier
 {
+	pthread_mutex_t lock;
+
 	uint32_t entries_capacity;
 	heap_table_accumulative_notifier_entry* entries;
 
@@ -37,7 +41,7 @@ void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifie
 
 void deinitialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p);
 
-uint32_t get_notification_count_for_heap_table_accumulative_notifier(const heap_table_accumulative_notifier* htan_p);
+uint32_t get_notification_count_for_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p);
 
 void push_to_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id);
 
