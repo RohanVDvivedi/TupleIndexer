@@ -56,6 +56,11 @@
 **	an abort on a release_*_lock_on_page(FREE_PAGE), is always followed by a call to release_*_lock_on_page() (called without FREE_PAGE option), so that your page_access_methods will release the acquired latch for an aborted transaction
 */
 
+/*
+**	upon abort_error being returned by any function of page_access_methods it is expected that the operation that this particular call was aiming for is never executed.
+**	unless it is a simple non FREE_PAGE release_*_lock_on_page function, in which case pam must release the lock, and still return an abort_error, this saves us 1 extra function call in the cleanup section of that function.
+*/
+
 // ANY FAILURE, IS EXPECTED TO ALWAYS RESULT IN AN ABORT ERROR, i.e.  THE TRANSACTION IS MEANT TO BE ABORTED ON FAILURE FROM THE FOLLOWING FUNCTIONS
 
 // below are the options that can go with the functions below
