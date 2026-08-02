@@ -1,31 +1,24 @@
 ** PICKED TASKS
 
-** OTHER DATABASE DATASTRUCTURE TASKS (VERY IMPORTANT FOR FUTURE OF PROJECT)
- * Rtree will be supported
-   * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
-   * splits and merges happen according to the minimal increase in interior node bounding boxes
-   * inserts walk down only 1 path of the tree, trying to minimize the increased area
-   * searches walk down a tree, and maintain a stack, releasing locks only if only 1 entry is to be scaned in the interior node, in READ_LOCK
-     * next, prev and get_curr are always supported, in WRITE_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF deletes and inserts (if we are in right rectangle), updates are supported
-   * you need to define a rtree_tuple_definitions
-   * hyper rectangle is an n dimensional rectangle
-   * need callbacks
-     * to generate hyper_rectangle tuple from the user_defined tuple
-     * to find collective hyper_rectangle tuple from given two hyper_rectangle tuples -> minimum of the min values, and maximum of the max values
-     * to find intersecting hyper_rectangle tuple from the given two hyper_rectangle tuples -> maximum of the min values, and minimum of the max values
-     * to find the area of the given hyper_rectangle tuple
-   * iterators to find the intersecting hyper_rectangle tuples OR containing hyper_rectangle tuples
-   * all interior nodes store a hyper rectangle and a corresponding page_id, and atleast 2 entries must fit on a page, else rttd contruction fails. yet you can have any number of dimensions.
-   * you can also specify any numeral datatype for dimension, as long as it is supported by the TupleStore.
-   * there can be any number of dimensions, as long as 2 the user's tuple fit on leaf page and 2 interior entry tuples fit on a page
-   * build utility function to check that hyper rectangle does not have a negative dimension (i.e. lower_bound <= upper_bound), construct hyper_rectangle covering 2 or more hyper rectangles, and check if a hyper_rectangle intersects with another hyper_rectangle etc.
-   * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
-
-FAR FUTURE TASKS AND CONCEPTS
-  * implement borrow_from_left and borrow_from_right functions for interior pages and leaf pages to be performed while merges
-   * this will be implemented for variable length keys aswell
-   * this will take parent page, left page and right page as input and will perform a borrow to make left and right pages balanced if it is possible by the use of borrowing
-   * since this function will also modify the parent page, do relese lock on the parent page also if this operation succeeds
-   * these functions will be called inside the merge_and unlock_pages_up right before we attempt to merge
-   * if the borrowing succeeds we can directly release locks on all the three pages, pop the parent from the locked pages stack and break out of this loop
- * OPTIMIZATION in suffix truncation :: handle cases if INT, UINT, LARGE_UINT, BIT_FIELD, in loop 1, if unequal on ASC-> then set element to last_tuple_page1 element + 1 (to min element if NULL), if unequal on DESC-> then set element to last_tuple_page1 element - 1, if the last_tuple_page1_element is not the min value, else set it to NULL
+**Rtree
+ * only supports primitive numeral data_type_infos as key, and has uint32_t dimensions
+ * hyper rectangle is an n dimensional rectangle
+ * void* get_hyper_rectangle(const void* hyper_context, void* record_tuple, tuple_def* record_def, pam_p, pmm_p, const void* transaction_id, int* abort_error); should return dimensions, number of pairs each being pair of same type numeral type_info number
+ * STATIC_POSITION(0) - low value, STATIC_POSITION(1) - high value of the 0th dimension, they may point to the same positional_accessor
+ * find a way to get area without multiplication, or some other way, that is a robust policy to split and merge without this area value
+   * contender : splits and merges happen according to the minimal increase in interior node bounding boxes
+ * very similar to b+tree, n dimensional data can be searched, inserted, deleted, no least_keys_page_id required
+ * inserts walk down only 1 path of the tree, trying to minimize the increased area, or use some other policy
+ * searches walk down a tree, and maintain a stack, releasing locks only if only 1 entry is to be scaned in the interior node, in READ_LOCK
+   * next, prev and get_curr are always supported, in WRITE_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF deletes/inserts and modifies_non_key_element (if we are in right rectangle), updates are supported
+ * you need to define a rtree_tuple_definitions, it must have a list of data_type_info, all primitive numeral types
+ * need utilities
+   * to find collective hyper_rectangle tuple from given two hyper_rectangle tuples -> minimum of the min values, and maximum of the max values
+   * to find intersecting hyper_rectangle tuple from the given two hyper_rectangle tuples -> maximum of the min values, and minimum of the max values
+   * to check if one contains another, all dimensions of 1 conatins the dimensions of the another
+   * to make sure the hyper_rectangle tuple is valid, minX <= maxX
+   * to find the area of the given hyper_rectangle tuple -> with right ideas we may not need these
+ * iterators to find the intersecting hyper_rectangle tuples OR containing hyper_rectangle tuples
+ * all interior nodes store a hyper rectangle and a corresponding page_id, and atleast 2 entries must fit on a page, else rttd contruction fails. yet you can have any number of dimensions.
+ * there can be any number of dimensions, as long as 2 the user's tuples fit on leaf page and 2 interior entry tuples (with min,max ... list of dimensions -> child_page_id) fit on an interior page
+ * keys will have a even count and all of numeral types, for ith dimension lower bound would be 2*i th key element and 2*i+1 will be upper bound, up to d dimentions (0 <= i < 2*d).
