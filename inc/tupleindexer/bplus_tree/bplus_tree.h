@@ -8,6 +8,13 @@
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
 #include<tupleindexer/common/find_position.h>
 
+/*
+	It is a standard bplus tree, supporting records having keys at predefined positions in the tuple
+	It unlike hash_table only allows unique keys, because I wanted my design to forbid duplicate direction keys in interior pages
+	It could allow linked_page_list as pointer in the leaf to hold list of duplicates but this makes the design rigid so this part is left to the user
+	Another prominent way is to append primary_keys or row_ids from heap_table to the key, to make them unique and accomodatable in bplus_tree
+*/
+
 // returns pointer to the root page of the newly created bplus_tree
 uint64_t get_new_bplus_tree(const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
