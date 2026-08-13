@@ -274,6 +274,18 @@ int delete_all_in_sorted_packed_page(
 			return 1;
 	}
 
+	// if the user only wants to discard the suffix, discard in reverse
+	if(last_index == count - 1)
+	{
+		for(uint32_t i = last_index; i >= start_index && i != -1; i--)
+		{
+			discard_tuple_on_persistent_page(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), i, abort_error);
+			if((*abort_error))
+				return 0;
+		}
+		return 1;
+	}
+
 	for(uint32_t i = start_index; i <= last_index; i++)
 	{
 		discard_tuple_on_persistent_page(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), start_index, abort_error); // a discarded tuple does not leave a slot, hence always discarding at start_index
