@@ -67,21 +67,27 @@ uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t
 	// limit the (*possible_insertion_index) to be not more than the tuple_count
 	(*possible_insertion_index) = min((*possible_insertion_index), tuple_count);
 
-	// iterate over all the remaining tuples on the page
-	for(; (*possible_insertion_index) < tuple_count; (*possible_insertion_index)++)
+	// if there are any tomb_stones on the page and possible_insertion_index is [0, tuple_count)
+	// then iterate over the remaining tuple to fill up some tomb_stone
+	if((get_tomb_stone_count_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def)) > 0) &&
+		((*possible_insertion_index) < tuple_count))
 	{
-		// if a tuple exists at (*possible_insertion_index), then continue and look for the next one
-		if(exists_tuple_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def), (*possible_insertion_index)))
-			continue;
+		// iterate over all the remaining tuples on the page
+		for(; (*possible_insertion_index) < tuple_count; (*possible_insertion_index)++)
+		{
+			// if a tuple exists at (*possible_insertion_index), then continue and look for the next one
+			if(exists_tuple_on_persistent_page(ppage, pas_p->page_size, &(tpl_d->size_def), (*possible_insertion_index)))
+				continue;
 
-		// perform an update at that (*possible_insertion_index), where presently there is no tuple, and holds just a tombstone
-		int inserted = update_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, pas_p->page_size, &(tpl_d->size_def), (*possible_insertion_index), tuple, abort_error);
-		if(*abort_error) // if aborted, fail this call
-			return INVALID_TUPLE_INDEX;
-		if(inserted) // if inserted, we are done, return the current (*possible_insertion_index) and then increment it
-			return (*possible_insertion_index)++;
-		else // else this page is not big enough, but we found an empty slot
-			return INVALID_TUPLE_INDEX;
+			// perform an update at that (*possible_insertion_index), where presently there is no tuple, and holds just a tombstone
+			int inserted = update_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, pas_p->page_size, &(tpl_d->size_def), (*possible_insertion_index), tuple, abort_error);
+			if(*abort_error) // if aborted, fail this call
+				return INVALID_TUPLE_INDEX;
+			if(inserted) // if inserted, we are done, return the current (*possible_insertion_index) and then increment it
+				return (*possible_insertion_index)++;
+			else // else this page is not big enough, but we found an empty slot
+				return INVALID_TUPLE_INDEX;
+		}
 	}
 
 	// if we reach here (*possible_insertion_index) = tuple_count
@@ -91,7 +97,11 @@ uint32_t insert_in_heap_page(persistent_page* ppage, const void* tuple, uint32_t
 	if(*abort_error) // if aborted, fail this call
 		return INVALID_TUPLE_INDEX;
 	if(inserted) // if inserted, we are done, return the current (*possible_insertion_index) and then increment it
-		return (*possible_insertion_index)++;
+	{
+		// new append always happens at index of tuple_count (the old tuple_count), and next insert must again be an append
+		(*possible_insertion_index) = tuple_count + 1;
+		return tuple_count;
+	}
 	else // else this page is not big enough
 		return INVALID_TUPLE_INDEX;
 }
