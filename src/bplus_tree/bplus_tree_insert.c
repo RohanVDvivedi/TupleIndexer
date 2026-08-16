@@ -27,18 +27,28 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 	// this has to be a leaf page
 	locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
-	// find index of last record that has the matching key on the page
-	uint32_t found_index = find_last_in_sorted_packed_page(
+	uint32_t insertion_index = find_insertion_point_in_sorted_packed_page(
 										&(curr_locked_page->ppage), bpttd_p->pas_p->page_size,
 										bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
-										record, bpttd_p->record_def, bpttd_p->key_element_ids
+										record
 									);
 
-	// if such a record is found, we exit with failure
-	if(NO_TUPLE_FOUND != found_index)
-		goto EXIT;
+	// insertion_index is always the index right after all tuples lesser than equal to the record
 
-	inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, record, INVALID_TUPLE_INDEX, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
+	if(insertion_index > 0)
+	{
+		// find index of last record that has the matching key on the page
+		// the greatest record lesser than or equal to this key on this page must not have the same key
+		uint32_t found_index = insertion_index - 1;
+
+		// make sure tuple is not having a duplicate key
+		if(0 == compare_tuples(record, bpttd_p->record_def, bpttd_p->key_element_ids,
+			get_nth_tuple_on_persistent_page(&(curr_locked_page->ppage), bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def), found_index), bpttd_p->record_def, bpttd_p->key_element_ids,
+			bpttd_p->key_compare_direction, bpttd_p->key_element_count))
+			goto EXIT;
+	}
+
+	inserted = split_insert_and_unlock_pages_up(root_page_id, locked_pages_stack_p, record, insertion_index, bpttd_p, pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto EXIT;
 
