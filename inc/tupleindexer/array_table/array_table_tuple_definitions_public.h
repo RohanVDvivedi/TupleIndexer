@@ -32,6 +32,9 @@ struct array_table_tuple_defs
 
 	// the maximum height of the array_table, it will never be more than this value
 	uint64_t max_array_table_height;
+
+	// 0 implies invalid, suggesting all empty
+	uint64_t cache_for_leaf_entries_refrenceable_by_entry_at_given_level[((sizeof(uint64_t) * CHAR_BIT) + 1)];
 };
 
 // returns the maximum size of the fixed sized record of the fixed sized record_def that you can initialize the array_table for

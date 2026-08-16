@@ -67,7 +67,8 @@ int minimize_lock_range_for_array_table_range_locker(array_table_range_locker* a
 			break;
 
 		uint32_t first_bucket_child_index = get_child_index_for_bucket_id_on_array_table_page(&(atrl_p->local_root), lock_range.first_bucket_id, atrl_p->attd_p);
-		uint32_t last_bucket_child_index = get_child_index_for_bucket_id_on_array_table_page(&(atrl_p->local_root), lock_range.last_bucket_id, atrl_p->attd_p);
+		uint32_t last_bucket_child_index = (lock_range.first_bucket_id == lock_range.last_bucket_id) ? first_bucket_child_index : // very likely case for hash table accesses by key
+											get_child_index_for_bucket_id_on_array_table_page(&(atrl_p->local_root), lock_range.last_bucket_id, atrl_p->attd_p);
 
 		// the lock_range may point to a single child on the local_root, if so we can go down further narrowing the lock range
 		if(first_bucket_child_index != last_bucket_child_index)

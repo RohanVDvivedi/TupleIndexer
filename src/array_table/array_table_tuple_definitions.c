@@ -14,6 +14,8 @@ uint32_t get_maximum_array_table_record_size(const page_access_specs* pas_p)
 	return get_maximum_tuple_size_accomodatable_on_persistent_page(sizeof_ARRAY_TABLE_PAGE_HEADER((&attd)), pas_p->page_size, &((tuple_size_def){.is_variable_sized = 0}));
 }
 
+static int get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions_INTERNAL(const array_table_tuple_defs* attd_p, uint64_t level, uint64_t* result);
+
 int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const page_access_specs* pas_p, const tuple_def* record_def)
 {
 	// zero initialize attd_p
@@ -64,6 +66,12 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 	// build power_table
 	initialize_power_table(&(attd_p->power_table_for_index_entries_per_page), attd_p->index_entries_per_page);
 
+	for(uint64_t level = 0; level < sizeof(attd_p->cache_for_leaf_entries_refrenceable_by_entry_at_given_level)/sizeof(attd_p->cache_for_leaf_entries_refrenceable_by_entry_at_given_level[0]); level++)
+	{
+		if(!get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions_INTERNAL(attd_p, level, &(attd_p->cache_for_leaf_entries_refrenceable_by_entry_at_given_level[level])))
+			attd_p->cache_for_leaf_entries_refrenceable_by_entry_at_given_level[level] = 0;
+	}
+
 	// calculations for max_array_table_height
 	// above attributes must be set successfully for this block of code to run properly
 	{
@@ -87,6 +95,17 @@ int init_array_table_tuple_definitions(array_table_tuple_defs* attd_p, const pag
 }
 
 int get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions(const array_table_tuple_defs* attd_p, uint64_t level, uint64_t* result)
+{
+	if(level < sizeof(attd_p->cache_for_leaf_entries_refrenceable_by_entry_at_given_level)/sizeof(attd_p->cache_for_leaf_entries_refrenceable_by_entry_at_given_level[0]) &&
+		attd_p->cache_for_leaf_entries_refrenceable_by_entry_at_given_level[level] != 0)
+	{
+		(*result) = attd_p->cache_for_leaf_entries_refrenceable_by_entry_at_given_level[level];
+		return 1;
+	}
+	return 0;
+}
+
+static int get_leaf_entries_refrenceable_by_entry_at_given_level_using_array_table_tuple_definitions_INTERNAL(const array_table_tuple_defs* attd_p, uint64_t level, uint64_t* result)
 {
 	// every leaf page entry references only 1 leaf entry, which is itself
 	if(level == 0)
