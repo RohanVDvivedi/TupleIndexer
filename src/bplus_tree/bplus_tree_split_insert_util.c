@@ -41,6 +41,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 			else // if it was provided then make sure that it is correct, in keeping the sorted ordering correct
 			{
 				// this will happen only if you do provide the inputs improperly, hence must never happen
+				/* you can choose to do this test but the performance number say otherwise, this can only happen if there is corruption or a bug, but for that why don't you use crc32
 				if(!is_correct_insertion_index_for_insert_at_in_sorted_packed_page(
 									&(curr_locked_page.ppage), bpttd_p->pas_p->page_size, 
 									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
@@ -48,6 +49,7 @@ int split_insert_and_unlock_pages_up(uint64_t root_page_id, locked_pages_stack* 
 									insertion_index
 								))
 					exit(-1);
+				*/
 			}
 
 			// if it does not already exist then try to insert it
