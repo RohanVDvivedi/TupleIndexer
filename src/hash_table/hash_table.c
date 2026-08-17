@@ -71,9 +71,6 @@ struct hash_table_bucket
 
 int expand_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	// invalidate the bucket count in the handle
-	hth_p->bucket_count = 0;
-
 	// zero initialize all local variables of the function
 	int result = 0;
 	page_table_range_locker* ptrl_p = NULL;
@@ -86,10 +83,14 @@ int expand_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 		return 0;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
-	if(*abort_error)
-		goto ABORT_ERROR;
+	uint64_t bucket_count = hth_p->bucket_count;
+	if(bucket_count == 0)
+	{
+		find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+		hth_p->bucket_count = bucket_count;
+	}
 
 	// if bucket_count == UINT64_MAX, then fail
 	if(bucket_count == UINT64_MAX)
@@ -271,14 +272,13 @@ int expand_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 		delete_linked_page_list_iterator(split_hash_buckets[1].bucket_iterator, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
+	if(result)
+		hth_p->bucket_count = bucket_count;
 	return result;
 }
 
 int shrink_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
-	// invalidate the bucket count in the handle
-	hth_p->bucket_count = 0;
-
 	int result = 0;
 
 	// take a range lock on the page table
@@ -287,10 +287,14 @@ int shrink_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 		return 0;
 
 	// get the current bucket_count of the hash_table
-	uint64_t bucket_count;
-	find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
-	if(*abort_error)
-		goto ABORT_ERROR;
+	uint64_t bucket_count = hth_p->bucket_count;
+	if(bucket_count == 0)
+	{
+		find_non_NULL_PAGE_ID_in_page_table(ptrl_p, &bucket_count, MAX, transaction_id, abort_error);
+		if(*abort_error)
+			goto ABORT_ERROR;
+		hth_p->bucket_count = bucket_count;
+	}
 
 	// if bucket_count == 1, then fail
 	if(bucket_count == 1)
@@ -359,6 +363,8 @@ int shrink_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 		delete_page_table_range_locker(ptrl_p, NULL, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
+	if(result)
+		hth_p->bucket_count = bucket_count;
 	return result;
 }
 
