@@ -6,6 +6,7 @@ typedef struct linked_page_list_iterator linked_page_list_iterator;
 typedef enum linked_page_list_state linked_page_list_state;
 enum linked_page_list_state
 {
+	INVALID_STATE_FOR_LINKED_PAGE_LIST = 0, // state is recomputer on this state
 	HEAD_ONLY_LINKED_PAGE_LIST = 1, // linked_page_list has exactly 1 node
 	DUAL_NODE_LINKED_PAGE_LIST = 2, // linked_page_list has exactly 2 nodes
 	MANY_NODE_LINKED_PAGE_LIST = 3  // linked_page_list has 3 or more nodes
@@ -22,10 +23,10 @@ linked_page_list_iterator* clone_linked_page_list_iterator(const linked_page_lis
 int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
 
 // get the current state that the linked_page_list is in
-linked_page_list_state get_state_for_linked_page_list(const linked_page_list_iterator* lpli_p);
+linked_page_list_state get_state_for_linked_page_list(linked_page_list_iterator* lpli_p);
 
 // if state == HEAD_ONLY_LINKED_PAGE_LIST and the curr_page has tuple_count == 0
-int is_empty_linked_page_list(const linked_page_list_iterator* lpli_p);
+int is_empty_linked_page_list(linked_page_list_iterator* lpli_p);
 
 // curr_page.page_id == head_page_id
 int is_at_head_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
@@ -34,16 +35,16 @@ int is_at_head_page_linked_page_list_iterator(const linked_page_list_iterator* l
 int is_at_tail_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
 
 // !is_empty && is_at_head_page && curr_tuple_index == 0
-int is_at_head_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+int is_at_head_tuple_linked_page_list_iterator(linked_page_list_iterator* lpli_p);
 
 // !is_empty && is_at_tail_page && curr_tuple_index == (curr_page.tuple_count - 1)
-int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+int is_at_tail_tuple_linked_page_list_iterator(linked_page_list_iterator* lpli_p);
 
 // !is_empty && curr_tuple_index == 0
-int is_at_first_tuple_in_curr_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+int is_at_first_tuple_in_curr_page_linked_page_list_iterator(linked_page_list_iterator* lpli_p);
 
 // !is_empty && curr_tuple_index == (curr_page.tuple_count - 1)
-int is_at_last_tuple_in_curr_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p);
+int is_at_last_tuple_in_curr_page_linked_page_list_iterator(linked_page_list_iterator* lpli_p);
 
 // this function returns 1, if the iterator is writable, and the tuple can be inserted onto the page passing the checks laid by check_if_record_can_be_inserted_for_linked_page_list_tuple_definitions
 // and the tuple can be inserted without requiring a split

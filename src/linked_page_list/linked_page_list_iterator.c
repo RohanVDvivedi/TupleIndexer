@@ -77,6 +77,8 @@ linked_page_list_iterator* get_new_linked_page_list_iterator(uint64_t head_page_
 	lpli_p->pam_p = pam_p;
 	lpli_p->pmm_p = pmm_p;
 
+	lpli_p->cached_state = INVALID_STATE_FOR_LINKED_PAGE_LIST;
+
 	return lpli_p;
 }
 
@@ -118,6 +120,8 @@ linked_page_list_iterator* clone_linked_page_list_iterator(const linked_page_lis
 		}
 	}
 
+	clone_p->cached_state = lpli_p->cached_state;
+
 	return clone_p;
 }
 
@@ -126,17 +130,20 @@ int is_writable_linked_page_list_iterator(const linked_page_list_iterator* lpli_
 	return lpli_p->pmm_p != NULL;
 }
 
-linked_page_list_state get_state_for_linked_page_list(const linked_page_list_iterator* lpli_p)
+linked_page_list_state get_state_for_linked_page_list(linked_page_list_iterator* lpli_p)
 {
+	if(lpli_p->cached_state != INVALID_STATE_FOR_LINKED_PAGE_LIST)
+		return lpli_p->cached_state;
+
 	if(is_only_head_linked_page_list(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p))
-		return HEAD_ONLY_LINKED_PAGE_LIST;
+		return lpli_p->cached_state = HEAD_ONLY_LINKED_PAGE_LIST;
 	else if(is_dual_node_linked_page_list(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p))
-		return DUAL_NODE_LINKED_PAGE_LIST;
+		return lpli_p->cached_state = DUAL_NODE_LINKED_PAGE_LIST;
 	else
-		return MANY_NODE_LINKED_PAGE_LIST;
+		return lpli_p->cached_state = MANY_NODE_LINKED_PAGE_LIST;
 }
 
-int is_empty_linked_page_list(const linked_page_list_iterator* lpli_p)
+int is_empty_linked_page_list(linked_page_list_iterator* lpli_p)
 {
 	// check if the only page of the linked_page_list is empty
 	return HEAD_ONLY_LINKED_PAGE_LIST == get_state_for_linked_page_list(lpli_p)
@@ -153,7 +160,7 @@ int is_at_tail_page_linked_page_list_iterator(const linked_page_list_iterator* l
 	return is_tail_page_of_linked_page_list(get_from_ref(&(lpli_p->curr_page)), lpli_p->head_page.page_id, lpli_p->lpltd_p);
 }
 
-int is_at_head_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
+int is_at_head_tuple_linked_page_list_iterator(linked_page_list_iterator* lpli_p)
 {
 	// check that the linked_page_list is not empty
 	// and we must be pointing to the first tuple on the head page
@@ -162,7 +169,7 @@ int is_at_head_tuple_linked_page_list_iterator(const linked_page_list_iterator* 
 }
 
 // !is_empty && is_at_tail_page && curr_tuple_index == (curr_page.tuple_count - 1)
-int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
+int is_at_tail_tuple_linked_page_list_iterator(linked_page_list_iterator* lpli_p)
 {
 	// check that the linked_page_list is not empty
 	// and we must be pointing to the last tuple on the tail page
@@ -170,7 +177,7 @@ int is_at_tail_tuple_linked_page_list_iterator(const linked_page_list_iterator* 
 		&& (lpli_p->curr_tuple_index == (get_tuple_count_on_persistent_page(get_from_ref(&(lpli_p->curr_page)), lpli_p->lpltd_p->pas_p->page_size, &(lpli_p->lpltd_p->record_def->size_def)) - 1));
 }
 
-int is_at_first_tuple_in_curr_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
+int is_at_first_tuple_in_curr_page_linked_page_list_iterator(linked_page_list_iterator* lpli_p)
 {
 	// check that the linked_page_list is not empty
 	// and we must be pointing to the first tuple on the curr page
@@ -178,7 +185,7 @@ int is_at_first_tuple_in_curr_page_linked_page_list_iterator(const linked_page_l
 		&& (lpli_p->curr_tuple_index == 0);
 }
 
-int is_at_last_tuple_in_curr_page_linked_page_list_iterator(const linked_page_list_iterator* lpli_p)
+int is_at_last_tuple_in_curr_page_linked_page_list_iterator(linked_page_list_iterator* lpli_p)
 {
 	// check that the linked_page_list is not empty
 	// and we must be pointing to the last tuple on the curr page
@@ -256,6 +263,7 @@ int insert_OR_split_insert_on_page_of_linked_page_list(linked_page_list_iterator
 				release_lock_on_reference_while_holding_head_lock(&new_page, lpli_p, transaction_id, abort_error);
 				goto ABORT_ERROR;
 			}
+			lpli_p->cached_state = INVALID_STATE_FOR_LINKED_PAGE_LIST;
 			break;
 		}
 		case DUAL_NODE_LINKED_PAGE_LIST :
@@ -277,6 +285,7 @@ int insert_OR_split_insert_on_page_of_linked_page_list(linked_page_list_iterator
 				release_lock_on_reference_while_holding_head_lock(&new_page, lpli_p, transaction_id, abort_error);
 				goto ABORT_ERROR;
 			}
+			lpli_p->cached_state = INVALID_STATE_FOR_LINKED_PAGE_LIST;
 
 			// release lock on next_page
 			release_lock_on_reference_while_holding_head_lock(&next_page, lpli_p, transaction_id, abort_error);
@@ -287,6 +296,8 @@ int insert_OR_split_insert_on_page_of_linked_page_list(linked_page_list_iterator
 			}
 			break;
 		}
+		default : // will never occur
+			exit(-1);
 	}
 
 	// decide which of lpli_p->curr_page or new_page becomes the new curr_page
@@ -449,6 +460,7 @@ static int merge_dual_nodes_into_only_head(linked_page_list_iterator* lpli_p, co
 		release_lock_on_reference_while_holding_head_lock(&other_page, lpli_p, transaction_id, abort_error);
 		goto ABORT_ERROR;
 	}
+	lpli_p->cached_state = INVALID_STATE_FOR_LINKED_PAGE_LIST;
 
 	// now we may free the other_page
 	// we also know that the other_page is not head_page
@@ -550,6 +562,7 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 					release_lock_on_reference_while_holding_head_lock(&next_page, lpli_p, transaction_id, abort_error);
 					goto ABORT_ERROR;
 				}
+				lpli_p->cached_state = INVALID_STATE_FOR_LINKED_PAGE_LIST;
 
 				// free the next_page
 				// since curr_page is the head_page, and it is MANY_NODE_LINKED_PAGE_LIST
@@ -631,6 +644,7 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 					release_lock_on_reference_while_holding_head_lock(&next_page, lpli_p, transaction_id, abort_error);
 					goto ABORT_ERROR;
 				}
+				lpli_p->cached_state = INVALID_STATE_FOR_LINKED_PAGE_LIST;
 
 				// free the curr_page
 				// we already know it is not the head page
@@ -681,6 +695,8 @@ static int discard_curr_page_if_empty(linked_page_list_iterator* lpli_p, linked_
 				return 1;
 			}
 		}
+		default : // will never occur
+			exit(-1);
 	}
 
 	return 0;
@@ -811,6 +827,7 @@ int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 					release_lock_on_reference_while_holding_head_lock(&next_page, lpli_p, transaction_id, abort_error);
 					goto ABORT_ERROR;
 				}
+				lpli_p->cached_state = INVALID_STATE_FOR_LINKED_PAGE_LIST;
 
 				// free next_page, we already know that next_page is not head page
 				release_lock_on_persistent_page(lpli_p->pam_p, transaction_id, get_from_ref(&next_page), FREE_PAGE, abort_error);
@@ -847,8 +864,8 @@ int next_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 
 			return 1;
 		}
-		default : // this will never occur
-			return 0;
+		default : // will never occur
+			exit(-1);
 	}
 
 	ABORT_ERROR:;
@@ -979,6 +996,7 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 					release_lock_on_reference_while_holding_head_lock(&prev_page, lpli_p, transaction_id, abort_error);
 					goto ABORT_ERROR;
 				}
+				lpli_p->cached_state = INVALID_STATE_FOR_LINKED_PAGE_LIST;
 
 				// free prev_page
 				// we already know that prev_page is not head page
@@ -1017,8 +1035,8 @@ int prev_linked_page_list_iterator(linked_page_list_iterator* lpli_p, const void
 
 			return 1;
 		}
-		default : // this will never occur
-			return 0;
+		default : // will never occur
+			exit(-1);
 	}
 
 	ABORT_ERROR:;
