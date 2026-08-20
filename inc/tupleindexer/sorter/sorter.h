@@ -44,6 +44,7 @@ struct sorter_handle
 	// this run does not exist in the runs_root_page_id
 	// it is to be inserted after sorting, after it gets full
 	uint64_t unsorted_partial_run_head_page_id;
+	linked_page_list_iterator unsorted_partial_run_mem;
 	linked_page_list_iterator* unsorted_partial_run;
 
 	// boiler plate
