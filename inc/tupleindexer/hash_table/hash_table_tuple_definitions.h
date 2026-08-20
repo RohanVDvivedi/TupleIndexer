@@ -65,6 +65,8 @@ void deinit_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p);
 // print hash_table_tuple_definitions
 void print_hash_table_tuple_definitions(hash_table_tuple_defs* httd_p);
 
+// --- internal functions ---
+
 // returns floor(log(x)/log(2)) = floor(log(x) base 2)
 // uses binary searchover sample space of 0 to 63
 // any other number is an error from this function

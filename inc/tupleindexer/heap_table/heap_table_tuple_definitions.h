@@ -39,6 +39,8 @@ void deinit_heap_table_tuple_definitions(heap_table_tuple_defs* httd_p);
 // print heap_table_tuple_definitions
 void print_heap_table_tuple_definitions(const heap_table_tuple_defs* httd_p);
 
+// --- internal functions ---
+
 #define HEAP_TABLE_ENTRY_TUPLE_MAX_SIZE (UINT32_C(4) + UINT32_C(8))
 // heap_table entry for its bplus_tree is a fixed sized tuple where there can be 4 bytes of unused_space and 8 bytes of page_id
 

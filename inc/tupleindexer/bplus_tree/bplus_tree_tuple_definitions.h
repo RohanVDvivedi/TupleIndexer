@@ -63,6 +63,8 @@ void deinit_bplus_tree_tuple_definitions(bplus_tree_tuple_defs* bpttd_p);
 // print bplus_tree_tuple_definitions
 void print_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p);
 
+// --- internal functions ---
+
 // copy all the key elements from the index_entry to make the key
 int extract_key_from_index_entry_using_bplus_tree_tuple_definitions(const bplus_tree_tuple_defs* bpttd_p, const void* index_entry, void* key);
 
