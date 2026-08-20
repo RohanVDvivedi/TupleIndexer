@@ -9,7 +9,7 @@ DOWNLOAD_DIR:=/usr/local
 # list of public api headers (only these headers will be installed)
 PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions.h bplus_tree/bplus_tree_iterator.h bplus_tree/bplus_tree_walk_down_custom_lock_type.h bplus_tree/bplus_tree_deadlock_avoiding_lock_compatibility_matrix.h\
 				array_table/array_table.h array_table/array_table_tuple_definitions.h array_table/array_table_range_locker.h \
-				page_table/page_table.h page_table/page_table_tuple_definitions_public.h page_table/page_table_range_locker_public.h \
+				page_table/page_table.h page_table/page_table_tuple_definitions.h page_table/page_table_range_locker.h \
 				linked_page_list/linked_page_list.h linked_page_list/linked_page_list_tuple_definitions.h linked_page_list/linked_page_list_iterator.h \
 				hash_table/hash_table_handle.h hash_table/hash_table.h hash_table/hash_table_tuple_definitions.h hash_table/hash_table_iterator.h hash_table/hash_table_vaccum_params.h \
 				sorter/sorter.h sorter/sorter_tuple_definitions_public.h \

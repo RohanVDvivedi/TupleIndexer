@@ -5,7 +5,7 @@
 #include<inttypes.h>
 
 #include<tupleindexer/linked_page_list/linked_page_list_tuple_definitions.h>
-#include<tupleindexer/page_table/page_table_tuple_definitions_public.h>
+#include<tupleindexer/page_table/page_table_tuple_definitions.h>
 
 typedef struct hash_table_tuple_defs hash_table_tuple_defs;
 struct hash_table_tuple_defs
