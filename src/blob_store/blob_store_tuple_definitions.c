@@ -1,4 +1,4 @@
-#include<tupleindexer/blob_store/blob_store_tuple_definitions_public.h>
+#include<tupleindexer/blob_store/blob_store_tuple_definitions.h>
 
 #include<tupleindexer/heap_page/heap_page_header.h>
 

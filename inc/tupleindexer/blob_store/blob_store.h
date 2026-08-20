@@ -1,7 +1,7 @@
 #ifndef BLOB_STORE_H
 #define BLOB_STORE_H
 
-#include<tupleindexer/blob_store/blob_store_tuple_definitions_public.h>
+#include<tupleindexer/blob_store/blob_store_tuple_definitions.h>
 
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
@@ -25,7 +25,7 @@ void print_blob_store(uint64_t root_page_id, const blob_store_tuple_defs* bstd_p
 // a read utility to get the current maximum level this blob_store hosts, this can be used to approximate the number of buffer pages required
 uint32_t get_root_level_blob_store(uint64_t root_page_id, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-#include<tupleindexer/blob_store/blob_store_read_iterator_public.h>
-#include<tupleindexer/blob_store/blob_store_write_iterator_public.h>
+#include<tupleindexer/blob_store/blob_store_read_iterator.h>
+#include<tupleindexer/blob_store/blob_store_write_iterator.h>
 
 #endif
