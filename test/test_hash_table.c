@@ -238,7 +238,7 @@ result insert_from_file(hash_table_handle* hth_p, char* file_name, uint32_t skip
 
 		//printf("hash = %"PRIu64"\n", hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, hash_func, httd_p->key_element_count));
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(NULL, hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -341,7 +341,7 @@ result insert_unique_from_file(hash_table_handle* hth_p, char* file_name, uint32
 
 		//printf("hash = %"PRIu64"\n", hash_tuple(record_tuple, httd_p->lpltd.record_def, httd_p->key_element_ids, hash_func, httd_p->key_element_count));
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(NULL, hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -468,7 +468,7 @@ result update_non_key_element_in_file(hash_table_handle* hth_p, char* element, c
 		//sprint_tuple(print_buffer, record_tuple, record_def);
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(NULL, hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -565,7 +565,7 @@ result update_in_file(hash_table_handle* hth_p, char* element, char* file_name, 
 		//sprint_tuple(print_buffer, record_tuple, record_def);
 		//printf("Built tuple : size(%u)\n\t%s\n\n", get_tuple_size(record_def, record_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(NULL, hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -660,7 +660,7 @@ result delete_from_file(hash_table_handle* hth_p, char* file_name, uint32_t skip
 		//sprint_tuple(print_buffer, key_tuple, bpttd.key_def);
 		//printf("Built key_tuple : size(%u)\n\t%s\n\n", get_tuple_size(bpttd.key_def, key_tuple), print_buffer);
 
-		hash_table_iterator* hti_p = get_new_hash_table_iterator(NULL, hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+		hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){}, key_tuple, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");
@@ -751,7 +751,7 @@ int delete_all_from_hash_table(hash_table_handle* hth_p, uint64_t start_bucket_i
 {
 	int removed_count = 0;
 
-	hash_table_iterator* hti_p = get_new_hash_table_iterator(NULL, hth_p, (bucket_range){start_bucket_id, last_bucket_id}, NULL, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	hash_table_iterator* hti_p = get_new_hash_table_iterator(hth_p, (bucket_range){start_bucket_id, last_bucket_id}, NULL, httd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -804,14 +804,14 @@ int delete_all_from_hash_table(hash_table_handle* hth_p, uint64_t start_bucket_i
 
 void print_2_buckets(hash_table_handle* hth_p, uint64_t start_bucket_id, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p)
 {
-	hash_table_iterator* hti1_p = get_new_hash_table_iterator(NULL, hth_p, (bucket_range){start_bucket_id, start_bucket_id + 1}, NULL, httd_p, pam_p, NULL, transaction_id, &abort_error);
+	hash_table_iterator* hti1_p = get_new_hash_table_iterator(hth_p, (bucket_range){start_bucket_id, start_bucket_id + 1}, NULL, httd_p, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
 		exit(-1);
 	}
 
-	hash_table_iterator* hti2_p = clone_hash_table_iterator(NULL, hti1_p, transaction_id, &abort_error);
+	hash_table_iterator* hti2_p = clone_hash_table_iterator(hti1_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");

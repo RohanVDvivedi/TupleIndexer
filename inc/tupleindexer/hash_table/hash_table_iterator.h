@@ -29,11 +29,9 @@ struct hash_table_iterator
 	uint64_t curr_bucket_id;
 
 	// page_table_range_locker for the hash_table
-	page_table_range_locker ptrl_mem;
 	page_table_range_locker* ptrl_p;
 
 	// linked_page_list_iterator pointing to the curr_bucket_id
-	linked_page_list_iterator lpli_mem;
 	linked_page_list_iterator* lpli_p;
 
 	// any of ptrl_p and lpli_p can be NULL during the lifetime of the hash_table_iterator
@@ -47,20 +45,17 @@ struct hash_table_iterator
 
 	// bucket_count of the hash_table when this iterator was created
 	uint64_t bucket_count;
-
-	// for internal use, will be set if the iterator was malloc-ed on get_new
-	unsigned int must_free_on_destroy : 1;
 };
 
 // creates a new hash_table_iterator for the given bucket range
 // either provide key
 // of if you do not provide key, then a subset of the lock_range (that actually exists, depending on the bucket_count) becomes iterable
 // on abort_error, NULL is returned
-hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, hash_table_handle* hth_p, bucket_range bucket_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
+hash_table_iterator* get_new_hash_table_iterator(hash_table_handle* hth_p, bucket_range bucket_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error);
 
 // returns NULL if hti_p is writable OR on an abort error
 // on an abort_error, hti_p will still hold its locks
-hash_table_iterator* clone_hash_table_iterator(hash_table_iterator* iter_mem, const hash_table_iterator* hti_p, const void* transaction_id, int* abort_error);
+hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p, const void* transaction_id, int* abort_error);
 
 // return the bucket_count of the hash_table, at the instant when this iterator was created
 // note: this may not be the actual bucket_count, if a expand_hash_table/shrink_hash_table was called post the initialization of this hash_table_iterator

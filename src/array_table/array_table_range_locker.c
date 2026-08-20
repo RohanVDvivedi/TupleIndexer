@@ -8,13 +8,7 @@
 
 #include<stdlib.h>
 
-static void free_iter(array_table_range_locker* atrl_p)
-{
-	if(atrl_p->must_free_on_destroy)
-		free(atrl_p);
-}
-
-array_table_range_locker* get_new_array_table_range_locker(array_table_range_locker* iter_mem, uint64_t root_page_id, bucket_range lock_range, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+array_table_range_locker* get_new_array_table_range_locker(uint64_t root_page_id, bucket_range lock_range, const array_table_tuple_defs* attd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// fail if the lock range is invalid
 	if(!is_valid_bucket_range(&lock_range))
@@ -24,19 +18,9 @@ array_table_range_locker* get_new_array_table_range_locker(array_table_range_loc
 	if(attd_p == NULL || pam_p == NULL)
 		return NULL;
 
-	array_table_range_locker* atrl_p = NULL;
-	if(iter_mem == NULL)
-	{
-		atrl_p = malloc(sizeof(array_table_range_locker));
-		if(atrl_p == NULL)
-			exit(-1);
-		atrl_p->must_free_on_destroy = 1;
-	}
-	else
-	{
-		atrl_p = iter_mem;
-		atrl_p->must_free_on_destroy = 0;
-	}
+	array_table_range_locker* atrl_p = malloc(sizeof(array_table_range_locker));
+	if(atrl_p == NULL)
+		exit(-1);
 
 	// start initializing the atrl, making it point to and lock the actual root of the array_table
 	atrl_p->delegated_local_root_range = WHOLE_BUCKET_RANGE;
@@ -44,7 +28,7 @@ array_table_range_locker* get_new_array_table_range_locker(array_table_range_loc
 	atrl_p->local_root = acquire_persistent_page_with_lock(pam_p, transaction_id, root_page_id, ((pmm_p == NULL) ? READ_LOCK : WRITE_LOCK), abort_error);
 	if(*abort_error)
 	{
-		free_iter(atrl_p);
+		free(atrl_p);
 		return NULL;
 	}
 	atrl_p->root_page_id = root_page_id;
@@ -56,7 +40,7 @@ array_table_range_locker* get_new_array_table_range_locker(array_table_range_loc
 	minimize_lock_range_for_array_table_range_locker(atrl_p, lock_range, transaction_id, abort_error);
 	if(*abort_error)
 	{
-		free_iter(atrl_p);
+		free(atrl_p);
 		return NULL;
 	}
 
@@ -126,24 +110,14 @@ int minimize_lock_range_for_array_table_range_locker(array_table_range_locker* a
 	return 1;
 }
 
-array_table_range_locker* clone_array_table_range_locker(array_table_range_locker* iter_mem, const array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error)
+array_table_range_locker* clone_array_table_range_locker(const array_table_range_locker* atrl_p, const void* transaction_id, int* abort_error)
 {
 	if(is_writable_array_table_range_locker(atrl_p))
 		return NULL;
 
-	array_table_range_locker* clone_p = NULL;
-	if(iter_mem == NULL)
-	{
-		clone_p = malloc(sizeof(array_table_range_locker));
-		if(clone_p == NULL)
-			exit(-1);
-		clone_p->must_free_on_destroy = 1;
-	}
-	else
-	{
-		clone_p = iter_mem;
-		clone_p->must_free_on_destroy = 0;
-	}
+	array_table_range_locker* clone_p = malloc(sizeof(array_table_range_locker));
+	if(clone_p == NULL)
+		exit(-1);
 
 	clone_p->delegated_local_root_range = atrl_p->delegated_local_root_range;
 	clone_p->max_local_root_level = atrl_p->max_local_root_level;
@@ -156,7 +130,7 @@ array_table_range_locker* clone_array_table_range_locker(array_table_range_locke
 	clone_p->local_root = acquire_persistent_page_with_lock(clone_p->pam_p, transaction_id, atrl_p->local_root.page_id, READ_LOCK, abort_error);
 	if(*abort_error)
 	{
-		free_iter(clone_p);
+		free(clone_p);
 		return NULL;
 	}
 
@@ -849,7 +823,7 @@ void delete_array_table_range_locker(array_table_range_locker* atrl_p, uint64_t*
 		}
 	}
 
-	free_iter(atrl_p);
+	free(atrl_p);
 }
 
 int perform_vaccum_array_table_range_locker(array_table_range_locker* atrl_p, uint64_t vaccum_bucket_id, const void* transaction_id, int* abort_error)

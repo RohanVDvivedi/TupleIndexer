@@ -77,7 +77,7 @@ static inline uint32_t pop_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_p
 	lock_sorted_runs(&(sh_p->slocker));
 
 	{
-		ptrl_p = get_new_page_table_range_locker(NULL, sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -140,7 +140,7 @@ static inline uint32_t push_sorted_runs(sorter_handle* sh_p, uint64_t* run_head_
 	lock_sorted_runs(&(sh_p->slocker));
 
 	{
-		ptrl_p = get_new_page_table_range_locker(NULL, sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -271,7 +271,7 @@ int insert_in_sorter(sorter_handle* sh_p, const void* record, const void* transa
 		if(*abort_error)
 			goto ABORT_ERROR;
 
-		sh_p->unsorted_partial_run = get_new_linked_page_list_iterator(&(sh_p->unsorted_partial_run_mem), sh_p->unsorted_partial_run_head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		sh_p->unsorted_partial_run = get_new_linked_page_list_iterator(sh_p->unsorted_partial_run_head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 	}
@@ -416,7 +416,7 @@ int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tran
 
 			e.head_page_id = sorted_runs_page_ids[i];
 
-			e.run_iterator = get_new_linked_page_list_iterator(NULL, e.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+			e.run_iterator = get_new_linked_page_list_iterator(e.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto ABORT_ERROR;
 
@@ -432,7 +432,7 @@ int merge_N_runs_in_sorter(sorter_handle* sh_p, uint32_t N_way, const void* tran
 		if(*abort_error)
 			goto ABORT_ERROR;
 
-		output_run.run_iterator = get_new_linked_page_list_iterator(NULL, output_run.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		output_run.run_iterator = get_new_linked_page_list_iterator(output_run.head_page_id, &(sh_p->std_p->lpltd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -602,7 +602,7 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 
 	if(sorted_data != NULL)
 	{
-		ptrl_p = get_new_page_table_range_locker(NULL, sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, sh_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 
@@ -624,7 +624,7 @@ int destroy_sorter(sorter_handle* sh_p, uint64_t* sorted_data, const void* trans
 
 	// destroy the runs page_table, and the contained runs must also be destroyed
 	{
-		ptrl_p = get_new_page_table_range_locker(NULL, sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, NULL, transaction_id, abort_error);
+		ptrl_p = get_new_page_table_range_locker(sh_p->sorted_runs_root_page_id, WHOLE_BUCKET_RANGE, &(sh_p->std_p->pttd), sh_p->pam_p, NULL, transaction_id, abort_error);
 		if(*abort_error)
 			goto ABORT_ERROR;
 

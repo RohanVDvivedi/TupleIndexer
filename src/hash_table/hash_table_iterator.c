@@ -4,13 +4,7 @@
 
 #include<stdlib.h>
 
-static void free_iter(hash_table_iterator* hti_p)
-{
-	if(hti_p->must_free_on_destroy)
-		free(hti_p);
-}
-
-hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, hash_table_handle* hth_p, bucket_range lock_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
+hash_table_iterator* get_new_hash_table_iterator(hash_table_handle* hth_p, bucket_range lock_range, const void* key, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
 	if(httd_p == NULL || pam_p == NULL)
@@ -20,19 +14,9 @@ hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, 
 	if(key == NULL && !is_valid_bucket_range(&lock_range))
 		return NULL;
 
-	hash_table_iterator* hti_p = NULL;
-	if(iter_mem == NULL)
-	{
-		hti_p = malloc(sizeof(hash_table_iterator));
-		if(hti_p == NULL)
-			exit(-1);
-		hti_p->must_free_on_destroy = 1;
-	}
-	else
-	{
-		hti_p = iter_mem;
-		hti_p->must_free_on_destroy = 0;
-	}
+	hash_table_iterator* hti_p = malloc(sizeof(hash_table_iterator));
+	if(hti_p == NULL)
+		exit(-1);
 
 	hti_p->hth_p = hth_p;
 	hti_p->key = key;
@@ -57,7 +41,7 @@ hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, 
 		{
 			// fetch the bucket_count of the hash_table
 			// take a range lock on the page table, to get the bucket_count -> do this with curr_pmm_p
-			hti_p->ptrl_p = get_new_page_table_range_locker(&(hti_p->ptrl_mem), hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, curr_pmm_p, transaction_id, abort_error);
+			hti_p->ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, curr_pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto DELETE_EVERYTHING_AND_ABORT;
 
@@ -86,7 +70,7 @@ hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, 
 			{
 				// open a linked_page_list_iterator at bucket_head_page_id
 				// this must be done with the actual provided pmm_p
-				hti_p->lpli_p = get_new_linked_page_list_iterator(&(hti_p->lpli_mem), curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+				hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto DELETE_EVERYTHING_AND_ABORT;
 
@@ -119,7 +103,7 @@ hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, 
 	{
 		// fetch the bucket_count of the hash_table
 		// take a range lock on the page table, to get the bucket_count
-		hti_p->ptrl_p = get_new_page_table_range_locker(&(hti_p->ptrl_mem), hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+		hti_p->ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(hti_p->httd_p->pttd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto DELETE_EVERYTHING_AND_ABORT;
 
@@ -152,7 +136,7 @@ hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, 
 		if(curr_bucket_head_page_id != hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID)
 		{
 			// open a linked_page_list_iterator at bucket_head_page_id
-			hti_p->lpli_p = get_new_linked_page_list_iterator(&(hti_p->lpli_mem), curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				goto DELETE_EVERYTHING_AND_ABORT;
 		}
@@ -166,28 +150,18 @@ hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, 
 		delete_page_table_range_locker(hti_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no vaccum required here, since we are aborting
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
-	free_iter(hti_p);
+	free(hti_p);
 	return NULL;
 }
 
-hash_table_iterator* clone_hash_table_iterator(hash_table_iterator* iter_mem, const hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
+hash_table_iterator* clone_hash_table_iterator(const hash_table_iterator* hti_p, const void* transaction_id, int* abort_error)
 {
 	if(is_writable_hash_table_iterator(hti_p))
 		return NULL;
 
-	hash_table_iterator* clone_p = NULL;
-	if(iter_mem == NULL)
-	{
-		clone_p = malloc(sizeof(hash_table_iterator));
-		if(clone_p == NULL)
-			exit(-1);
-		clone_p->must_free_on_destroy = 1;
-	}
-	else
-	{
-		clone_p = iter_mem;
-		clone_p->must_free_on_destroy = 0;
-	}
+	hash_table_iterator* clone_p = malloc(sizeof(hash_table_iterator));
+	if(clone_p == NULL)
+		exit(-1);
 
 	clone_p->hth_p = hti_p->hth_p;
 	clone_p->key = hti_p->key;
@@ -208,14 +182,14 @@ hash_table_iterator* clone_hash_table_iterator(hash_table_iterator* iter_mem, co
 
 	if(hti_p->ptrl_p != NULL)
 	{
-		clone_p->ptrl_p = clone_page_table_range_locker(&(clone_p->ptrl_mem), hti_p->ptrl_p, transaction_id, abort_error);
+		clone_p->ptrl_p = clone_page_table_range_locker(hti_p->ptrl_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto DELETE_EVERYTHING_AND_ABORT;
 	}
 
 	if(hti_p->lpli_p != NULL)
 	{
-		clone_p->lpli_p = clone_linked_page_list_iterator(&(clone_p->lpli_mem), hti_p->lpli_p, transaction_id, abort_error);
+		clone_p->lpli_p = clone_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
 		if(*abort_error)
 			goto DELETE_EVERYTHING_AND_ABORT;
 	}
@@ -228,7 +202,7 @@ hash_table_iterator* clone_hash_table_iterator(hash_table_iterator* iter_mem, co
 		delete_page_table_range_locker(clone_p->ptrl_p, NULL, NULL, transaction_id, abort_error); // no abort required here, as we did not make any update
 	if(clone_p->lpli_p)
 		delete_linked_page_list_iterator(clone_p->lpli_p, transaction_id, abort_error);
-	free_iter(clone_p);
+	free(clone_p);
 	return NULL;
 }
 
@@ -328,7 +302,7 @@ int next_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_co
 		if(curr_bucket_head_page_id != hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID)
 		{
 			// open a linked_page_list_iterator at bucket_head_page_id
-			hti_p->lpli_p = get_new_linked_page_list_iterator(&(hti_p->lpli_mem), curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				return 0;
 		}
@@ -394,7 +368,7 @@ int prev_hash_table_iterator(hash_table_iterator* hti_p, hash_table_iteration_co
 		if(curr_bucket_head_page_id != hti_p->httd_p->pttd.pas_p->NULL_PAGE_ID)
 		{
 			// open a linked_page_list_iterator at bucket_head_page_id
-			hti_p->lpli_p = get_new_linked_page_list_iterator(&(hti_p->lpli_mem), curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+			hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 			if(*abort_error)
 				return 0;
 
@@ -442,7 +416,7 @@ int insert_in_hash_table_iterator(hash_table_iterator* hti_p, const void* tuple,
 			return 0;
 
 		// open a bucket iterator for the new linked_page_list bucket
-		hti_p->lpli_p = get_new_linked_page_list_iterator(&(hti_p->lpli_mem), curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
+		hti_p->lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(hti_p->httd_p->lpltd), hti_p->pam_p, hti_p->pmm_p, transaction_id, abort_error);
 		if(*abort_error)
 			return 0;
 
@@ -590,7 +564,7 @@ void delete_hash_table_iterator(hash_table_iterator* hti_p, hash_table_vaccum_pa
 		delete_page_table_range_locker(hti_p->ptrl_p, &(htvp->page_table_vaccum_bucket_id), &(htvp->page_table_vaccum_needed), transaction_id, abort_error);
 	if(hti_p->lpli_p)
 		delete_linked_page_list_iterator(hti_p->lpli_p, transaction_id, abort_error);
-	free_iter(hti_p);
+	free(hti_p);
 
 	// on abort no vaccum is needed
 	if(*abort_error)

@@ -60,7 +60,7 @@ int insert_counter = 0;
 
 int push_at_head(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -88,7 +88,7 @@ int push_at_head(uint64_t head_page_id, char* name, const linked_page_list_tuple
 
 int push_at_tail(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -123,7 +123,7 @@ int push_at_tail(uint64_t head_page_id, char* name, const linked_page_list_tuple
 
 void print_all_forward(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -158,7 +158,7 @@ void print_all_forward(uint64_t head_page_id, const linked_page_list_tuple_defs*
 
 void print_all_reverse(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -199,7 +199,7 @@ void print_all_reverse(uint64_t head_page_id, const linked_page_list_tuple_defs*
 
 void pop_from_head(uint64_t head_page_id, int to_pop, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -229,7 +229,7 @@ void pop_from_head(uint64_t head_page_id, int to_pop, const linked_page_list_tup
 
 void pop_from_tail(uint64_t head_page_id, int to_pop, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -265,7 +265,7 @@ void pop_from_tail(uint64_t head_page_id, int to_pop, const linked_page_list_tup
 
 void update_from_head(uint64_t head_page_id, int index, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -315,7 +315,7 @@ void update_from_head(uint64_t head_page_id, int index, char* name, const linked
 // at max count rows are updated
 int reindex_all(uint64_t head_page_id, int count, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -377,7 +377,7 @@ int reindex_all(uint64_t head_page_id, int count, char* name, const linked_page_
 // at max count rows are updated
 int reindex_all_reverse(uint64_t head_page_id, int count, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -444,7 +444,7 @@ int reindex_all_reverse(uint64_t head_page_id, int count, char* name, const link
 
 int update_all_to_identical_from_head(uint64_t head_page_id, char* name, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -497,7 +497,7 @@ int update_all_to_identical_from_head(uint64_t head_page_id, char* name, const l
 
 void multiple_active_iterators_to_print(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p)
 {
-	linked_page_list_iterator* lpli1_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli1_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -522,7 +522,7 @@ void multiple_active_iterators_to_print(uint64_t head_page_id, const linked_page
 		exit(-1);
 	}
 
-	linked_page_list_iterator* lpli2_p = clone_linked_page_list_iterator(NULL, lpli1_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli2_p = clone_linked_page_list_iterator(lpli1_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -578,7 +578,7 @@ void multiple_active_iterators_to_print(uint64_t head_page_id, const linked_page
 // this function will block you forever (just or test)
 void test_concurrency(uint64_t head_page_id, const linked_page_list_tuple_defs* lpltd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	linked_page_list_iterator* lpli1_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli1_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -595,7 +595,7 @@ void test_concurrency(uint64_t head_page_id, const linked_page_list_tuple_defs* 
 	printf("lpli1 is at tail page = %d\n", is_at_tail_page_linked_page_list_iterator(lpli1_p));
 
 	// this will block here forever, if pmm_p != NULL
-	linked_page_list_iterator* lpli2_p = get_new_linked_page_list_iterator(NULL, head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli2_p = get_new_linked_page_list_iterator(head_page_id, lpltd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -793,7 +793,7 @@ int main()
 	// attempt to insert a NULL
 	int r = 0;
 	{
-		linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, head_page_id, &lpltd, pam_p, pmm_p, transaction_id, &abort_error);
+		linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(head_page_id, &lpltd, pam_p, pmm_p, transaction_id, &abort_error);
 		if(abort_error)
 		{
 			printf("ABORTED\n");

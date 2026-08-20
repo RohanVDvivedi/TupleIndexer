@@ -24,7 +24,7 @@ int abort_error = 0;
 
 int vaccum_in_page_table(uint64_t root_page_id, uint64_t vaccum_bucket_id, const page_table_tuple_defs* pttd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p)
 {
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(NULL, root_page_id, WHOLE_BUCKET_RANGE, pttd_p, pam_p, pmm_p, transaction_id, &abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, pttd_p, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -84,7 +84,7 @@ int main()
 	// print the constructed page table
 	print_page_table(root_page_id, 0, &pttd, pam_p, transaction_id, &abort_error);
 
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(NULL, root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, pmm_p, transaction_id, &abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -109,7 +109,7 @@ int main()
 	// print the constructed page table
 	print_page_table(root_page_id, 1, &pttd, pam_p, transaction_id, &abort_error);
 
-	ptrl_p = get_new_page_table_range_locker(NULL, root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, NULL, transaction_id, &abort_error);
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -131,7 +131,7 @@ int main()
 	if(vaccum_needed)
 		vaccum_in_page_table(root_page_id, vaccum_bucket_id, &pttd, pam_p, pmm_p);
 
-	ptrl_p = get_new_page_table_range_locker(NULL, root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, NULL, transaction_id, &abort_error);
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
@@ -167,7 +167,7 @@ int main()
 	if(vaccum_needed)
 		vaccum_in_page_table(root_page_id, vaccum_bucket_id, &pttd, pam_p, pmm_p);
 
-	ptrl_p = get_new_page_table_range_locker(NULL, root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, pmm_p, transaction_id, &abort_error);
+	ptrl_p = get_new_page_table_range_locker(root_page_id, WHOLE_BUCKET_RANGE, &pttd, pam_p, pmm_p, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
