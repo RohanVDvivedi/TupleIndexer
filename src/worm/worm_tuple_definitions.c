@@ -1,4 +1,4 @@
-#include<tupleindexer/worm/worm_tuple_definitions_public.h>
+#include<tupleindexer/worm/worm_tuple_definitions.h>
 
 #include<tupleindexer/worm/worm_head_page_header.h>
 #include<tupleindexer/worm/worm_any_page_header.h>

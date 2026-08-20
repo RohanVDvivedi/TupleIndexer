@@ -17,7 +17,7 @@
 **	if set you must destroy the data structure at (*dependent_root_page_id)
 */
 
-#include<tupleindexer/worm/worm_tuple_definitions_public.h>
+#include<tupleindexer/worm/worm_tuple_definitions.h>
 
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
@@ -40,7 +40,7 @@ int set_dependent_root_page_id_for_worm(uint64_t head_page_id, uint64_t dependen
 
 void print_worm(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-#include<tupleindexer/worm/worm_append_iterator_public.h>
-#include<tupleindexer/worm/worm_read_iterator_public.h>
+#include<tupleindexer/worm/worm_append_iterator.h>
+#include<tupleindexer/worm/worm_read_iterator.h>
 
 #endif
