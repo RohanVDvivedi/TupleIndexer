@@ -6,7 +6,7 @@
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
 
-#include<tupleindexer/linked_page_list/linked_page_list_iterator_public.h>
+#include<tupleindexer/linked_page_list/linked_page_list_iterator.h>
 
 /*
 	Note: The sorter is a single threaded structure.

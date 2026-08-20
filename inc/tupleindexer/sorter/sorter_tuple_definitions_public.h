@@ -4,7 +4,7 @@
 #include<tuplestore/tuple.h>
 #include<inttypes.h>
 
-#include<tupleindexer/linked_page_list/linked_page_list_tuple_definitions_public.h>
+#include<tupleindexer/linked_page_list/linked_page_list_tuple_definitions.h>
 #include<tupleindexer/page_table/page_table_tuple_definitions_public.h>
 
 typedef struct sorter_tuple_defs sorter_tuple_defs;
