@@ -15,7 +15,7 @@ PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions.
 				sorter/sorter.h sorter/sorter_tuple_definitions_public.h \
 				worm/worm.h worm/worm_tuple_definitions_public.h worm/worm_append_iterator_public.h worm/worm_read_iterator_public.h \
 				blob_store/blob_store.h blob_store/blob_store_tuple_definitions.h blob_store/blob_store_write_iterator.h blob_store/blob_store_read_iterator.h \
-				heap_table/heap_table.h heap_table/heap_table_tuple_definitions_public.h heap_table/heap_table_iterator_public.h \
+				heap_table/heap_table.h heap_table/heap_table_tuple_definitions.h heap_table/heap_table_iterator.h \
 				heap_page/heap_page.h utils/persistent_page_functions.h utils/persistent_page.h utils/persistent_page_access_release.h utils/persistent_page_altered.h utils/persistent_page_altered_util.h utils/persistent_page_unaltered.h utils/persistent_page_unaltered_util.h \
 				bitmap_page/bitmap_page.h \
 				interface/page_access_methods.h interface/page_access_methods_options.h interface/opaque_page_access_methods.h interface/unWALed_in_memory_data_store.h \

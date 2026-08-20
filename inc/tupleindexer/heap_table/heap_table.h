@@ -19,7 +19,7 @@
 	it is basically a big-bad-wrapper over the bplus_tree to manage unused space and best-fit allocation in a heap_table, (like the FSM used in )
 */
 
-#include<tupleindexer/heap_table/heap_table_tuple_definitions_public.h>
+#include<tupleindexer/heap_table/heap_table_tuple_definitions.h>
 
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
@@ -63,6 +63,6 @@ struct heap_table_notifier
 // once a heap_page is identified, fill it up to the brim inserting all the possible tuple you could, and then mark it to be fixed
 persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, const uint32_t required_unused_space, uint32_t* unused_space_in_entry, const heap_table_notifier* notify_wrong_entry, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-#include<tupleindexer/heap_table/heap_table_iterator_public.h>
+#include<tupleindexer/heap_table/heap_table_iterator.h>
 
 #endif

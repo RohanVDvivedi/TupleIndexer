@@ -4,7 +4,7 @@
 #include<tuplestore/tuple.h>
 #include<inttypes.h>
 
-#include<tupleindexer/heap_table/heap_table_tuple_definitions_public.h>
+#include<tupleindexer/heap_table/heap_table_tuple_definitions.h>
 
 #include<tupleindexer/common/page_access_specification.h>
 
