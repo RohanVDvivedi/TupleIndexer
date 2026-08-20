@@ -1,8 +1,8 @@
 #ifndef BPLUS_TREE_H
 #define BPLUS_TREE_H
 
-#include<tupleindexer/bplus_tree/bplus_tree_iterator_public.h>
-#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions_public.h>
+#include<tupleindexer/bplus_tree/bplus_tree_iterator.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
 
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>

@@ -1,5 +1,7 @@
 #include<tupleindexer/bplus_tree/bplus_tree_iterator.h>
 
+#include<tupleindexer/bplus_tree/bplus_tree_iterator_internal.h>
+
 #include<tupleindexer/utils/locked_pages_stack.h>
 #include<tupleindexer/bplus_tree/bplus_tree_leaf_page_util.h>
 #include<tupleindexer/bplus_tree/bplus_tree_interior_page_util.h>

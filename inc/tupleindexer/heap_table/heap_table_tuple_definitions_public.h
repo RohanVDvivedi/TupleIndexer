@@ -3,7 +3,7 @@
 
 #include<tuplestore/tuple.h>
 
-#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions_public.h>
+#include<tupleindexer/bplus_tree/bplus_tree_tuple_definitions.h>
 
 typedef struct heap_table_tuple_defs heap_table_tuple_defs;
 struct heap_table_tuple_defs
