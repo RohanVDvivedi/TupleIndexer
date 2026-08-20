@@ -17,7 +17,7 @@ hash_table_handle get_new_hash_table(uint64_t initial_bucket_count, const hash_t
 		return (hash_table_handle){httd_p->pttd.pas_p->NULL_PAGE_ID, 0};
 
 	// take a range lock on the page table, to set the bucket_count
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(root_page_id, (bucket_range){initial_bucket_count, initial_bucket_count}, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(NULL, root_page_id, (bucket_range){initial_bucket_count, initial_bucket_count}, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		return (hash_table_handle){httd_p->pttd.pas_p->NULL_PAGE_ID, 0};
 
@@ -42,7 +42,8 @@ uint64_t get_bucket_count_hash_table(hash_table_handle* hth_p, const hash_table_
 		return hth_p->bucket_count;
 
 	// take a range lock on the page table
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	page_table_range_locker ptrl_mem;
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(&ptrl_mem, hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -78,7 +79,8 @@ int expand_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 	hash_table_bucket split_hash_buckets[2] = {};
 
 	// take a range lock on the page table
-	ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	page_table_range_locker ptrl_mem;
+	ptrl_p = get_new_page_table_range_locker(&ptrl_mem, hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -143,7 +145,7 @@ int expand_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 	}
 
 	// open a linked_page_list iterator for the split_content_head_page_id
-	split_content = get_new_linked_page_list_iterator(split_content_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
+	split_content = get_new_linked_page_list_iterator(NULL, split_content_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -181,7 +183,7 @@ int expand_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 					goto ABORT_ERROR;
 
 				// open a new bucket iterator for the ith split_hash_bucket
-				split_hash_buckets[i].bucket_iterator = get_new_linked_page_list_iterator(split_hash_buckets[i].bucket_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
+				split_hash_buckets[i].bucket_iterator = get_new_linked_page_list_iterator(NULL, split_hash_buckets[i].bucket_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
@@ -282,7 +284,8 @@ int shrink_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 	int result = 0;
 
 	// take a range lock on the page table
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	page_table_range_locker ptrl_mem;
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(&ptrl_mem, hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -371,7 +374,8 @@ int shrink_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 int destroy_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// take a range lock on the page table, to get the bucket_count
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	page_table_range_locker ptrl_mem;
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(&ptrl_mem, hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 
@@ -422,7 +426,8 @@ int destroy_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* ht
 void print_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// take a range lock on the page table, to get the bucket_count
-	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
+	page_table_range_locker ptrl_mem;
+	page_table_range_locker* ptrl_p = get_new_page_table_range_locker(&ptrl_mem, hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, NULL, transaction_id, abort_error);
 	if(*abort_error)
 		return ;
 
@@ -477,10 +482,11 @@ uint32_t get_root_level_hash_table(hash_table_handle* hth_p, const hash_table_tu
 int perform_vaccum_hash_table(hash_table_handle* hth_p, const hash_table_vaccum_params* htvp, uint32_t params_count, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	page_table_range_locker* ptrl_p = NULL;
-	linked_page_list_iterator* lpli_p = NULL;
+	linked_page_list_iterator* lpli_p = NULL; linked_page_list_iterator lpli_mem;
 
 	// take a range lock on the page table, to get the bucket_count
-	ptrl_p = get_new_page_table_range_locker(hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
+	page_table_range_locker ptrl_mem;
+	ptrl_p = get_new_page_table_range_locker(&ptrl_mem, hth_p->root_page_id, WHOLE_BUCKET_RANGE, &(httd_p->pttd), pam_p, pmm_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto ABORT_ERROR;
 
@@ -507,7 +513,7 @@ int perform_vaccum_hash_table(hash_table_handle* hth_p, const hash_table_vaccum_
 			if(curr_bucket_head_page_id != httd_p->pttd.pas_p->NULL_PAGE_ID)
 			{
 				// open a linked_page_list_iterator at bucket_head_page_id
-				lpli_p = get_new_linked_page_list_iterator(curr_bucket_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
+				lpli_p = get_new_linked_page_list_iterator(&lpli_mem, curr_bucket_head_page_id, &(httd_p->lpltd), pam_p, pmm_p, transaction_id, abort_error);
 				if(*abort_error)
 					goto ABORT_ERROR;
 
