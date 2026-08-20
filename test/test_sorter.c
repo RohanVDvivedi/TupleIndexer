@@ -251,7 +251,7 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 	int prev_tuple_valid = 0;
 	char prev_tuple[PAGE_SIZE];
 
-	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(result_head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
+	linked_page_list_iterator* lpli_p = get_new_linked_page_list_iterator(NULL, result_head_page_id, lpltd_p, pam_p, NULL, transaction_id, &abort_error);
 	if(abort_error)
 	{
 		printf("ABORTED\n");
