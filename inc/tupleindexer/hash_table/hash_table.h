@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_H
 #define HASH_TABLE_H
 
-#include<tupleindexer/hash_table/hash_table_tuple_definitions_public.h>
+#include<tupleindexer/hash_table/hash_table_tuple_definitions.h>
 
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>
@@ -48,7 +48,7 @@ void print_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* htt
 // a read utility to get the current maximum level this hash_table hosts, this can be used to approximate the number of buffer pages required
 uint32_t get_root_level_hash_table(hash_table_handle* hth_p, const hash_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
-#include<tupleindexer/hash_table/hash_table_iterator_public.h>
+#include<tupleindexer/hash_table/hash_table_iterator.h>
 
 #include<tupleindexer/hash_table/hash_table_vaccum_params.h>
 
