@@ -31,7 +31,7 @@ hash_table_iterator* get_new_hash_table_iterator(hash_table_iterator* iter_mem, 
 	else
 	{
 		hti_p = iter_mem;
-		hti_p->must_free_on_destroy = 1;
+		hti_p->must_free_on_destroy = 0;
 	}
 
 	hti_p->hth_p = hth_p;
