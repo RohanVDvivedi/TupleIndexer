@@ -1,7 +1,7 @@
 #ifndef SORTER_H
 #define SORTER_H
 
-#include<tupleindexer/sorter/sorter_tuple_definitions_public.h>
+#include<tupleindexer/sorter/sorter_tuple_definitions.h>
 
 #include<tupleindexer/interface/opaque_page_access_methods.h>
 #include<tupleindexer/interface/opaque_page_modification_methods.h>

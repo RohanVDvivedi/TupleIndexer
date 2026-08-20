@@ -12,7 +12,7 @@ PUBLIC_HEADERS:=bplus_tree/bplus_tree.h bplus_tree/bplus_tree_tuple_definitions.
 				page_table/page_table.h page_table/page_table_tuple_definitions.h page_table/page_table_range_locker.h \
 				linked_page_list/linked_page_list.h linked_page_list/linked_page_list_tuple_definitions.h linked_page_list/linked_page_list_iterator.h \
 				hash_table/hash_table_handle.h hash_table/hash_table.h hash_table/hash_table_tuple_definitions.h hash_table/hash_table_iterator.h hash_table/hash_table_vaccum_params.h \
-				sorter/sorter.h sorter/sorter_tuple_definitions_public.h \
+				sorter/sorter.h sorter/sorter_tuple_definitions.h \
 				worm/worm.h worm/worm_tuple_definitions_public.h worm/worm_append_iterator_public.h worm/worm_read_iterator_public.h \
 				blob_store/blob_store.h blob_store/blob_store_tuple_definitions.h blob_store/blob_store_write_iterator.h blob_store/blob_store_read_iterator.h \
 				heap_table/heap_table.h heap_table/heap_table_tuple_definitions.h heap_table/heap_table_iterator.h \
