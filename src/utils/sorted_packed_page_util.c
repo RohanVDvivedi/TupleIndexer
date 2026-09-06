@@ -720,8 +720,13 @@ void sort_and_convert_to_sorted_packed_page(
 	const tuple_on_page_compare_context topcc = get_tuple_on_page_compare_context(tpl_def, tuple_keys_to_compare, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count);
 	index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
 
-	quick_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context));
-	//heap_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), 3);
+	if(!quick_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context)))
+		exit(-1);
+	// optionally you can also try heap sort instead of quick stort
+	/*
+	if(!heap_sort_iai(&iai, 0, tuple_count - 1, &contexted_comparator(&topcc, compare_tuples_using_comparator_context), 3))
+		exit(-1);
+	*/
 }
 
 #include<cutlery/array.h>
