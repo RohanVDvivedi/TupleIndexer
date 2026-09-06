@@ -825,7 +825,8 @@ void sort_materialized_and_convert_to_sorted_packed_page(
 	index_accessed_interface i = get_index_accessed_interface_for_array(&sortable_rows_container);
 
 	// sort the sortable_rows
-	merge_sort_iai(&i, 0, tuple_count - 1, &contexted_comparator(&c, compare_sortable_rows), STD_C_mem_allocator);
+	if(!merge_sort_iai(&i, 0, tuple_count - 1, &contexted_comparator(&c, compare_sortable_rows), STD_C_mem_allocator))
+		exit(-1);
 
 	// discard all tuples on the page given
 	discard_all_tuples_on_persistent_page(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), abort_error);
