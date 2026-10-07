@@ -9,8 +9,9 @@ int is_tuple_pointer_NULL(tuple_pointer tptr, const page_access_specs* pas_p)
 
 int is_tuple_pointer_NULL2(const void* tptr_tpl, const page_access_specs* pas_p)
 {
+	const data_type_info* dti;
 	datum uval;
-	get_value_from_element_from_tuple(&uval, &(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(0), tptr_tpl);
+	get_value_from_element_from_tuple(&uval, &dti, &(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(0), tptr_tpl);
 
 	return (uval.uint_value == pas_p->NULL_PAGE_ID);
 }
@@ -24,12 +25,13 @@ tuple_pointer get_tuple_pointer(const void* tptr_tpl, const page_access_specs* p
 {
 	tuple_pointer tptr;
 
+	const data_type_info* dti_temp;
 	datum uval;
 
-	get_value_from_element_from_tuple(&uval, &(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(0), tptr_tpl);
+	get_value_from_element_from_tuple(&uval, &dti_temp, &(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(0), tptr_tpl);
 	tptr.page_id = uval.uint_value;
 
-	get_value_from_element_from_tuple(&uval, &(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(1), tptr_tpl);
+	get_value_from_element_from_tuple(&uval, &dti_temp, &(pas_p->tuple_pointer_tuple_def), STATIC_POSITION(1), tptr_tpl);
 	tptr.tuple_index = uval.uint_value;
 
 	return tptr;

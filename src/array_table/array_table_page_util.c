@@ -146,8 +146,9 @@ uint64_t get_child_page_id_at_child_index_in_array_table_index_page(const persis
 		return attd_p->pas_p->NULL_PAGE_ID;
 
 	// the tuple is itself a non-NULLable UINT value, hence we can directly access it
+	const data_type_info* dti_temp;
 	datum uval;
-	get_value_from_element_from_tuple(&uval, attd_p->index_def, SELF, child_tuple);
+	get_value_from_element_from_tuple(&uval, &dti_temp, attd_p->index_def, SELF, child_tuple);
 	return uval.uint_value;
 }
 

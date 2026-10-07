@@ -42,8 +42,9 @@ uint64_t get_from_page_table(page_table_range_locker* ptrl_p, uint64_t bucket_id
 
 	if(res == NULL)
 		return ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID;
+	const data_type_info* dti_temp;
 	datum uval;
-	get_value_from_element_from_tuple(&uval, ptrl_p->atrl.attd_p->record_def, SELF, res);
+	get_value_from_element_from_tuple(&uval, &dti_temp, ptrl_p->atrl.attd_p->record_def, SELF, res);
 	return uval.uint_value;
 }
 
@@ -72,8 +73,9 @@ uint64_t find_non_NULL_PAGE_ID_in_page_table(page_table_range_locker* ptrl_p, ui
 
 	if(res == NULL)
 		return ptrl_p->atrl.attd_p->pas_p->NULL_PAGE_ID;
+	const data_type_info* dti_temp;
 	datum uval;
-	get_value_from_element_from_tuple(&uval, ptrl_p->atrl.attd_p->record_def, SELF, res);
+	get_value_from_element_from_tuple(&uval, &dti_temp, ptrl_p->atrl.attd_p->record_def, SELF, res);
 	return uval.uint_value;
 }
 

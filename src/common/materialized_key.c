@@ -18,8 +18,7 @@ materialized_key materialize_key_from_tuple(const void* tuple, const tuple_def* 
 
 	for(uint32_t i = 0; i < key_element_count; i++)
 	{
-		mat_key.key_dtis[i] = get_type_info_for_element_from_tuple_def(tpl_d, ((key_columns_to_materialize == NULL) ? STATIC_POSITION(i) : (key_columns_to_materialize[i])));
-		if(!get_value_from_element_from_tuple(&(mat_key.keys[i]), tpl_d, ((key_columns_to_materialize == NULL) ? STATIC_POSITION(i) : (key_columns_to_materialize[i])), tuple))
+		if(!get_value_from_element_from_tuple(&(mat_key.keys[i]), &(mat_key.key_dtis[i]), tpl_d, ((key_columns_to_materialize == NULL) ? STATIC_POSITION(i) : (key_columns_to_materialize[i])), tuple))
 			mat_key.keys[i] = (*NULL_DATUM);
 	}
 

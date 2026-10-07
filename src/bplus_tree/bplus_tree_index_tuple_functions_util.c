@@ -9,8 +9,9 @@ uint64_t get_child_page_id_from_index_tuple(const void* index_tuple, const bplus
 {
 	// get user value for the child_page_id element from the tuple
 	// we neet not worry, this element in the tuple will not be NULL, check bplus_tree_tuple_defs.c for more information
+	const data_type_info* dti_temp;
 	datum uval;
-	get_value_from_element_from_tuple(&uval, bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_tuple);
+	get_value_from_element_from_tuple(&uval, &dti_temp, bpttd_p->index_def, STATIC_POSITION(bpttd_p->key_element_count), index_tuple);
 	return uval.uint_value;
 }
 

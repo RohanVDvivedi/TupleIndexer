@@ -145,14 +145,16 @@ void build_heap_table_entry_tuple(const heap_table_tuple_defs* httd_p, void* ent
 uint64_t decompose_heap_table_entry_tuple(const heap_table_tuple_defs* httd_p, const void* entry_tuple, uint32_t* unused_space)
 {
 	{
+		const data_type_info* dti_temp;
 		datum uval;
-		get_value_from_element_from_tuple(&uval, httd_p->entry_def, STATIC_POSITION(UNUSED_SPACE_ENTRY_DEF_POSITION), entry_tuple);
+		get_value_from_element_from_tuple(&uval, &dti_temp, httd_p->entry_def, STATIC_POSITION(UNUSED_SPACE_ENTRY_DEF_POSITION), entry_tuple);
 		(*unused_space) = uval.uint_value;
 	}
 
 	{
+		const data_type_info* dti_temp;
 		datum uval;
-		get_value_from_element_from_tuple(&uval, httd_p->entry_def, STATIC_POSITION(PAGE_ID_ENTRY_DEF_POSITION), entry_tuple);
+		get_value_from_element_from_tuple(&uval, &dti_temp, httd_p->entry_def, STATIC_POSITION(PAGE_ID_ENTRY_DEF_POSITION), entry_tuple);
 		return uval.uint_value;
 	}
 }

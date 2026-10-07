@@ -155,8 +155,9 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 		// get the curr_binary, the tuple at curr_binary_index
 		datum curr_binary;
 		{
+			const data_type_info* dti_temp;
 			const void* binary_tuple = get_nth_tuple_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_binary_tuple_def->size_def), wri_p->curr_binary_index);
-			get_value_from_element_from_tuple(&curr_binary, wri_p->wtd_p->partial_binary_tuple_def, SELF, binary_tuple);
+			get_value_from_element_from_tuple(&curr_binary, &dti_temp, wri_p->wtd_p->partial_binary_tuple_def, SELF, binary_tuple);
 		}
 
 		// compute bytes_readable
@@ -212,8 +213,9 @@ const char* peek_in_worm(worm_read_iterator* wri_p, uint32_t* data_size, const v
 		// get the curr_binary, the tuple at curr_binary_index
 		datum curr_binary;
 		{
+			const data_type_info* dti_temp;
 			const void* binary_tuple = get_nth_tuple_on_persistent_page(&(wri_p->curr_page), wri_p->wtd_p->pas_p->page_size, &(wri_p->wtd_p->partial_binary_tuple_def->size_def), wri_p->curr_binary_index);
-			get_value_from_element_from_tuple(&curr_binary, wri_p->wtd_p->partial_binary_tuple_def, SELF, binary_tuple);
+			get_value_from_element_from_tuple(&curr_binary, &dti_temp, wri_p->wtd_p->partial_binary_tuple_def, SELF, binary_tuple);
 		}
 
 		// compute bytes_readable

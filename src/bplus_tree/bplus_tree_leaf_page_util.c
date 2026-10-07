@@ -184,10 +184,11 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 		}
 		else // we can only suffix truncate STRING or BINARY types
 		{
+			const data_type_info* dti_temp;
 			datum last_tuple_page1_element;
-			get_value_from_element_from_tuple(&last_tuple_page1_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
+			get_value_from_element_from_tuple(&last_tuple_page1_element, &dti_temp, bpttd_p->record_def, bpttd_p->key_element_ids[i], last_tuple_page1);
 			datum first_tuple_page2_element;
-			get_value_from_element_from_tuple(&first_tuple_page2_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+			get_value_from_element_from_tuple(&first_tuple_page2_element, &dti_temp, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 			switch(bpttd_p->key_compare_direction[i])
 			{
@@ -287,8 +288,9 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				// NULL is the least value of any type
 				// check if index entry element is NULL
 				{
+					const data_type_info* dti_temp;
 					datum index_entry_element;
-					get_value_from_element_from_tuple(&index_entry_element, bpttd_p->index_def, STATIC_POSITION(i), index_entry);
+					get_value_from_element_from_tuple(&index_entry_element, &dti_temp, bpttd_p->index_def, STATIC_POSITION(i), index_entry);
 					if(is_datum_NULL(&index_entry_element))
 						break;
 				}
@@ -326,8 +328,9 @@ static int build_suffix_truncated_index_entry_from_record_tuples_for_split(const
 				}
 				else if(ele_d->type == STRING || ele_d->type == BINARY) // max values of STRING and BINARY types are difficult to compute
 				{
+					const data_type_info* dti_temp;
 					datum first_tuple_page2_element;
-					get_value_from_element_from_tuple(&first_tuple_page2_element, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
+					get_value_from_element_from_tuple(&first_tuple_page2_element, &dti_temp, bpttd_p->record_def, bpttd_p->key_element_ids[i], first_tuple_page2);
 
 					if(is_datum_NULL(&first_tuple_page2_element))
 					{

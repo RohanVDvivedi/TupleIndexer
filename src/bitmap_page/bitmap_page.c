@@ -102,8 +102,9 @@ uint64_t get_bit_field_on_bitmap_page(const persistent_page* ppage, uint32_t ind
 	if(bitmap_page_only_tuple == NULL)
 		return 0;
 
+	const data_type_info* dti_temp;
 	datum uval;
-	if(!get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(index), bitmap_page_only_tuple))
+	if(!get_value_from_element_from_tuple(&uval, &dti_temp, tpl_d, STATIC_POSITION(index), bitmap_page_only_tuple))
 		return 0;
 
 	// this shall never happen

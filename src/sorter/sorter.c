@@ -323,7 +323,8 @@ static void cache_keys_for_active_sorted_run(active_sorted_run* asr_p, const sor
 
 	for(uint32_t i = 0; i < std_p->key_element_count; i++)
 	{
-		if(!get_value_from_element_from_tuple(&(asr_p->cached_keys_for_curr_tuple[i]), std_p->record_def, std_p->key_element_ids[i], tuple))
+		const data_type_info* dti_temp;
+		if(!get_value_from_element_from_tuple(&(asr_p->cached_keys_for_curr_tuple[i]), &dti_temp, std_p->record_def, std_p->key_element_ids[i], tuple))
 			asr_p->cached_keys_for_curr_tuple[i] = (*NULL_DATUM);
 	}
 }

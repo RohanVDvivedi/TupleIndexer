@@ -806,7 +806,8 @@ void sort_materialized_and_convert_to_sorted_packed_page(
 		memory_move(row_i, tuple, tuple_size);
 		for(uint32_t k = 0; k < keys_count; k++)
 		{
-			if(!get_value_from_element_from_tuple(&(keyss[i * keys_count + k]), tpl_def, tuple_keys_to_compare[k], tuple))
+			const data_type_info* dti_temp;
+			if(!get_value_from_element_from_tuple(&(keyss[i * keys_count + k]), &dti_temp, tpl_def, tuple_keys_to_compare[k], tuple))
 				keyss[i * keys_count + k] = (*NULL_DATUM);
 		}
 

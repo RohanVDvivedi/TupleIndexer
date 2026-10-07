@@ -20,15 +20,17 @@ void initialize_chunk(void* chunk, const void* chunk_data, uint32_t chunk_data_s
 
 tuple_pointer get_next_chunk_pointer(const void* chunk, const blob_store_tuple_defs* bstd_p)
 {
+	const data_type_info* dti_temp;
 	datum uval;
-	get_value_from_element_from_tuple(&uval, bstd_p->chunk_tuple_def, STATIC_POSITION(1), chunk);
+	get_value_from_element_from_tuple(&uval, &dti_temp, bstd_p->chunk_tuple_def, STATIC_POSITION(1), chunk);
 	return get_tuple_pointer(uval.tuple_value, bstd_p->pas_p);
 }
 
 datum get_curr_chunk_data(const void* chunk, const blob_store_tuple_defs* bstd_p)
 {
+	const data_type_info* dti_temp;
 	datum chunk_data;
-	if(!get_value_from_element_from_tuple(&chunk_data, bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk))
+	if(!get_value_from_element_from_tuple(&chunk_data, &dti_temp, bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk))
 		return (*NULL_DATUM);
 	return chunk_data;
 }
@@ -53,8 +55,9 @@ uint32_t append_bytes_to_back_of_chunk(void* chunk, const void* data, uint32_t d
 
 	// this copy is illegal, ideally a set should be called, but this is faster
 	{
+		const data_type_info* dti_temp;
 		datum uval;
-		get_value_from_element_from_tuple(&uval, bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk);
+		get_value_from_element_from_tuple(&uval, &dti_temp, bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk);
 		memory_move(((char*)uval.binary_value) + old_chunk_data_size, data, bytes_appended);
 	}
 
