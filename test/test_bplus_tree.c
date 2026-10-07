@@ -177,24 +177,25 @@ void build_key_tuple_from_record_struct(const bplus_tree_tuple_defs* bpttd_p, vo
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
+	const data_type_info* dti;
 	datum uval;
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(0), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(0), tupl);
 	r->index = uval.int_value;
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(1), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(1), tupl);
 	strncpy(r->name, uval.string_value, uval.string_size);
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(2), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(2), tupl);
 	r->age = uval.uint_value;
 	strcpy(r->sex, "Female");
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(3), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(3), tupl);
 	if(uval.bit_field_value)
 		strcpy(r->sex, "Male");
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(4), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(4), tupl);
 	strncpy(r->email, uval.string_value, uval.string_size);
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(5), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(5), tupl);
 	strncpy(r->phone, uval.string_value, uval.string_size);
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(6), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(6), tupl);
 	r->score = uval.uint_value;
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(7), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(7), tupl);
 	strncpy(r->update, uval.string_value, uval.string_size);
 }
 
@@ -297,8 +298,9 @@ update_inspector ii = {
 
 int updater_update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, void (*cancel_update_callback)(void* cancel_update_callback_context, const void* transaction_id, int* abort_error), void* cancel_update_callback_context, const void* transaction_id, int* abort_error)
 {
+	const data_type_info* dti_temp;
 	datum update_data;
-	get_value_from_element_from_tuple(&update_data, record_def, STATIC_POSITION(7), old_record);
+	get_value_from_element_from_tuple(&update_data, &dti_temp, record_def, STATIC_POSITION(7), old_record);
 	char update_value[64] = {};
 	strncpy(update_value, update_data.string_value, update_data.string_size);
 	if(strlen(update_value) == 0)
@@ -817,8 +819,9 @@ void update_UPDATE_column_for_all_tuples_with_iterator(uint64_t root_page_id, ch
 	while(tuple_to_process != NULL)
 	{
 		// update the update column here in place
+		const data_type_info* dti_temp;
 		datum old_value;
-		get_value_from_element_from_tuple(&old_value, bpttd_p->record_def, STATIC_POSITION(7), tuple_to_process);
+		get_value_from_element_from_tuple(&old_value, &dti_temp, bpttd_p->record_def, STATIC_POSITION(7), tuple_to_process);
 		char data_bytes[64] = {};
 		memmove(data_bytes, old_value.string_value, old_value.string_size);
 		datum new_value = {.string_value = data_bytes, .string_size = old_value.string_size};

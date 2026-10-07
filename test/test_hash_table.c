@@ -161,24 +161,25 @@ void build_key_tuple_from_record_struct(const hash_table_tuple_defs* httd_p, voi
 
 void read_record_from_tuple(record* r, const void* tupl, const tuple_def* tpl_d)
 {
+	const data_type_info* dti;
 	datum uval;
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(0), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(0), tupl);
 	r->index = uval.int_value;
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(1), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(1), tupl);
 	strncpy(r->name, uval.string_value, uval.string_size);
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(2), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(2), tupl);
 	r->age = uval.uint_value;
 	strcpy(r->sex, "Female");
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(3), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(3), tupl);
 	if(uval.bit_field_value)
 		strcpy(r->sex, "Male");
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(4), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(4), tupl);
 	strncpy(r->email, uval.string_value, uval.string_size);
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(5), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(5), tupl);
 	strncpy(r->phone, uval.string_value, uval.string_size);
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(6), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(6), tupl);
 	r->score = uval.uint_value;
-	get_value_from_element_from_tuple(&uval, tpl_d, STATIC_POSITION(7), tupl);
+	get_value_from_element_from_tuple(&uval, &dti, tpl_d, STATIC_POSITION(7), tupl);
 	strncpy(r->update, uval.string_value, uval.string_size);
 }
 

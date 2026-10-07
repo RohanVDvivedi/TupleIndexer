@@ -220,8 +220,9 @@ void delete_tuples_from_heap_table(uint64_t root_page_id, char** names, const he
 			const void* tuple = get_nth_tuple_on_persistent_page(&heap_page, httd_p->pas_p->page_size, &(httd_p->record_def->size_def), i);
 			if(tuple == NULL)
 				continue;
+			const data_type_info* dti;
 			datum uval;
-			int res = get_value_from_element_from_tuple(&uval, httd_p->record_def, STATIC_POSITION(1), tuple);
+			int res = get_value_from_element_from_tuple(&uval, &dti, httd_p->record_def, STATIC_POSITION(1), tuple);
 			if(!res || is_datum_NULL(&uval))
 				continue;
 
