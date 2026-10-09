@@ -180,6 +180,12 @@ uint32_t find_succeeding_in_sorted_packed_page(
 
 #include<tupleindexer/common/materialized_key.h>
 
+uint32_t find_insertion_point_in_sorted_packed_page2(
+									const persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const materialized_key* mat_key
+								);
+
 // returns index of the tuple found
 uint32_t find_first_in_sorted_packed_page2(
 									const persistent_page* ppage, uint32_t page_size, 
