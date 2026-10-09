@@ -7,6 +7,8 @@
 #include<cutlery/index_accessed_interface.h>
 #include<cutlery/index_accessed_search_sort.h>
 
+//#define TURN_ON_DEBUG_POSITION_CHECK_GUARD
+
 // ---------------- UTILTY CODE FOR SORTED PACKED PAGE BEGIN -------------------------------------------------
 
 // compare context to compare a tuple with an external tuple OR on page tuple
@@ -194,9 +196,14 @@ int insert_at_in_sorted_packed_page(
 									int* abort_error
 								)
 {
-	// fail if this function is not called with a correct insertion index
-	if(!is_correct_insertion_index_for_insert_at_in_sorted_packed_page(ppage, page_size, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count, tuple, index))
-		return 0;
+	#ifdef TURN_ON_DEBUG_POSITION_CHECK_GUARD
+		// fail if this function is not called with a correct insertion index
+		if(!is_correct_insertion_index_for_insert_at_in_sorted_packed_page(ppage, page_size, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count, tuple, index))
+		{
+			printf("SORTED_PACKED_PAGE:INVALID_INSERTION_POSITION\n");
+			exit(-1);
+		}
+	#endif
 
 	// insert tuple to the page at the desired index
 	return insert_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), index, tuple, abort_error);
@@ -212,29 +219,40 @@ int update_at_in_sorted_packed_page(
 									int* abort_error
 								)
 {
-	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+	#ifdef TURN_ON_DEBUG_POSITION_CHECK_GUARD
+		uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
 
-	// if the index is not valid we fail the update
-	if( !(0 <= index && index < tuple_count) )
-		return 0;
+		// if the index is not valid we fail the update
+		if( !(0 <= index && index < tuple_count) )
+		{
+			printf("SORTED_PACKED_PAGE:INVALID_UPDATE_POSITION\n");
+			exit(-1);
+		}
 
-	// in the below conditions we ensure that the tuple order is maintained
+		// in the below conditions we ensure that the tuple order is maintained
 
-	// the tuple compares greater than the tuple at (index + 1), we fail
-	if(tuple_count > 0 && index != tuple_count - 1)
-	{
-		const void* i_1_th_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), index + 1);
-		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count) > 0)
-			return 0;
-	}
+		// the tuple compares greater than the tuple at (index + 1), we fail
+		if(tuple_count > 0 && index != tuple_count - 1)
+		{
+			const void* i_1_th_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), index + 1);
+			if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count) > 0)
+			{
+				printf("SORTED_PACKED_PAGE:INVALID_UPDATE_POSITION\n");
+				exit(-1);
+			}
+		}
 
-	// the tuple compares lesser than the tuple at (index - 1), we fail
-	if(tuple_count > 0 && index > 0)
-	{
-		const void* i_1_th_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), index - 1);
-		if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count) < 0)
-			return 0;
-	}
+		// the tuple compares lesser than the tuple at (index - 1), we fail
+		if(tuple_count > 0 && index > 0)
+		{
+			const void* i_1_th_tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), index - 1);
+			if( compare_tuples(tuple, tpl_def, tuple_keys_to_compare, i_1_th_tuple, tpl_def, tuple_keys_to_compare, tuple_keys_compare_direction, keys_count) < 0)
+			{
+				printf("SORTED_PACKED_PAGE:INVALID_UPDATE_POSITION\n");
+				exit(-1);
+			}
+		}
+	#endif
 
 	return update_tuple_on_persistent_page_resiliently(pmm_p, transaction_id, ppage, page_size, &(tpl_def->size_def), index, tuple, abort_error);
 }
@@ -528,6 +546,25 @@ uint32_t find_succeeding_in_sorted_packed_page(
 		return NO_TUPLE_FOUND;
 
 	return result;
+}
+
+uint32_t find_insertion_point_in_sorted_packed_page2(
+									const persistent_page* ppage, uint32_t page_size, 
+									const tuple_def* tpl_def, const positional_accessor* tuple_keys_to_compare, const compare_direction* tuple_keys_compare_direction, uint32_t keys_count,
+									const materialized_key* mat_key
+								)
+{
+	uint32_t tuple_count = get_tuple_count_on_persistent_page(ppage, page_size, &(tpl_def->size_def));
+
+	// if the page is empty insert it at 0
+	if(tuple_count == 0)
+		return 0;
+
+	tuple_accessed_page tap = get_tuple_accessed_page((persistent_page*)ppage, page_size, tpl_def, NULL, NULL, NULL);
+	const tuple_on_page_compare_context2 topcc2 = get_tuple_on_page_compare_context2(tpl_def, tuple_keys_to_compare, mat_key->key_dtis, tuple_keys_compare_direction, keys_count);
+	const index_accessed_interface iai = get_index_accessed_interface_for_sorted_packed_page(&tap);
+
+	return find_insertion_index_in_sorted_iai(&iai, 0, tuple_count - 1, mat_key->keys, &contexted_comparator(&topcc2, compare_tuples_using_comparator_context2));
 }
 
 uint32_t find_first_in_sorted_packed_page2(
