@@ -8,6 +8,9 @@
 #include<cutlery/index_accessed_search_sort.h>
 
 //#define TURN_ON_DEBUG_POSITION_CHECK_GUARD
+#include<stdlib.h>
+#include<stdio.h>
+
 
 // ---------------- UTILTY CODE FOR SORTED PACKED PAGE BEGIN -------------------------------------------------
 
