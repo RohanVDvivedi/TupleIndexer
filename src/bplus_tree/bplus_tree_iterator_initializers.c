@@ -26,104 +26,9 @@ static int compare_curr_tuple_with_key_OR_record(bplus_tree_iterator* bpi_p, con
 // fails only on an abort_error
 static int adjust_position_for_bplus_tree_iterator(bplus_tree_iterator* bpi_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position find_pos, const void* transaction_id, int* abort_error)
 {
-	bpi_p->curr_tuple_index = 0;
-
 	// if the bplus_tree is itself empty then nothing needs to be done any further
 	if(is_empty_bplus_tree(bpi_p))
 		return 1;
-
-	// find the leaf_tuple_index for the iterator to start with
-	{
-		const persistent_page* curr_leaf_page = get_curr_leaf_page(bpi_p);
-
-		uint32_t tuple_count_on_curr_leaf_page = get_tuple_count_on_persistent_page(curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, &(bpi_p->bpttd_p->record_def->size_def));
-
-		switch(find_pos)
-		{
-			case MIN :
-			{
-				bpi_p->curr_tuple_index = 0;
-				break;
-			}
-			case LESSER_THAN :
-			{
-				if(is_key)
-					bpi_p->curr_tuple_index = find_preceding_in_sorted_packed_page(
-											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-											key_OR_record, bpi_p->bpttd_p->key_def, NULL
-										);
-				else
-					bpi_p->curr_tuple_index = find_preceding_in_sorted_packed_page(
-											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-											key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
-										);
-
-				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : 0;
-				break;
-			}
-			case LESSER_THAN_EQUALS :
-			{
-				if(is_key)
-					bpi_p->curr_tuple_index = find_preceding_equals_in_sorted_packed_page(
-											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-											key_OR_record, bpi_p->bpttd_p->key_def, NULL
-										);
-				else
-					bpi_p->curr_tuple_index = find_preceding_equals_in_sorted_packed_page(
-											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-											key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
-										);
-
-				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : 0;
-				break;
-			}
-			case GREATER_THAN_EQUALS :
-			{
-				if(is_key)
-					bpi_p->curr_tuple_index = find_succeeding_equals_in_sorted_packed_page(
-											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-											key_OR_record, bpi_p->bpttd_p->key_def, NULL
-										);
-				else
-					bpi_p->curr_tuple_index = find_succeeding_equals_in_sorted_packed_page(
-											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-											key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
-										);
-
-				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : (tuple_count_on_curr_leaf_page - 1);
-				break;
-			}
-			case GREATER_THAN :
-			{
-				if(is_key)
-					bpi_p->curr_tuple_index = find_succeeding_in_sorted_packed_page(
-											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-											key_OR_record, bpi_p->bpttd_p->key_def, NULL
-										);
-				else
-					bpi_p->curr_tuple_index = find_succeeding_in_sorted_packed_page(
-											curr_leaf_page, bpi_p->bpttd_p->pas_p->page_size, 
-											bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids, bpi_p->bpttd_p->key_compare_direction, key_element_count_concerned,
-											key_OR_record, bpi_p->bpttd_p->record_def, bpi_p->bpttd_p->key_element_ids
-										);
-
-				bpi_p->curr_tuple_index = (bpi_p->curr_tuple_index != NO_TUPLE_FOUND) ? bpi_p->curr_tuple_index : (tuple_count_on_curr_leaf_page - 1);
-				break;
-			}
-			case MAX :
-			{
-				bpi_p->curr_tuple_index = tuple_count_on_curr_leaf_page - 1;
-				break;
-			}
-		}
-	}
 
 	// iterate next or previous in bplus_tree_iterator, based on the find_pos
 	// this is not required for MIN and MAX
@@ -304,7 +209,7 @@ int initialize_bplus_tree_stacked_iterator(bplus_tree_iterator* bpi_p, uint64_t 
 	// if it had any then it has been transferred to the bpi_p->lps
 
 	// walk down for the current value of bpi_p->lps
-	walk_down_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), key_OR_record, is_key, key_element_count_concerned, find_pos, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
+	walk_down_locking_parent_pages_for_stacked_iterator(&(bpi_p->lps), &(bpi_p->curr_tuple_index), key_OR_record, is_key, key_element_count_concerned, find_pos, bpi_p->lock_type, bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 	if(*abort_error)
 	{
 		release_all_locks_and_deinitialize_stack_reenterable(&(bpi_p->lps), bpi_p->pam_p, transaction_id, abort_error);
@@ -342,7 +247,7 @@ int initialize_bplus_tree_unstacked_iterator(bplus_tree_iterator* bpi_p, uint64_
 	bpi_p->pmm_p = pmm_p;
 
 	// walk down for the current value of bpi_p->lps
-	bpi_p->curr_page = walk_down_for_iterator_using_key(root_page_id, key, key_element_count_concerned, find_pos, (pmm_p != NULL ? WRITE_LOCK : READ_LOCK), bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
+	bpi_p->curr_page = walk_down_for_iterator_using_key(root_page_id, &(bpi_p->curr_tuple_index), key, key_element_count_concerned, find_pos, (pmm_p != NULL ? WRITE_LOCK : READ_LOCK), bpi_p->bpttd_p, bpi_p->pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		return 0;
 

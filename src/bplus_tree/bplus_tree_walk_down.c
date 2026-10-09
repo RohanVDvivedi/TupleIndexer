@@ -401,8 +401,10 @@ int walk_down_locking_parent_pages_for_update(locked_pages_stack* locked_pages_s
 	return 0;
 }
 
-persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+persistent_page walk_down_for_iterator(uint64_t root_page_id, uint32_t* found_index, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	(*found_index) = NO_TUPLE_FOUND;
+
 	// since this function only results with a lock on the leaf
 	// so a WRITE_LOCK and READ_LOCK_INTERIOR_WRITE_LOCK_LEAF, are logically same
 	if(lock_type == WRITE_LOCK)
@@ -413,12 +415,6 @@ persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR
 	persistent_page curr_page = acquire_root_page_with_lock_optimistically(root_page_id, lock_type, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		return get_NULL_persistent_page(pam_p);
-
-	// pre cache level of the root_page
-	uint32_t root_page_level = get_level_of_bplus_tree_page(&curr_page, bpttd_p);
-
-	if(root_page_level == 0) // if root is the leaf page, then return it
-		return curr_page;
 
 	materialized_key mat_key;
 	if(key_OR_record != NULL)
@@ -494,12 +490,82 @@ persistent_page walk_down_for_iterator(uint64_t root_page_id, const void* key_OR
 		curr_page = child_page;
 	}
 
+	// get leaf from locked_pages_stack
+	persistent_page* leaf_locked_page = &curr_page;
+	uint32_t tuple_count_on_leaf_locked_page = get_tuple_count_on_persistent_page(leaf_locked_page, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
+
+	// calculate the found_index
+	if(tuple_count_on_leaf_locked_page == 0)
+		(*found_index) = 0;
+	else
+	{
+		switch(f_pos)
+		{
+			case MIN :
+			{
+				(*found_index) = 0;
+				break;
+			}
+			case LESSER_THAN :
+			{
+				(*found_index) = find_preceding_in_sorted_packed_page2(
+											leaf_locked_page, bpttd_p->pas_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
+											&mat_key
+										);
+
+				(*found_index) = ((*found_index) != NO_TUPLE_FOUND) ? (*found_index) : 0;
+				break;
+			}
+			case LESSER_THAN_EQUALS :
+			{
+				(*found_index) = find_preceding_equals_in_sorted_packed_page2(
+											leaf_locked_page, bpttd_p->pas_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
+											&mat_key
+										);
+
+				(*found_index) = ((*found_index) != NO_TUPLE_FOUND) ? (*found_index) : 0;
+				break;
+			}
+			case GREATER_THAN_EQUALS :
+			{
+				(*found_index) = find_succeeding_equals_in_sorted_packed_page2(
+											leaf_locked_page, bpttd_p->pas_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
+											&mat_key
+										);
+
+				(*found_index) = ((*found_index) != NO_TUPLE_FOUND) ? (*found_index) : (tuple_count_on_leaf_locked_page - 1);
+				break;
+			}
+			case GREATER_THAN :
+			{
+				(*found_index) = find_succeeding_in_sorted_packed_page2(
+											leaf_locked_page, bpttd_p->pas_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
+											&mat_key
+										);
+
+				(*found_index) = ((*found_index) != NO_TUPLE_FOUND) ? (*found_index) : (tuple_count_on_leaf_locked_page - 1);
+				break;
+			}
+			case MAX :
+			{
+				(*found_index) = tuple_count_on_leaf_locked_page - 1;
+				break;
+			}
+		}
+	}
+
 	destroy_materialized_key(&mat_key);
 	return curr_page;
 }
 
-int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* locked_pages_stack_p, uint32_t* found_index, const void* key_OR_record, int is_key, uint32_t key_element_count_concerned, find_position f_pos, int lock_type, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	(*found_index) = NO_TUPLE_FOUND;
+
 	materialized_key mat_key;
 	if(key_OR_record != NULL)
 	{
@@ -561,6 +627,74 @@ int walk_down_locking_parent_pages_for_stacked_iterator(locked_pages_stack* lock
 
 		// push this child page onto the stack
 		push_to_locked_pages_stack(locked_pages_stack_p, &INIT_LOCKED_PAGE_INFO(child_page, INVALID_TUPLE_INDEX));
+	}
+
+	// get leaf from locked_pages_stack
+	persistent_page* leaf_locked_page = &(get_top_of_locked_pages_stack(locked_pages_stack_p)->ppage);
+	uint32_t tuple_count_on_leaf_locked_page = get_tuple_count_on_persistent_page(leaf_locked_page, bpttd_p->pas_p->page_size, &(bpttd_p->record_def->size_def));
+
+	// calculate the found_index
+	if(tuple_count_on_leaf_locked_page == 0)
+		(*found_index) = 0;
+	else
+	{
+		switch(f_pos)
+		{
+			case MIN :
+			{
+				(*found_index) = 0;
+				break;
+			}
+			case LESSER_THAN :
+			{
+				(*found_index) = find_preceding_in_sorted_packed_page2(
+											leaf_locked_page, bpttd_p->pas_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
+											&mat_key
+										);
+
+				(*found_index) = ((*found_index) != NO_TUPLE_FOUND) ? (*found_index) : 0;
+				break;
+			}
+			case LESSER_THAN_EQUALS :
+			{
+				(*found_index) = find_preceding_equals_in_sorted_packed_page2(
+											leaf_locked_page, bpttd_p->pas_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
+											&mat_key
+										);
+
+				(*found_index) = ((*found_index) != NO_TUPLE_FOUND) ? (*found_index) : 0;
+				break;
+			}
+			case GREATER_THAN_EQUALS :
+			{
+				(*found_index) = find_succeeding_equals_in_sorted_packed_page2(
+											leaf_locked_page, bpttd_p->pas_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
+											&mat_key
+										);
+
+				(*found_index) = ((*found_index) != NO_TUPLE_FOUND) ? (*found_index) : (tuple_count_on_leaf_locked_page - 1);
+				break;
+			}
+			case GREATER_THAN :
+			{
+				(*found_index) = find_succeeding_in_sorted_packed_page2(
+											leaf_locked_page, bpttd_p->pas_p->page_size, 
+											bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, key_element_count_concerned,
+											&mat_key
+										);
+
+				(*found_index) = ((*found_index) != NO_TUPLE_FOUND) ? (*found_index) : (tuple_count_on_leaf_locked_page - 1);
+				break;
+			}
+			case MAX :
+			{
+				(*found_index) = tuple_count_on_leaf_locked_page - 1;
+				break;
+			}
+		}
 	}
 
 	// on success return 1
