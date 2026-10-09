@@ -89,6 +89,8 @@ locked_pages_stack initialize_locked_pages_stack_for_walk_down(uint64_t root_pag
 
 int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_pages_stack_p, uint32_t* insertion_index, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	(*insertion_index) = INVALID_TUPLE_INDEX;
+
 	materialized_key mat_key;
 	if(is_key)
 		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->key_def, NULL, bpttd_p->key_element_count);
@@ -201,8 +203,10 @@ uint32_t count_unlockable_parent_pages_for_split_insert(const locked_pages_stack
 	return result;
 }
 
-int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_stack_p, uint32_t* found_index, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
+	(*found_index) = NO_TUPLE_FOUND;
+
 	materialized_key mat_key;
 	if(is_key)
 		mat_key = materialize_key_from_tuple(key_OR_record, bpttd_p->key_def, NULL, bpttd_p->key_element_count);
@@ -253,6 +257,17 @@ int walk_down_locking_parent_pages_for_merge(locked_pages_stack* locked_pages_st
 
 	// here, we can still perform a find to locate the leaf record that we might be delete (given the key) and check if leaf page then will require merging,
 	// but I suspect that is just an overkill, instead let the caller to just perform the delete and run the merge_and_unlock_pages_up
+
+	// get leaf from locked_pages_stack
+	locked_page_info* leaf_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
+
+	// find the right place to delete the tuple that has a key equal to the mat_key
+	(*found_index) = find_last_in_sorted_packed_page2(
+									&(leaf_locked_page->ppage), bpttd_p->pas_p->page_size,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
+									&mat_key
+								);
+
 
 	destroy_materialized_key(&mat_key);
 	return 1;
