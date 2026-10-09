@@ -13,28 +13,22 @@ int insert_in_bplus_tree(uint64_t root_page_id, const void* record, const bplus_
 		return 0;
 
 	// create a locked_pages_stack
+	uint32_t insertion_index = INVALID_TUPLE_INDEX;
 	locked_pages_stack* locked_pages_stack_p = &((locked_pages_stack){});
 
 	(*locked_pages_stack_p) = initialize_locked_pages_stack_for_walk_down(root_page_id, WRITE_LOCK, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error) // on abort no pages were kept locked
 		return 0;
 
-	// walk down taking locks until you reach leaf page level
-	walk_down_locking_parent_pages_for_split_insert_using_record(locked_pages_stack_p, record, bpttd_p, pam_p, transaction_id, abort_error);
+	// walk down taking locks until you reach leaf page level, and also give us the position to insert the tuple at
+	walk_down_locking_parent_pages_for_split_insert_using_record(locked_pages_stack_p, &insertion_index, record, bpttd_p, pam_p, transaction_id, abort_error);
 	if(*abort_error)
 		goto EXIT;
 
 	// this has to be a leaf page
 	locked_page_info* curr_locked_page = get_top_of_locked_pages_stack(locked_pages_stack_p);
 
-	uint32_t insertion_index = find_insertion_point_in_sorted_packed_page(
-										&(curr_locked_page->ppage), bpttd_p->pas_p->page_size,
-										bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
-										record
-									);
-
 	// insertion_index is always the index right after all tuples lesser than equal to the record
-
 	if(insertion_index > 0)
 	{
 		// find index of last record that has the matching key on the page

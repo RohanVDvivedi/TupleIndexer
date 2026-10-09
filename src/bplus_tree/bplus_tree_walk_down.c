@@ -5,6 +5,7 @@
 #include<tupleindexer/bplus_tree/bplus_tree_leaf_page_util.h>
 #include<tupleindexer/bplus_tree/storage_capacity_page_util.h>
 #include<tupleindexer/common/materialized_key.h>
+#include<tupleindexer/utils/sorted_packed_page_util.h>
 
 #include<tupleindexer/common/invalid_tuple_indices.h>
 
@@ -86,7 +87,7 @@ locked_pages_stack initialize_locked_pages_stack_for_walk_down(uint64_t root_pag
 	return *locked_pages_stack_p;
 }
 
-int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
+int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_pages_stack_p, uint32_t* insertion_index, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	materialized_key mat_key;
 	if(is_key)
@@ -153,6 +154,13 @@ int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_p
 			}
 		}
 	}
+
+	// find and set the insertion_index on this leaf page, to return it
+	(*insertion_index) = find_insertion_point_in_sorted_packed_page2(
+									&(leaf_locked_page->ppage), bpttd_p->pas_p->page_size,
+									bpttd_p->record_def, bpttd_p->key_element_ids, bpttd_p->key_compare_direction, bpttd_p->key_element_count,
+									&mat_key
+								);
 
 	destroy_materialized_key(&mat_key);
 	return 1;

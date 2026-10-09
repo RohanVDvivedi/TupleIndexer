@@ -29,9 +29,9 @@ locked_pages_stack initialize_locked_pages_stack_for_walk_down(uint64_t root_pag
 // as soon as an abort is encountered all page locks (including the lock on the root page) are dumpled,
 // leaving no pages on the locked_pages_stack
 
-int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_pages_stack_p, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
-#define walk_down_locking_parent_pages_for_split_insert_using_key(locked_pages_stack_p, key, bpttd_p, pam_p, transaction_id, abort_error)       walk_down_locking_parent_pages_for_split_insert(locked_pages_stack_p, key, 1, bpttd_p, pam_p, transaction_id, abort_error)
-#define walk_down_locking_parent_pages_for_split_insert_using_record(locked_pages_stack_p, record, bpttd_p, pam_p, transaction_id, abort_error) walk_down_locking_parent_pages_for_split_insert(locked_pages_stack_p, record, 0, bpttd_p, pam_p, transaction_id, abort_error)
+int walk_down_locking_parent_pages_for_split_insert(locked_pages_stack* locked_pages_stack_p, uint32_t* insertion_index, const void* key_OR_record, int is_key, const bplus_tree_tuple_defs* bpttd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
+#define walk_down_locking_parent_pages_for_split_insert_using_key(locked_pages_stack_p, insertion_index_p, key, bpttd_p, pam_p, transaction_id, abort_error)       walk_down_locking_parent_pages_for_split_insert(locked_pages_stack_p, insertion_index_p, key, 1, bpttd_p, pam_p, transaction_id, abort_error)
+#define walk_down_locking_parent_pages_for_split_insert_using_record(locked_pages_stack_p, insertion_index_p, record, bpttd_p, pam_p, transaction_id, abort_error) walk_down_locking_parent_pages_for_split_insert(locked_pages_stack_p, insertion_index_p, record, 0, bpttd_p, pam_p, transaction_id, abort_error)
 
 // get count of parent pages for the locked pages stack, that can be unlocked if we are sure of performing a split_insert in the locked leaf
 // it is agnostic of the tuple to be inserted, it does not check leaf page
