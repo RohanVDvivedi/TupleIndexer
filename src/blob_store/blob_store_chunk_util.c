@@ -60,7 +60,7 @@ uint32_t append_bytes_to_back_of_chunk(void* chunk, const void* data, uint32_t d
 		const data_type_info* dti_temp;
 		datum uval;
 		get_value_from_element_from_tuple(&uval, &dti_temp, bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk);
-		memmov(((char*)uval.binary_value) + old_chunk_data_size, data, bytes_appended);
+		memmove(((char*)uval.binary_value) + old_chunk_data_size, data, bytes_appended);
 	}
 
 	return bytes_appended;

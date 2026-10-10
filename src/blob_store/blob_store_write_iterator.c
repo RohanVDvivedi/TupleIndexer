@@ -104,7 +104,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 			void* cloned_tail_chunk = malloc(tail_chunk_size + bytes_appended);
 			if(cloned_tail_chunk == NULL)
 				exit(-1);
-			memmov(cloned_tail_chunk, tail_chunk, tail_chunk_size);
+			memmove(cloned_tail_chunk, tail_chunk, tail_chunk_size);
 
 			// append to it bytes_appended number of bytes
 			append_bytes_to_back_of_chunk(cloned_tail_chunk, data, bytes_appended, bytes_appended, bswi_p->bstd_p);
@@ -297,7 +297,7 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t d
 		void* cloned_head_chunk = malloc(head_chunk_size);
 		if(cloned_head_chunk == NULL)
 			exit(-1);
-		memmov(cloned_head_chunk, head_chunk, head_chunk_size);
+		memmove(cloned_head_chunk, head_chunk, head_chunk_size);
 
 		// discard bytes from its (clone's) front
 		discard_bytes_from_front_of_chunk(cloned_head_chunk, bytes_discarded, bswi_p->bstd_p);
