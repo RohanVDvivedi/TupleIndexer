@@ -443,7 +443,7 @@ static int downgrade_writer_lock_to_reader_lock_on_page(void* context, const voi
 
 		#ifdef CHECK_WAS_MODIFIED_BIT
 			// if the was_modified bit is NOT set, and the page is modified, then exit
-			if(lock_downgraded && (!(opts & WAS_MODIFIED)) && memory_compare(page_desc->page_memory, page_desc->previous_page_memory, cntxt->page_size))
+			if(lock_downgraded && (!(opts & WAS_MODIFIED)) && 0 != memcmp(page_desc->page_memory, page_desc->previous_page_memory, cntxt->page_size))
 			{
 				printf("BUG :: downgrading write lock on a page after modfication, but WAS_MODIFIED bit not set\n");
 				exit(-1);
@@ -516,7 +516,7 @@ static int release_writer_lock_on_page(void* context, const void* transaction_id
 
 		#ifdef CHECK_WAS_MODIFIED_BIT
 			// if the was_modified bit is NOT set, and the page is modified, then exit
-			if(lock_released && (!(opts & WAS_MODIFIED)) && memory_compare(page_desc->page_memory, page_desc->previous_page_memory, cntxt->page_size))
+			if(lock_released && (!(opts & WAS_MODIFIED)) && 0 != memcmp(page_desc->page_memory, page_desc->previous_page_memory, cntxt->page_size))
 			{
 				printf("BUG :: releasing write lock on a page after modfication, but WAS_MODIFIED bit not set\n");
 				exit(-1);
