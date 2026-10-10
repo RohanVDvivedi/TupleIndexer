@@ -7,6 +7,7 @@
 #include<tupleindexer/heap_page/heap_page.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 blob_store_write_iterator* get_new_blob_store_write_iterator(uint64_t root_page_id, tuple_pointer head_pointer, tuple_pointer tail_pointer, const blob_store_tuple_defs* bstd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
@@ -103,7 +104,7 @@ uint32_t append_to_tail_in_blob(blob_store_write_iterator* bswi_p, const char* d
 			void* cloned_tail_chunk = malloc(tail_chunk_size + bytes_appended);
 			if(cloned_tail_chunk == NULL)
 				exit(-1);
-			memory_move(cloned_tail_chunk, tail_chunk, tail_chunk_size);
+			memmov(cloned_tail_chunk, tail_chunk, tail_chunk_size);
 
 			// append to it bytes_appended number of bytes
 			append_bytes_to_back_of_chunk(cloned_tail_chunk, data, bytes_appended, bytes_appended, bswi_p->bstd_p);
@@ -296,7 +297,7 @@ uint32_t discard_from_head_in_blob(blob_store_write_iterator* bswi_p, uint32_t d
 		void* cloned_head_chunk = malloc(head_chunk_size);
 		if(cloned_head_chunk == NULL)
 			exit(-1);
-		memory_move(cloned_head_chunk, head_chunk, head_chunk_size);
+		memmov(cloned_head_chunk, head_chunk, head_chunk_size);
 
 		// discard bytes from its (clone's) front
 		discard_bytes_from_front_of_chunk(cloned_head_chunk, bytes_discarded, bswi_p->bstd_p);

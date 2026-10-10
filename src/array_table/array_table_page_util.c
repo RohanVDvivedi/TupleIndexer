@@ -6,6 +6,7 @@
 #include<tupleindexer/utils/tuple_for_page_id.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 int init_array_table_page(persistent_page* ppage, uint32_t level, uint64_t first_bucket_id, const array_table_tuple_defs* attd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
@@ -87,7 +88,7 @@ const void* get_record_entry_at_child_index_in_array_table_leaf_page(const persi
 		return on_page_record;
 
 	// otherwise copy the on_page_recod to preallocated_memory and return the copy
-	memory_move(preallocated_memory, on_page_record, get_tuple_size(attd_p->record_def, on_page_record));
+	memmove(preallocated_memory, on_page_record, get_tuple_size(attd_p->record_def, on_page_record));
 	return preallocated_memory;
 }
 

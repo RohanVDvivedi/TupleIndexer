@@ -13,7 +13,7 @@ static void set_page_header_unWALed(void* context, const void* transaction_id, v
 {
 	void* pg_hdr = get_page_header(page, page_size);
 	uint32_t pg_hdr_size = get_page_header_size(page, page_size);
-	memory_move(pg_hdr, hdr, pg_hdr_size);
+	memmove(pg_hdr, hdr, pg_hdr_size);
 }
 
 static int append_tuple_on_page_unWALed(void* context, const void* transaction_id, void* page, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple, int* abort_error)

@@ -5,6 +5,7 @@
 #include<tupleindexer/utils/persistent_page_functions.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 static void refresh_unread_chunk_data_for_blob_store_read_iterator(blob_store_read_iterator* bsri_p)
 {
@@ -154,7 +155,7 @@ uint32_t read_from_blob(blob_store_read_iterator* bsri_p, char* data, uint32_t d
 
 		// copy that many number of bytes
 		if(data)
-			memory_move(data, bsri_p->unread_chunk_data.binary_value, bytes_read_this_iteration);
+			memmov(data, bsri_p->unread_chunk_data.binary_value, bytes_read_this_iteration);
 
 		// move forward the output
 		if(data)

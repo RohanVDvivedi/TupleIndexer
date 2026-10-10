@@ -9,6 +9,7 @@
 #include<serint/serial_int.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 typedef struct array_table_page_header array_table_page_header;
 struct array_table_page_header
@@ -103,7 +104,7 @@ static inline void set_array_table_page_header(persistent_page* ppage, const arr
 		exit(-1);
 
 	// copy the old page_header to it
-	memory_move(hdr_serial, get_page_header_ua_persistent_page(ppage, attd_p->pas_p->page_size), page_header_size);
+	memmove(hdr_serial, get_page_header_ua_persistent_page(ppage, attd_p->pas_p->page_size), page_header_size);
 
 	// serialize atph_p on the hdr_serial
 	serialize_array_table_page_header(hdr_serial, atph_p, attd_p);

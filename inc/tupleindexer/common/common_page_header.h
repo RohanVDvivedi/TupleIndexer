@@ -13,6 +13,7 @@
 
 #include<stdlib.h>
 #include<stdint.h>
+#include<string.h>
 
 typedef struct common_page_header common_page_header;
 struct common_page_header
@@ -76,7 +77,7 @@ static inline void set_common_page_header(persistent_page* ppage, const common_p
 		exit(-1);
 
 	// copy the old page_header to it
-	memory_move(hdr_serial, get_page_header_ua_persistent_page(ppage, pas_p->page_size), page_header_size);
+	memmove(hdr_serial, get_page_header_ua_persistent_page(ppage, pas_p->page_size), page_header_size);
 
 	// serialize cph_p on the hdr_serial
 	serialize_common_page_header(hdr_serial, cph_p, pas_p);

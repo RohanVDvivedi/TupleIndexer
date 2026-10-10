@@ -412,7 +412,7 @@ int update_from_file(uint64_t root_page_id, char* file_name, uint32_t skip_first
 		while(tuple_to_process != NULL && records_updated < tuples_to_process)
 		{
 			char new_tuple[PAGE_SIZE];
-			memory_move(new_tuple, tuple_to_process, get_tuple_size(bpttd_p->record_def, tuple_to_process));
+			memmove(new_tuple, tuple_to_process, get_tuple_size(bpttd_p->record_def, tuple_to_process));
 			set_element_in_tuple(bpttd_p->record_def, STATIC_POSITION(7), new_tuple, &((datum){.string_value = last_col, .string_size = strlen(last_col)}), UINT32_MAX);
 
 			records_updated += update_at_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);
@@ -498,7 +498,7 @@ int update_all(uint64_t root_page_id, const char* last_col, const bplus_tree_tup
 		while(tuple_to_process != NULL)
 		{
 			char new_tuple[PAGE_SIZE];
-			memory_move(new_tuple, tuple_to_process, get_tuple_size(bpttd_p->record_def, tuple_to_process));
+			memmove(new_tuple, tuple_to_process, get_tuple_size(bpttd_p->record_def, tuple_to_process));
 			set_element_in_tuple(bpttd_p->record_def, STATIC_POSITION(7), new_tuple, &((datum){.string_value = last_col, .string_size = strlen(last_col)}), UINT32_MAX);
 
 			records_updated += update_at_bplus_tree_iterator(bpi_p, new_tuple, 0, transaction_id, &abort_error);

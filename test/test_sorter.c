@@ -283,7 +283,7 @@ void evaluate_sort_result(uint64_t result_head_page_id, uint64_t tuples_count, c
 				compares_done++;
 			}
 
-			memory_move(prev_tuple, curr_tuple, get_tuple_size(lpltd_p->record_def, curr_tuple));
+			memmove(prev_tuple, curr_tuple, get_tuple_size(lpltd_p->record_def, curr_tuple));
 			prev_tuple_valid = 1;
 
 			if(is_at_tail_tuple_linked_page_list_iterator(lpli_p))

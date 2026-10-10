@@ -9,6 +9,8 @@
 
 #include<tuplestore/tuple.h>
 
+#include<string.h>
+
 int init_bplus_tree_interior_page(persistent_page* ppage, uint32_t level, int is_last_page_of_level, const bplus_tree_tuple_defs* bpttd_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	int inited = init_persistent_page(pmm_p, transaction_id, ppage, bpttd_p->pas_p->page_size, sizeof_BPLUS_TREE_INTERIOR_PAGE_HEADER(bpttd_p), &(bpttd_p->index_def->size_def), abort_error);
@@ -383,7 +385,7 @@ int split_insert_bplus_tree_interior_page(persistent_page* page1, const void* tu
 	}
 
 	// copy all the contents of the first_tuple_page2 to output_parent_insert
-	memory_move(output_parent_insert, first_tuple_page2, size_of_first_tuple_page2);
+	memmove(output_parent_insert, first_tuple_page2, size_of_first_tuple_page2);
 
 	// now insert the pointer to the page2 in this parent tuple
 	set_child_page_id_in_index_tuple(output_parent_insert, page2.page_id, bpttd_p);

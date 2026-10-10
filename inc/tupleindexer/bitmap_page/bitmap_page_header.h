@@ -9,6 +9,7 @@
 #include<serint/serial_int.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 typedef struct bitmap_page_header bitmap_page_header;
 struct bitmap_page_header
@@ -67,7 +68,7 @@ static inline void set_bitmap_page_header(persistent_page* ppage, const bitmap_p
 		exit(-1);
 
 	// copy the old page_header to it
-	memory_move(hdr_serial, get_page_header_ua_persistent_page(ppage, pas_p->page_size), page_header_size);
+	memmove(hdr_serial, get_page_header_ua_persistent_page(ppage, pas_p->page_size), page_header_size);
 
 	// serialize bph_p on the hdr_serial
 	serialize_bitmap_page_header(hdr_serial, bph_p, pas_p);

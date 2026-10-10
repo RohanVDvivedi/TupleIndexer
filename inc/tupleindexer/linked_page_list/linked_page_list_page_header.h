@@ -9,6 +9,7 @@
 #include<serint/serial_int.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 typedef struct linked_page_list_page_header linked_page_list_page_header;
 struct linked_page_list_page_header
@@ -91,7 +92,7 @@ static inline void set_linked_page_list_page_header(persistent_page* ppage, cons
 		exit(-1);
 
 	// copy the old page_header to it
-	memory_move(hdr_serial, get_page_header_ua_persistent_page(ppage, lpltd_p->pas_p->page_size), page_header_size);
+	memmove(hdr_serial, get_page_header_ua_persistent_page(ppage, lpltd_p->pas_p->page_size), page_header_size);
 
 	// serialize lplph_p on the hdr_serial
 	serialize_linked_page_list_page_header(hdr_serial, lplph_p, lpltd_p);

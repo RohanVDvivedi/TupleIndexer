@@ -9,6 +9,7 @@
 #include<serint/serial_int.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 typedef struct heap_page_header heap_page_header;
 struct heap_page_header
@@ -67,7 +68,7 @@ static inline void set_heap_page_header(persistent_page* ppage, const heap_page_
 		exit(-1);
 
 	// copy the old page_header to it
-	memory_move(hdr_serial, get_page_header_ua_persistent_page(ppage, pas_p->page_size), page_header_size);
+	memmove(hdr_serial, get_page_header_ua_persistent_page(ppage, pas_p->page_size), page_header_size);
 
 	// serialize hph_p on the hdr_serial
 	serialize_heap_page_header(hdr_serial, hph_p, pas_p);

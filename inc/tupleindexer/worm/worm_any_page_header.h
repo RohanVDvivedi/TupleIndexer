@@ -9,6 +9,7 @@
 #include<serint/serial_int.h>
 
 #include<stdlib.h>
+#include<string.h>
 
 typedef struct worm_any_page_header worm_any_page_header;
 struct worm_any_page_header
@@ -78,7 +79,7 @@ static inline void set_worm_any_page_header(persistent_page* ppage, const worm_a
 		exit(-1);
 
 	// copy the old page_header to it
-	memory_move(hdr_serial, get_page_header_ua_persistent_page(ppage, wtd_p->pas_p->page_size), page_header_size);
+	memmove(hdr_serial, get_page_header_ua_persistent_page(ppage, wtd_p->pas_p->page_size), page_header_size);
 
 	// serialize waph_p on the hdr_serial
 	serialize_worm_any_page_header(hdr_serial, waph_p, wtd_p);

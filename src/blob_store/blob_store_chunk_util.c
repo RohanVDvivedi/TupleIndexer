@@ -5,6 +5,8 @@
 #include<tuplestore/tuple.h>
 #include<tuplestore/datum.h>
 
+#include<string.h>
+
 void initialize_chunk(void* chunk, const void* chunk_data, uint32_t chunk_data_size, tuple_pointer next_chunk_pointer, const blob_store_tuple_defs* bstd_p)
 {
 	init_tuple(bstd_p->chunk_tuple_def, chunk);
@@ -58,7 +60,7 @@ uint32_t append_bytes_to_back_of_chunk(void* chunk, const void* data, uint32_t d
 		const data_type_info* dti_temp;
 		datum uval;
 		get_value_from_element_from_tuple(&uval, &dti_temp, bstd_p->chunk_tuple_def, STATIC_POSITION(0), chunk);
-		memory_move(((char*)uval.binary_value) + old_chunk_data_size, data, bytes_appended);
+		memmov(((char*)uval.binary_value) + old_chunk_data_size, data, bytes_appended);
 	}
 
 	return bytes_appended;

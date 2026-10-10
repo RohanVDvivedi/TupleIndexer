@@ -10,6 +10,7 @@
 //#define TURN_ON_DEBUG_POSITION_CHECK_GUARD
 #include<stdlib.h>
 #include<stdio.h>
+#include<string.h>
 
 
 // ---------------- UTILTY CODE FOR SORTED PACKED PAGE BEGIN -------------------------------------------------
@@ -843,7 +844,7 @@ void sort_materialized_and_convert_to_sorted_packed_page(
 		const void* tuple = get_nth_tuple_on_persistent_page(ppage, page_size, &(tpl_def->size_def), i);
 		uint32_t tuple_size = get_tuple_size(tpl_def, tuple);
 
-		memory_move(row_i, tuple, tuple_size);
+		memmove(row_i, tuple, tuple_size);
 		for(uint32_t k = 0; k < keys_count; k++)
 		{
 			const data_type_info* dti_temp;

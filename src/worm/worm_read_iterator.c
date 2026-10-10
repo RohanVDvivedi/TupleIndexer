@@ -3,6 +3,8 @@
 #include<tupleindexer/utils/persistent_page_functions.h>
 #include<tupleindexer/worm/worm_page_header.h>
 
+#include<string.h>
+
 worm_read_iterator* get_new_worm_read_iterator(uint64_t head_page_id, const worm_tuple_defs* wtd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error)
 {
 	// the following 2 must be present
@@ -167,7 +169,7 @@ uint32_t read_from_worm(worm_read_iterator* wri_p, char* data, uint32_t data_siz
 		// and read respective data if data != NULL
 		if(data != NULL)
 		{
-			memory_move(data, curr_binary.binary_value + wri_p->curr_byte_index, bytes_readable);
+			memmove(data, curr_binary.binary_value + wri_p->curr_byte_index, bytes_readable);
 			data += bytes_readable;
 		}
 		data_size -= bytes_readable;

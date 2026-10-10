@@ -9,6 +9,7 @@
 #include<stddef.h>
 #include<stdlib.h>
 #include<stdio.h>
+#include<string.h>
 
 // uncomment the below line, if you want to make this data store to check for the validity of WAS_MODIFIED option flag on releasing write lock on the page
 #define CHECK_WAS_MODIFIED_BIT
@@ -332,7 +333,7 @@ static void* get_new_page_with_write_lock(void* context, const void* transaction
 	// if, we took a write lock on it, so copy the previous contents to the previous_page_memory
 	#ifdef CHECK_WAS_MODIFIED_BIT
 		if(page_ptr != NULL)
-			memory_move(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
+			memmove(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
 	#endif
 
 	return page_ptr;
@@ -422,7 +423,7 @@ static void* acquire_page_with_writer_lock(void* context, const void* transactio
 	// if, we took a write lock on it, so copy the previous contents to the previous_page_memory
 	#ifdef CHECK_WAS_MODIFIED_BIT
 		if(page_ptr != NULL)
-			memory_move(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
+			memmove(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
 	#endif
 
 	return page_ptr;
@@ -495,7 +496,7 @@ static int upgrade_reader_lock_to_writer_lock_on_page(void* context, const void*
 	// if, we took a write lock on it, so copy the previous contents to the previous_page_memory
 	#ifdef CHECK_WAS_MODIFIED_BIT
 		if(lock_upgraded)
-			memory_move(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
+			memmove(page_desc->previous_page_memory, page_desc->page_memory, cntxt->page_size);
 	#endif
 
 	return lock_upgraded;
