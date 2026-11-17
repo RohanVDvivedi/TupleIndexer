@@ -58,6 +58,12 @@ struct chunk_append_position
 
 #include<tupleindexer/heap_table/heap_table.h> // only to make the heap_table_notifier available here
 
+// for the below 2 functions
+// attempt to call these 2 functions in a transaction
+// make sure that after you have made this call, call fix_unused_space_in_heap_table on all the accumulated entries (in possible a latter subsequent transaction, in possibly 1 for each fix-ing call), to keep this function returning in O(log N)
+// accumulating too many entries in the notifier degrades it's performance
+// ideally you should make 1 large call and fix all entries accumuated in a subsequent latter transaction
+
 // if data_size == 0, return 0 directly
 // if data_size > 0, it returns bytes_appended for success, where 0 < bytes_appended <= data_size, bytes_appended could be non-zero lesser than data_size
 // notify_wrong_entry and chunk_append_position (pointer to read starting from this newly append bytes, valid on positive return value) are optional params

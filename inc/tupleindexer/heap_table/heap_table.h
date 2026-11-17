@@ -60,7 +60,8 @@ struct heap_table_notifier
 };
 
 // write lock and get a heap_page from the heap_table, that has unused_space >= required_unused_space
-// once a heap_page is identified, fill it up to the brim inserting all the possible tuple you could, and then mark it to be fixed
+// once a heap_page is identified, fill it up to the brim inserting all the possible tuple you could, and then mark it to be fixed using the same head_table_notifier and it's returned unused_space_in_entry
+// make sure that after you have made an insert, you must call fix_unused_space_in_heap_table on all the accumulated entries (in possible a latter subsequent transaction, in possibly 1 transaction for each fix-ing call), to keep this function returning in O(log N), accumulating too many entries in the notifier degrades it's performance
 persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t root_page_id, const uint32_t required_unused_space, uint32_t* unused_space_in_entry, const heap_table_notifier* notify_wrong_entry, const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const void* transaction_id, int* abort_error);
 
 #include<tupleindexer/heap_table/heap_table_iterator.h>
