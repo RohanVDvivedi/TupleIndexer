@@ -54,6 +54,6 @@ int is_referenced_by_heap_table_accumulative_notifier(heap_table_accumulative_no
 
 void remove_from_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t page_id);
 
-#define HEAP_TABLE_ACCUMULATIVE_NOTIFIER(htan_p) ((const heap_table_notifier){(htan_p), (void (*)(void*, uint64_t, uint32_t, uint64_t))push_to_heap_table_accumulative_notifier}, (int (*)(void*, uint64_t, uint64_t))is_referenced_by_heap_table_accumulative_notifier)
+#define HEAP_TABLE_ACCUMULATIVE_NOTIFIER(htan_p) ((const heap_table_notifier){(htan_p), (void (*)(void*, uint64_t, uint32_t, uint64_t))push_to_heap_table_accumulative_notifier, (int (*)(void*, uint64_t, uint64_t))is_referenced_by_heap_table_accumulative_notifier})
 
 #endif
