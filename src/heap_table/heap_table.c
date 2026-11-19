@@ -5,6 +5,8 @@
 #include<tupleindexer/bplus_tree/bplus_tree.h>
 #include<tupleindexer/heap_page/heap_page.h>
 
+#include<tupleindexer/interface/page_access_methods.h>
+
 uint64_t get_new_heap_table(const heap_table_tuple_defs* httd_p, const page_access_methods* pam_p, const page_modification_methods* pmm_p, const void* transaction_id, int* abort_error)
 {
 	return get_new_bplus_tree(&(httd_p->bpttd), pam_p, pmm_p, transaction_id, abort_error);
@@ -275,7 +277,7 @@ persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t
 			uint64_t page_id = get_curr_heap_page_id_heap_table_iterator(hti_p, &unused_space);
 
 			// we are done iterating if the page_id in context is NULL
-			if(page_id == pam_p->pas_p->NULL_PAGE_ID)
+			if(page_id == httd_p->pas_p->NULL_PAGE_ID)
 				break;
 
 			if(notify_wrong_entry->skip(notify_wrong_entry->context, root_page_id, page_id))

@@ -27,6 +27,8 @@ void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifie
 	initialize_linkedlist(&(htan_p->process_order_for_entries), offsetof(heap_table_accumulative_notifier_entry, process_order_for_entries_embed_node));
 	if(!initialize_hashmap(&(htan_p->entries_by_page_id), ELEMENTS_AS_RED_BLACK_BST, 20, &simple_hasher(hash_heap_table_accumulative_notifier_entry), &simple_comparator(compare_heap_table_accumulative_notifier_entry), offsetof(heap_table_accumulative_notifier_entry, entries_by_page_id_embed_node)))
 		exit(-1);
+
+	htan_p->locked_page_ids_count = 0;
 }
 
 void deinitialize_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p)
@@ -122,4 +124,45 @@ int pop_from_heap_table_accumulative_notifier(heap_table_accumulative_notifier* 
 
 	pthread_mutex_unlock(&(htan_p->lock));
 	return 1;
+}
+
+int is_referenced_by_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t root_page_id, uint64_t page_id)
+{
+	pthread_mutex_lock(&(htan_p->lock));
+
+	for(uint32_t i = 0; i < htan_p->locked_page_ids_count; i++)
+	{
+		if(htan_p->locked_page_ids[i] == page_id)
+		{
+			pthread_mutex_unlock(&(htan_p->lock));
+			return 1;
+		}
+	}
+
+	if(NULL != find_equals_in_hashmap(&(htan_p->entries_by_page_id), &(const heap_table_accumulative_notifier_entry){.page_id = page_id}))
+	{
+		pthread_mutex_unlock(&(htan_p->lock));
+		return 1;
+	}
+
+	pthread_mutex_unlock(&(htan_p->lock));
+	return 0;
+}
+
+void remove_from_heap_table_accumulative_notifier(heap_table_accumulative_notifier* htan_p, uint64_t page_id)
+{
+	pthread_mutex_lock(&(htan_p->lock));
+
+	heap_table_accumulative_notifier_entry* he_p = (heap_table_accumulative_notifier_entry*) find_equals_in_hashmap(&(htan_p->entries_by_page_id), &(const heap_table_accumulative_notifier_entry){.page_id = page_id});
+	if(he_p != NULL)
+	{
+		// remove it from being active
+		remove_from_linkedlist(&(htan_p->process_order_for_entries), he_p);
+		remove_from_hashmap(&(htan_p->entries_by_page_id), he_p);
+
+		// insert it in the free list
+		insert_tail_in_singlylist(&(htan_p->free_entries), he_p);
+	}
+
+	pthread_mutex_unlock(&(htan_p->lock));
 }
