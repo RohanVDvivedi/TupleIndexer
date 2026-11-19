@@ -25,7 +25,7 @@ void initialize_heap_table_accumulative_notifier(heap_table_accumulative_notifie
 
 	initialize_singlylist(&(htan_p->free_entries), offsetof(heap_table_accumulative_notifier_entry, free_entries_embed_node));
 	initialize_linkedlist(&(htan_p->process_order_for_entries), offsetof(heap_table_accumulative_notifier_entry, process_order_for_entries_embed_node));
-	if(!initialize_hashmap(&(htan_p->entries_by_page_id), ELEMENTS_AS_RED_BLACK_BST, 20, &simple_hasher(hash_heap_table_accumulative_notifier_entry), &simple_comparator(compare_heap_table_accumulative_notifier_entry), offsetof(heap_table_accumulative_notifier_entry, entries_by_page_id_embed_node)))
+	if(!initialize_hashmap(&(htan_p->entries_by_page_id), ELEMENTS_AS_RED_BLACK_BST, entries_capacity / 3, &simple_hasher(hash_heap_table_accumulative_notifier_entry), &simple_comparator(compare_heap_table_accumulative_notifier_entry), offsetof(heap_table_accumulative_notifier_entry, entries_by_page_id_embed_node)))
 		exit(-1);
 
 	htan_p->locked_page_ids_count = 0;
