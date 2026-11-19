@@ -56,8 +56,10 @@ typedef struct heap_table_notifier heap_table_notifier;
 struct heap_table_notifier
 {
 	void* context;
-	void (*notify)(void* context, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id);
+	void (*notify)(void* context, uint64_t root_page_id, uint32_t unused_space, uint64_t page_id); // to notify about stale unused space entry in the tree
+	int (*skip)(void* context, uint64_t root_page_id, uint64_t page_id); // to skip any investigation on this page_id (possibly becuase the page is locked OR it was already notified earlier but the entry is not yet fixed)
 };
+// skip is an optional function and can be left NULL, if unused
 
 // write lock and get a heap_page from the heap_table, that has unused_space >= required_unused_space
 // once a heap_page is identified, fill it up to the brim inserting all the possible tuple you could, and then mark it to be fixed using the same head_table_notifier and it's returned unused_space_in_entry

@@ -269,6 +269,26 @@ persistent_page find_heap_page_with_enough_unused_space_from_heap_table(uint64_t
 	// iterate over each heap page one by one
 	while(1)
 	{
+		if(notify_wrong_entry != NULL && notify_wrong_entry->skip != NULL) // if we have a skip function, check if the page_id, needs to be skipped
+		{
+			uint32_t unused_space;
+			uint64_t page_id = get_curr_heap_page_id_heap_table_iterator(hti_p, &unused_space);
+
+			// we are done iterating if the page_id in context is NULL
+			if(page_id == pam_p->pas_p->NULL_PAGE_ID)
+				break;
+
+			if(notify_wrong_entry->skip(notify_wrong_entry->context, root_page_id, page_id))
+			{
+				// goto to the next entry
+				next_heap_table_iterator(hti_p, transaction_id, abort_error);
+				if(*abort_error)
+					goto ABORT_ERROR;
+
+				continue;
+			}
+		}
+
 		int is_fix_needed = 0;
 		ppage = lock_and_get_curr_heap_page_heap_table_iterator(hti_p, 1, unused_space_in_entry, &is_fix_needed, transaction_id, abort_error);
 		if(*abort_error)
